@@ -31,7 +31,7 @@ export function TopNav({
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-canvas/92 backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-line bg-[color-mix(in_srgb,var(--canvas)_92%,transparent)] backdrop-blur">
       <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between px-5 py-4 md:px-8">
         <div className="flex items-center gap-7">
           <NavLink

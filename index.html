@@ -17,6 +17,29 @@
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <link rel="apple-touch-icon" href="/icon.svg" />
     <title>TeeReady — golf weather intelligence</title>
+    <script>
+      (function () {
+        try {
+          var raw =
+            localStorage.getItem('teeready-theme-v1') ||
+            localStorage.getItem('ws-theme-v1') ||
+            'light';
+          if (raw === 'midnight') raw = 'dark';
+          var theme = raw;
+          if (raw === 'auto') {
+            theme = window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light';
+          }
+          if (theme !== 'light' && theme !== 'dark' && theme !== 'sand') {
+            theme = 'light';
+          }
+          document.documentElement.dataset.theme = theme;
+          document.documentElement.style.colorScheme =
+            theme === 'dark' ? 'dark' : 'light';
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -2,7 +2,7 @@ export type TempUnit = 'fahrenheit' | 'celsius';
 export type WindUnit = 'mph' | 'kmh';
 export type DistanceUnit = 'mi' | 'km';
 export type PrecipUnit = 'inch' | 'mm';
-export type ThemeId = 'dark' | 'light' | 'auto' | 'midnight' | 'sand';
+export type ThemeId = 'dark' | 'light' | 'auto' | 'sand';
 export type MapStyleId = 'dark' | 'liberty' | 'positron' | 'bright';
 
 export interface Settings {

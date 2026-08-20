@@ -4,23 +4,24 @@ export default {
   theme: {
     extend: {
       colors: {
-        canvas: '#f4f5f2',
-        surface: '#ffffff',
-        ink: '#12160f',
-        muted: '#707a6b',
-        faint: '#98a291',
-        line: 'rgba(18,30,15,0.08)',
-        brand: { DEFAULT: '#14713f', soft: '#e6f0e8' },
-        warn: '#d9a83a',
-        bad: '#d9714f',
+        canvas: 'var(--canvas)',
+        surface: 'var(--surface)',
+        ink: 'var(--ink)',
+        muted: 'var(--muted)',
+        faint: 'var(--faint)',
+        line: 'var(--line)',
+        brand: { DEFAULT: 'var(--brand)', soft: 'var(--brand-soft)' },
+        warn: 'var(--warn)',
+        bad: 'var(--bad)',
+        hero: 'var(--hero)',
       },
       borderRadius: {
         card: '22px',
         hero: '28px',
       },
       boxShadow: {
-        card: '0 1px 4px rgba(18,30,15,0.07)',
-        lift: '0 8px 26px rgba(18,30,15,0.12)',
+        card: 'var(--shadow-card)',
+        lift: 'var(--shadow-lift)',
       },
       fontFamily: {
         sans: [

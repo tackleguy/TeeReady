@@ -15,6 +15,12 @@ import {
   saveDisplayProfile,
   type DisplayProfile,
 } from '../lib/mock';
+import {
+  THEME_OPTIONS,
+  loadTheme,
+  setTheme,
+  type ThemeId,
+} from '../lib/theme';
 
 const MISS_OPTIONS: Array<{ value: MissBias; label: string; hint: string }> = [
   { value: 'left', label: 'Left', hint: 'Start left, finish further left' },
@@ -45,6 +51,7 @@ export function SettingsView() {
   const [miss, setMiss] = useState<MissBias>(saved.miss);
   const [sevenIronYards, setSevenIronYards] = useState(saved.sevenIronYards);
   const [driverYards, setDriverYards] = useState(saved.driverYards);
+  const [theme, setThemeId] = useState<ThemeId>(() => loadTheme());
   const [hasRound, setHasRound] = useState(false);
   const [savedFlash, setSavedFlash] = useState<string | null>(null);
 
@@ -69,6 +76,14 @@ export function SettingsView() {
     window.setTimeout(() => setSavedFlash(null), 2200);
   };
 
+  const onPickTheme = (id: ThemeId) => {
+    setThemeId(id);
+    setTheme(id);
+    flash(
+      `${THEME_OPTIONS.find((t) => t.id === id)?.label ?? 'Theme'} applied`,
+    );
+  };
+
   const saveAll = () => {
     if (!canSave) return;
     const commonCourses = commonText
@@ -85,6 +100,7 @@ export function SettingsView() {
     });
     const next: DisplayProfile = saveDisplayProfile({ name: name.trim() });
     setName(next.name);
+    setTheme(theme);
     flash('Settings saved');
   };
 
@@ -102,7 +118,7 @@ export function SettingsView() {
             Settings
           </h1>
           <p className="mt-1 text-[14px] text-muted">
-            Profile, bag stocks, and round data used across Today and Rounds.
+            Appearance, profile, and bag stocks used across Today and Rounds.
           </p>
         </div>
         {savedFlash ? (
@@ -111,6 +127,52 @@ export function SettingsView() {
           </span>
         ) : null}
       </div>
+
+      <section className="rounded-card bg-surface p-5 shadow-card">
+        <h2 className="text-[15px] font-bold text-ink">Appearance</h2>
+        <p className="mt-1 text-[13px] text-muted">
+          Light, dark, or sand — applies immediately across the app.
+        </p>
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {THEME_OPTIONS.map((opt) => {
+            const on = theme === opt.id;
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => onPickTheme(opt.id)}
+                aria-pressed={on}
+                className={
+                  on
+                    ? 'rounded-xl border border-brand bg-brand-soft p-3 text-left ring-1 ring-[color-mix(in_srgb,var(--brand)_30%,transparent)]'
+                    : 'rounded-xl border border-line bg-canvas p-3 text-left hover:border-[color-mix(in_srgb,var(--brand)_35%,var(--line))]'
+                }
+              >
+                <div className="mb-2.5 flex h-10 overflow-hidden rounded-lg border border-line">
+                  <span
+                    className="w-[42%]"
+                    style={{ background: opt.swatch[0] }}
+                  />
+                  <span
+                    className="w-[33%]"
+                    style={{ background: opt.swatch[1] }}
+                  />
+                  <span
+                    className="flex-1"
+                    style={{ background: opt.swatch[2] }}
+                  />
+                </div>
+                <div className="text-[13px] font-semibold text-ink">
+                  {opt.label}
+                </div>
+                <div className="mt-0.5 text-[11px] leading-snug text-muted">
+                  {opt.description}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </section>
 
       <section className="rounded-card bg-surface p-5 shadow-card">
         <h2 className="text-[15px] font-bold text-ink">Profile</h2>
@@ -186,7 +248,7 @@ export function SettingsView() {
                     onClick={() => setMiss(opt.value)}
                     className={
                       on
-                        ? 'rounded-lg bg-brand-soft px-2 py-2 text-[12px] font-semibold text-brand ring-1 ring-brand/30'
+                        ? 'rounded-lg bg-brand-soft px-2 py-2 text-[12px] font-semibold text-brand ring-1 ring-[color-mix(in_srgb,var(--brand)_30%,transparent)]'
                         : 'rounded-lg border border-line bg-canvas px-2 py-2 text-[12px] font-medium text-muted hover:text-ink'
                     }
                   >

@@ -12,7 +12,7 @@ export function TodayView() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="relative overflow-hidden rounded-hero bg-ink shadow-lift">
+      <section className="relative overflow-hidden rounded-hero bg-hero shadow-lift">
         <div className="h-[300px] w-full bg-[repeating-linear-gradient(135deg,#1d2a1c_0_14px,#182317_14px_28px)] sm:h-[340px]" />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[rgba(8,14,6,0.78)] via-[rgba(8,14,6,0.25)] to-transparent" />
 

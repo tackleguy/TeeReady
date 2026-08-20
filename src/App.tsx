@@ -7,13 +7,17 @@ import {
   useLocation,
 } from 'react-router-dom';
 import { InstallPrompt } from './components/InstallPrompt';
+import { ThemeBoot } from './components/ThemeBoot';
 import { TopNav } from './components/TopNav';
 import { SearchBar } from './components/radar/SearchBar';
 import { CURRENT_LOCATION } from './lib/mock';
+import { applyTheme, loadTheme } from './lib/theme';
 import { CoursesView } from './routes/CoursesView';
 import { GroupView } from './routes/GroupView';
 import { SettingsView } from './routes/SettingsView';
 import { TodayView } from './routes/TodayView';
+
+applyTheme(loadTheme());
 
 const GolfView = lazy(() =>
   import('./routes/GolfView').then((m) => ({ default: m.GolfView })),
@@ -27,7 +31,7 @@ function RouteFallback() {
       aria-label="Loading"
     >
       <div className="h-2 w-32 overflow-hidden rounded-full bg-brand-soft">
-        <div className="h-full w-1/3 animate-[shimmer_1.6s_linear_infinite] bg-brand/40" />
+        <div className="h-full w-1/3 animate-[shimmer_1.6s_linear_infinite] bg-[color-mix(in_srgb,var(--brand)_40%,transparent)]" />
       </div>
     </div>
   );
@@ -41,6 +45,7 @@ function Shell() {
 
   return (
     <div className="app-shell">
+      <ThemeBoot />
       <TopNav
         locationLabel={place}
         onLocationClick={() => setPickingLocation((v) => !v)}
