@@ -1,6 +1,7 @@
 // Golf: OSM courses + satellite map + multi-model hole wind briefs.
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   BookOpen,
   ChevronDown,
@@ -171,6 +172,7 @@ function ChipRow({
 }
 
 export function GolfView() {
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [profile, setProfile] = useState<GolfPlayerProfile>(
     () => loadGolfProfile() ?? DEFAULT_PROFILE,
@@ -588,8 +590,8 @@ export function GolfView() {
             type="button"
             className="rounded-lg p-2.5 text-[var(--ink-3)] hover:bg-white/5 hover:text-[var(--ink-1)]"
             aria-label="Edit golf profile"
-            title={`Edit profile · HCP ${profile.handicap}`}
-            onClick={() => setSetupOpen(true)}
+            title={`Settings · HCP ${profile.handicap}`}
+            onClick={() => navigate('/settings')}
           >
             <Settings2 className="h-4 w-4" />
           </button>

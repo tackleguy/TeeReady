@@ -12,6 +12,7 @@ import { SearchBar } from './components/radar/SearchBar';
 import { CURRENT_LOCATION } from './lib/mock';
 import { CoursesView } from './routes/CoursesView';
 import { GroupView } from './routes/GroupView';
+import { SettingsView } from './routes/SettingsView';
 import { TodayView } from './routes/TodayView';
 
 const GolfView = lazy(() =>
@@ -79,6 +80,7 @@ function Shell() {
             <Route path="/" element={<TodayView />} />
             <Route path="/courses" element={<CoursesView />} />
             <Route path="/group" element={<GroupView />} />
+            <Route path="/settings" element={<SettingsView />} />
             <Route path="/rounds" element={<GolfView />} />
             <Route path="/golf" element={<Navigate to="/rounds" replace />} />
             <Route path="*" element={<Navigate to="/" replace />} />

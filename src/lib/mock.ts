@@ -5,6 +5,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Courses', href: '/courses' },
   { label: 'Rounds', href: '/rounds' },
   { label: 'Group', href: '/group' },
+  { label: 'Settings', href: '/settings' },
 ];
 
 export const CURRENT_USER = {
@@ -15,6 +16,64 @@ export const CURRENT_USER = {
 };
 
 export const CURRENT_LOCATION = 'Los Angeles';
+
+const DISPLAY_PROFILE_KEY = 'teeready-display-v1';
+
+export type DisplayProfile = {
+  name: string;
+  initials: string;
+};
+
+function initialsFromName(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return CURRENT_USER.initials;
+  if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
+  return `${parts[0]![0] ?? ''}${parts[parts.length - 1]![0] ?? ''}`.toUpperCase();
+}
+
+export function loadDisplayProfile(): DisplayProfile {
+  try {
+    const raw = localStorage.getItem(DISPLAY_PROFILE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as Partial<DisplayProfile>;
+      if (typeof parsed.name === 'string' && parsed.name.trim()) {
+        const name = parsed.name.trim();
+        return {
+          name,
+          initials:
+            typeof parsed.initials === 'string' && parsed.initials.trim()
+              ? parsed.initials.trim().slice(0, 2).toUpperCase()
+              : initialsFromName(name),
+        };
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return {
+    name: CURRENT_USER.name,
+    initials: CURRENT_USER.initials,
+  };
+}
+
+export function saveDisplayProfile(input: {
+  name: string;
+}): DisplayProfile {
+  const name = input.name.trim() || CURRENT_USER.name;
+  const next: DisplayProfile = {
+    name,
+    initials: initialsFromName(name),
+  };
+  try {
+    localStorage.setItem(DISPLAY_PROFILE_KEY, JSON.stringify(next));
+  } catch {
+    // ignore
+  }
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('teeready-display-changed'));
+  }
+  return next;
+}
 
 export type Hour = {
   label: string;

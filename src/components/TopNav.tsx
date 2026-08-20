@@ -1,5 +1,11 @@
+import { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { CURRENT_LOCATION, CURRENT_USER, NAV_ITEMS } from '../lib/mock';
+import {
+  CURRENT_LOCATION,
+  NAV_ITEMS,
+  loadDisplayProfile,
+  type DisplayProfile,
+} from '../lib/mock';
 
 interface Props {
   locationLabel?: string;
@@ -10,6 +16,20 @@ export function TopNav({
   locationLabel = CURRENT_LOCATION,
   onLocationClick,
 }: Props) {
+  const [profile, setProfile] = useState<DisplayProfile>(() =>
+    loadDisplayProfile(),
+  );
+
+  useEffect(() => {
+    const refresh = () => setProfile(loadDisplayProfile());
+    window.addEventListener('focus', refresh);
+    window.addEventListener('teeready-display-changed', refresh);
+    return () => {
+      window.removeEventListener('focus', refresh);
+      window.removeEventListener('teeready-display-changed', refresh);
+    };
+  }, []);
+
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-canvas/92 backdrop-blur">
       <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between px-5 py-4 md:px-8">
@@ -48,9 +68,20 @@ export function TopNav({
           >
             {locationLabel}
           </button>
-          <div className="grid h-8 w-8 place-items-center rounded-full bg-brand-soft font-mono text-[10px] font-semibold text-brand">
-            {CURRENT_USER.initials}
-          </div>
+          <NavLink
+            to="/settings"
+            title="Settings"
+            aria-label="Open settings"
+            className={({ isActive }) =>
+              `grid h-8 w-8 place-items-center rounded-full font-mono text-[10px] font-semibold transition-colors ${
+                isActive
+                  ? 'bg-brand text-white'
+                  : 'bg-brand-soft text-brand hover:ring-2 hover:ring-brand/20'
+              }`
+            }
+          >
+            {profile.initials}
+          </NavLink>
         </div>
       </div>
 
