@@ -1,10 +1,18 @@
-import { Suspense, lazy } from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { Suspense, lazy, useState } from 'react';
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+} from 'react-router-dom';
 import { InstallPrompt } from './components/InstallPrompt';
-import { ThemeBoot } from './components/ThemeBoot';
-import { applyTheme, loadTheme } from './lib/theme';
-
-applyTheme(loadTheme());
+import { TopNav } from './components/TopNav';
+import { SearchBar } from './components/radar/SearchBar';
+import { CURRENT_LOCATION } from './lib/mock';
+import { CoursesView } from './routes/CoursesView';
+import { GroupView } from './routes/GroupView';
+import { TodayView } from './routes/TodayView';
 
 const GolfView = lazy(() =>
   import('./routes/GolfView').then((m) => ({ default: m.GolfView })),
@@ -13,14 +21,71 @@ const GolfView = lazy(() =>
 function RouteFallback() {
   return (
     <div
-      className="absolute inset-0 flex items-center justify-center"
-      style={{ background: 'var(--surface-0)' }}
+      className="flex min-h-[40vh] items-center justify-center"
       aria-busy="true"
       aria-label="Loading"
     >
-      <div className="h-2 w-32 overflow-hidden rounded-full bg-white/10">
-        <div className="h-full w-1/3 animate-[shimmer_1.6s_linear_infinite] bg-white/40" />
+      <div className="h-2 w-32 overflow-hidden rounded-full bg-brand-soft">
+        <div className="h-full w-1/3 animate-[shimmer_1.6s_linear_infinite] bg-brand/40" />
       </div>
+    </div>
+  );
+}
+
+function Shell() {
+  const location = useLocation();
+  const isRounds = location.pathname.startsWith('/rounds');
+  const [place, setPlace] = useState(CURRENT_LOCATION);
+  const [pickingLocation, setPickingLocation] = useState(false);
+
+  return (
+    <div className="app-shell">
+      <TopNav
+        locationLabel={place}
+        onLocationClick={() => setPickingLocation((v) => !v)}
+      />
+
+      {pickingLocation ? (
+        <div className="mx-auto w-full max-w-[1400px] px-5 pb-2 pt-3 md:px-8">
+          <div className="max-w-md rounded-card border border-line bg-surface p-3 shadow-card">
+            <SearchBar
+              onPick={(pick) => {
+                const short =
+                  pick.label.split(',')[0]?.trim() || pick.label;
+                setPlace(short);
+                setPickingLocation(false);
+                try {
+                  const cities = [
+                    {
+                      name: short,
+                      latitude: pick.lat,
+                      longitude: pick.lon,
+                      isCurrent: true,
+                    },
+                  ];
+                  localStorage.setItem('cities-v1', JSON.stringify(cities));
+                } catch {
+                  // ignore
+                }
+              }}
+            />
+          </div>
+        </div>
+      ) : null}
+
+      <main className={isRounds ? 'app-main rounds' : 'app-main'}>
+        <Suspense fallback={<RouteFallback />}>
+          <Routes>
+            <Route path="/" element={<TodayView />} />
+            <Route path="/courses" element={<CoursesView />} />
+            <Route path="/group" element={<GroupView />} />
+            <Route path="/rounds" element={<GolfView />} />
+            <Route path="/golf" element={<Navigate to="/rounds" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
+      </main>
+      <InstallPrompt />
     </div>
   );
 }
@@ -28,19 +93,7 @@ function RouteFallback() {
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="relative h-[100dvh] overflow-hidden bg-[var(--bg-deep)] transition-colors duration-[var(--t-base)]">
-        <ThemeBoot />
-        <div className="app-main golf-solo">
-          <Suspense fallback={<RouteFallback />}>
-            <Routes>
-              <Route path="/" element={<GolfView />} />
-              <Route path="/golf" element={<GolfView />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Suspense>
-        </div>
-        <InstallPrompt />
-      </div>
+      <Shell />
     </BrowserRouter>
   );
 }

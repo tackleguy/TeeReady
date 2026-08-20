@@ -1,13 +1,13 @@
 {
   "name": "TeeReady",
   "short_name": "TeeReady",
-  "description": "Course wind, plays-like yardage, miss lines, and a printable yardage book.",
+  "description": "Playability forecasts, wind-adjusted yardages, and round prep for your tee time.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#060912",
-  "theme_color": "#0a0d12",
+  "background_color": "#f4f5f2",
+  "theme_color": "#f4f5f2",
   "categories": ["sports", "navigation", "weather"],
   "icons": [
     {

@@ -3,15 +3,34 @@ export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
+      colors: {
+        canvas: '#f4f5f2',
+        surface: '#ffffff',
+        ink: '#12160f',
+        muted: '#707a6b',
+        faint: '#98a291',
+        line: 'rgba(18,30,15,0.08)',
+        brand: { DEFAULT: '#14713f', soft: '#e6f0e8' },
+        warn: '#d9a83a',
+        bad: '#d9714f',
+      },
+      borderRadius: {
+        card: '22px',
+        hero: '28px',
+      },
+      boxShadow: {
+        card: '0 1px 4px rgba(18,30,15,0.07)',
+        lift: '0 8px 26px rgba(18,30,15,0.12)',
+      },
       fontFamily: {
         sans: [
-          'Inter',
           '-apple-system',
           'BlinkMacSystemFont',
           'SF Pro Text',
           'system-ui',
           'sans-serif',
         ],
+        mono: ['ui-monospace', 'Menlo', 'monospace'],
       },
       opacity: {
         8: '0.08',
@@ -20,31 +39,12 @@ export default {
         45: '0.45',
       },
       keyframes: {
-        twinkle: {
-          '0%, 100%': { opacity: '0.2' },
-          '50%': { opacity: '1' },
-        },
-        rainfall: {
-          '0%': { transform: 'translateY(-10%) translateX(0)' },
-          '100%': { transform: 'translateY(110vh) translateX(20px)' },
-        },
-        snowfall: {
-          '0%': { transform: 'translateY(-10%) translateX(0)' },
-          '50%': { transform: 'translateY(50vh) translateX(15px)' },
-          '100%': { transform: 'translateY(110vh) translateX(0)' },
-        },
-        flash: {
-          '0%, 100%': { opacity: '0' },
-          '5%': { opacity: '0.8' },
-          '8%': { opacity: '0' },
-        },
         shimmer: {
           '0%': { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' },
         },
       },
       animation: {
-        twinkle: 'twinkle 3s ease-in-out infinite',
         shimmer: 'shimmer 2.2s linear infinite',
       },
     },
