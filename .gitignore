@@ -1,0 +1,29 @@
+node_modules
+dist
+.DS_Store
+.vercel
+
+# Local Claude state
+.claude
+
+# Reference clones
+ref/
+
+# TS / Vite caches
+tsconfig.tsbuildinfo
+.vite
+.eslintcache
+scripts/.cache
+
+# Editor
+.vscode
+.idea
+
+# Env / logs
+.env
+.env.*
+!.env.example
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

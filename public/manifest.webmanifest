@@ -1,0 +1,20 @@
+{
+  "name": "TeeReady",
+  "short_name": "TeeReady",
+  "description": "Course wind, plays-like yardage, miss lines, and a printable yardage book.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#060912",
+  "theme_color": "#0a0d12",
+  "categories": ["sports", "navigation", "weather"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
