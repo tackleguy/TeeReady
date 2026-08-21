@@ -50,6 +50,8 @@ export interface GolfHole {
   /** North / South / East / West layout when a club has more than one 18. */
   loop?: string;
   tees?: GolfTeeBox[];
+  /** Stroke index 1–18 when a scorecard provides it. */
+  strokeIndex?: number;
 }
 
 export interface TurfReport {

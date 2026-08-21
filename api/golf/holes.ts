@@ -887,6 +887,9 @@ function applyScorecards(
     if (!sc) return hole;
     const updated = { ...hole, par: sc.par };
     if (sc.name && !hole.name) updated.name = sc.name;
+    if (sc.hcp != null && Number.isFinite(sc.hcp)) {
+      updated.strokeIndex = sc.hcp;
+    }
     if (hole.tees?.length) {
       updated.tees = hole.tees.map((t) => {
         const yds =

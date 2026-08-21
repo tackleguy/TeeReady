@@ -122,6 +122,13 @@ export function roundScoreLabel(round: TrackedRound): string {
   return `${diff > 0 ? '+' : ''}${diff} (${strokes})`;
 }
 
+export function getHoleScore(
+  round: TrackedRound,
+  holeNumber: number,
+): HoleScore | undefined {
+  return round.scores.find((s) => s.holeNumber === holeNumber);
+}
+
 export function bestClubForDistance(
   yards: number,
   bag: BagClub[],

@@ -8,6 +8,7 @@ the upstream sources and the licenses under which they are used.
 
 | Source | Use | Terms |
 | --- | --- | --- |
+| **OpenGolfAPI bulk** — github.com/opengolfapi/data | Free US course scorecards (par + stroke index); ODbL | `https://github.com/opengolfapi/data` (imported via `npm run import:golf-scorecards`) |
 | **Open-Meteo** — api.open-meteo.com | Wind ensemble and elevation for plays-like yardage | CC BY 4.0 (`https://open-meteo.com/en/license`). Attribution shown in-app. |
 | **OpenStreetMap** — overpass-api.de (+ kumi.systems, private.coffee mirrors) | Golf courses / hole geometry | ODbL; cite © OpenStreetMap contributors. Public instances are rate-limited — cache aggressively and never use regional extracts (`overpass.osm.ch`, `overpass.osm.jp`) which silently return empty results outside their country. |
 | **Photon** — photon.komoot.io | Golf course lookup | Free geocoder over OpenStreetMap data (ODbL) by komoot; keep usage light and cache results. |

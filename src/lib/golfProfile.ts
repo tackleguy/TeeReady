@@ -124,7 +124,7 @@ export function saveGolfProfile(
 ): GolfPlayerProfile {
   const safe: GolfPlayerProfile = {
     commonCourses: profile.commonCourses.slice(0, 8),
-    handicap: Math.max(0, Math.min(54, profile.handicap)),
+    handicap: Math.max(-10, Math.min(54, profile.handicap)),
     miss: profile.miss,
     sevenIronYards: Math.max(80, Math.min(220, profile.sevenIronYards)),
     driverYards: Math.max(140, Math.min(360, profile.driverYards)),

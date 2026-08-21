@@ -23,6 +23,7 @@ import {
   type LonLat,
 } from '../../lib/golfWind';
 import { bearingCompass } from '../../lib/geo';
+import { accuracyCircleGeoJSON } from '../../lib/gps';
 
 interface Props {
   lat: number;
@@ -52,6 +53,12 @@ interface Props {
   trackedShots?: TrackedShot[];
   /** Live GPS position dot. */
   gpsPosition?: { lat: number; lon: number } | null;
+  /** Horizontal accuracy in meters for the GPS ring. */
+  gpsAccuracyM?: number | null;
+  /** Device heading degrees, when available. */
+  gpsHeadingDeg?: number | null;
+  /** Keep the map centered on the GPS fix. */
+  followGps?: boolean;
   planningMode?: 'tee' | 'approach';
 }
 
@@ -67,6 +74,8 @@ const SRC_PLAY = 'golf-play-lines';
 const SRC_SHOT_TRACES = 'golf-shot-traces';
 const SRC_SHOT_PTS = 'golf-shot-pts';
 const SRC_GPS = 'golf-gps-pos';
+const SRC_GPS_ACC = 'golf-gps-acc';
+const SRC_GPS_HDG = 'golf-gps-hdg';
 
 const LINE = 'golf-hole-lines';
 const LINE_ACTIVE = 'golf-hole-lines-active';
@@ -94,6 +103,8 @@ const LYR_SHOT_PT = 'golf-shot-pt-lyr';
 const LYR_SHOT_LABEL = 'golf-shot-label-lyr';
 const LYR_GPS = 'golf-gps-lyr';
 const LYR_GPS_RING = 'golf-gps-ring-lyr';
+const LYR_GPS_ACC = 'golf-gps-acc-lyr';
+const LYR_GPS_HDG = 'golf-gps-hdg-lyr';
 
 const CLICK_LAYERS = [LINE_HIT, LINE, LINE_ACTIVE, LYR_TEE_HIT, LYR_GREEN_HIT, LYR_TEE, LYR_GREEN];
 
@@ -177,6 +188,9 @@ export function GolfMap({
   onReady,
   trackedShots = [],
   gpsPosition = null,
+  gpsAccuracyM = null,
+  gpsHeadingDeg = null,
+  followGps = false,
   planningMode = 'tee',
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -275,6 +289,8 @@ export function GolfMap({
       map.addSource(SRC_SHOT_TRACES, { type: 'geojson', data: emptyCollection() });
       map.addSource(SRC_SHOT_PTS, { type: 'geojson', data: emptyCollection() });
       map.addSource(SRC_GPS, { type: 'geojson', data: emptyCollection() });
+      map.addSource(SRC_GPS_ACC, { type: 'geojson', data: emptyCollection() });
+      map.addSource(SRC_GPS_HDG, { type: 'geojson', data: emptyCollection() });
 
       // Fat invisible stroke first so tees/fairways are tappable on phones.
       map.addLayer({
@@ -554,13 +570,32 @@ export function GolfMap({
         },
       });
       map.addLayer({
+        id: LYR_GPS_ACC,
+        type: 'fill',
+        source: SRC_GPS_ACC,
+        paint: {
+          'fill-color': '#3b82f6',
+          'fill-opacity': 0.14,
+        },
+      });
+      map.addLayer({
         id: LYR_GPS_RING,
         type: 'circle',
         source: SRC_GPS,
         paint: {
-          'circle-radius': 18,
+          'circle-radius': 16,
           'circle-color': '#3b82f6',
-          'circle-opacity': 0.15,
+          'circle-opacity': 0.18,
+        },
+      });
+      map.addLayer({
+        id: LYR_GPS_HDG,
+        type: 'line',
+        source: SRC_GPS_HDG,
+        paint: {
+          'line-color': '#93c5fd',
+          'line-width': 3,
+          'line-opacity': 0.9,
         },
       });
       map.addLayer({
@@ -778,7 +813,7 @@ export function GolfMap({
     });
   }, [trackedShots, whenReady]);
 
-  // Live GPS position blue dot
+  // Live GPS position, accuracy ring, and heading tick
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -789,7 +824,9 @@ export function GolfMap({
             features: [
               {
                 type: 'Feature',
-                properties: {},
+                properties: {
+                  heading: gpsHeadingDeg ?? -1,
+                },
                 geometry: {
                   type: 'Point',
                   coordinates: [gpsPosition.lon, gpsPosition.lat],
@@ -801,8 +838,66 @@ export function GolfMap({
       (
         map.getSource(SRC_GPS) as maplibregl.GeoJSONSource | undefined
       )?.setData(data);
+
+      const acc =
+        gpsPosition && gpsAccuracyM != null && gpsAccuracyM > 0
+          ? accuracyCircleGeoJSON(
+              gpsPosition.lat,
+              gpsPosition.lon,
+              Math.min(gpsAccuracyM, 80),
+            )
+          : emptyCollection();
+      (
+        map.getSource(SRC_GPS_ACC) as maplibregl.GeoJSONSource | undefined
+      )?.setData(acc);
+
+      let hdg: GeoJSON.FeatureCollection = emptyCollection();
+      if (
+        gpsPosition &&
+        gpsHeadingDeg != null &&
+        Number.isFinite(gpsHeadingDeg)
+      ) {
+        const latRad = (gpsPosition.lat * Math.PI) / 180;
+        const lenM = 28;
+        const dLat = (lenM * Math.cos((gpsHeadingDeg * Math.PI) / 180)) / 111_320;
+        const dLon =
+          (lenM * Math.sin((gpsHeadingDeg * Math.PI) / 180)) /
+          Math.max(1e-6, 111_320 * Math.cos(latRad));
+        hdg = {
+          type: 'FeatureCollection',
+          features: [
+            {
+              type: 'Feature',
+              properties: {},
+              geometry: {
+                type: 'LineString',
+                coordinates: [
+                  [gpsPosition.lon, gpsPosition.lat],
+                  [gpsPosition.lon + dLon, gpsPosition.lat + dLat],
+                ],
+              },
+            },
+          ],
+        };
+      }
+      (
+        map.getSource(SRC_GPS_HDG) as maplibregl.GeoJSONSource | undefined
+      )?.setData(hdg);
     });
-  }, [gpsPosition, whenReady]);
+  }, [gpsPosition, gpsAccuracyM, gpsHeadingDeg, whenReady]);
+
+  // Follow GPS — ease camera when the fix moves
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !followGps || !gpsPosition) return;
+    whenReady(() => {
+      map.easeTo({
+        center: [gpsPosition.lon, gpsPosition.lat],
+        duration: 700,
+        essential: true,
+      });
+    });
+  }, [followGps, gpsPosition, whenReady]);
 
   const windLabel =
     windFromDeg != null

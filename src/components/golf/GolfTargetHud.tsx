@@ -1,5 +1,7 @@
 import type { BagClub } from '../../lib/golfProfile';
 import {
+  distancesToGreen,
+  greenMarks,
   measureFromTee,
   nearestBagClub,
   segmentPlaysLike,
@@ -52,18 +54,29 @@ export function GolfTargetHud({
   const carryClub = nearestBagClub(carryPlays, bag);
   const remainClub = nearestBagClub(remainPlays, bag);
 
+  const from: LonLat =
+    mode === 'approach'
+      ? target
+      : { lon: hole.tee.lon, lat: hole.tee.lat };
+  const greenYds = distancesToGreen(from, greenMarks(hole));
+
   return (
     <div className="pointer-events-none absolute inset-x-0 top-16 z-10 flex justify-center px-3 lg:top-auto lg:bottom-4 lg:right-[352px] lg:left-3 lg:inset-x-auto lg:justify-start">
       <div
-        className="pointer-events-auto w-full max-w-[420px] rounded-xl border border-white/15 px-3 py-2.5 shadow-xl backdrop-blur-[28px]"
+        className="pointer-events-auto w-full max-w-[420px] rounded-xl border border-[color-mix(in_srgb,var(--brand)_40%,transparent)] px-3 py-2.5 shadow-xl backdrop-blur-[28px]"
         style={{ background: 'var(--glass-hi)' }}
       >
         <div className="mb-1.5 flex items-center justify-between gap-2">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">
-            {mode === 'approach'
-              ? 'Approach mode · tap your ball spot'
-              : 'Tee planner · tap the map'}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="rounded-full bg-brand-soft px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-brand">
+              Prep
+            </span>
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">
+              {mode === 'approach'
+                ? 'Approach · miss lines on'
+                : 'Tee plan · miss lines on'}
+            </span>
+          </div>
           <button
             type="button"
             onClick={onReset}
@@ -72,10 +85,36 @@ export function GolfTargetHud({
             Reset landing
           </button>
         </div>
+
+        <div className="mb-2 grid grid-cols-3 gap-1.5">
+          {(
+            [
+              ['Front', greenYds.front],
+              ['Mid', greenYds.mid],
+              ['Back', greenYds.back],
+            ] as const
+          ).map(([label, yd]) => (
+            <div
+              key={label}
+              className="rounded-lg bg-black/25 px-2 py-1.5 text-center"
+            >
+              <div className="text-[9px] uppercase tracking-wide text-[var(--ink-4)]">
+                {label}
+              </div>
+              <div className="text-[16px] font-semibold tabular-nums text-[var(--ink-1)]">
+                {yd}
+                <span className="ml-0.5 text-[10px] font-medium text-[var(--ink-3)]">
+                  yd
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+
         <div className="grid grid-cols-2 gap-2">
           <div className="rounded-lg bg-black/30 px-2.5 py-2">
             <div className="text-[9px] uppercase tracking-wide text-[var(--ink-4)]">
-              {mode === 'approach' ? 'Start → green' : 'Tee → target'}
+              {mode === 'approach' ? 'Start → mid' : 'Tee → target'}
             </div>
             <div className="text-[22px] font-semibold tabular-nums leading-tight text-[var(--ink-1)]">
               {mode === 'approach' ? split.remainYards : split.carryYards}
@@ -94,7 +133,7 @@ export function GolfTargetHud({
           </div>
           <div className="rounded-lg bg-black/30 px-2.5 py-2">
             <div className="text-[9px] uppercase tracking-wide text-[var(--ink-4)]">
-              {mode === 'approach' ? 'Tee → start' : 'Target → green'}
+              {mode === 'approach' ? 'Tee → start' : 'Target → mid'}
             </div>
             <div className="text-[22px] font-semibold tabular-nums leading-tight text-[var(--ink-1)]">
               {mode === 'approach' ? split.carryYards : split.remainYards}

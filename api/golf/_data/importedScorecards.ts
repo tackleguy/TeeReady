@@ -8,39 +8,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 2
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       }
     ]
   },
@@ -50,39 +59,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       }
     ]
   },
@@ -95,39 +113,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       }
     ]
   },
@@ -140,39 +167,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 2,
-        "par": 5
+        "par": 5,
+        "hcp": 9
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       }
     ]
   },
@@ -182,39 +218,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 2
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       }
     ]
   },
@@ -224,39 +269,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 16
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 3,
-        "par": 5
+        "par": 5,
+        "hcp": 8
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 12
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 18
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 10
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       }
     ]
   },
@@ -266,39 +320,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 5
+        "par": 5,
+        "hcp": 15
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       }
     ]
   },
@@ -308,39 +371,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       }
     ]
   },
@@ -350,39 +422,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 2
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       }
     ]
   },
@@ -392,39 +473,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 8,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       }
     ]
   },
@@ -434,39 +524,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       }
     ]
   },
@@ -476,39 +575,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       }
     ]
   },
@@ -518,39 +626,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       },
       {
         "hole": 7,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       }
     ]
   },
@@ -560,75 +677,93 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 10,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 11,
-        "par": 3
+        "par": 3,
+        "hcp": 16
       },
       {
         "hole": 12,
-        "par": 3
+        "par": 3,
+        "hcp": 12
       },
       {
         "hole": 13,
-        "par": 3
+        "par": 3,
+        "hcp": 10
       },
       {
         "hole": 14,
-        "par": 3
+        "par": 3,
+        "hcp": 14
       },
       {
         "hole": 15,
-        "par": 3
+        "par": 3,
+        "hcp": 2
       },
       {
         "hole": 16,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 17,
-        "par": 3
+        "par": 3,
+        "hcp": 18
       },
       {
         "hole": 18,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       }
     ]
   },
@@ -638,39 +773,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       }
     ]
   },
@@ -680,39 +824,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       }
     ]
   },
@@ -722,39 +875,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       }
     ]
   },
@@ -764,39 +926,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       }
     ]
   },
@@ -806,39 +977,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       }
     ]
   },
@@ -848,39 +1028,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 3,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 7
       }
     ]
   },
@@ -890,75 +1079,93 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 5
+        "par": 5,
+        "hcp": 14
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 18
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 16
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 12
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 8,
-        "par": 5
+        "par": 5,
+        "hcp": 10
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 10,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 11,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 12,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 13,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       },
       {
         "hole": 14,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 15,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 16,
-        "par": 5
+        "par": 5,
+        "hcp": 11
       },
       {
         "hole": 17,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 18,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       }
     ]
   },
@@ -968,39 +1175,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       }
     ]
   },
@@ -1013,39 +1229,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 2,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 5
       }
     ]
   },
@@ -1058,75 +1283,93 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 5
+        "par": 5,
+        "hcp": 4
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 18
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 6
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 10
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 12
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 16
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       },
       {
         "hole": 10,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 11,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 12,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 13,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 14,
-        "par": 5
+        "par": 5,
+        "hcp": 5
       },
       {
         "hole": 15,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 16,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 17,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 18,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       }
     ]
   },
@@ -1136,39 +1379,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       }
     ]
   },
@@ -1178,39 +1430,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       }
     ]
   },
@@ -1220,39 +1481,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 2
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       }
     ]
   },
@@ -1262,39 +1532,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 2
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 4,
-        "par": 5
+        "par": 5,
+        "hcp": 4
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       }
     ]
   },
@@ -1304,39 +1583,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 7,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       }
     ]
   },
@@ -1346,39 +1634,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 9
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 7
       }
     ]
   },
@@ -1388,39 +1685,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 7,
-        "par": 5
+        "par": 5,
+        "hcp": 15
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       }
     ]
   },
@@ -1430,39 +1736,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 2
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       }
     ]
   },
@@ -1472,39 +1787,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 5
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       }
     ]
   },
@@ -1514,39 +1838,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 12
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 10
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 16
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 18
       }
     ]
   },
@@ -1556,39 +1889,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 2
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       }
     ]
   },
@@ -1601,75 +1943,93 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 5
+        "par": 5,
+        "hcp": 12
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 16
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       },
       {
         "hole": 7,
-        "par": 5
+        "par": 5,
+        "hcp": 10
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 18
       },
       {
         "hole": 10,
-        "par": 5
+        "par": 5,
+        "hcp": 13
       },
       {
         "hole": 11,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 12,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 13,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 14,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 15,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 16,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 17,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 18,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       }
     ]
   },
@@ -1679,39 +2039,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 10
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 16
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 4,
-        "par": 5
+        "par": 5,
+        "hcp": 4
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 12
       },
       {
         "hole": 8,
-        "par": 5
+        "par": 5,
+        "hcp": 17
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       }
     ]
   },
@@ -1724,39 +2093,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 3,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 7
       }
     ]
   },
@@ -1766,39 +2144,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 18
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 12
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 8
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 16
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 10
       }
     ]
   },
@@ -1808,39 +2195,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 2
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       }
     ]
   },
@@ -1853,75 +2249,93 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 3,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       },
       {
         "hole": 4,
-        "par": 5
+        "par": 5,
+        "hcp": 15
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 10,
-        "par": 4
+        "par": 4,
+        "hcp": 16
       },
       {
         "hole": 11,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 12,
-        "par": 3
+        "par": 3,
+        "hcp": 18
       },
       {
         "hole": 13,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 14,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 15,
-        "par": 4
+        "par": 4,
+        "hcp": 10
       },
       {
         "hole": 16,
-        "par": 5
+        "par": 5,
+        "hcp": 4
       },
       {
         "hole": 17,
-        "par": 3
+        "par": 3,
+        "hcp": 12
       },
       {
         "hole": 18,
-        "par": 5
+        "par": 5,
+        "hcp": 14
       }
     ]
   },
@@ -1934,39 +2348,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 5
+        "par": 5,
+        "hcp": 13
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 4,
-        "par": 5
+        "par": 5,
+        "hcp": 16
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 18
       }
     ]
   },
@@ -1976,39 +2399,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 9
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 11
       }
     ]
   },
@@ -2021,75 +2453,93 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 2,
-        "par": 5
+        "par": 5,
+        "hcp": 15
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 9
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 10,
-        "par": 4
+        "par": 4,
+        "hcp": 10
       },
       {
         "hole": 11,
-        "par": 5
+        "par": 5,
+        "hcp": 14
       },
       {
         "hole": 12,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 13,
-        "par": 3
+        "par": 3,
+        "hcp": 18
       },
       {
         "hole": 14,
-        "par": 5
+        "par": 5,
+        "hcp": 8
       },
       {
         "hole": 15,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 16,
-        "par": 4
+        "par": 4,
+        "hcp": 16
       },
       {
         "hole": 17,
-        "par": 3
+        "par": 3,
+        "hcp": 12
       },
       {
         "hole": 18,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       }
     ]
   },
@@ -2102,39 +2552,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 7
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       }
     ]
   },
@@ -2147,75 +2606,93 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 13
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 8,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 10,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 11,
-        "par": 4
+        "par": 4,
+        "hcp": 16
       },
       {
         "hole": 12,
-        "par": 5
+        "par": 5,
+        "hcp": 14
       },
       {
         "hole": 13,
-        "par": 5
+        "par": 5,
+        "hcp": 2
       },
       {
         "hole": 14,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 15,
-        "par": 4
+        "par": 4,
+        "hcp": 12
       },
       {
         "hole": 16,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 17,
-        "par": 3
+        "par": 3,
+        "hcp": 10
       },
       {
         "hole": 18,
-        "par": 5
+        "par": 5,
+        "hcp": 18
       }
     ]
   },
@@ -2228,39 +2705,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 3,
-        "par": 5
+        "par": 5,
+        "hcp": 5
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 7
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       }
     ]
   },
@@ -2273,39 +2759,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 4,
-        "par": 5
+        "par": 5,
+        "hcp": 9
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       }
     ]
   },
@@ -2318,75 +2813,93 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 11
       },
       {
         "hole": 7,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 10,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 11,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       },
       {
         "hole": 12,
-        "par": 3
+        "par": 3,
+        "hcp": 18
       },
       {
         "hole": 13,
-        "par": 5
+        "par": 5,
+        "hcp": 8
       },
       {
         "hole": 14,
-        "par": 5
+        "par": 5,
+        "hcp": 2
       },
       {
         "hole": 15,
-        "par": 4
+        "par": 4,
+        "hcp": 10
       },
       {
         "hole": 16,
-        "par": 4
+        "par": 4,
+        "hcp": 12
       },
       {
         "hole": 17,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 18,
-        "par": 3
+        "par": 3,
+        "hcp": 16
       }
     ]
   },
@@ -2399,39 +2912,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 2
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       }
     ]
   },
@@ -2441,39 +2963,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       }
     ]
   },
@@ -2483,75 +3014,93 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 2,
-        "par": 5
+        "par": 5,
+        "hcp": 7
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 5
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 10,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       },
       {
         "hole": 11,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 12,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 13,
-        "par": 5
+        "par": 5,
+        "hcp": 10
       },
       {
         "hole": 14,
-        "par": 4
+        "par": 4,
+        "hcp": 16
       },
       {
         "hole": 15,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 16,
-        "par": 5
+        "par": 5,
+        "hcp": 8
       },
       {
         "hole": 17,
-        "par": 3
+        "par": 3,
+        "hcp": 18
       },
       {
         "hole": 18,
-        "par": 4
+        "par": 4,
+        "hcp": 12
       }
     ]
   },
@@ -2564,75 +3113,93 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 4,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 7,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 10,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 11,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       },
       {
         "hole": 12,
-        "par": 4
+        "par": 4,
+        "hcp": 12
       },
       {
         "hole": 13,
-        "par": 3
+        "par": 3,
+        "hcp": 18
       },
       {
         "hole": 14,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 15,
-        "par": 4
+        "par": 4,
+        "hcp": 10
       },
       {
         "hole": 16,
-        "par": 5
+        "par": 5,
+        "hcp": 2
       },
       {
         "hole": 17,
-        "par": 3
+        "par": 3,
+        "hcp": 16
       },
       {
         "hole": 18,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       }
     ]
   },
@@ -2645,39 +3212,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 2
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       }
     ]
   },
@@ -2690,75 +3266,93 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 7,
-        "par": 5
+        "par": 5,
+        "hcp": 17
       },
       {
         "hole": 8,
-        "par": 5
+        "par": 5,
+        "hcp": 13
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 10,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 11,
-        "par": 4
+        "par": 4,
+        "hcp": 10
       },
       {
         "hole": 12,
-        "par": 5
+        "par": 5,
+        "hcp": 6
       },
       {
         "hole": 13,
-        "par": 4
+        "par": 4,
+        "hcp": 12
       },
       {
         "hole": 14,
-        "par": 4
+        "par": 4,
+        "hcp": 18
       },
       {
         "hole": 15,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       },
       {
         "hole": 16,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 17,
-        "par": 5
+        "par": 5,
+        "hcp": 2
       },
       {
         "hole": 18,
-        "par": 4
+        "par": 4,
+        "hcp": 16
       }
     ]
   },
@@ -2768,39 +3362,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 2
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       }
     ]
   },
@@ -2810,39 +3413,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 2
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       }
     ]
   },
@@ -2852,39 +3464,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 2
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       }
     ]
   },
@@ -2897,39 +3518,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 2
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       }
     ]
   },
@@ -2939,39 +3569,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 2,
-        "par": 5
+        "par": 5,
+        "hcp": 7
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 8,
-        "par": 5
+        "par": 5,
+        "hcp": 9
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       }
     ]
   },
@@ -2984,39 +3623,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 17
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 9
       }
     ]
   },
@@ -3029,39 +3677,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 2
       }
     ]
   },
@@ -3074,39 +3731,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 8,
-        "par": 5
+        "par": 5,
+        "hcp": 7
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       }
     ]
   },
@@ -3116,39 +3782,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 5
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       }
     ]
   },
@@ -3158,39 +3833,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 4,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       }
     ]
   },
@@ -3200,39 +3884,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 4,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       }
     ]
   },
@@ -3242,39 +3935,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 9
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       }
     ]
   },
@@ -3287,39 +3989,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 2
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       }
     ]
   },
@@ -3329,39 +4040,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       }
     ]
   },
@@ -3374,39 +4094,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 7,
-        "par": 5
+        "par": 5,
+        "hcp": 6
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       }
     ]
   },
@@ -3416,39 +4145,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       }
     ]
   },
@@ -3458,39 +4196,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 3,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 5
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       }
     ]
   },
@@ -3503,39 +4250,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       }
     ]
   },
@@ -3545,39 +4301,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       }
     ]
   },
@@ -3587,39 +4352,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 8,
-        "par": 5
+        "par": 5,
+        "hcp": 9
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       }
     ]
   },
@@ -3632,39 +4406,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       }
     ]
   },
@@ -3677,39 +4460,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 3,
-        "par": 5
+        "par": 5,
+        "hcp": 9
       },
       {
         "hole": 4,
-        "par": 5
+        "par": 5,
+        "hcp": 7
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       }
     ]
   },
@@ -3719,39 +4511,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 2
       },
       {
         "hole": 4,
-        "par": 5
+        "par": 5,
+        "hcp": 10
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 12
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 18
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 16
       }
     ]
   },
@@ -3761,39 +4562,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 4,
-        "par": 5
+        "par": 5,
+        "hcp": 5
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 11
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       }
     ]
   },
@@ -3803,39 +4613,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       }
     ]
   },
@@ -3845,39 +4664,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 4,
-        "par": 5
+        "par": 5,
+        "hcp": 9
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 7,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       }
     ]
   },
@@ -3890,39 +4718,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       }
     ]
   },
@@ -3977,39 +4814,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       }
     ]
   },
@@ -4019,39 +4865,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 7,
-        "par": 5
+        "par": 5,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       }
     ]
   },
@@ -4061,39 +4916,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       }
     ]
   },
@@ -4103,39 +4967,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 13
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 8,
-        "par": 5
+        "par": 5,
+        "hcp": 17
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       }
     ]
   },
@@ -4145,39 +5018,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 2,
-        "par": 5
+        "par": 5,
+        "hcp": 5
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       }
     ]
   },
@@ -4190,39 +5072,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 2,
-        "par": 5
+        "par": 5,
+        "hcp": 7
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       }
     ]
   },
@@ -4232,39 +5123,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 5
+        "par": 5,
+        "hcp": 12
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 16
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 18
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 10
       },
       {
         "hole": 7,
-        "par": 5
+        "par": 5,
+        "hcp": 2
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 14
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       }
     ]
   },
@@ -4274,39 +5174,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 5
+        "par": 5,
+        "hcp": 15
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 4,
-        "par": 5
+        "par": 5,
+        "hcp": 7
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       }
     ]
   },
@@ -4316,39 +5225,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 3,
-        "par": 5
+        "par": 5,
+        "hcp": 7
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 11
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       }
     ]
   },
@@ -4358,39 +5276,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 12
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 4,
-        "par": 5
+        "par": 5,
+        "hcp": 2
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 16
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 18
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 10
       }
     ]
   },
@@ -4400,39 +5327,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 5
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       }
     ]
   },
@@ -4445,39 +5381,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 4,
-        "par": 5
+        "par": 5,
+        "hcp": 15
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       }
     ]
   },
@@ -4487,39 +5432,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 5
+        "par": 5,
+        "hcp": 6
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 10
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 16
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 12
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 18
       },
       {
         "hole": 7,
-        "par": 5
+        "par": 5,
+        "hcp": 2
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       }
     ]
   },
@@ -4532,39 +5486,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 7
       },
       {
         "hole": 7,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       },
       {
         "hole": 8,
-        "par": 5
+        "par": 5,
+        "hcp": 5
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       }
     ]
   },
@@ -4577,39 +5540,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       }
     ]
   },
@@ -4619,39 +5591,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 5
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 6
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       }
     ]
   },
@@ -4661,39 +5642,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 2
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       }
     ]
   },
@@ -4706,39 +5696,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 2,
-        "par": 5
+        "par": 5,
+        "hcp": 13
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       }
     ]
   },
@@ -4751,39 +5750,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 2
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 5
       }
     ]
   },
@@ -4793,39 +5801,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 13
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 8,
-        "par": 5
+        "par": 5,
+        "hcp": 7
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       }
     ]
   },
@@ -4838,39 +5855,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 2
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       }
     ]
   },
@@ -4880,39 +5906,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 2,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 7
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       }
     ]
   },
@@ -4922,39 +5957,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 5
+        "par": 5,
+        "hcp": 9
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       }
     ]
   },
@@ -4967,39 +6011,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 5
+        "par": 5,
+        "hcp": 7
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 11
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       }
     ]
   },
@@ -5012,39 +6065,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 10
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 4,
-        "par": 5
+        "par": 5,
+        "hcp": 4
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 12
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 16
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 18
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       }
     ]
   },
@@ -5054,39 +6116,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 8,
-        "par": 5
+        "par": 5,
+        "hcp": 7
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       }
     ]
   },
@@ -5096,39 +6167,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 3,
-        "par": 5
+        "par": 5,
+        "hcp": 11
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       }
     ]
   },
@@ -5138,39 +6218,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 15
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       }
     ]
   },
@@ -5180,39 +6269,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 10
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 12
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 7,
-        "par": 5
+        "par": 5,
+        "hcp": 18
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 16
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 14
       }
     ]
   },
@@ -5222,39 +6320,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       }
     ]
   },
@@ -5264,39 +6371,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 3,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 7,
-        "par": 5
+        "par": 5,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       }
     ]
   },
@@ -5309,39 +6425,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 2,
-        "par": 5
+        "par": 5,
+        "hcp": 7
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 11
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       }
     ]
   },
@@ -5354,39 +6479,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 3,
-        "par": 5
+        "par": 5,
+        "hcp": 8
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 5
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 7
       }
     ]
   },
@@ -5396,75 +6530,93 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 5
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 8,
-        "par": 5
+        "par": 5,
+        "hcp": 15
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 10,
-        "par": 4
+        "par": 4,
+        "hcp": 18
       },
       {
         "hole": 11,
-        "par": 5
+        "par": 5,
+        "hcp": 6
       },
       {
         "hole": 12,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       },
       {
         "hole": 13,
-        "par": 5
+        "par": 5,
+        "hcp": 16
       },
       {
         "hole": 14,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 15,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 16,
-        "par": 3
+        "par": 3,
+        "hcp": 12
       },
       {
         "hole": 17,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 18,
-        "par": 4
+        "par": 4,
+        "hcp": 10
       }
     ]
   },
@@ -5477,39 +6629,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 4,
-        "par": 5
+        "par": 5,
+        "hcp": 5
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       }
     ]
   },
@@ -5519,39 +6680,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 3,
-        "par": 5
+        "par": 5,
+        "hcp": 9
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       }
     ]
   },
@@ -5564,75 +6734,93 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 18
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 10
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 14
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 6
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 12
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 16
       },
       {
         "hole": 10,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 11,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 12,
-        "par": 5
+        "par": 5,
+        "hcp": 5
       },
       {
         "hole": 13,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 14,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 15,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 16,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 17,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 18,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       }
     ]
   },
@@ -5642,39 +6830,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 3,
-        "par": 5
+        "par": 5,
+        "hcp": 13
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       }
     ]
   },
@@ -5684,39 +6881,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 3,
-        "par": 5
+        "par": 5,
+        "hcp": 13
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 7,
-        "par": 5
+        "par": 5,
+        "hcp": 15
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       }
     ]
   },
@@ -5729,39 +6935,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 5
+        "par": 5,
+        "hcp": 8
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 18
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 16
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 10
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 12
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       }
     ]
   },
@@ -5774,39 +6989,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 5
+        "par": 5,
+        "hcp": 8
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 18
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 16
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 10
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 12
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       }
     ]
   },
@@ -5819,75 +7043,93 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 2,
-        "par": 5
+        "par": 5,
+        "hcp": 12
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 16
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 18
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 10
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 8
       },
       {
         "hole": 10,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 11,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 12,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 13,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 14,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 15,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 16,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 17,
-        "par": 5
+        "par": 5,
+        "hcp": 5
       },
       {
         "hole": 18,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       }
     ]
   },
@@ -5900,75 +7142,93 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 2,
-        "par": 5
+        "par": 5,
+        "hcp": 18
       },
       {
         "hole": 3,
-        "par": 5
+        "par": 5,
+        "hcp": 12
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 16
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 10
       },
       {
         "hole": 10,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 11,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 12,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 13,
-        "par": 5
+        "par": 5,
+        "hcp": 9
       },
       {
         "hole": 14,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 15,
-        "par": 5
+        "par": 5,
+        "hcp": 13
       },
       {
         "hole": 16,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 17,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 18,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       }
     ]
   },
@@ -5981,39 +7241,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 4,
-        "par": 5
+        "par": 5,
+        "hcp": 17
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 15
       }
     ]
   },
@@ -6026,39 +7295,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 2,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       }
     ]
   },
@@ -6068,39 +7346,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 2
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       }
     ]
   },
@@ -6110,39 +7397,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 14
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 16
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 18
       },
       {
         "hole": 7,
-        "par": 5
+        "par": 5,
+        "hcp": 10
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 12
       }
     ]
   },
@@ -6155,39 +7451,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 4,
-        "par": 5
+        "par": 5,
+        "hcp": 9
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       }
     ]
   },
@@ -6200,75 +7505,93 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 4,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 7,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 5
       },
       {
         "hole": 10,
-        "par": 3
+        "par": 3,
+        "hcp": 18
       },
       {
         "hole": 11,
-        "par": 4
+        "par": 4,
+        "hcp": 12
       },
       {
         "hole": 12,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 13,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 14,
-        "par": 4
+        "par": 4,
+        "hcp": 10
       },
       {
         "hole": 15,
-        "par": 3
+        "par": 3,
+        "hcp": 14
       },
       {
         "hole": 16,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 17,
-        "par": 5
+        "par": 5,
+        "hcp": 2
       },
       {
         "hole": 18,
-        "par": 3
+        "par": 3,
+        "hcp": 16
       }
     ]
   },
@@ -6278,39 +7601,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 3,
-        "par": 5
+        "par": 5,
+        "hcp": 2
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 18
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 7,
-        "par": 5
+        "par": 5,
+        "hcp": 12
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 10
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 16
       }
     ]
   },
@@ -6320,39 +7652,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 2,
-        "par": 5
+        "par": 5,
+        "hcp": 14
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 16
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 18
       },
       {
         "hole": 8,
-        "par": 5
+        "par": 5,
+        "hcp": 12
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 10
       }
     ]
   },
@@ -6362,39 +7703,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       }
     ]
   },
@@ -6404,39 +7754,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 3,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       }
     ]
   },
@@ -6446,39 +7805,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 16
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 3,
-        "par": 5
+        "par": 5,
+        "hcp": 4
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 12
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 2
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 10
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 18
       }
     ]
   },
@@ -6488,39 +7856,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 5
+        "par": 5,
+        "hcp": 2
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 10
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 18
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 12
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 16
       },
       {
         "hole": 8,
-        "par": 5
+        "par": 5,
+        "hcp": 4
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       }
     ]
   },
@@ -6533,39 +7910,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 17
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       }
     ]
   },
@@ -6575,39 +7961,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 18
       },
       {
         "hole": 4,
-        "par": 5
+        "par": 5,
+        "hcp": 10
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 16
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 14
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 12
       }
     ]
   },
@@ -6617,39 +8012,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 2,
-        "par": 5
+        "par": 5,
+        "hcp": 7
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       }
     ]
   },
@@ -6659,39 +8063,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       }
     ]
   },
@@ -6704,39 +8117,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 5
+        "par": 5,
+        "hcp": 9
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 15
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       }
     ]
   },
@@ -6746,39 +8168,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 8,
-        "par": 5
+        "par": 5,
+        "hcp": 9
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       }
     ]
   },
@@ -6788,39 +8219,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 16
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 4,
-        "par": 5
+        "par": 5,
+        "hcp": 6
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 12
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 10
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 18
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 4
       }
     ]
   },
@@ -6830,75 +8270,93 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 10
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 18
       },
       {
         "hole": 7,
-        "par": 5
+        "par": 5,
+        "hcp": 16
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 14
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 12
       },
       {
         "hole": 10,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 11,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 12,
-        "par": 5
+        "par": 5,
+        "hcp": 13
       },
       {
         "hole": 13,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 14,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 15,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 16,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 17,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 18,
-        "par": 5
+        "par": 5,
+        "hcp": 9
       }
     ]
   },
@@ -6908,75 +8366,93 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 9
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 7
       },
       {
         "hole": 10,
-        "par": 3
+        "par": 3,
+        "hcp": 12
       },
       {
         "hole": 11,
-        "par": 4
+        "par": 4,
+        "hcp": 10
       },
       {
         "hole": 12,
-        "par": 4
+        "par": 4,
+        "hcp": 16
       },
       {
         "hole": 13,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 14,
-        "par": 5
+        "par": 5,
+        "hcp": 4
       },
       {
         "hole": 15,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 16,
-        "par": 3
+        "par": 3,
+        "hcp": 18
       },
       {
         "hole": 17,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       },
       {
         "hole": 18,
-        "par": 5
+        "par": 5,
+        "hcp": 8
       }
     ]
   },
@@ -6986,39 +8462,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 5
+        "par": 5,
+        "hcp": 15
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 17
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       }
     ]
   },
@@ -7028,39 +8513,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 8,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       }
     ]
   },
@@ -7070,75 +8564,93 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 3,
-        "par": 5
+        "par": 5,
+        "hcp": 13
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 7,
-        "par": 5
+        "par": 5,
+        "hcp": 17
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 10,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       },
       {
         "hole": 11,
-        "par": 4
+        "par": 4,
+        "hcp": 10
       },
       {
         "hole": 12,
-        "par": 3
+        "par": 3,
+        "hcp": 18
       },
       {
         "hole": 13,
-        "par": 5
+        "par": 5,
+        "hcp": 6
       },
       {
         "hole": 14,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 15,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 16,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 17,
-        "par": 5
+        "par": 5,
+        "hcp": 16
       },
       {
         "hole": 18,
-        "par": 4
+        "par": 4,
+        "hcp": 12
       }
     ]
   },
@@ -7148,39 +8660,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 2
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       }
     ]
   },
@@ -7190,39 +8711,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 2,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       }
     ]
   },
@@ -7232,39 +8762,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 5
+        "par": 5,
+        "hcp": 9
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 5
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       }
     ]
   },
@@ -7274,39 +8813,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 2
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       }
     ]
   },
@@ -7358,39 +8906,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 7,
-        "par": 5
+        "par": 5,
+        "hcp": 13
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       }
     ]
   },
@@ -7400,39 +8957,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 2
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       }
     ]
   },
@@ -7445,39 +9011,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 2,
-        "par": 5
+        "par": 5,
+        "hcp": 5
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       }
     ]
   },
@@ -7487,75 +9062,93 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 18
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 8
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 10
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 16
       },
       {
         "hole": 8,
-        "par": 5
+        "par": 5,
+        "hcp": 2
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 12
       },
       {
         "hole": 10,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 11,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 12,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 13,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 14,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 15,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 16,
-        "par": 5
+        "par": 5,
+        "hcp": 7
       },
       {
         "hole": 17,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 18,
-        "par": 5
+        "par": 5,
+        "hcp": 5
       }
     ]
   },
@@ -7565,39 +9158,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       }
     ]
   },
@@ -7607,39 +9209,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 15
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       }
     ]
   },
@@ -7652,75 +9263,93 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 7
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 7,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 10,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 11,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 12,
-        "par": 5
+        "par": 5,
+        "hcp": 12
       },
       {
         "hole": 13,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 14,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 15,
-        "par": 3
+        "par": 3,
+        "hcp": 18
       },
       {
         "hole": 16,
-        "par": 4
+        "par": 4,
+        "hcp": 16
       },
       {
         "hole": 17,
-        "par": 3
+        "par": 3,
+        "hcp": 14
       },
       {
         "hole": 18,
-        "par": 5
+        "par": 5,
+        "hcp": 10
       }
     ]
   },
@@ -7733,75 +9362,93 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 4,
-        "par": 5
+        "par": 5,
+        "hcp": 10
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 16
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 12
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 18
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 14
       },
       {
         "hole": 10,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 11,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 12,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 13,
-        "par": 5
+        "par": 5,
+        "hcp": 9
       },
       {
         "hole": 14,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 15,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 16,
-        "par": 5
+        "par": 5,
+        "hcp": 5
       },
       {
         "hole": 17,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 18,
-        "par": 5
+        "par": 5,
+        "hcp": 7
       }
     ]
   },
@@ -7856,39 +9503,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 2
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       }
     ]
   },
@@ -7901,39 +9557,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       }
     ]
   },
@@ -7943,39 +9608,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       }
     ]
   },
@@ -7985,39 +9659,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 2
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       }
     ]
   },
@@ -8027,39 +9710,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       }
     ]
   },
@@ -8069,39 +9761,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 6,
-        "par": 5
+        "par": 5,
+        "hcp": 11
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       }
     ]
   },
@@ -8111,39 +9812,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       },
       {
         "hole": 2,
-        "par": 5
+        "par": 5,
+        "hcp": 12
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 18
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 16
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 10
       },
       {
         "hole": 8,
-        "par": 5
+        "par": 5,
+        "hcp": 4
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       }
     ]
   },
@@ -8153,39 +9863,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 3
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 9,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       }
     ]
   },
@@ -8195,39 +9914,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       }
     ]
   },
@@ -8237,39 +9965,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 17
       },
       {
         "hole": 2,
-        "par": 5
+        "par": 5,
+        "hcp": 13
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 8,
-        "par": 5
+        "par": 5,
+        "hcp": 5
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       }
     ]
   },
@@ -8279,39 +10016,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 8,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       }
     ]
   },
@@ -8321,39 +10067,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 2,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       }
     ]
   },
@@ -8363,39 +10118,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 3,
-        "par": 6
+        "par": 6,
+        "hcp": 1
       },
       {
         "hole": 4,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 6
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       }
     ]
   },
@@ -8405,39 +10169,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 16
       },
       {
         "hole": 2,
-        "par": 5
+        "par": 5,
+        "hcp": 14
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 18
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 10
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 12
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       }
     ]
   },
@@ -8450,39 +10223,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 15
       },
       {
         "hole": 4,
-        "par": 5
+        "par": 5,
+        "hcp": 9
       },
       {
         "hole": 5,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       },
       {
         "hole": 6,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 7,
-        "par": 4
+        "par": 4,
+        "hcp": 1
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       }
     ]
   },
@@ -8492,39 +10274,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 2
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       }
     ]
   },
@@ -8537,39 +10328,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 4
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 6
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 2
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 8
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       }
     ]
   },
@@ -8579,39 +10379,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 2
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 16
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 12
       },
       {
         "hole": 4,
-        "par": 5
+        "par": 5,
+        "hcp": 6
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 14
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 18
       },
       {
         "hole": 7,
-        "par": 5
+        "par": 5,
+        "hcp": 10
       },
       {
         "hole": 8,
-        "par": 4
+        "par": 4,
+        "hcp": 8
       },
       {
         "hole": 9,
-        "par": 4
+        "par": 4,
+        "hcp": 4
       }
     ]
   },
@@ -8624,39 +10433,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 3
+        "par": 3,
+        "hcp": 7
       },
       {
         "hole": 2,
-        "par": 3
+        "par": 3,
+        "hcp": 13
       },
       {
         "hole": 3,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 4,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       },
       {
         "hole": 5,
-        "par": 3
+        "par": 3,
+        "hcp": 3
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 5
       },
       {
         "hole": 7,
-        "par": 3
+        "par": 3,
+        "hcp": 9
       },
       {
         "hole": 8,
-        "par": 3
+        "par": 3,
+        "hcp": 11
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 1
       }
     ]
   },
@@ -8666,39 +10484,48 @@ export const IMPORTED_SCORECARDS: CourseScorecard[] = [
     "holes": [
       {
         "hole": 1,
-        "par": 4
+        "par": 4,
+        "hcp": 9
       },
       {
         "hole": 2,
-        "par": 4
+        "par": 4,
+        "hcp": 11
       },
       {
         "hole": 3,
-        "par": 4
+        "par": 4,
+        "hcp": 5
       },
       {
         "hole": 4,
-        "par": 4
+        "par": 4,
+        "hcp": 13
       },
       {
         "hole": 5,
-        "par": 4
+        "par": 4,
+        "hcp": 7
       },
       {
         "hole": 6,
-        "par": 3
+        "par": 3,
+        "hcp": 17
       },
       {
         "hole": 7,
-        "par": 5
+        "par": 5,
+        "hcp": 1
       },
       {
         "hole": 8,
-        "par": 5
+        "par": 5,
+        "hcp": 3
       },
       {
         "hole": 9,
-        "par": 3
+        "par": 3,
+        "hcp": 15
       }
     ]
   }

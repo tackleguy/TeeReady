@@ -110,13 +110,16 @@ export function GolfSetup({ initial, onComplete, onCancel }: Props) {
             </span>
             <input
               type="number"
-              min={0}
+              min={-10}
               max={54}
               step={0.1}
               value={handicap}
               onChange={(e) => setHandicap(Number(e.target.value))}
               className="w-full rounded-xl border border-[var(--line-default)] bg-black/20 px-3 py-3 text-base tabular-nums text-[var(--ink-1)] outline-none focus:border-[var(--accent)] lg:py-2.5 lg:text-[13px]"
             />
+            <span className="mt-1 block text-[11px] text-[var(--ink-4)]">
+              Negatives = plus handicap (e.g. -2 is +2).
+            </span>
           </label>
           <div>
             <span className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-[var(--ink-3)]">

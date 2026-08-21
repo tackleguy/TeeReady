@@ -14,6 +14,8 @@ export interface ScorecardHole {
   back?: number;
   mid?: number;
   front?: number;
+  /** Stroke index (1 = hardest). From OpenGolf handicap_index when available. */
+  hcp?: number;
   name?: string;
 }
 

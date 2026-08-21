@@ -127,7 +127,12 @@ function buildFromBulk(props) {
     if (!Number.isFinite(hole) || !Number.isFinite(par) || par < 3 || par > 6) {
       return null;
     }
-    holes.push({ hole, par });
+    const entry = { hole, par };
+    const si = Number(row.handicap_index ?? row.hcp ?? row.stroke_index);
+    if (Number.isFinite(si) && si >= 1 && si <= 18) {
+      entry.hcp = Math.round(si);
+    }
+    holes.push(entry);
   }
   holes.sort((a, b) => a.hole - b.hole);
   if (!isSequentialHoles(holes)) return null;
@@ -301,6 +306,10 @@ function buildFromApiHoles(base, holes) {
     if (yds.back) entry.back = yds.back;
     if (yds.mid) entry.mid = yds.mid;
     if (yds.front) entry.front = yds.front;
+    const si = Number(hole.handicap_index ?? hole.hcp ?? hole.stroke_index);
+    if (Number.isFinite(si) && si >= 1 && si <= 18) {
+      entry.hcp = Math.round(si);
+    }
     mapped.push(entry);
   }
   mapped.sort((a, b) => a.hole - b.hole);

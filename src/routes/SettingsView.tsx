@@ -21,6 +21,7 @@ import {
   setTheme,
   type ThemeId,
 } from '../lib/theme';
+import { formatHandicap } from '../lib/golfHandicap';
 
 const MISS_OPTIONS: Array<{ value: MissBias; label: string; hint: string }> = [
   { value: 'left', label: 'Left', hint: 'Start left, finish further left' },
@@ -227,13 +228,16 @@ export function SettingsView() {
             <FieldLabel>Handicap</FieldLabel>
             <input
               type="number"
-              min={0}
+              min={-10}
               max={54}
               step={0.1}
               value={handicap}
               onChange={(e) => setHandicap(Number(e.target.value))}
               className={`${inputClassName()} tabular`}
             />
+            <span className="mt-1 block text-[11px] text-faint">
+              Use negatives for plus handicaps (e.g. -2 → +2).
+            </span>
           </label>
           <div>
             <FieldLabel>Typical miss</FieldLabel>
@@ -321,7 +325,7 @@ export function SettingsView() {
             ))}
           </div>
           <p className="mt-2 text-[12px] text-muted">
-            {missLabel(miss)} · HCP {handicap}
+            {missLabel(miss)} · HCP {formatHandicap(handicap)}
           </p>
         </div>
       </section>

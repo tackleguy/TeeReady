@@ -213,3 +213,66 @@ export function targetPointGeoJSON(target: LonLat | null): GeoJSON.FeatureCollec
     ],
   };
 }
+
+export interface GreenMarks {
+  front: LonLat;
+  mid: LonLat;
+  back: LonLat;
+  /** Half-depth used for front/back offset, yards. */
+  halfDepthYd: number;
+}
+
+export interface GreenDistances {
+  front: number;
+  mid: number;
+  back: number;
+}
+
+/** Front / mid / back of green along the approach axis (tee → green). */
+export function greenMarks(hole: GolfHole, halfDepthYd = 15): GreenMarks {
+  const mid: LonLat = { lon: hole.green.lon, lat: hole.green.lat };
+  const approachBearing = hole.bearingDeg;
+  const front = destPoint(mid, (approachBearing + 180) % 360, halfDepthYd);
+  const back = destPoint(mid, approachBearing, halfDepthYd);
+  return { front, mid, back, halfDepthYd };
+}
+
+export function distancesToGreen(
+  from: LonLat,
+  marks: GreenMarks,
+): GreenDistances {
+  return {
+    front: Math.round(
+      haversineYards(from.lat, from.lon, marks.front.lat, marks.front.lon),
+    ),
+    mid: Math.round(
+      haversineYards(from.lat, from.lon, marks.mid.lat, marks.mid.lon),
+    ),
+    back: Math.round(
+      haversineYards(from.lat, from.lon, marks.back.lat, marks.back.lon),
+    ),
+  };
+}
+
+export function greenMarksGeoJSON(
+  marks: GreenMarks | null,
+): GeoJSON.FeatureCollection {
+  if (!marks) return { type: 'FeatureCollection', features: [] };
+  return {
+    type: 'FeatureCollection',
+    features: (
+      [
+        ['F', marks.front],
+        ['M', marks.mid],
+        ['B', marks.back],
+      ] as const
+    ).map(([label, pt]) => ({
+      type: 'Feature' as const,
+      properties: { label },
+      geometry: {
+        type: 'Point' as const,
+        coordinates: [pt.lon, pt.lat],
+      },
+    })),
+  };
+}

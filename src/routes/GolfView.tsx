@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronUp,
+  ClipboardList,
   Compass,
   Flag,
   Loader2,
@@ -23,13 +24,16 @@ import { GolfMap } from '../components/golf/GolfMap';
 import { GolfMapBoundary } from '../components/golf/GolfMapBoundary';
 import { GolfHoleIntel } from '../components/golf/GolfHoleIntel';
 import { GolfSetup } from '../components/golf/GolfSetup';
+import { GolfScorecard } from '../components/golf/GolfScorecard';
 import { GolfTargetHud } from '../components/golf/GolfTargetHud';
 import { GolfYardageBook } from '../components/golf/GolfYardageBook';
+import { GpsMod } from '../components/golf/GpsMod';
 import { GlassPanel } from '../components/ui/GlassPanel';
 import { SearchBar } from '../components/radar/SearchBar';
 import { INITIAL_SEED } from '../constants/cities';
 import { useIsMobile } from '../hooks/useMediaQuery';
-import { bearingCompass } from '../lib/geo';
+import { bearingCompass, bearingDeg } from '../lib/geo';
+import { formatHandicap } from '../lib/golfHandicap';
 import {
   useGolfCourses,
   useGolfEnsemble,
@@ -41,6 +45,9 @@ import { DEFAULT_TURF } from '../lib/golf';
 import {
   bagArcClubs,
   defaultTarget,
+  distancesToGreen,
+  greenMarks,
+  haversineYards,
   metersToFeet,
 } from '../lib/golfMeasure';
 import { playLinesGeoJSON, predictHole } from '../lib/golfPredict';
@@ -75,7 +82,6 @@ import {
   bestClubForDistance,
 } from '../lib/golfTracker';
 import { useGpsWatch } from '../hooks/useGpsWatch';
-import { haversineYards } from '../lib/golfMeasure';
 
 interface Loc {
   name: string;
@@ -194,10 +200,20 @@ export function GolfView() {
   const [bookOpen, setBookOpen] = useState(false);
   const [mapReady, setMapReady] = useState(false);
 
-  // ── Shot tracker ──
+  // ── Shot tracker + Prep / GPS modes ──
   const [round, setRound] = useState<TrackedRound | null>(() => loadRound());
   const tracking = round != null;
-  const { position: gpsPos } = useGpsWatch(tracking);
+  const [viewMode, setViewMode] = useState<'prep' | 'gps'>('prep');
+  const [scorecardOpen, setScorecardOpen] = useState(false);
+  const [gpsFollow, setGpsFollow] = useState(false);
+  const gpsOn = viewMode === 'gps' || tracking;
+  const {
+    position: gpsPos,
+    error: gpsError,
+    quality: gpsQuality,
+    locating: gpsLocating,
+    locateOnce,
+  } = useGpsWatch(gpsOn);
 
   const searchLat = course?.lat ?? loc.lat;
   const searchLon = course?.lon ?? loc.lon;
@@ -355,7 +371,10 @@ export function GolfView() {
       turf,
     });
   }, [activeHoleObj, target, bag, profile, activeBrief, turf, planningMode]);
-  const playLines = useMemo(() => playLinesGeoJSON(forecast), [forecast]);
+  const playLines = useMemo(
+    () => (viewMode === 'prep' ? playLinesGeoJSON(forecast) : null),
+    [forecast, viewMode],
+  );
   const activeIdx = playHoles.findIndex((h) => h.number === activeHole);
   const layoutLabel = [
     `${playHoles.length} holes`,
@@ -453,6 +472,24 @@ export function GolfView() {
     () => (round && activeHole != null ? shotsForHole(round, activeHole) : []),
     [round, activeHole],
   );
+
+  const gpsBearingToPin = useMemo(() => {
+    if (!gpsPos || !activeHoleObj) return null;
+    return bearingDeg(
+      gpsPos.lat,
+      gpsPos.lon,
+      activeHoleObj.green.lat,
+      activeHoleObj.green.lon,
+    );
+  }, [gpsPos, activeHoleObj]);
+
+  const gpsGreenDistances = useMemo(() => {
+    if (!gpsPos || !activeHoleObj) return null;
+    return distancesToGreen(
+      { lat: gpsPos.lat, lon: gpsPos.lon },
+      greenMarks(activeHoleObj),
+    );
+  }, [gpsPos, activeHoleObj]);
 
   useEffect(() => {
     if (!course) setMapReady(false);
@@ -778,8 +815,16 @@ export function GolfView() {
                 activeHole={activeHole}
                 onSelectHole={setActiveHole}
                 target={target}
-                arcClubs={arcClubs}
-                onSetTarget={tracking ? dropShotAtTap : setTarget}
+                arcClubs={viewMode === 'prep' ? arcClubs : []}
+                onSetTarget={
+                  viewMode === 'gps'
+                    ? tracking
+                      ? dropShotAtTap
+                      : undefined
+                    : tracking
+                      ? dropShotAtTap
+                      : setTarget
+                }
                 playLines={playLines}
                 planningMode={planningMode}
                 windFromDeg={ensemble?.ensemble.windFromDeg ?? null}
@@ -788,12 +833,19 @@ export function GolfView() {
                 crosswindMph={activeBrief?.crosswindMph ?? null}
                 holeUp={holeUp}
                 compactControls={isMobile}
-                showWindLegend={!isMobile}
+                showWindLegend={!isMobile && viewMode === 'prep'}
                 fitPadding={isMobile ? MOBILE_FIT_PADDING : 60}
-                legendClassName="left-3 top-16"
+                legendClassName="left-3 top-[13.5rem]"
                 onReady={() => setMapReady(true)}
                 trackedShots={activeHoleShots}
-                gpsPosition={gpsPos ? { lat: gpsPos.lat, lon: gpsPos.lon } : null}
+                gpsPosition={
+                  gpsOn && gpsPos
+                    ? { lat: gpsPos.lat, lon: gpsPos.lon }
+                    : null
+                }
+                gpsAccuracyM={gpsOn ? gpsPos?.accuracyM ?? null : null}
+                gpsHeadingDeg={gpsOn ? gpsPos?.headingDeg ?? null : null}
+                followGps={gpsFollow && gpsOn}
               />
             </GolfMapBoundary>
 
@@ -821,7 +873,7 @@ export function GolfView() {
               </div>
             ) : null}
 
-            {activeHoleObj && target && profile ? (
+            {viewMode === 'prep' && activeHoleObj && target && profile ? (
               <GolfTargetHud
                 hole={activeHoleObj}
                 target={target}
@@ -840,6 +892,67 @@ export function GolfView() {
                   )
                 }
               />
+            ) : null}
+
+            {/* Mode switch: Prep (misses) vs GPS (live F/M/B) */}
+            {course ? (
+              <div className="pointer-events-none absolute right-3 top-3 z-10 md:right-[352px]">
+                <GlassPanel
+                  variant="high"
+                  className="pointer-events-auto flex items-center gap-1 p-1 shadow-xl"
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setViewMode('prep');
+                      setGpsFollow(false);
+                    }}
+                    className={
+                      viewMode === 'prep'
+                        ? 'rounded-lg bg-brand px-2.5 py-1.5 text-[11px] font-bold text-white'
+                        : 'rounded-lg px-2.5 py-1.5 text-[11px] font-semibold text-[var(--ink-3)] hover:text-[var(--ink-1)]'
+                    }
+                  >
+                    Prep
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setViewMode('gps');
+                      locateOnce();
+                    }}
+                    className={
+                      viewMode === 'gps'
+                        ? 'rounded-lg bg-[#3b82f6] px-2.5 py-1.5 text-[11px] font-bold text-white'
+                        : 'rounded-lg px-2.5 py-1.5 text-[11px] font-semibold text-[var(--ink-3)] hover:text-[var(--ink-1)]'
+                    }
+                  >
+                    GPS
+                  </button>
+                  <span className="mx-0.5 h-5 w-px bg-[var(--line-subtle)]" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!course) return;
+                      if (!round) {
+                        const r = newRound(
+                          course.id,
+                          course.name,
+                          resolvedLoop ?? undefined,
+                        );
+                        setRound(r);
+                        saveRound(r);
+                      }
+                      setScorecardOpen(true);
+                    }}
+                    title={`Scorecard · HCP ${formatHandicap(profile.handicap)}`}
+                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-semibold text-[var(--ink-2)] hover:bg-white/10"
+                  >
+                    <ClipboardList className="h-3.5 w-3.5" />
+                    Card
+                  </button>
+                </GlassPanel>
+              </div>
             ) : null}
 
             {/* Hole-by-hole walkthrough + course switcher */}
@@ -966,6 +1079,44 @@ export function GolfView() {
                 </GlassPanel>
               </div>
             )}
+
+            {/* GPS HUD — only in GPS mode */}
+            {course && viewMode === 'gps' ? (
+              <div className="pointer-events-none absolute left-3 top-3 z-10 w-[min(100%-1.5rem,280px)]">
+                <GpsMod
+                  enabled={gpsOn}
+                  follow={gpsFollow}
+                  position={gpsPos}
+                  quality={gpsQuality}
+                  error={gpsError}
+                  locating={gpsLocating}
+                  distances={gpsGreenDistances}
+                  bearingToPin={gpsBearingToPin}
+                  onToggleFollow={() => setGpsFollow((v) => !v)}
+                  onLocate={() => {
+                    locateOnce();
+                    setGpsFollow(true);
+                  }}
+                  onDropShot={tracking ? dropShot : undefined}
+                  canDropShot={Boolean(tracking && gpsPos && activeHoleObj)}
+                />
+              </div>
+            ) : null}
+
+            {scorecardOpen && round ? (
+              <div className="absolute inset-x-3 bottom-3 top-16 z-30 md:inset-x-auto md:left-3 md:right-[352px] md:top-14">
+                <GolfScorecard
+                  holes={playHoles}
+                  round={round}
+                  handicap={profile.handicap}
+                  onChange={(next) => {
+                    setRound(next);
+                    saveRound(next);
+                  }}
+                  onClose={() => setScorecardOpen(false)}
+                />
+              </div>
+            ) : null}
 
             {/* Shot tracker info bar */}
             {tracking && activeHoleObj && activeHoleShots.length > 0 && (
