@@ -212,7 +212,7 @@ export function SettingsView() {
       <section className="rounded-card bg-surface p-5 shadow-card">
         <h2 className="text-[15px] font-bold text-ink">Profile</h2>
         <p className="mt-1 text-[13px] text-muted">
-          Shown in the nav avatar and group board.
+          Shown in the nav avatar and Social board.
         </p>
         <label className="mt-4 block">
           <FieldLabel>Display name</FieldLabel>

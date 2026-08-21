@@ -189,7 +189,7 @@ export function TopNav({
               to="/group"
               className={({ isActive }) => linkClass(isActive)}
             >
-              Group
+              Social
             </NavLink>
             <NavLink
               to="/settings"
@@ -255,7 +255,7 @@ export function TopNav({
             `whitespace-nowrap ${linkClass(isActive)}`
           }
         >
-          Group
+          Social
         </NavLink>
         <NavLink
           to="/settings"

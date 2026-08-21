@@ -4,7 +4,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Today', href: '/today' },
   { label: 'Courses', href: '/courses' },
   { label: 'Rounds', href: '/rounds/prep' },
-  { label: 'Group', href: '/group' },
+  { label: 'Social', href: '/group' },
   { label: 'Settings', href: '/settings' },
 ];
 
@@ -237,12 +237,58 @@ export type Player = {
   thru: number;
   handicap: number;
   score: string;
+  /** Gross to par numeric for sorting / delta display */
+  toPar: number;
+  isYou?: boolean;
+  status?: 'playing' | 'finished' | 'away';
 };
 
-export const GROUP: { name: string; players: Player[] } = {
+export type SkinHole = {
+  hole: number;
+  par: number;
+  winner: string | null;
+  note: string;
+};
+
+export type GroupActivity = {
+  id: string;
+  initials: string;
+  name: string;
+  text: string;
+  ago: string;
+};
+
+export const GROUP: {
+  name: string;
+  course: string;
+  format: string;
+  pot: string;
+  inviteCode: string;
+  live: boolean;
+  holeFocus: number;
+  players: Player[];
+  skins: SkinHole[];
+  activity: GroupActivity[];
+} = {
   name: 'Thursday Skins',
+  course: 'Rancho Park · Blue tees',
+  format: '$10 skins · net · carryovers',
+  pot: '$40 on the table',
+  inviteCode: 'TEE-4THU',
+  live: true,
+  holeFocus: 8,
   players: [
-    { pos: 1, initials: 'JD', name: 'You', thru: 7, handicap: 12, score: '+4' },
+    {
+      pos: 1,
+      initials: 'JD',
+      name: 'You',
+      thru: 7,
+      handicap: 12,
+      score: '+4',
+      toPar: 4,
+      isYou: true,
+      status: 'playing',
+    },
     {
       pos: 2,
       initials: 'MR',
@@ -250,6 +296,8 @@ export const GROUP: { name: string; players: Player[] } = {
       thru: 7,
       handicap: 9,
       score: '+5',
+      toPar: 5,
+      status: 'playing',
     },
     {
       pos: 3,
@@ -258,6 +306,8 @@ export const GROUP: { name: string; players: Player[] } = {
       thru: 6,
       handicap: 18,
       score: '+11',
+      toPar: 11,
+      status: 'playing',
     },
     {
       pos: 4,
@@ -266,6 +316,48 @@ export const GROUP: { name: string; players: Player[] } = {
       thru: 6,
       handicap: 15,
       score: '+13',
+      toPar: 13,
+      status: 'away',
+    },
+  ],
+  skins: [
+    { hole: 1, par: 4, winner: 'Mia', note: 'Birdie net' },
+    { hole: 2, par: 5, winner: null, note: 'Carry' },
+    { hole: 3, par: 3, winner: 'You', note: 'Closest pin' },
+    { hole: 4, par: 4, winner: null, note: 'Carry' },
+    { hole: 5, par: 4, winner: 'Mia', note: 'Par net' },
+    { hole: 6, par: 4, winner: null, note: 'Carry' },
+    { hole: 7, par: 5, winner: 'You', note: 'Eagle net' },
+    { hole: 8, par: 3, winner: null, note: 'In play' },
+  ],
+  activity: [
+    {
+      id: '1',
+      initials: 'MR',
+      name: 'Mia',
+      text: 'Pushed 6 — pot rolls to 8.',
+      ago: '2m',
+    },
+    {
+      id: '2',
+      initials: 'JD',
+      name: 'You',
+      text: 'Dropped a bomb on 7. Skins on me.',
+      ago: '8m',
+    },
+    {
+      id: '3',
+      initials: 'TK',
+      name: 'Tom',
+      text: 'Wind is howling on the ridge. Club up.',
+      ago: '14m',
+    },
+    {
+      id: '4',
+      initials: 'AS',
+      name: 'Ade',
+      text: 'Grabbing a water — back on the tee in 2.',
+      ago: '21m',
     },
   ],
 };
