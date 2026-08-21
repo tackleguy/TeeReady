@@ -17,6 +17,7 @@ import {
   type MemberRow,
   type MessageRow,
 } from '../lib/multiplayer';
+import type { GameModeId } from '../lib/gameModes';
 
 export function useMultiplayerGroup() {
   const { user, configured } = useAuth();
@@ -147,7 +148,13 @@ export function useMultiplayerGroup() {
   }, [group?.id, user]);
 
   const onCreate = useCallback(
-    async (name: string, course: string, format: string, pot: string) => {
+    async (
+      name: string,
+      course: string,
+      format: string,
+      pot: string,
+      gameMode: GameModeId,
+    ) => {
       if (!user) return;
       setBusy(true);
       setError(null);
@@ -157,6 +164,7 @@ export function useMultiplayerGroup() {
           course,
           format,
           potLabel: pot,
+          gameMode,
           userId: user.id,
         });
         await refresh(g.id);
@@ -233,6 +241,58 @@ export function useMultiplayerGroup() {
     [user, group, members],
   );
 
+  const onBumpSkins = useCallback(
+    async (delta: number) => {
+      if (!user || !group) return;
+      const me = members.find((m) => m.user_id === user.id);
+      if (!me) return;
+      try {
+        await updateMyStanding(group.id, user.id, {
+          skins_won: Math.max(0, me.skins_won + delta),
+          status: 'playing',
+        });
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Could not update skins');
+      }
+    },
+    [user, group, members],
+  );
+
+  const onBumpPoints = useCallback(
+    async (delta: number) => {
+      if (!user || !group) return;
+      const me = members.find((m) => m.user_id === user.id);
+      if (!me) return;
+      try {
+        await updateMyStanding(group.id, user.id, {
+          points: Math.max(0, (me.points ?? 0) + delta),
+          status: 'playing',
+        });
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Could not update points');
+      }
+    },
+    [user, group, members],
+  );
+
+  const onBumpMatch = useCallback(
+    async (delta: number) => {
+      if (!user || !group) return;
+      const me = members.find((m) => m.user_id === user.id);
+      if (!me) return;
+      try {
+        // skins_won stores holes up (can go negative for down)
+        await updateMyStanding(group.id, user.id, {
+          skins_won: me.skins_won + delta,
+          status: 'playing',
+        });
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Could not update match');
+      }
+    },
+    [user, group, members],
+  );
+
   return {
     configured,
     user,
@@ -247,6 +307,9 @@ export function useMultiplayerGroup() {
     onLeave,
     onSend,
     onBumpScore,
+    onBumpSkins,
+    onBumpPoints,
+    onBumpMatch,
     clearError: () => setError(null),
   };
 }

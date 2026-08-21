@@ -11,12 +11,16 @@ import {
   Users,
 } from 'lucide-react';
 import { useMultiplayerGroup } from '../hooks/useMultiplayerGroup';
-import { formatHandicap } from '../lib/golfHandicap';
 import {
-  formatToPar,
-  timeAgo,
-  type MemberRow,
-} from '../lib/multiplayer';
+  formatPrimaryStat,
+  GAME_MODES,
+  getGameMode,
+  primaryStatLabel,
+  sortMembersForMode,
+  type GameModeId,
+} from '../lib/gameModes';
+import { formatHandicap } from '../lib/golfHandicap';
+import { formatToPar, timeAgo, type MemberRow } from '../lib/multiplayer';
 
 function statusDot(status: MemberRow['status']) {
   if (status === 'playing') return 'bg-brand';
@@ -32,37 +36,52 @@ function Lobby({
 }: {
   busy: boolean;
   error: string | null;
-  onCreate: (name: string, course: string, format: string, pot: string) => void;
+  onCreate: (
+    name: string,
+    course: string,
+    format: string,
+    pot: string,
+    gameMode: GameModeId,
+  ) => void;
   onJoin: (code: string) => void;
 }) {
-  const [mode, setMode] = useState<'create' | 'join'>('create');
-  const [name, setName] = useState('Thursday Skins');
+  const [tab, setTab] = useState<'create' | 'join'>('create');
+  const [gameMode, setGameMode] = useState<GameModeId>('skins');
+  const modeMeta = getGameMode(gameMode);
+  const [name, setName] = useState(modeMeta.defaultName);
   const [course, setCourse] = useState('');
-  const [format, setFormat] = useState('$10 skins · net');
+  const [format, setFormat] = useState(modeMeta.defaultFormat);
   const [pot, setPot] = useState('');
   const [code, setCode] = useState('');
 
+  const pickMode = (id: GameModeId) => {
+    const next = getGameMode(id);
+    setGameMode(id);
+    setName(next.defaultName);
+    setFormat(next.defaultFormat);
+  };
+
   return (
-    <div className="mx-auto flex w-full max-w-lg flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
       <div>
         <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-brand">
           Multiplayer
         </span>
         <h1 className="mt-2 text-[28px] font-bold tracking-[-0.03em] text-ink">
-          Play with your group
+          Pick a game mode
         </h1>
         <p className="mt-1 text-[14px] text-muted">
-          Create a live skins board or join with an invite code. Chat and
-          standings update in realtime.
+          Skins, stroke, match, scramble, or Stableford — then invite your
+          group with a code.
         </p>
       </div>
 
       <div className="flex rounded-xl border border-line p-0.5">
         <button
           type="button"
-          onClick={() => setMode('create')}
+          onClick={() => setTab('create')}
           className={
-            mode === 'create'
+            tab === 'create'
               ? 'flex-1 rounded-lg bg-brand-soft py-2 text-[13px] font-semibold text-brand'
               : 'flex-1 rounded-lg py-2 text-[13px] font-medium text-muted'
           }
@@ -71,9 +90,9 @@ function Lobby({
         </button>
         <button
           type="button"
-          onClick={() => setMode('join')}
+          onClick={() => setTab('join')}
           className={
-            mode === 'join'
+            tab === 'join'
               ? 'flex-1 rounded-lg bg-brand-soft py-2 text-[13px] font-semibold text-brand'
               : 'flex-1 rounded-lg py-2 text-[13px] font-medium text-muted'
           }
@@ -83,14 +102,44 @@ function Lobby({
       </div>
 
       <section className="rounded-card bg-surface p-5 shadow-card">
-        {mode === 'create' ? (
+        {tab === 'create' ? (
           <form
-            className="flex flex-col gap-3"
+            className="flex flex-col gap-4"
             onSubmit={(e) => {
               e.preventDefault();
-              onCreate(name, course, format, pot);
+              onCreate(name, course, format, pot, gameMode);
             }}
           >
+            <div>
+              <span className="mb-2 block font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
+                Game mode
+              </span>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {GAME_MODES.map((m) => {
+                  const on = m.id === gameMode;
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => pickMode(m.id)}
+                      className={
+                        on
+                          ? 'rounded-xl border border-brand bg-brand-soft p-3 text-left ring-1 ring-[color-mix(in_srgb,var(--brand)_28%,transparent)]'
+                          : 'rounded-xl border border-line bg-canvas p-3 text-left hover:border-[color-mix(in_srgb,var(--brand)_35%,var(--line))]'
+                      }
+                    >
+                      <div className="text-[13px] font-bold text-ink">
+                        {m.label}
+                      </div>
+                      <p className="mt-1 text-[12px] leading-snug text-muted">
+                        {m.blurb}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <label className="block">
               <span className="mb-1.5 block font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
                 Group name
@@ -116,7 +165,7 @@ function Lobby({
             <div className="grid grid-cols-2 gap-3">
               <label className="block">
                 <span className="mb-1.5 block font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
-                  Format
+                  Stakes / notes
                 </span>
                 <input
                   value={format}
@@ -131,7 +180,7 @@ function Lobby({
                 <input
                   value={pot}
                   onChange={(e) => setPot(e.target.value)}
-                  placeholder="$40"
+                  placeholder={gameMode === 'skins' ? '$40' : 'Optional'}
                   className="w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-[14px] text-ink outline-none focus:border-brand"
                 />
               </label>
@@ -139,9 +188,9 @@ function Lobby({
             <button
               type="submit"
               disabled={busy || !name.trim()}
-              className="mt-2 rounded-xl bg-brand px-5 py-2.5 text-[13px] font-bold text-white disabled:opacity-40"
+              className="mt-1 rounded-xl bg-brand px-5 py-2.5 text-[13px] font-bold text-white disabled:opacity-40"
             >
-              {busy ? 'Creating…' : 'Create & go live'}
+              {busy ? 'Creating…' : `Start ${modeMeta.short}`}
             </button>
           </form>
         ) : (
@@ -177,6 +226,182 @@ function Lobby({
         {error ? <p className="mt-3 text-[12px] text-bad">{error}</p> : null}
       </section>
     </div>
+  );
+}
+
+function ModeControls({
+  modeId,
+  me,
+  onBumpScore,
+  onBumpSkins,
+  onBumpPoints,
+  onBumpMatch,
+}: {
+  modeId: GameModeId;
+  me: MemberRow;
+  onBumpScore: (d: number, thru?: number) => void;
+  onBumpSkins: (d: number) => void;
+  onBumpPoints: (d: number) => void;
+  onBumpMatch: (d: number) => void;
+}) {
+  const mode = getGameMode(modeId);
+
+  if (mode.primary === 'points') {
+    return (
+      <section className="flex flex-wrap items-center gap-2 rounded-card border border-line bg-surface px-4 py-3 shadow-card">
+        <span className="text-[13px] font-semibold text-ink">Your points</span>
+        <div className="ml-auto flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => onBumpPoints(-1)}
+            className="grid h-9 w-9 place-items-center rounded-lg border border-line"
+          >
+            <Minus className="h-4 w-4" />
+          </button>
+          <span className="min-w-[3rem] text-center text-[15px] font-bold tabular">
+            {me.points ?? 0}
+          </span>
+          <button
+            type="button"
+            onClick={() => onBumpPoints(1)}
+            className="grid h-9 w-9 place-items-center rounded-lg border border-line"
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => onBumpScore(0, 1)}
+            className="ml-2 rounded-lg border border-line px-3 py-2 text-[12px] font-semibold text-muted"
+          >
+            +1 hole
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  if (mode.primary === 'skins') {
+    return (
+      <section className="flex flex-wrap items-center gap-2 rounded-card border border-line bg-surface px-4 py-3 shadow-card">
+        <span className="text-[13px] font-semibold text-ink">Update you</span>
+        <div className="ml-auto flex flex-wrap items-center gap-1.5">
+          <span className="mr-1 text-[11px] text-faint">Score</span>
+          <button
+            type="button"
+            onClick={() => onBumpScore(-1, 0)}
+            className="grid h-9 w-9 place-items-center rounded-lg border border-line"
+          >
+            <Minus className="h-4 w-4" />
+          </button>
+          <span className="min-w-[2.5rem] text-center text-[14px] font-bold tabular">
+            {formatToPar(me.to_par)}
+          </span>
+          <button
+            type="button"
+            onClick={() => onBumpScore(1, 0)}
+            className="grid h-9 w-9 place-items-center rounded-lg border border-line"
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+          <span className="ml-2 mr-1 text-[11px] text-faint">Skins</span>
+          <button
+            type="button"
+            onClick={() => onBumpSkins(-1)}
+            className="grid h-9 w-9 place-items-center rounded-lg border border-line"
+          >
+            <Minus className="h-4 w-4" />
+          </button>
+          <span className="min-w-[2rem] text-center text-[14px] font-bold tabular">
+            {me.skins_won}
+          </span>
+          <button
+            type="button"
+            onClick={() => onBumpSkins(1)}
+            className="grid h-9 w-9 place-items-center rounded-lg border border-line"
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => onBumpScore(0, 1)}
+            className="ml-1 rounded-lg border border-line px-3 py-2 text-[12px] font-semibold text-muted"
+          >
+            +1 hole
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  if (mode.primary === 'match') {
+    return (
+      <section className="flex flex-wrap items-center gap-2 rounded-card border border-line bg-surface px-4 py-3 shadow-card">
+        <span className="text-[13px] font-semibold text-ink">Holes up/down</span>
+        <div className="ml-auto flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => onBumpMatch(-1)}
+            className="grid h-9 w-9 place-items-center rounded-lg border border-line"
+            title="One down"
+          >
+            <Minus className="h-4 w-4" />
+          </button>
+          <span className="min-w-[3.5rem] text-center text-[15px] font-bold tabular">
+            {formatPrimaryStat('match', me, formatToPar)}
+          </span>
+          <button
+            type="button"
+            onClick={() => onBumpMatch(1)}
+            className="grid h-9 w-9 place-items-center rounded-lg border border-line"
+            title="One up"
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => onBumpScore(0, 1)}
+            className="ml-2 rounded-lg border border-line px-3 py-2 text-[12px] font-semibold text-muted"
+          >
+            +1 hole
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  // stroke / scramble
+  return (
+    <section className="flex flex-wrap items-center gap-2 rounded-card border border-line bg-surface px-4 py-3 shadow-card">
+      <span className="text-[13px] font-semibold text-ink">
+        {modeId === 'scramble' ? 'Team score' : 'Your score'}
+      </span>
+      <div className="ml-auto flex items-center gap-1.5">
+        <button
+          type="button"
+          onClick={() => onBumpScore(-1, 0)}
+          className="grid h-9 w-9 place-items-center rounded-lg border border-line"
+        >
+          <Minus className="h-4 w-4" />
+        </button>
+        <span className="min-w-[3rem] text-center text-[15px] font-bold tabular">
+          {formatToPar(me.to_par)}
+        </span>
+        <button
+          type="button"
+          onClick={() => onBumpScore(1, 0)}
+          className="grid h-9 w-9 place-items-center rounded-lg border border-line"
+        >
+          <Plus className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          onClick={() => onBumpScore(0, 1)}
+          className="ml-2 rounded-lg border border-line px-3 py-2 text-[12px] font-semibold text-muted"
+        >
+          +1 hole
+        </button>
+      </div>
+    </section>
   );
 }
 
@@ -231,14 +456,15 @@ export function GroupView() {
     );
   }
 
-  const ranked = [...mp.members].sort((a, b) => {
-    if (a.to_par !== b.to_par) return a.to_par - b.to_par;
-    return b.thru - a.thru;
-  });
+  const modeId = mp.group.game_mode ?? 'skins';
+  const mode = getGameMode(modeId);
+  const ranked = sortMembersForMode(mp.members, modeId);
   const me = ranked.find((m) => m.user_id === mp.user!.id);
   const pot =
     mp.group.pot_label ||
-    (ranked.length ? `$${ranked.length * 10} on the table` : '—');
+    (modeId === 'skins' && ranked.length
+      ? `$${ranked.length * 10} on the table`
+      : '—');
 
   const copyInvite = async () => {
     try {
@@ -257,6 +483,19 @@ export function GroupView() {
     setNote('');
   };
 
+  const snapshot = [
+    { label: 'Mode', value: mode.short },
+    {
+      label: modeId === 'skins' ? 'Pot' : 'Format',
+      value: modeId === 'skins' ? pot : mode.label,
+    },
+    {
+      label: `Your ${primaryStatLabel(modeId).toLowerCase()}`,
+      value: me ? formatPrimaryStat(modeId, me, formatToPar) : '—',
+    },
+    { label: 'Thru', value: me ? String(me.thru) : '—' },
+  ];
+
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -268,6 +507,9 @@ export function GroupView() {
                 Live
               </span>
             ) : null}
+            <span className="rounded-full border border-line bg-surface px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-ink">
+              {mode.label}
+            </span>
             <span className="inline-flex items-center gap-1 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
               <Users className="h-3 w-3" />
               {ranked.length} player{ranked.length === 1 ? '' : 's'}
@@ -277,8 +519,9 @@ export function GroupView() {
             {mp.group.name}
           </h1>
           <p className="mt-1 text-[14px] text-muted">
-            {[mp.group.course, mp.group.format].filter(Boolean).join(' · ') ||
-              'Multiplayer skins'}
+            {[mp.group.course, mp.group.format || mode.defaultFormat]
+              .filter(Boolean)
+              .join(' · ')}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -319,15 +562,7 @@ export function GroupView() {
       ) : null}
 
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {[
-          { label: 'Pot', value: pot },
-          { label: 'Your score', value: me ? formatToPar(me.to_par) : '—' },
-          { label: 'Thru', value: me ? String(me.thru) : '—' },
-          {
-            label: 'Skins',
-            value: me ? String(me.skins_won) : '0',
-          },
-        ].map((stat) => (
+        {snapshot.map((stat) => (
           <div
             key={stat.label}
             className="rounded-xl border border-line bg-surface px-3.5 py-3 shadow-card"
@@ -342,45 +577,21 @@ export function GroupView() {
         ))}
       </section>
 
-      {/* Quick score bump for you */}
       {me ? (
-        <section className="flex flex-wrap items-center gap-2 rounded-card border border-line bg-surface px-4 py-3 shadow-card">
-          <span className="text-[13px] font-semibold text-ink">Update you</span>
-          <div className="ml-auto flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={() => void mp.onBumpScore(-1, 0)}
-              className="grid h-9 w-9 place-items-center rounded-lg border border-line text-ink hover:bg-canvas"
-              title="Better by 1"
-            >
-              <Minus className="h-4 w-4" />
-            </button>
-            <span className="min-w-[3rem] text-center text-[15px] font-bold tabular text-ink">
-              {formatToPar(me.to_par)}
-            </span>
-            <button
-              type="button"
-              onClick={() => void mp.onBumpScore(1, 0)}
-              className="grid h-9 w-9 place-items-center rounded-lg border border-line text-ink hover:bg-canvas"
-              title="Worse by 1"
-            >
-              <Plus className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => void mp.onBumpScore(0, 1)}
-              className="ml-2 rounded-lg border border-line px-3 py-2 text-[12px] font-semibold text-muted hover:text-ink"
-            >
-              +1 hole
-            </button>
-          </div>
-        </section>
+        <ModeControls
+          modeId={modeId}
+          me={me}
+          onBumpScore={(d, t) => void mp.onBumpScore(d, t)}
+          onBumpSkins={(d) => void mp.onBumpSkins(d)}
+          onBumpPoints={(d) => void mp.onBumpPoints(d)}
+          onBumpMatch={(d) => void mp.onBumpMatch(d)}
+        />
       ) : null}
 
       <section className="overflow-hidden rounded-card bg-surface shadow-card">
         <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
           <h2 className="text-[15px] font-bold text-ink">Standings</h2>
-          <span className="text-[12px] text-muted">Realtime</span>
+          <span className="text-[12px] text-muted">{mode.blurb}</span>
         </div>
         <ul>
           {ranked.map((player, idx) => {
@@ -431,7 +642,7 @@ export function GroupView() {
                   {formatHandicap(player.handicap)}
                 </span>
                 <span className="text-right text-[15px] font-bold tabular text-ink">
-                  {formatToPar(player.to_par)}
+                  {formatPrimaryStat(modeId, player, formatToPar)}
                 </span>
               </li>
             );

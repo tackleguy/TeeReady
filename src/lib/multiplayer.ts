@@ -3,6 +3,7 @@
 import { supabase } from './supabase';
 import { loadDisplayProfile } from './mock';
 import { loadGolfProfile, DEFAULT_PROFILE } from './golfProfile';
+import { getGameMode, type GameModeId, isGameModeId } from './gameModes';
 
 const ACTIVE_GROUP_KEY = 'teeready-active-group-v1';
 
@@ -13,6 +14,7 @@ export type GroupRow = {
   course: string;
   format: string;
   pot_label: string;
+  game_mode: GameModeId;
   live: boolean;
   hole_focus: number;
   created_by: string;
@@ -29,6 +31,7 @@ export type MemberRow = {
   to_par: number;
   status: 'playing' | 'finished' | 'away';
   skins_won: number;
+  points: number;
   updated_at: string;
   joined_at: string;
 };
@@ -87,7 +90,9 @@ export async function fetchGroup(groupId: string): Promise<GroupRow | null> {
     .eq('id', groupId)
     .maybeSingle();
   if (error) throw error;
-  return data as GroupRow | null;
+  const row = data as GroupRow | null;
+  if (row && !isGameModeId(row.game_mode)) row.game_mode = 'skins';
+  return row;
 }
 
 export async function fetchMembers(groupId: string): Promise<MemberRow[]> {
@@ -99,7 +104,10 @@ export async function fetchMembers(groupId: string): Promise<MemberRow[]> {
     .order('to_par', { ascending: true })
     .order('thru', { ascending: false });
   if (error) throw error;
-  return (data ?? []) as MemberRow[];
+  return ((data ?? []) as MemberRow[]).map((m) => ({
+    ...m,
+    points: Number.isFinite(m.points) ? m.points : 0,
+  }));
 }
 
 export async function fetchMessages(
@@ -122,19 +130,25 @@ export async function createGroup(input: {
   course?: string;
   format?: string;
   potLabel?: string;
+  gameMode?: GameModeId;
   userId: string;
 }): Promise<GroupRow> {
   if (!supabase) throw new Error('Supabase not configured');
   const identity = playerIdentity();
   const invite = randomInviteCode();
+  const mode = input.gameMode && isGameModeId(input.gameMode)
+    ? input.gameMode
+    : 'skins';
+  const modeMeta = getGameMode(mode);
   const { data: group, error } = await supabase
     .from('teeready_groups')
     .insert({
-      name: input.name.trim() || 'Skins group',
+      name: input.name.trim() || modeMeta.defaultName,
       invite_code: invite,
       course: input.course?.trim() ?? '',
-      format: input.format?.trim() || 'Skins · net',
+      format: input.format?.trim() || modeMeta.defaultFormat,
       pot_label: input.potLabel?.trim() ?? '',
+      game_mode: mode,
       live: true,
       hole_focus: 1,
       created_by: input.userId,
@@ -152,11 +166,15 @@ export async function createGroup(input: {
     status: 'playing',
     thru: 0,
     to_par: 0,
+    skins_won: 0,
+    points: 0,
   });
   if (memErr) throw memErr;
 
   setActiveGroupId(group.id);
-  return group as GroupRow;
+  const row = group as GroupRow;
+  if (!isGameModeId(row.game_mode)) row.game_mode = 'skins';
+  return row;
 }
 
 export async function joinGroup(code: string, userId: string): Promise<string> {
@@ -209,7 +227,17 @@ export async function updateMyStanding(
   groupId: string,
   userId: string,
   patch: Partial<
-    Pick<MemberRow, 'thru' | 'to_par' | 'status' | 'skins_won' | 'handicap' | 'display_name' | 'initials'>
+    Pick<
+      MemberRow,
+      | 'thru'
+      | 'to_par'
+      | 'status'
+      | 'skins_won'
+      | 'points'
+      | 'handicap'
+      | 'display_name'
+      | 'initials'
+    >
   >,
 ): Promise<void> {
   if (!supabase) return;
