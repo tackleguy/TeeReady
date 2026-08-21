@@ -67,7 +67,7 @@ function PublicHome() {
 
 function Shell() {
   const location = useLocation();
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const isLanding = location.pathname === '/';
   const isRounds = location.pathname.startsWith('/rounds');
   const [place, setPlace] = useState(CURRENT_LOCATION);
@@ -105,20 +105,7 @@ function Shell() {
           locationLabel={place}
           onLocationClick={() => setPickingLocation((v) => !v)}
         />
-      ) : (
-        <header className="sticky top-0 z-30 border-b border-line bg-[color-mix(in_srgb,var(--canvas)_92%,transparent)] backdrop-blur">
-          <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-5 py-4 md:px-8">
-            <span className="text-[17px] font-bold tracking-[-0.02em] text-ink">
-              TeeReady
-            </span>
-            {!loading && !user ? (
-              <span className="text-[12px] font-medium text-muted">
-                Sign in to continue
-              </span>
-            ) : null}
-          </div>
-        </header>
-      )}
+      ) : null}
 
       {pickingLocation && showAppChrome ? (
         <div className="mx-auto w-full max-w-[1400px] px-5 pb-2 pt-3 md:px-8">
