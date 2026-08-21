@@ -38,7 +38,7 @@ export interface TrackedRound {
   scores: HoleScore[];
 }
 
-const STORAGE_KEY = 'golf-round-v1';
+const STORAGE_KEY = 'teeready-golf-round-v1';
 
 export function newRound(
   courseId: string,
@@ -200,12 +200,16 @@ export function saveRound(round: TrackedRound): void {
 
 export function loadRound(): TrackedRound | null {
   try {
+    // Intentionally do not migrate legacy `golf-round-v1` — that key is
+    // shared with WeatherStop and often leaves a sticky wrong course
+    // (e.g. Liberty National) on the scorecard.
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as TrackedRound;
     if (!parsed.id || !parsed.courseId || !Array.isArray(parsed.shots)) {
       return null;
     }
+    if (!Array.isArray(parsed.scores)) parsed.scores = [];
     return parsed;
   } catch {
     return null;

@@ -43,20 +43,30 @@ function inputClassName() {
 }
 
 export function SettingsView() {
-  const saved = loadGolfProfile() ?? DEFAULT_PROFILE;
-  const display = loadDisplayProfile();
-
-  const [name, setName] = useState(display.name);
-  const [commonText, setCommonText] = useState(saved.commonCourses.join(', '));
-  const [handicap, setHandicap] = useState(saved.handicap);
-  const [miss, setMiss] = useState<MissBias>(saved.miss);
-  const [sevenIronYards, setSevenIronYards] = useState(saved.sevenIronYards);
-  const [driverYards, setDriverYards] = useState(saved.driverYards);
+  const [name, setName] = useState(() => loadDisplayProfile().name);
+  const [commonText, setCommonText] = useState('');
+  const [handicap, setHandicap] = useState(DEFAULT_PROFILE.handicap);
+  const [miss, setMiss] = useState<MissBias>(DEFAULT_PROFILE.miss);
+  const [sevenIronYards, setSevenIronYards] = useState(
+    DEFAULT_PROFILE.sevenIronYards,
+  );
+  const [driverYards, setDriverYards] = useState(DEFAULT_PROFILE.driverYards);
   const [theme, setThemeId] = useState<ThemeId>(() => loadTheme());
   const [hasRound, setHasRound] = useState(false);
   const [savedFlash, setSavedFlash] = useState<string | null>(null);
 
+  // Re-read storage whenever Settings is shown so leftovers don't leave a
+  // stale form that overwrites a good save.
   useEffect(() => {
+    const saved = loadGolfProfile() ?? DEFAULT_PROFILE;
+    const display = loadDisplayProfile();
+    setName(display.name);
+    setCommonText(saved.commonCourses.join(', '));
+    setHandicap(saved.handicap);
+    setMiss(saved.miss);
+    setSevenIronYards(saved.sevenIronYards);
+    setDriverYards(saved.driverYards);
+    setThemeId(loadTheme());
     setHasRound(loadRound() != null);
   }, []);
 
@@ -231,12 +241,16 @@ export function SettingsView() {
               min={-10}
               max={54}
               step={0.1}
-              value={handicap}
-              onChange={(e) => setHandicap(Number(e.target.value))}
+              value={Number.isFinite(handicap) ? handicap : ''}
+              onChange={(e) => {
+                const raw = e.target.value;
+                setHandicap(raw === '' ? Number.NaN : Number(raw));
+              }}
               className={`${inputClassName()} tabular`}
             />
             <span className="mt-1 block text-[11px] text-faint">
-              Use negatives for plus handicaps (e.g. -2 → +2).
+              Use negatives for plus handicaps (e.g. -2 → +2). Click Save
+              settings after editing.
             </span>
           </label>
           <div>

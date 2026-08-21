@@ -46,7 +46,7 @@ function NineTable({
             <th className="px-2 py-2">Hole</th>
             <th className="px-2 py-2 text-right">Par</th>
             <th className="px-2 py-2 text-right">Yds</th>
-            <th className="px-2 py-2 text-right">HCP</th>
+            <th className="px-2 py-2 text-right">SI</th>
             <th className="px-2 py-2 text-right">Str</th>
             <th className="px-2 py-2 text-center">Score</th>
             <th className="px-2 py-2 text-right">Net</th>

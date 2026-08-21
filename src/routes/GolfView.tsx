@@ -212,8 +212,27 @@ export function GolfView() {
   }, [modeParam, navigate]);
 
   const [round, setRound] = useState<TrackedRound | null>(() => loadRound());
-  const tracking = round != null;
   const [scorecardOpen, setScorecardOpen] = useState(false);
+
+  // Keep player HCP in sync when Settings (or another tab) saves.
+  useEffect(() => {
+    const syncProfile = () => {
+      const next = loadGolfProfile();
+      if (next) setProfile(next);
+    };
+    const onCustom = () => syncProfile();
+    window.addEventListener('teeready-profile-changed', onCustom);
+    window.addEventListener('storage', syncProfile);
+    window.addEventListener('focus', syncProfile);
+    return () => {
+      window.removeEventListener('teeready-profile-changed', onCustom);
+      window.removeEventListener('storage', syncProfile);
+      window.removeEventListener('focus', syncProfile);
+    };
+  }, []);
+
+  const tracking =
+    round != null && course != null && round.courseId === course.id;
   const [gpsFollow, setGpsFollow] = useState(false);
   const gpsOn = viewMode === 'gps' || tracking;
   const {
@@ -411,10 +430,33 @@ export function GolfView() {
       setTarget(null);
       setBookOpen(false);
       setSheetExpanded(false);
+      setScorecardOpen(false);
+      // Don't keep showing a scorecard/round for a different course.
+      setRound((prev) => {
+        if (prev && prev.courseId !== next.id) {
+          clearRound();
+          return null;
+        }
+        return prev;
+      });
       if (isMobile) setPickerOpen(false);
     },
     [isMobile],
   );
+
+  const openScorecard = useCallback(() => {
+    if (!course) return;
+    if (!round || round.courseId !== course.id) {
+      const r = newRound(
+        course.id,
+        course.name,
+        resolvedLoop ?? undefined,
+      );
+      setRound(r);
+      saveRound(r);
+    }
+    setScorecardOpen(true);
+  }, [course, round, resolvedLoop]);
 
   const startRound = useCallback(() => {
     if (!course) return;
@@ -939,19 +981,7 @@ export function GolfView() {
                   </span>
                   <button
                     type="button"
-                    onClick={() => {
-                      if (!course) return;
-                      if (!round) {
-                        const r = newRound(
-                          course.id,
-                          course.name,
-                          resolvedLoop ?? undefined,
-                        );
-                        setRound(r);
-                        saveRound(r);
-                      }
-                      setScorecardOpen(true);
-                    }}
+                    onClick={openScorecard}
                     title={`Scorecard · HCP ${formatHandicap(profile.handicap)}`}
                     className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-semibold text-[var(--ink-2)] hover:bg-white/10"
                   >
@@ -1127,7 +1157,10 @@ export function GolfView() {
               </DraggableBox>
             ) : null}
 
-            {scorecardOpen && round ? (
+            {scorecardOpen &&
+            round &&
+            course &&
+            round.courseId === course.id ? (
               <DraggableBox
                 id="scorecard"
                 defaultAnchor={{ left: 12, top: 56 }}

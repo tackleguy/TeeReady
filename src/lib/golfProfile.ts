@@ -16,7 +16,8 @@ export interface BagClub {
   carryYards?: number;
 }
 
-const STORAGE_KEY = 'golf-player-v1';
+const STORAGE_KEY = 'teeready-golf-player-v1';
+const LEGACY_KEYS = ['golf-player-v1', 'ws-golf-player-v1'] as const;
 
 /** Typical roll on top of air carry, so planning uses finish distance. */
 const ROLL_PCT: Record<string, number> = {
@@ -89,17 +90,23 @@ export function missLabel(miss: MissBias): string {
 
 export function loadGolfProfile(): GolfPlayerProfile | null {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    let raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      for (const key of LEGACY_KEYS) {
+        raw = localStorage.getItem(key);
+        if (raw) break;
+      }
+    }
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<GolfPlayerProfile>;
     if (
-      !Number.isFinite(parsed.handicap) ||
-      !Number.isFinite(parsed.sevenIronYards) ||
-      !Number.isFinite(parsed.driverYards)
+      !Number.isFinite(Number(parsed.handicap)) ||
+      !Number.isFinite(Number(parsed.sevenIronYards)) ||
+      !Number.isFinite(Number(parsed.driverYards))
     ) {
       return null;
     }
-    return {
+    const profile: GolfPlayerProfile = {
       commonCourses: Array.isArray(parsed.commonCourses)
         ? parsed.commonCourses.filter((x): x is string => typeof x === 'string')
         : [],
@@ -114,6 +121,13 @@ export function loadGolfProfile(): GolfPlayerProfile | null {
       sevenIronYards: Number(parsed.sevenIronYards),
       driverYards: Number(parsed.driverYards),
     };
+    // Migrate off shared WeatherStop keys so values stop getting overwritten.
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
+    } catch {
+      // ignore
+    }
+    return profile;
   } catch {
     return null;
   }
@@ -131,6 +145,9 @@ export function saveGolfProfile(
   };
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(safe));
+    window.dispatchEvent(
+      new CustomEvent('teeready-profile-changed', { detail: safe }),
+    );
   } catch {
     // Profile still works for this session when storage is unavailable.
   }
