@@ -29,6 +29,7 @@ import { GolfTargetHud } from '../components/golf/GolfTargetHud';
 import { GolfYardageBook } from '../components/golf/GolfYardageBook';
 import { GpsMod } from '../components/golf/GpsMod';
 import { GlassPanel } from '../components/ui/GlassPanel';
+import { DraggableBox, clearPanelPositions } from '../components/ui/DraggableBox';
 import { SearchBar } from '../components/radar/SearchBar';
 import { INITIAL_SEED } from '../constants/cities';
 import { useIsMobile } from '../hooks/useMediaQuery';
@@ -890,32 +891,42 @@ export function GolfView() {
             ) : null}
 
             {viewMode === 'prep' && activeHoleObj && target && profile ? (
-              <GolfTargetHud
-                hole={activeHoleObj}
-                target={target}
-                bag={bag}
-                brief={activeBrief}
-                elevFt={courseElevFt}
-                turf={turf}
-                forecast={forecast}
-                mode={planningMode}
-                onReset={() =>
-                  setTarget(
-                    defaultTarget(
-                      activeHoleObj,
-                      bag[0]?.yards ?? profile.driverYards,
-                    ),
-                  )
-                }
-              />
+              <DraggableBox
+                id="prep-hud"
+                defaultAnchor={{ left: 12, bottom: 16 }}
+                zIndex={22}
+              >
+                <GolfTargetHud
+                  hole={activeHoleObj}
+                  target={target}
+                  bag={bag}
+                  brief={activeBrief}
+                  elevFt={courseElevFt}
+                  turf={turf}
+                  forecast={forecast}
+                  mode={planningMode}
+                  onReset={() =>
+                    setTarget(
+                      defaultTarget(
+                        activeHoleObj,
+                        bag[0]?.yards ?? profile.driverYards,
+                      ),
+                    )
+                  }
+                />
+              </DraggableBox>
             ) : null}
 
             {/* Scorecard — Prep/GPS chosen from Rounds nav dropdown */}
             {course ? (
-              <div className="pointer-events-none absolute right-3 top-3 z-10 md:right-[352px]">
+              <DraggableBox
+                id="mode-card"
+                defaultAnchor={{ right: 12, top: 12 }}
+                zIndex={24}
+              >
                 <GlassPanel
                   variant="high"
-                  className="pointer-events-auto flex items-center gap-1 p-1 shadow-xl"
+                  className="flex items-center gap-1 overflow-hidden p-1 shadow-xl"
                 >
                   <span
                     className={
@@ -947,16 +958,28 @@ export function GolfView() {
                     <ClipboardList className="h-3.5 w-3.5" />
                     Card
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => clearPanelPositions()}
+                    title="Reset panel layout"
+                    className="rounded-lg px-2 py-1.5 text-[11px] font-medium text-[var(--ink-4)] hover:bg-white/10 hover:text-[var(--ink-2)]"
+                  >
+                    Reset
+                  </button>
                 </GlassPanel>
-              </div>
+              </DraggableBox>
             ) : null}
 
             {/* Hole-by-hole walkthrough + course switcher */}
             {(isMobile || playHoles.length > 0) && (
-              <div className="pointer-events-none absolute inset-x-0 top-3 z-10 flex justify-center px-3 md:right-[352px] md:left-3 md:inset-x-auto md:justify-start">
+              <DraggableBox
+                id="hole-nav"
+                defaultAnchor={{ left: 12, top: 12 }}
+                zIndex={23}
+              >
                 <GlassPanel
                   variant="high"
-                  className="pointer-events-auto flex max-w-full items-center gap-0.5 px-1 py-1 shadow-xl"
+                  className="flex max-w-[min(100vw-2rem,28rem)] items-center gap-0.5 overflow-hidden px-1 py-1 shadow-xl"
                 >
                   {isMobile ? (
                     <button
@@ -1073,12 +1096,17 @@ export function GolfView() {
                     </>
                   ) : null}
                 </GlassPanel>
-              </div>
+              </DraggableBox>
             )}
 
             {/* GPS HUD — only in GPS mode */}
             {course && viewMode === 'gps' ? (
-              <div className="pointer-events-none absolute left-3 top-3 z-10 w-[min(100%-1.5rem,280px)]">
+              <DraggableBox
+                id="gps-mod"
+                defaultAnchor={{ left: 12, top: 64 }}
+                zIndex={22}
+                style={{ width: 'min(100vw - 1.5rem, 280px)' }}
+              >
                 <GpsMod
                   enabled={gpsOn}
                   follow={gpsFollow}
@@ -1096,32 +1124,46 @@ export function GolfView() {
                   onDropShot={tracking ? dropShot : undefined}
                   canDropShot={Boolean(tracking && gpsPos && activeHoleObj)}
                 />
-              </div>
+              </DraggableBox>
             ) : null}
 
             {scorecardOpen && round ? (
-              <div className="absolute inset-x-3 bottom-3 top-16 z-30 md:inset-x-auto md:left-3 md:right-[352px] md:top-14">
-                <GolfScorecard
-                  holes={playHoles}
-                  round={round}
-                  handicap={profile.handicap}
-                  onChange={(next) => {
-                    setRound(next);
-                    saveRound(next);
-                  }}
-                  onClose={() => setScorecardOpen(false)}
-                />
-              </div>
+              <DraggableBox
+                id="scorecard"
+                defaultAnchor={{ left: 12, top: 56 }}
+                zIndex={40}
+                style={{
+                  width: 'min(100vw - 1.5rem, 640px)',
+                  height: 'min(70dvh, 560px)',
+                }}
+              >
+                <div className="h-full overflow-hidden rounded-b-card">
+                  <GolfScorecard
+                    holes={playHoles}
+                    round={round}
+                    handicap={profile.handicap}
+                    onChange={(next) => {
+                      setRound(next);
+                      saveRound(next);
+                    }}
+                    onClose={() => setScorecardOpen(false)}
+                  />
+                </div>
+              </DraggableBox>
             ) : null}
 
             {/* Shot tracker info bar */}
             {tracking && activeHoleObj && activeHoleShots.length > 0 && (
-              <div className="pointer-events-none absolute inset-x-0 bottom-[calc(10rem+12px)] z-10 flex justify-center px-3 md:right-[352px] md:left-3 md:inset-x-auto md:bottom-3 md:justify-start">
+              <DraggableBox
+                id="shot-bar"
+                defaultAnchor={{ left: 12, bottom: 180 }}
+                zIndex={21}
+              >
                 <GlassPanel
                   variant="high"
-                  className="pointer-events-auto px-3 py-2 shadow-xl"
+                  className="overflow-hidden px-3 py-2 shadow-xl"
                 >
-                  <div className="flex items-center gap-3 text-[11px]">
+                  <div className="flex max-w-[min(100vw-2rem,36rem)] flex-wrap items-center gap-3 text-[11px]">
                     <span className="font-semibold text-pink-200">
                       Hole {activeHoleObj.number}
                     </span>
@@ -1132,19 +1174,31 @@ export function GolfView() {
                     ))}
                   </div>
                 </GlassPanel>
-              </div>
+              </DraggableBox>
             )}
 
-            <div
-              className={
+            <DraggableBox
+              id="intel-panel"
+              defaultAnchor={
                 isMobile
-                  ? 'pointer-events-none absolute inset-x-0 bottom-0 z-10 p-3'
-                  : 'pointer-events-none absolute inset-x-0 bottom-0 p-3 md:inset-x-auto md:right-3 md:top-3 md:bottom-3 md:w-[332px]'
+                  ? { left: 12, bottom: 12 }
+                  : { right: 12, top: 12 }
               }
+              zIndex={18}
+              style={{
+                width: isMobile
+                  ? 'min(100vw - 1.5rem, 100%)'
+                  : 'min(100vw - 1.5rem, 332px)',
+                maxHeight: isMobile
+                  ? sheetExpanded
+                    ? 'min(58dvh, 26rem)'
+                    : '11rem'
+                  : 'min(100% - 1.5rem, calc(100dvh - 6rem))',
+              }}
             >
               <GlassPanel
                 className={[
-                  'pointer-events-auto flex flex-col overflow-hidden p-0 shadow-xl',
+                  'flex max-h-[inherit] flex-col overflow-hidden p-0 shadow-xl',
                   isMobile
                     ? sheetExpanded
                       ? 'max-h-[min(58dvh,26rem)]'
@@ -1417,7 +1471,7 @@ export function GolfView() {
                   </div>
                 )}
               </GlassPanel>
-            </div>
+            </DraggableBox>
           </>
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-3 bg-[var(--surface-0)] px-6 text-center">

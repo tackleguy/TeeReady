@@ -61,9 +61,8 @@ export function GolfTargetHud({
   const greenYds = distancesToGreen(from, greenMarks(hole));
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 top-16 z-10 flex justify-center px-3 lg:top-auto lg:bottom-4 lg:right-[352px] lg:left-3 lg:inset-x-auto lg:justify-start">
       <div
-        className="pointer-events-auto w-full max-w-[420px] rounded-xl border border-[color-mix(in_srgb,var(--brand)_40%,transparent)] px-3 py-2.5 shadow-xl backdrop-blur-[28px]"
+        className="w-[min(100vw-1.5rem,420px)] rounded-xl border border-[color-mix(in_srgb,var(--brand)_40%,transparent)] px-3 py-2.5 shadow-xl backdrop-blur-[28px]"
         style={{ background: 'var(--glass-hi)' }}
       >
         <div className="mb-1.5 flex items-center justify-between gap-2">
@@ -181,6 +180,5 @@ export function GolfTargetHud({
           </div>
         )}
       </div>
-    </div>
   );
 }
