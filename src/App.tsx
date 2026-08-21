@@ -13,6 +13,7 @@ import { SearchBar } from './components/radar/SearchBar';
 import { hasStoredRound } from './lib/golfTracker';
 import { CURRENT_LOCATION } from './lib/mock';
 import { applyTheme, loadTheme } from './lib/theme';
+import { AuthProvider } from './lib/auth';
 import { CoursesView } from './routes/CoursesView';
 import { GroupView } from './routes/GroupView';
 import { SettingsView } from './routes/SettingsView';
@@ -143,7 +144,9 @@ function Shell() {
 export default function App() {
   return (
     <BrowserRouter>
-      <Shell />
+      <AuthProvider>
+        <Shell />
+      </AuthProvider>
     </BrowserRouter>
   );
 }

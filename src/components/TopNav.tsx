@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
+import { hasStoredRound } from '../lib/golfTracker';
+import { useAuth } from '../lib/auth';
 import {
   CURRENT_LOCATION,
   loadDisplayProfile,
   type DisplayProfile,
 } from '../lib/mock';
-import { hasStoredRound } from '../lib/golfTracker';
 
 interface Props {
   locationLabel?: string;
@@ -145,6 +146,7 @@ export function TopNav({
   locationLabel = CURRENT_LOCATION,
   onLocationClick,
 }: Props) {
+  const { user } = useAuth();
   const [profile, setProfile] = useState<DisplayProfile>(() =>
     loadDisplayProfile(),
   );
@@ -207,12 +209,20 @@ export function TopNav({
           >
             {locationLabel}
           </button>
+          {!user ? (
+            <NavLink
+              to="/settings"
+              className="hidden rounded-[10px] border border-line bg-surface px-3 py-2 text-[12px] font-semibold text-muted hover:text-ink sm:inline-flex"
+            >
+              Sign in
+            </NavLink>
+          ) : null}
           <NavLink
             to="/settings"
-            title="Settings"
+            title={user?.email ? `Account · ${user.email}` : 'Settings'}
             aria-label="Open settings"
             className={({ isActive }) =>
-              `grid h-8 w-8 place-items-center rounded-full font-mono text-[10px] font-semibold transition-colors ${
+              `relative grid h-8 w-8 place-items-center rounded-full font-mono text-[10px] font-semibold transition-colors ${
                 isActive
                   ? 'bg-brand text-white'
                   : 'bg-brand-soft text-brand hover:ring-2 hover:ring-brand/20'
@@ -220,6 +230,12 @@ export function TopNav({
             }
           >
             {profile.initials}
+            {user ? (
+              <span
+                className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-brand ring-2 ring-[var(--canvas)]"
+                aria-hidden
+              />
+            ) : null}
           </NavLink>
         </div>
       </div>

@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import { AccountPanel } from '../components/AccountPanel';
+import { useAuth } from '../lib/auth';
+import { upsertCloudProfile } from '../lib/accountProfile';
 import {
   bagFromStocks,
   DEFAULT_PROFILE,
@@ -43,6 +46,7 @@ function inputClassName() {
 }
 
 export function SettingsView() {
+  const { user } = useAuth();
   const [name, setName] = useState(() => loadDisplayProfile().name);
   const [commonText, setCommonText] = useState('');
   const [handicap, setHandicap] = useState(DEFAULT_PROFILE.handicap);
@@ -58,16 +62,25 @@ export function SettingsView() {
   // Re-read storage whenever Settings is shown so leftovers don't leave a
   // stale form that overwrites a good save.
   useEffect(() => {
-    const saved = loadGolfProfile() ?? DEFAULT_PROFILE;
-    const display = loadDisplayProfile();
-    setName(display.name);
-    setCommonText(saved.commonCourses.join(', '));
-    setHandicap(saved.handicap);
-    setMiss(saved.miss);
-    setSevenIronYards(saved.sevenIronYards);
-    setDriverYards(saved.driverYards);
-    setThemeId(loadTheme());
-    setHasRound(loadRound() != null);
+    const refresh = () => {
+      const saved = loadGolfProfile() ?? DEFAULT_PROFILE;
+      const display = loadDisplayProfile();
+      setName(display.name);
+      setCommonText(saved.commonCourses.join(', '));
+      setHandicap(saved.handicap);
+      setMiss(saved.miss);
+      setSevenIronYards(saved.sevenIronYards);
+      setDriverYards(saved.driverYards);
+      setThemeId(loadTheme());
+      setHasRound(loadRound() != null);
+    };
+    refresh();
+    window.addEventListener('teeready-profile-changed', refresh);
+    window.addEventListener('teeready-display-changed', refresh);
+    return () => {
+      window.removeEventListener('teeready-profile-changed', refresh);
+      window.removeEventListener('teeready-display-changed', refresh);
+    };
   }, []);
 
   const bagPreview = useMemo(
@@ -95,7 +108,7 @@ export function SettingsView() {
     );
   };
 
-  const saveAll = () => {
+  const saveAll = async () => {
     if (!canSave) return;
     const commonCourses = commonText
       .split(/[,;\n]+/)
@@ -112,7 +125,16 @@ export function SettingsView() {
     const next: DisplayProfile = saveDisplayProfile({ name: name.trim() });
     setName(next.name);
     setTheme(theme);
-    flash('Settings saved');
+    if (user?.id) {
+      try {
+        await upsertCloudProfile(user.id);
+        flash('Settings saved · synced');
+      } catch {
+        flash('Settings saved locally (sync failed)');
+      }
+    } else {
+      flash('Settings saved');
+    }
   };
 
   const onClearRound = () => {
@@ -138,6 +160,8 @@ export function SettingsView() {
           </span>
         ) : null}
       </div>
+
+      <AccountPanel />
 
       <section className="rounded-card bg-surface p-5 shadow-card">
         <h2 className="text-[15px] font-bold text-ink">Appearance</h2>
