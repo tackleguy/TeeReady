@@ -196,6 +196,13 @@ export function saveRound(round: TrackedRound): void {
   } catch {
     // Storage full or unavailable — round still works in memory.
   }
+  try {
+    window.dispatchEvent(
+      new CustomEvent('teeready-round-changed', { detail: round }),
+    );
+  } catch {
+    // ignore
+  }
 }
 
 export function loadRound(): TrackedRound | null {
@@ -222,4 +229,16 @@ export function clearRound(): void {
   } catch {
     // Ignore.
   }
+  try {
+    window.dispatchEvent(
+      new CustomEvent('teeready-round-changed', { detail: null }),
+    );
+  } catch {
+    // ignore
+  }
+}
+
+/** True when a tracked round is stored (for nav / keep-alive). */
+export function hasStoredRound(): boolean {
+  return loadRound() != null;
 }

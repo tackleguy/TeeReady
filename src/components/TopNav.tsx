@@ -6,6 +6,7 @@ import {
   loadDisplayProfile,
   type DisplayProfile,
 } from '../lib/mock';
+import { hasStoredRound } from '../lib/golfTracker';
 
 interface Props {
   locationLabel?: string;
@@ -36,12 +37,23 @@ function linkClass(active: boolean) {
 function RoundsMenu({ mobile = false }: { mobile?: boolean }) {
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const [liveRound, setLiveRound] = useState(() => hasStoredRound());
   const rootRef = useRef<HTMLDivElement>(null);
   const roundsActive = location.pathname.startsWith('/rounds');
 
   useEffect(() => {
     setOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    const sync = () => setLiveRound(hasStoredRound());
+    window.addEventListener('teeready-round-changed', sync);
+    window.addEventListener('focus', sync);
+    return () => {
+      window.removeEventListener('teeready-round-changed', sync);
+      window.removeEventListener('focus', sync);
+    };
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -71,6 +83,13 @@ function RoundsMenu({ mobile = false }: { mobile?: boolean }) {
         }`}
       >
         Rounds
+        {liveRound ? (
+          <span
+            className="ml-0.5 inline-block h-1.5 w-1.5 rounded-full bg-brand"
+            title="Round running in background"
+            aria-label="Round live"
+          />
+        ) : null}
         <ChevronDown
           className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`}
           strokeWidth={2.2}

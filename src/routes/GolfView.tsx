@@ -1,7 +1,7 @@
 // Golf: OSM courses + satellite map + multi-model hole wind briefs.
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   BookOpen,
   ChevronDown,
@@ -178,8 +178,9 @@ function ChipRow({
   );
 }
 
-export function GolfView() {
+export function GolfView({ active = true }: { active?: boolean }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const isMobile = useIsMobile();
   const [profile, setProfile] = useState<GolfPlayerProfile>(
     () => loadGolfProfile() ?? DEFAULT_PROFILE,
@@ -201,15 +202,32 @@ export function GolfView() {
   const [bookOpen, setBookOpen] = useState(false);
   const [mapReady, setMapReady] = useState(false);
 
-  // ── Shot tracker + Prep / GPS from nav route ──
-  const { mode: modeParam } = useParams<{ mode?: string }>();
-  const viewMode: 'prep' | 'gps' = modeParam === 'gps' ? 'gps' : 'prep';
+  // Prep / GPS from URL when on /rounds; keep last mode while backgrounded.
+  const pathMode: 'prep' | 'gps' | null = location.pathname.includes(
+    '/rounds/gps',
+  )
+    ? 'gps'
+    : location.pathname.includes('/rounds/prep')
+      ? 'prep'
+      : null;
+  const [lastMode, setLastMode] = useState<'prep' | 'gps'>('prep');
+  useEffect(() => {
+    if (pathMode) setLastMode(pathMode);
+  }, [pathMode]);
+  const viewMode: 'prep' | 'gps' = pathMode ?? lastMode;
 
   useEffect(() => {
-    if (modeParam && modeParam !== 'prep' && modeParam !== 'gps') {
+    if (!active) return;
+    if (
+      location.pathname === '/rounds' ||
+      (location.pathname.startsWith('/rounds/') &&
+        pathMode == null &&
+        location.pathname !== '/rounds/prep' &&
+        location.pathname !== '/rounds/gps')
+    ) {
       navigate('/rounds/prep', { replace: true });
     }
-  }, [modeParam, navigate]);
+  }, [active, location.pathname, pathMode, navigate]);
 
   const [round, setRound] = useState<TrackedRound | null>(() => loadRound());
   const [scorecardOpen, setScorecardOpen] = useState(false);
@@ -234,7 +252,8 @@ export function GolfView() {
   const tracking =
     round != null && course != null && round.courseId === course.id;
   const [gpsFollow, setGpsFollow] = useState(false);
-  const gpsOn = viewMode === 'gps' || tracking;
+  // Keep GPS running in the background while a round is live.
+  const gpsOn = tracking || (active && viewMode === 'gps');
   const {
     position: gpsPos,
     error: gpsError,
@@ -244,12 +263,21 @@ export function GolfView() {
   } = useGpsWatch(gpsOn);
 
   useEffect(() => {
-    if (viewMode === 'gps') {
+    if (viewMode === 'gps' && active) {
       locateOnce();
-    } else {
+    } else if (!tracking) {
       setGpsFollow(false);
     }
-  }, [viewMode, locateOnce]);
+  }, [viewMode, locateOnce, active, tracking]);
+
+  // Mapbox needs a resize after the keep-alive layer is shown again.
+  useEffect(() => {
+    if (!active) return;
+    const id = window.setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 50);
+    return () => window.clearTimeout(id);
+  }, [active]);
 
   const searchLat = course?.lat ?? loc.lat;
   const searchLon = course?.lon ?? loc.lon;

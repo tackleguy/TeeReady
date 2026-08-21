@@ -369,6 +369,27 @@ body {
   overflow: hidden;
 }
 
+/* Keep Rounds mounted off-screen so GPS / round state survive tab changes. */
+.rounds-keepalive {
+  position: fixed;
+  inset: 0;
+  top: 4.5rem;
+  z-index: -1;
+  visibility: hidden;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.rounds-keepalive.is-active {
+  position: absolute;
+  inset: 0;
+  top: 0;
+  z-index: 0;
+  visibility: visible;
+  pointer-events: auto;
+  opacity: 1;
+}
+
 @media (max-width: 768px) {
   .app-main {
     padding: 1rem 1.25rem 1.5rem;
@@ -376,6 +397,10 @@ body {
 
   .app-main.rounds {
     height: calc(100dvh - 6.75rem);
+  }
+
+  .rounds-keepalive {
+    top: 6.75rem;
   }
 }
 
