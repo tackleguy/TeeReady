@@ -32,8 +32,15 @@ const AuthContext = createContext<AuthState | null>(null);
 
 function friendlyAuthError(message: string): string {
   const m = message.toLowerCase();
-  if (m.includes('invalid login')) return 'Wrong email or password.';
-  if (m.includes('already registered')) return 'That email already has an account.';
+  if (m.includes('email not confirmed') || m.includes('not confirmed')) {
+    return 'Confirm your email first (check inbox / spam), then sign in.';
+  }
+  if (m.includes('invalid login') || m.includes('invalid credentials')) {
+    return 'Wrong email or password.';
+  }
+  if (m.includes('already registered')) {
+    return 'That email already has an account — try Sign in.';
+  }
   if (m.includes('password')) return message;
   if (m.includes('rate limit')) return 'Too many attempts — try again shortly.';
   return message || 'Something went wrong.';
