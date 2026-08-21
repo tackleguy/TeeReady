@@ -86,8 +86,9 @@ function Shell() {
             <Route path="/courses" element={<CoursesView />} />
             <Route path="/group" element={<GroupView />} />
             <Route path="/settings" element={<SettingsView />} />
-            <Route path="/rounds" element={<GolfView />} />
-            <Route path="/golf" element={<Navigate to="/rounds" replace />} />
+            <Route path="/rounds" element={<Navigate to="/rounds/prep" replace />} />
+            <Route path="/rounds/:mode" element={<GolfView />} />
+            <Route path="/golf" element={<Navigate to="/rounds/prep" replace />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>

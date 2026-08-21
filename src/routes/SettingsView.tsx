@@ -355,7 +355,7 @@ export function SettingsView() {
           Save settings
         </button>
         <Link
-          to="/rounds"
+          to="/rounds/prep"
           className="rounded-xl border border-line bg-surface px-5 py-2.5 text-[13px] font-semibold text-muted hover:text-ink"
         >
           Open rounds

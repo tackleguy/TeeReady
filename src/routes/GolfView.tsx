@@ -1,7 +1,7 @@
 // Golf: OSM courses + satellite map + multi-model hole wind briefs.
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   BookOpen,
   ChevronDown,
@@ -200,10 +200,18 @@ export function GolfView() {
   const [bookOpen, setBookOpen] = useState(false);
   const [mapReady, setMapReady] = useState(false);
 
-  // ── Shot tracker + Prep / GPS modes ──
+  // ── Shot tracker + Prep / GPS from nav route ──
+  const { mode: modeParam } = useParams<{ mode?: string }>();
+  const viewMode: 'prep' | 'gps' = modeParam === 'gps' ? 'gps' : 'prep';
+
+  useEffect(() => {
+    if (modeParam && modeParam !== 'prep' && modeParam !== 'gps') {
+      navigate('/rounds/prep', { replace: true });
+    }
+  }, [modeParam, navigate]);
+
   const [round, setRound] = useState<TrackedRound | null>(() => loadRound());
   const tracking = round != null;
-  const [viewMode, setViewMode] = useState<'prep' | 'gps'>('prep');
   const [scorecardOpen, setScorecardOpen] = useState(false);
   const [gpsFollow, setGpsFollow] = useState(false);
   const gpsOn = viewMode === 'gps' || tracking;
@@ -214,6 +222,14 @@ export function GolfView() {
     locating: gpsLocating,
     locateOnce,
   } = useGpsWatch(gpsOn);
+
+  useEffect(() => {
+    if (viewMode === 'gps') {
+      locateOnce();
+    } else {
+      setGpsFollow(false);
+    }
+  }, [viewMode, locateOnce]);
 
   const searchLat = course?.lat ?? loc.lat;
   const searchLon = course?.lon ?? loc.lon;
@@ -894,42 +910,22 @@ export function GolfView() {
               />
             ) : null}
 
-            {/* Mode switch: Prep (misses) vs GPS (live F/M/B) */}
+            {/* Scorecard — Prep/GPS chosen from Rounds nav dropdown */}
             {course ? (
               <div className="pointer-events-none absolute right-3 top-3 z-10 md:right-[352px]">
                 <GlassPanel
                   variant="high"
                   className="pointer-events-auto flex items-center gap-1 p-1 shadow-xl"
                 >
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setViewMode('prep');
-                      setGpsFollow(false);
-                    }}
-                    className={
-                      viewMode === 'prep'
-                        ? 'rounded-lg bg-brand px-2.5 py-1.5 text-[11px] font-bold text-white'
-                        : 'rounded-lg px-2.5 py-1.5 text-[11px] font-semibold text-[var(--ink-3)] hover:text-[var(--ink-1)]'
-                    }
-                  >
-                    Prep
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setViewMode('gps');
-                      locateOnce();
-                    }}
+                  <span
                     className={
                       viewMode === 'gps'
                         ? 'rounded-lg bg-[#3b82f6] px-2.5 py-1.5 text-[11px] font-bold text-white'
-                        : 'rounded-lg px-2.5 py-1.5 text-[11px] font-semibold text-[var(--ink-3)] hover:text-[var(--ink-1)]'
+                        : 'rounded-lg bg-brand px-2.5 py-1.5 text-[11px] font-bold text-white'
                     }
                   >
-                    GPS
-                  </button>
-                  <span className="mx-0.5 h-5 w-px bg-[var(--line-subtle)]" />
+                    {viewMode === 'gps' ? 'GPS' : 'Prep'}
+                  </span>
                   <button
                     type="button"
                     onClick={() => {

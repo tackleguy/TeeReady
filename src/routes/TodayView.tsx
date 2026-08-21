@@ -28,13 +28,13 @@ export function TodayView() {
           </p>
           <div className="flex flex-wrap items-center gap-2.5">
             <Link
-              to="/rounds"
+              to="/rounds/prep"
               className="rounded-xl bg-white px-4 py-2.5 text-[13px] font-bold text-ink"
             >
               Open hole plan
             </Link>
             <Link
-              to="/rounds"
+              to="/rounds/prep"
               className="rounded-xl border border-white/50 px-4 py-2.5 text-[13px] font-semibold text-white"
             >
               Add to round

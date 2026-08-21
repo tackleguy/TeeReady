@@ -32,7 +32,7 @@ export function CoursesView() {
                   {course.distanceMi} mi · {course.wind}
                 </p>
                 <Link
-                  to="/rounds"
+                  to="/rounds/prep"
                   className="mt-3 inline-block text-[13px] font-semibold text-brand hover:underline"
                 >
                   Open hole plan

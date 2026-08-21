@@ -3,10 +3,15 @@ export type NavItem = { label: string; href: string };
 export const NAV_ITEMS: NavItem[] = [
   { label: 'Today', href: '/' },
   { label: 'Courses', href: '/courses' },
-  { label: 'Rounds', href: '/rounds' },
+  { label: 'Rounds', href: '/rounds/prep' },
   { label: 'Group', href: '/group' },
   { label: 'Settings', href: '/settings' },
 ];
+
+export const ROUNDS_MODES = [
+  { label: 'Prep', href: '/rounds/prep' },
+  { label: 'GPS', href: '/rounds/gps' },
+] as const;
 
 export const CURRENT_USER = {
   name: 'Jordan Doyle',

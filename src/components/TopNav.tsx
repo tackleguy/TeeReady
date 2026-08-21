@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { ChevronDown } from 'lucide-react';
 import {
   CURRENT_LOCATION,
-  NAV_ITEMS,
   loadDisplayProfile,
   type DisplayProfile,
 } from '../lib/mock';
@@ -10,6 +10,116 @@ import {
 interface Props {
   locationLabel?: string;
   onLocationClick?: () => void;
+}
+
+const ROUNDS_LINKS = [
+  {
+    label: 'Prep',
+    href: '/rounds/prep',
+    hint: 'Miss lines · front / mid / back',
+  },
+  {
+    label: 'GPS',
+    href: '/rounds/gps',
+    hint: 'Live ranging · no misses',
+  },
+] as const;
+
+function linkClass(active: boolean) {
+  return `text-[13px] transition-colors ${
+    active
+      ? 'font-semibold text-brand'
+      : 'font-medium text-muted hover:text-ink'
+  }`;
+}
+
+function RoundsMenu({ mobile = false }: { mobile?: boolean }) {
+  const location = useLocation();
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const roundsActive = location.pathname.startsWith('/rounds');
+
+  useEffect(() => {
+    setOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', onDoc);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDoc);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  return (
+    <div ref={rootRef} className={`relative ${mobile ? '' : ''}`}>
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-haspopup="menu"
+        onClick={() => setOpen((v) => !v)}
+        className={`inline-flex items-center gap-1 ${linkClass(roundsActive)} ${
+          mobile ? 'whitespace-nowrap' : ''
+        }`}
+      >
+        Rounds
+        <ChevronDown
+          className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`}
+          strokeWidth={2.2}
+        />
+      </button>
+
+      {open ? (
+        <div
+          role="menu"
+          className={`absolute z-40 overflow-hidden rounded-xl border border-line bg-surface shadow-lift ${
+            mobile
+              ? 'left-0 top-full mt-2 min-w-[200px]'
+              : 'left-0 top-full mt-2 min-w-[220px]'
+          }`}
+        >
+          {ROUNDS_LINKS.map((item) => (
+            <NavLink
+              key={item.href}
+              to={item.href}
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className={({ isActive }) =>
+                `block px-3.5 py-2.5 transition-colors ${
+                  isActive
+                    ? 'bg-brand-soft'
+                    : 'hover:bg-[color-mix(in_srgb,var(--canvas)_80%,transparent)]'
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <div
+                    className={`text-[13px] ${
+                      isActive
+                        ? 'font-semibold text-brand'
+                        : 'font-semibold text-ink'
+                    }`}
+                  >
+                    {item.label}
+                  </div>
+                  <div className="mt-0.5 text-[11px] text-muted">{item.hint}</div>
+                </>
+              )}
+            </NavLink>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 export function TopNav({
@@ -41,22 +151,32 @@ export function TopNav({
             TeeReady
           </NavLink>
           <nav className="hidden items-center gap-5 md:flex">
-            {NAV_ITEMS.map((item) => (
-              <NavLink
-                key={item.href}
-                to={item.href}
-                end={item.href === '/'}
-                className={({ isActive }) =>
-                  `text-[13px] transition-colors ${
-                    isActive
-                      ? 'font-semibold text-brand'
-                      : 'font-medium text-muted hover:text-ink'
-                  }`
-                }
-              >
-                {item.label}
-              </NavLink>
-            ))}
+            <NavLink
+              to="/"
+              end
+              className={({ isActive }) => linkClass(isActive)}
+            >
+              Today
+            </NavLink>
+            <NavLink
+              to="/courses"
+              className={({ isActive }) => linkClass(isActive)}
+            >
+              Courses
+            </NavLink>
+            <RoundsMenu />
+            <NavLink
+              to="/group"
+              className={({ isActive }) => linkClass(isActive)}
+            >
+              Group
+            </NavLink>
+            <NavLink
+              to="/settings"
+              className={({ isActive }) => linkClass(isActive)}
+            >
+              Settings
+            </NavLink>
           </nav>
         </div>
 
@@ -85,23 +205,41 @@ export function TopNav({
         </div>
       </div>
 
-      <nav className="flex gap-5 overflow-x-auto px-5 pb-3 no-scrollbar md:hidden md:px-8">
-        {NAV_ITEMS.map((item) => (
-          <NavLink
-            key={item.href}
-            to={item.href}
-            end={item.href === '/'}
-            className={({ isActive }) =>
-              `whitespace-nowrap text-[13px] ${
-                isActive
-                  ? 'font-semibold text-brand'
-                  : 'font-medium text-muted'
-              }`
-            }
-          >
-            {item.label}
-          </NavLink>
-        ))}
+      <nav className="flex items-center gap-5 overflow-x-auto px-5 pb-3 no-scrollbar md:hidden">
+        <NavLink
+          to="/"
+          end
+          className={({ isActive }) =>
+            `whitespace-nowrap ${linkClass(isActive)}`
+          }
+        >
+          Today
+        </NavLink>
+        <NavLink
+          to="/courses"
+          className={({ isActive }) =>
+            `whitespace-nowrap ${linkClass(isActive)}`
+          }
+        >
+          Courses
+        </NavLink>
+        <RoundsMenu mobile />
+        <NavLink
+          to="/group"
+          className={({ isActive }) =>
+            `whitespace-nowrap ${linkClass(isActive)}`
+          }
+        >
+          Group
+        </NavLink>
+        <NavLink
+          to="/settings"
+          className={({ isActive }) =>
+            `whitespace-nowrap ${linkClass(isActive)}`
+          }
+        >
+          Settings
+        </NavLink>
       </nav>
     </header>
   );
