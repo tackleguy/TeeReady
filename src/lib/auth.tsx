@@ -129,15 +129,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setRememberMe(rememberMe);
       setError(null);
       const name = displayName.trim() || email.split('@')[0] || 'Golfer';
+      const redirectTo =
+        typeof window !== 'undefined' ? `${window.location.origin}/` : undefined;
       const { data, error: err } = await supabase.auth.signUp({
         email: email.trim(),
         password,
         options: {
           data: { display_name: name },
+          emailRedirectTo: redirectTo,
         },
       });
       if (err) {
         const msg = friendlyAuthError(err.message);
+        setError(msg);
+        return { error: msg, needsEmailConfirm: false };
+      }
+      // Supabase returns a user with empty identities when the email is
+      // already registered (no email is sent — security obfuscation).
+      const identities = data.user?.identities ?? [];
+      if (data.user && identities.length === 0) {
+        const msg =
+          'That email already has an account — use Sign in instead.';
         setError(msg);
         return { error: msg, needsEmailConfirm: false };
       }

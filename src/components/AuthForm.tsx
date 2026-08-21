@@ -60,7 +60,9 @@ export function AuthForm({
         const res = await signUp(email, password, displayName, rememberMe);
         if (!res.error) {
           if (res.needsEmailConfirm) {
-            setInfo('Check your email to confirm, then sign in.');
+            setInfo(
+              'Check spam for a confirm link — or sign in if you already have an account. Built-in Supabase email only reaches team addresses.',
+            );
           } else {
             setInfo('Account created — you are signed in.');
             onSuccess?.();
