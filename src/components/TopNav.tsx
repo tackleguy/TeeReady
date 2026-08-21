@@ -166,15 +166,14 @@ export function TopNav({
       <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between px-5 py-4 md:px-8">
         <div className="flex items-center gap-7">
           <NavLink
-            to="/"
+            to="/today"
             className="text-[17px] font-bold tracking-[-0.02em] text-ink"
           >
             TeeReady
           </NavLink>
           <nav className="hidden items-center gap-5 md:flex">
             <NavLink
-              to="/"
-              end
+              to="/today"
               className={({ isActive }) => linkClass(isActive)}
             >
               Today
@@ -209,14 +208,6 @@ export function TopNav({
           >
             {locationLabel}
           </button>
-          {!user ? (
-            <NavLink
-              to="/settings"
-              className="hidden rounded-[10px] border border-line bg-surface px-3 py-2 text-[12px] font-semibold text-muted hover:text-ink sm:inline-flex"
-            >
-              Sign in
-            </NavLink>
-          ) : null}
           <NavLink
             to="/settings"
             title={user?.email ? `Account · ${user.email}` : 'Settings'}
@@ -242,8 +233,7 @@ export function TopNav({
 
       <nav className="flex items-center gap-5 overflow-x-auto px-5 pb-3 no-scrollbar md:hidden">
         <NavLink
-          to="/"
-          end
+          to="/today"
           className={({ isActive }) =>
             `whitespace-nowrap ${linkClass(isActive)}`
           }

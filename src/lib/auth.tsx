@@ -10,6 +10,7 @@ import {
 } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { syncProfileOnSignIn } from './accountProfile';
+import { setRememberMe } from './authStorage';
 import { supabase, supabaseConfigured } from './supabase';
 
 export type AuthState = {
@@ -18,11 +19,16 @@ export type AuthState = {
   session: Session | null;
   user: User | null;
   error: string | null;
-  signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  signIn: (
+    email: string,
+    password: string,
+    rememberMe?: boolean,
+  ) => Promise<{ error: string | null }>;
   signUp: (
     email: string,
     password: string,
     displayName: string,
+    rememberMe?: boolean,
   ) => Promise<{ error: string | null; needsEmailConfirm: boolean }>;
   signOut: () => Promise<void>;
   clearError: () => void;
@@ -86,31 +92,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    if (!supabase) {
-      return { error: 'Accounts are not configured for this build.' };
-    }
-    setError(null);
-    const { error: err } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    });
-    if (err) {
-      const msg = friendlyAuthError(err.message);
-      setError(msg);
-      return { error: msg };
-    }
-    return { error: null };
-  }, []);
+  const signIn = useCallback(
+    async (email: string, password: string, rememberMe = true) => {
+      if (!supabase) {
+        return { error: 'Accounts are not configured for this build.' };
+      }
+      setRememberMe(rememberMe);
+      setError(null);
+      const { error: err } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      if (err) {
+        const msg = friendlyAuthError(err.message);
+        setError(msg);
+        return { error: msg };
+      }
+      return { error: null };
+    },
+    [],
+  );
 
   const signUp = useCallback(
-    async (email: string, password: string, displayName: string) => {
+    async (
+      email: string,
+      password: string,
+      displayName: string,
+      rememberMe = true,
+    ) => {
       if (!supabase) {
         return {
           error: 'Accounts are not configured for this build.',
           needsEmailConfirm: false,
         };
       }
+      setRememberMe(rememberMe);
       setError(null);
       const name = displayName.trim() || email.split('@')[0] || 'Golfer';
       const { data, error: err } = await supabase.auth.signUp({
@@ -151,15 +167,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signOut,
       clearError,
     }),
-    [
-      loading,
-      session,
-      error,
-      signIn,
-      signUp,
-      signOut,
-      clearError,
-    ],
+    [loading, session, error, signIn, signUp, signOut, clearError],
   );
 
   return createElement(AuthContext.Provider, { value }, children);

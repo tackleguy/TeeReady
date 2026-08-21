@@ -369,6 +369,19 @@ body {
   overflow: hidden;
 }
 
+.app-main.landing {
+  max-width: none;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .app-main.landing {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
 /* Keep Rounds mounted off-screen so GPS / round state survive tab changes. */
 .rounds-keepalive {
   position: fixed;

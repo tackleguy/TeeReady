@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState, type ReactNode } from 'react';
 import {
   BrowserRouter,
   Navigate,
@@ -10,12 +10,13 @@ import { InstallPrompt } from './components/InstallPrompt';
 import { ThemeBoot } from './components/ThemeBoot';
 import { TopNav } from './components/TopNav';
 import { SearchBar } from './components/radar/SearchBar';
+import { AuthProvider, useAuth } from './lib/auth';
 import { hasStoredRound } from './lib/golfTracker';
 import { CURRENT_LOCATION } from './lib/mock';
 import { applyTheme, loadTheme } from './lib/theme';
-import { AuthProvider } from './lib/auth';
 import { CoursesView } from './routes/CoursesView';
 import { GroupView } from './routes/GroupView';
+import { HomeLanding } from './routes/HomeLanding';
 import { SettingsView } from './routes/SettingsView';
 import { TodayView } from './routes/TodayView';
 
@@ -39,20 +40,45 @@ function RouteFallback() {
   );
 }
 
+function RequireAuth({ children }: { children: ReactNode }) {
+  const { configured, loading, user } = useAuth();
+  const location = useLocation();
+
+  if (!configured) {
+    return <Navigate to="/" replace state={{ from: location }} />;
+  }
+  if (loading) {
+    return <RouteFallback />;
+  }
+  if (!user) {
+    return <Navigate to="/" replace state={{ from: location }} />;
+  }
+  return <>{children}</>;
+}
+
+function PublicHome() {
+  const { configured, loading, user } = useAuth();
+  if (loading) return <RouteFallback />;
+  if (configured && user) {
+    return <Navigate to="/today" replace />;
+  }
+  return <HomeLanding />;
+}
+
 function Shell() {
   const location = useLocation();
+  const { user, loading } = useAuth();
+  const isLanding = location.pathname === '/';
   const isRounds = location.pathname.startsWith('/rounds');
   const [place, setPlace] = useState(CURRENT_LOCATION);
   const [pickingLocation, setPickingLocation] = useState(false);
-  // Keep Rounds mounted after first visit (or if a round is already live)
-  // so GPS / scorecard state survive navigating to Today, Settings, etc.
   const [keepRoundsAlive, setKeepRoundsAlive] = useState(() =>
     hasStoredRound(),
   );
 
   useEffect(() => {
-    if (isRounds) setKeepRoundsAlive(true);
-  }, [isRounds]);
+    if (isRounds && user) setKeepRoundsAlive(true);
+  }, [isRounds, user]);
 
   useEffect(() => {
     const onRound = (e: Event) => {
@@ -63,17 +89,38 @@ function Shell() {
     return () => window.removeEventListener('teeready-round-changed', onRound);
   }, []);
 
-  const showRoundsLayer = isRounds || keepRoundsAlive;
+  // Drop background round layer after sign-out.
+  useEffect(() => {
+    if (!user) setKeepRoundsAlive(false);
+  }, [user]);
+
+  const showAppChrome = Boolean(user) && !isLanding;
+  const showRoundsLayer = Boolean(user) && (isRounds || keepRoundsAlive);
 
   return (
     <div className="app-shell">
       <ThemeBoot />
-      <TopNav
-        locationLabel={place}
-        onLocationClick={() => setPickingLocation((v) => !v)}
-      />
+      {showAppChrome ? (
+        <TopNav
+          locationLabel={place}
+          onLocationClick={() => setPickingLocation((v) => !v)}
+        />
+      ) : (
+        <header className="sticky top-0 z-30 border-b border-line bg-[color-mix(in_srgb,var(--canvas)_92%,transparent)] backdrop-blur">
+          <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-5 py-4 md:px-8">
+            <span className="text-[17px] font-bold tracking-[-0.02em] text-ink">
+              TeeReady
+            </span>
+            {!loading && !user ? (
+              <span className="text-[12px] font-medium text-muted">
+                Sign in to continue
+              </span>
+            ) : null}
+          </div>
+        </header>
+      )}
 
-      {pickingLocation ? (
+      {pickingLocation && showAppChrome ? (
         <div className="mx-auto w-full max-w-[1400px] px-5 pb-2 pt-3 md:px-8">
           <div className="max-w-md rounded-card border border-line bg-surface p-3 shadow-card">
             <SearchBar
@@ -101,7 +148,15 @@ function Shell() {
         </div>
       ) : null}
 
-      <main className={isRounds ? 'app-main rounds' : 'app-main'}>
+      <main
+        className={
+          isRounds && showAppChrome
+            ? 'app-main rounds'
+            : isLanding
+              ? 'app-main landing'
+              : 'app-main'
+        }
+      >
         {showRoundsLayer ? (
           <div
             className={
@@ -118,25 +173,68 @@ function Shell() {
 
         <Suspense fallback={isRounds ? null : <RouteFallback />}>
           <Routes>
-            <Route path="/" element={<TodayView />} />
-            <Route path="/courses" element={<CoursesView />} />
-            <Route path="/group" element={<GroupView />} />
-            <Route path="/settings" element={<SettingsView />} />
+            <Route path="/" element={<PublicHome />} />
+            <Route
+              path="/today"
+              element={
+                <RequireAuth>
+                  <TodayView />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/courses"
+              element={
+                <RequireAuth>
+                  <CoursesView />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/group"
+              element={
+                <RequireAuth>
+                  <GroupView />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <RequireAuth>
+                  <SettingsView />
+                </RequireAuth>
+              }
+            />
             <Route
               path="/rounds"
-              element={<Navigate to="/rounds/prep" replace />}
+              element={
+                <RequireAuth>
+                  <Navigate to="/rounds/prep" replace />
+                </RequireAuth>
+              }
             />
-            {/* GolfView is keep-alive mounted above; this route only holds the URL. */}
-            <Route path="/rounds/:mode" element={null} />
+            <Route
+              path="/rounds/:mode"
+              element={
+                <RequireAuth>
+                  {null}
+                </RequireAuth>
+              }
+            />
             <Route
               path="/golf"
-              element={<Navigate to="/rounds/prep" replace />}
+              element={
+                <RequireAuth>
+                  <Navigate to="/rounds/prep" replace />
+                </RequireAuth>
+              }
             />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
       </main>
-      <InstallPrompt />
+      {showAppChrome ? <InstallPrompt /> : null}
     </div>
   );
 }

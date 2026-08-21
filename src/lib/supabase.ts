@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { authStorage } from './authStorage';
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 // Prefer legacy anon JWT for supabase-js compatibility; publishable is fallback.
@@ -14,6 +15,8 @@ export const supabase: SupabaseClient | null = supabaseConfigured
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
+        storage: authStorage,
+        storageKey: 'teeready-auth-v1',
       },
     })
   : null;

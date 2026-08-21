@@ -1,7 +1,7 @@
 export type NavItem = { label: string; href: string };
 
 export const NAV_ITEMS: NavItem[] = [
-  { label: 'Today', href: '/' },
+  { label: 'Today', href: '/today' },
   { label: 'Courses', href: '/courses' },
   { label: 'Rounds', href: '/rounds/prep' },
   { label: 'Group', href: '/group' },
