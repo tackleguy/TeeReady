@@ -1,4 +1,4 @@
-import { normalizeGoals, type GoalId } from './goals';
+import { normalizeCustomGoals, normalizeGoals, type GoalId } from './goals';
 
 export type MissBias = 'left' | 'right' | 'both' | 'straight';
 
@@ -9,6 +9,8 @@ export interface GolfPlayerProfile {
   sevenIronYards: number;
   driverYards: number;
   goals: GoalId[];
+  /** Free-text goals the player typed in. */
+  customGoals: string[];
   /** Optional target when working toward lower-handicap. */
   targetHandicap?: number;
 }
@@ -52,6 +54,7 @@ export const DEFAULT_PROFILE: GolfPlayerProfile = {
   sevenIronYards: 150,
   driverYards: 225,
   goals: [],
+  customGoals: [],
 };
 
 export function bagFromStocks(
@@ -127,6 +130,7 @@ export function loadGolfProfile(): GolfPlayerProfile | null {
       sevenIronYards: Number(parsed.sevenIronYards),
       driverYards: Number(parsed.driverYards),
       goals: normalizeGoals(parsed.goals),
+      customGoals: normalizeCustomGoals(parsed.customGoals),
       targetHandicap:
         parsed.targetHandicap != null &&
         Number.isFinite(Number(parsed.targetHandicap))
@@ -155,6 +159,7 @@ export function saveGolfProfile(
     sevenIronYards: Math.max(80, Math.min(220, profile.sevenIronYards)),
     driverYards: Math.max(140, Math.min(360, profile.driverYards)),
     goals: normalizeGoals(profile.goals),
+    customGoals: normalizeCustomGoals(profile.customGoals),
     targetHandicap:
       profile.targetHandicap != null
         ? Math.max(-10, Math.min(54, profile.targetHandicap))

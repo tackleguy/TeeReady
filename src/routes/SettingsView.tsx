@@ -58,6 +58,9 @@ export function SettingsView() {
   );
   const [driverYards, setDriverYards] = useState(DEFAULT_PROFILE.driverYards);
   const [goals, setGoals] = useState<GoalId[]>(DEFAULT_PROFILE.goals);
+  const [customGoals, setCustomGoals] = useState<string[]>(
+    DEFAULT_PROFILE.customGoals,
+  );
   const [targetHandicap, setTargetHandicap] = useState<number | ''>('');
   const [theme, setThemeId] = useState<ThemeId>(() => loadTheme());
   const [hasRound, setHasRound] = useState(false);
@@ -76,6 +79,7 @@ export function SettingsView() {
       setSevenIronYards(saved.sevenIronYards);
       setDriverYards(saved.driverYards);
       setGoals(saved.goals);
+      setCustomGoals(saved.customGoals);
       setTargetHandicap(saved.targetHandicap ?? '');
       setThemeId(loadTheme());
       setHasRound(loadRound() != null);
@@ -128,6 +132,7 @@ export function SettingsView() {
       sevenIronYards,
       driverYards,
       goals,
+      customGoals,
       targetHandicap:
         targetHandicap === '' ? undefined : Number(targetHandicap),
     });
@@ -316,7 +321,14 @@ export function SettingsView() {
           <p className="mb-2 text-[12px] text-muted">
             Today and Rounds adapt to what you&apos;re working on.
           </p>
-          <GoalPicker value={goals} onChange={setGoals} max={3} />
+          <GoalPicker
+            value={goals}
+            onChange={setGoals}
+            customGoals={customGoals}
+            onCustomGoalsChange={setCustomGoals}
+            max={3}
+            maxCustom={3}
+          />
           {goals.includes('lower-handicap') ? (
             <label className="mt-3 block">
               <FieldLabel>Target handicap</FieldLabel>

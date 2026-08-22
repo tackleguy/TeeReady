@@ -94,3 +94,23 @@ export function normalizeGoals(raw: unknown, max = 5): GoalId[] {
   }
   return out;
 }
+
+export function normalizeCustomGoals(raw: unknown, max = 5): string[] {
+  if (!Array.isArray(raw)) return [];
+  const out: string[] = [];
+  for (const item of raw) {
+    if (typeof item !== 'string') continue;
+    const t = item.trim();
+    if (!t || out.some((x) => x.toLowerCase() === t.toLowerCase())) continue;
+    out.push(t.slice(0, 120));
+    if (out.length >= max) break;
+  }
+  return out;
+}
+
+export function hasAnyGoals(
+  goals: GoalId[],
+  customGoals: string[],
+): boolean {
+  return goals.length > 0 || customGoals.length > 0;
+}

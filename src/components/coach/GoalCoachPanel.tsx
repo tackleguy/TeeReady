@@ -53,7 +53,7 @@ export function GoalCoachPanel() {
     );
   }
 
-  const focus = getGoal(plan.focusGoal);
+  const focus = plan.focusGoal ? getGoal(plan.focusGoal) : null;
 
   return (
     <section className="overflow-hidden rounded-2xl border border-line bg-surface shadow-card">
@@ -73,9 +73,15 @@ export function GoalCoachPanel() {
               </p>
             </div>
           </div>
-          <span className="hidden shrink-0 text-2xl sm:block" aria-hidden>
-            {focus.emoji}
-          </span>
+          {focus ? (
+            <span className="hidden shrink-0 text-2xl sm:block" aria-hidden>
+              {focus.emoji}
+            </span>
+          ) : plan.focusCustom ? (
+            <span className="hidden shrink-0 rounded-full bg-brand-soft px-2.5 py-1 text-[11px] font-semibold text-brand sm:block">
+              Custom
+            </span>
+          ) : null}
         </div>
 
         <div className="mt-4">
@@ -91,7 +97,7 @@ export function GoalCoachPanel() {
           </div>
         </div>
 
-        {profile.goals.length > 1 ? (
+        {(profile.goals.length > 0 || profile.customGoals.length > 0) ? (
           <div className="mt-3 flex flex-wrap gap-1.5">
             {profile.goals.map((id) => (
               <span
@@ -99,6 +105,14 @@ export function GoalCoachPanel() {
                 className="rounded-full border border-line bg-surface/80 px-2 py-0.5 text-[11px] font-medium text-muted"
               >
                 {getGoal(id).label}
+              </span>
+            ))}
+            {profile.customGoals.map((g) => (
+              <span
+                key={g}
+                className="rounded-full border border-line bg-surface/80 px-2 py-0.5 text-[11px] font-medium text-muted"
+              >
+                {g}
               </span>
             ))}
           </div>

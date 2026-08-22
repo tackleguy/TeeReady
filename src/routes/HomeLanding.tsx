@@ -60,17 +60,16 @@ export function HomeLanding() {
         id="auth"
         className="scroll-mt-8 border-t border-white/10 bg-[#07100a] px-5 py-16 md:px-8"
       >
-        <div className="mx-auto grid max-w-6xl items-start gap-10 lg:grid-cols-[1fr_420px]">
-          <div>
-            <h2 className="text-[28px] font-bold tracking-[-0.03em] text-white sm:text-[34px]">
-              Sign in to tee off
-            </h2>
-            <p className="mt-3 max-w-md text-[15px] leading-relaxed text-gray-200">
-              Your handicap, bag stocks, and rounds stay with your account —
-              including Remember me on this device.
-            </p>
-          </div>
-          <div className="on-light rounded-2xl border border-white/10 bg-white p-5 shadow-2xl sm:p-6">
+        <div className="mx-auto max-w-xl">
+          <h2 className="text-center text-[28px] font-bold tracking-[-0.03em] text-white sm:text-[34px]">
+            {authMode === 'signup' ? 'Set up your game' : 'Sign in to tee off'}
+          </h2>
+          <p className="mx-auto mt-3 max-w-lg text-center text-[15px] leading-relaxed text-gray-200">
+            {authMode === 'signup'
+              ? 'Five quick steps — account, game, courses, and goals. Your coach takes it from there.'
+              : 'Your handicap, bag, and rounds stay with your account.'}
+          </p>
+          <div className="on-light mt-8 rounded-2xl border border-white/10 bg-white p-5 shadow-2xl sm:p-6">
             <AuthForm
               key={authMode}
               variant="landing"

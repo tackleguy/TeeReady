@@ -7,7 +7,7 @@ import {
   saveGolfProfile,
   type GolfPlayerProfile,
 } from './golfProfile';
-import { normalizeGoals } from './goals';
+import { normalizeCustomGoals, normalizeGoals } from './goals';
 import { loadDisplayProfile, saveDisplayProfile } from './mock';
 import { loadTheme, setTheme, type ThemeId } from './theme';
 import { supabase } from './supabase';
@@ -21,6 +21,7 @@ export type CloudProfile = {
   driver_yards: number;
   common_courses: string[];
   goals?: string[];
+  custom_goals?: string[];
   target_handicap?: number | null;
   theme: string;
   updated_at?: string;
@@ -61,6 +62,9 @@ export function applyCloudProfile(row: CloudProfile): void {
     goals: normalizeGoals(row.goals).length
       ? normalizeGoals(row.goals)
       : local.goals,
+    customGoals: normalizeCustomGoals(row.custom_goals).length
+      ? normalizeCustomGoals(row.custom_goals)
+      : local.customGoals,
     targetHandicap:
       row.target_handicap != null &&
       Number.isFinite(Number(row.target_handicap))
@@ -79,7 +83,7 @@ export async function fetchCloudProfile(
   const { data, error } = await supabase
     .from('teeready_profiles')
     .select(
-      'id, display_name, handicap, miss, seven_iron_yards, driver_yards, common_courses, goals, target_handicap, theme, updated_at',
+      'id, display_name, handicap, miss, seven_iron_yards, driver_yards, common_courses, goals, custom_goals, target_handicap, theme, updated_at',
     )
     .eq('id', userId)
     .maybeSingle();
@@ -102,6 +106,7 @@ export async function upsertCloudProfile(userId: string): Promise<void> {
       driver_yards: golf.driverYards,
       common_courses: golf.commonCourses,
       goals: golf.goals,
+      custom_goals: golf.customGoals,
       target_handicap: golf.targetHandicap ?? null,
       theme,
       updated_at: new Date().toISOString(),
@@ -119,7 +124,8 @@ export async function syncProfileOnSignIn(userId: string): Promise<void> {
     (remote.display_name.trim() ||
       remote.handicap !== DEFAULT_PROFILE.handicap ||
       remote.common_courses.length > 0 ||
-      (Array.isArray(remote.goals) && remote.goals.length > 0))
+      (Array.isArray(remote.goals) && remote.goals.length > 0) ||
+      (Array.isArray(remote.custom_goals) && remote.custom_goals.length > 0))
   ) {
     applyCloudProfile(remote);
     return;

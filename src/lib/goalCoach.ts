@@ -15,7 +15,8 @@ export type CoachStep = {
 export type CoachPlan = {
   headline: string;
   summary: string;
-  focusGoal: GoalId;
+  focusGoal?: GoalId;
+  focusCustom?: string;
   steps: CoachStep[];
   progressLabel: string;
   progressPct: number;
@@ -32,6 +33,44 @@ function missTip(miss: GolfPlayerProfile['miss']): string {
     return 'Two-way miss days need smaller targets — favor the wide side of the hole and commit to one shape per shot.';
   }
   return 'Straight pattern — you can be aggressive on lines, but still pick a specific small target for every full swing.';
+}
+
+function stepsForCustomGoal(
+  text: string,
+  profile: GolfPlayerProfile,
+  homeCourse: string | undefined,
+): CoachStep[] {
+  const home = homeCourse?.split(' ·')[0];
+  return [
+    {
+      id: 'custom-focus',
+      title: `Keep "${text}" front of mind`,
+      detail: `Before each tee shot, ask: does this line help me ${text.toLowerCase()}? One clear intention beats ten swing thoughts.`,
+      href: '/rounds/prep',
+      cta: 'Plan your round',
+    },
+    {
+      id: 'custom-prep',
+      title: 'Prep three holes that matter',
+      detail: home
+        ? `At ${home}, pick three holes where ${text.toLowerCase()} would change your score the most — study wind and miss lines in prep.`
+        : `Pick three holes on your course where ${text.toLowerCase()} would change your score — study them in prep first.`,
+      href: '/rounds/prep',
+      cta: 'Hole prep',
+    },
+    {
+      id: 'custom-track',
+      title: 'Track one round with GPS',
+      detail: `Log distances in GPS mode so your coach can tie real numbers to "${text}" over time.`,
+      href: '/rounds/gps',
+      cta: 'Open GPS',
+    },
+    {
+      id: 'custom-miss',
+      title: 'Use your miss pattern',
+      detail: `${missTip(profile.miss)} That supports "${text}" when you pick safer lines.`,
+    },
+  ];
 }
 
 function stepsForGoal(
@@ -258,36 +297,52 @@ export function buildCoachPlan(
   displayName: string,
 ): CoachPlan | null {
   const goals = profile.goals;
-  if (!goals.length) return null;
+  const customGoals = profile.customGoals ?? [];
+  if (!goals.length && !customGoals.length) return null;
 
-  const focusGoal = goals[0]!;
-  const meta = getGoal(focusGoal);
   const homeCourse = profile.commonCourses[0];
   const firstName = displayName.trim().split(/\s+/)[0] || 'You';
-  const steps = stepsForGoal(focusGoal, profile, homeCourse);
-  const { label, pct } = progressForGoal(focusGoal, profile);
 
-  const summaries: Partial<Record<GoalId, string>> = {
-    'lower-handicap': `${firstName}, we'll chip away at ${formatHandicap(profile.handicap)} with smarter targets and tracked rounds.`,
-    'break-90': `${firstName}, breaking 90 starts with eliminating doubles — here's your plan for the next outing.`,
-    'break-80': `${firstName}, you're chasing 79 — approach positions and wedge control move the needle fastest.`,
-    fairways: `${firstName}, let's tighten tee shots using your ${missLabel(profile.miss).toLowerCase()} in prep.`,
-    approaches: `${firstName}, wind-adjusted yardages and GPS ranges will tighten your approach game.`,
-    'short-game': `${firstName}, up-and-down saves come from committed wedge distances — no guesswork.`,
-    'play-more': `${firstName}, consistency beats perfection — let's get you on the course again.`,
-    'home-course': homeCourse
-      ? `${firstName}, knowing ${homeCourse.split(' ·')[0]!} hole-by-hole is your edge.`
-      : `${firstName}, add home courses and we'll personalize every prep session.`,
-    compete: `${firstName}, live groups make every hole matter — start a game when your foursome is ready.`,
-  };
+  if (goals.length > 0) {
+    const focusGoal = goals[0]!;
+    const meta = getGoal(focusGoal);
+    const steps = stepsForGoal(focusGoal, profile, homeCourse);
+    const { label, pct } = progressForGoal(focusGoal, profile);
 
+    const summaries: Partial<Record<GoalId, string>> = {
+      'lower-handicap': `${firstName}, we'll chip away at ${formatHandicap(profile.handicap)} with smarter targets and tracked rounds.`,
+      'break-90': `${firstName}, breaking 90 starts with eliminating doubles — here's your plan for the next outing.`,
+      'break-80': `${firstName}, you're chasing 79 — approach positions and wedge control move the needle fastest.`,
+      fairways: `${firstName}, let's tighten tee shots using your ${missLabel(profile.miss).toLowerCase()} in prep.`,
+      approaches: `${firstName}, wind-adjusted yardages and GPS ranges will tighten your approach game.`,
+      'short-game': `${firstName}, up-and-down saves come from committed wedge distances — no guesswork.`,
+      'play-more': `${firstName}, consistency beats perfection — let's get you on the course again.`,
+      'home-course': homeCourse
+        ? `${firstName}, knowing ${homeCourse.split(' ·')[0]!} hole-by-hole is your edge.`
+        : `${firstName}, add home courses and we'll personalize every prep session.`,
+      compete: `${firstName}, live groups make every hole matter — start a game when your foursome is ready.`,
+    };
+
+    return {
+      headline: meta.label,
+      summary:
+        summaries[focusGoal] ??
+        `${firstName}, here's how to move toward ${meta.label.toLowerCase()}.`,
+      focusGoal,
+      steps: steps.slice(0, 4),
+      progressLabel: label,
+      progressPct: pct,
+    };
+  }
+
+  const focusCustom = customGoals[0]!;
   return {
-    headline: meta.label,
-    summary: summaries[focusGoal] ?? `${firstName}, here's how to move toward ${meta.label.toLowerCase()}.`,
-    focusGoal,
-    steps: steps.slice(0, 4),
-    progressLabel: label,
-    progressPct: pct,
+    headline: focusCustom,
+    summary: `${firstName}, your coach built a plan around "${focusCustom}" — one focus at a time.`,
+    focusCustom,
+    steps: stepsForCustomGoal(focusCustom, profile, homeCourse).slice(0, 4),
+    progressLabel: 'Custom goal',
+    progressPct: 30,
   };
 }
 
