@@ -1,16 +1,8 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { AccountPanel } from '../components/AccountPanel';
 import { useAuth } from '../lib/auth';
 import { upsertCloudProfile } from '../lib/accountProfile';
-import {
-  bagFromStocks,
-  DEFAULT_PROFILE,
-  loadGolfProfile,
-  missLabel,
-  saveGolfProfile,
-  type MissBias,
-} from '../lib/golfProfile';
 import { clearRound, loadRound } from '../lib/golfTracker';
 import {
   CURRENT_USER,
@@ -24,16 +16,6 @@ import {
   setTheme,
   type ThemeId,
 } from '../lib/theme';
-import { formatHandicap } from '../lib/golfHandicap';
-import { GoalPicker } from '../components/coach/GoalPicker';
-import type { GoalId } from '../lib/goals';
-
-const MISS_OPTIONS: Array<{ value: MissBias; label: string; hint: string }> = [
-  { value: 'left', label: 'Left', hint: 'Start left, finish further left' },
-  { value: 'right', label: 'Right', hint: 'Start right, finish further right' },
-  { value: 'both', label: 'Both', hint: 'Two-way miss — favor the fat side' },
-  { value: 'straight', label: 'Straight', hint: 'Tight dispersion both sides' },
-];
 
 function FieldLabel({ children }: { children: ReactNode }) {
   return (
@@ -50,60 +32,24 @@ function inputClassName() {
 export function SettingsView() {
   const { user } = useAuth();
   const [name, setName] = useState(() => loadDisplayProfile().name);
-  const [commonText, setCommonText] = useState('');
-  const [handicap, setHandicap] = useState(DEFAULT_PROFILE.handicap);
-  const [miss, setMiss] = useState<MissBias>(DEFAULT_PROFILE.miss);
-  const [sevenIronYards, setSevenIronYards] = useState(
-    DEFAULT_PROFILE.sevenIronYards,
-  );
-  const [driverYards, setDriverYards] = useState(DEFAULT_PROFILE.driverYards);
-  const [goals, setGoals] = useState<GoalId[]>(DEFAULT_PROFILE.goals);
-  const [customGoals, setCustomGoals] = useState<string[]>(
-    DEFAULT_PROFILE.customGoals,
-  );
-  const [targetHandicap, setTargetHandicap] = useState<number | ''>('');
   const [theme, setThemeId] = useState<ThemeId>(() => loadTheme());
   const [hasRound, setHasRound] = useState(false);
   const [savedFlash, setSavedFlash] = useState<string | null>(null);
 
-  // Re-read storage whenever Settings is shown so leftovers don't leave a
-  // stale form that overwrites a good save.
   useEffect(() => {
     const refresh = () => {
-      const saved = loadGolfProfile() ?? DEFAULT_PROFILE;
       const display = loadDisplayProfile();
       setName(display.name);
-      setCommonText(saved.commonCourses.join(', '));
-      setHandicap(saved.handicap);
-      setMiss(saved.miss);
-      setSevenIronYards(saved.sevenIronYards);
-      setDriverYards(saved.driverYards);
-      setGoals(saved.goals);
-      setCustomGoals(saved.customGoals);
-      setTargetHandicap(saved.targetHandicap ?? '');
       setThemeId(loadTheme());
       setHasRound(loadRound() != null);
     };
     refresh();
-    window.addEventListener('teeready-profile-changed', refresh);
     window.addEventListener('teeready-display-changed', refresh);
-    return () => {
-      window.removeEventListener('teeready-profile-changed', refresh);
+    return () =>
       window.removeEventListener('teeready-display-changed', refresh);
-    };
   }, []);
 
-  const bagPreview = useMemo(
-    () => bagFromStocks(driverYards, sevenIronYards),
-    [driverYards, sevenIronYards],
-  );
-
-  const canSave =
-    name.trim().length > 0 &&
-    Number.isFinite(handicap) &&
-    Number.isFinite(sevenIronYards) &&
-    Number.isFinite(driverYards) &&
-    driverYards > sevenIronYards + 15;
+  const canSave = name.trim().length > 0;
 
   const flash = (msg: string) => {
     setSavedFlash(msg);
@@ -120,22 +66,6 @@ export function SettingsView() {
 
   const saveAll = async () => {
     if (!canSave) return;
-    const commonCourses = commonText
-      .split(/[,;\n]+/)
-      .map((s) => s.trim())
-      .filter(Boolean)
-      .slice(0, 8);
-    saveGolfProfile({
-      commonCourses,
-      handicap,
-      miss,
-      sevenIronYards,
-      driverYards,
-      goals,
-      customGoals,
-      targetHandicap:
-        targetHandicap === '' ? undefined : Number(targetHandicap),
-    });
     const next: DisplayProfile = saveDisplayProfile({ name: name.trim() });
     setName(next.name);
     setTheme(theme);
@@ -165,7 +95,8 @@ export function SettingsView() {
             Settings
           </h1>
           <p className="mt-1 text-[14px] text-muted">
-            Appearance, profile, and bag stocks used across Today and Rounds.
+            Account, appearance, and device data. Golfer info and stats live on
+            their own pages.
           </p>
         </div>
         {savedFlash ? (
@@ -173,6 +104,27 @@ export function SettingsView() {
             {savedFlash}
           </span>
         ) : null}
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <Link
+          to="/profile"
+          className="rounded-xl border border-line bg-surface px-4 py-2 text-[13px] font-semibold text-muted hover:text-ink"
+        >
+          Golfer info
+        </Link>
+        <Link
+          to="/questionnaire"
+          className="rounded-xl border border-line bg-surface px-4 py-2 text-[13px] font-semibold text-muted hover:text-ink"
+        >
+          Questionnaire
+        </Link>
+        <Link
+          to="/stats"
+          className="rounded-xl border border-line bg-surface px-4 py-2 text-[13px] font-semibold text-muted hover:text-ink"
+        >
+          Stats
+        </Link>
       </div>
 
       <AccountPanel />
@@ -224,12 +176,12 @@ export function SettingsView() {
       </section>
 
       <section className="rounded-card bg-surface p-5 shadow-card">
-        <h2 className="text-[15px] font-bold text-ink">Profile</h2>
+        <h2 className="text-[15px] font-bold text-ink">Display name</h2>
         <p className="mt-1 text-[13px] text-muted">
           Shown in the nav avatar and Social board.
         </p>
         <label className="mt-4 block">
-          <FieldLabel>Display name</FieldLabel>
+          <FieldLabel>Name</FieldLabel>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -249,170 +201,6 @@ export function SettingsView() {
           <span className="text-[13px] text-muted">
             Initials update from your name
           </span>
-        </div>
-      </section>
-
-      <section className="rounded-card bg-surface p-5 shadow-card">
-        <h2 className="text-[15px] font-bold text-ink">Your game</h2>
-        <p className="mt-1 text-[13px] text-muted">
-          Calibrates hole plans, club picks, and miss rings in Rounds.
-        </p>
-
-        <label className="mt-4 block">
-          <FieldLabel>Common courses</FieldLabel>
-          <input
-            value={commonText}
-            onChange={(e) => setCommonText(e.target.value)}
-            placeholder="e.g. Torrey Pines, Rancho Park, Riviera"
-            className={inputClassName()}
-          />
-          <span className="mt-1.5 block text-[12px] text-faint">
-            Comma-separated — quick picks in course search.
-          </span>
-        </label>
-
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          <label className="block">
-            <FieldLabel>Handicap</FieldLabel>
-            <input
-              type="number"
-              min={-10}
-              max={54}
-              step={0.1}
-              value={Number.isFinite(handicap) ? handicap : ''}
-              onChange={(e) => {
-                const raw = e.target.value;
-                setHandicap(raw === '' ? Number.NaN : Number(raw));
-              }}
-              className={`${inputClassName()} tabular`}
-            />
-            <span className="mt-1 block text-[11px] text-faint">
-              Use negatives for plus handicaps (e.g. -2 → +2). Click Save
-              settings after editing.
-            </span>
-          </label>
-          <div>
-            <FieldLabel>Typical miss</FieldLabel>
-            <div className="grid grid-cols-2 gap-1.5">
-              {MISS_OPTIONS.map((opt) => {
-                const on = miss === opt.value;
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    title={opt.hint}
-                    onClick={() => setMiss(opt.value)}
-                    className={
-                      on
-                        ? 'rounded-lg bg-brand-soft px-2 py-2 text-[12px] font-semibold text-brand ring-1 ring-[color-mix(in_srgb,var(--brand)_30%,transparent)]'
-                        : 'rounded-lg border border-line bg-canvas px-2 py-2 text-[12px] font-medium text-muted hover:text-ink'
-                    }
-                  >
-                    {opt.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-5 border-t border-line pt-5">
-          <FieldLabel>Goals · your coach</FieldLabel>
-          <p className="mb-2 text-[12px] text-muted">
-            Today and Rounds adapt to what you&apos;re working on.
-          </p>
-          <GoalPicker
-            value={goals}
-            onChange={setGoals}
-            customGoals={customGoals}
-            onCustomGoalsChange={setCustomGoals}
-            max={3}
-            maxCustom={3}
-          />
-          {goals.includes('lower-handicap') ? (
-            <label className="mt-3 block">
-              <FieldLabel>Target handicap</FieldLabel>
-              <input
-                type="number"
-                step={0.1}
-                min={-10}
-                max={54}
-                value={targetHandicap}
-                onChange={(e) =>
-                  setTargetHandicap(
-                    e.target.value === '' ? '' : Number(e.target.value),
-                  )
-                }
-                placeholder={formatHandicap(Math.max(0, handicap - 3))}
-                className={`${inputClassName()} tabular`}
-              />
-            </label>
-          ) : null}
-        </div>
-
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          <label className="block">
-            <FieldLabel>7-iron carry</FieldLabel>
-            <div className="relative">
-              <input
-                type="number"
-                min={80}
-                max={220}
-                value={sevenIronYards}
-                onChange={(e) => setSevenIronYards(Number(e.target.value))}
-                className={`${inputClassName()} pr-10 tabular`}
-              />
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-faint">
-                yd
-              </span>
-            </div>
-          </label>
-          <label className="block">
-            <FieldLabel>Driver carry</FieldLabel>
-            <div className="relative">
-              <input
-                type="number"
-                min={140}
-                max={360}
-                value={driverYards}
-                onChange={(e) => setDriverYards(Number(e.target.value))}
-                className={`${inputClassName()} pr-10 tabular`}
-              />
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-faint">
-                yd
-              </span>
-            </div>
-          </label>
-        </div>
-
-        {!canSave ? (
-          <p className="mt-3 text-[12px] text-bad">
-            Name required · driver should be ~20+ yards longer than 7-iron.
-          </p>
-        ) : null}
-
-        <div className="mt-5 rounded-xl border border-line bg-canvas px-3 py-3">
-          <div className="mb-2 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
-            Bag preview — total avg
-          </div>
-          <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-6">
-            {bagPreview.map((c) => (
-              <div
-                key={c.key}
-                className="rounded-lg bg-surface px-1.5 py-1.5 text-center shadow-card"
-              >
-                <div className="text-[9px] uppercase tracking-wide text-faint">
-                  {c.label}
-                </div>
-                <div className="text-[12px] font-semibold tabular text-ink">
-                  {c.yards}
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className="mt-2 text-[12px] text-muted">
-            {missLabel(miss)} · HCP {formatHandicap(handicap)}
-          </p>
         </div>
       </section>
 
@@ -440,12 +228,6 @@ export function SettingsView() {
         >
           Save settings
         </button>
-        <Link
-          to="/rounds/prep"
-          className="rounded-xl border border-line bg-surface px-5 py-2.5 text-[13px] font-semibold text-muted hover:text-ink"
-        >
-          Open rounds
-        </Link>
       </div>
     </div>
   );

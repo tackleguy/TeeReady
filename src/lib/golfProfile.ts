@@ -1,8 +1,13 @@
 import { normalizeCustomGoals, normalizeGoals, type GoalId } from './goals';
+import {
+  DEFAULT_QUESTIONNAIRE,
+  normalizeQuestionnaire,
+  type QuestionnaireExtras,
+} from './questionnaire';
 
 export type MissBias = 'left' | 'right' | 'both' | 'straight';
 
-export interface GolfPlayerProfile {
+export interface GolfPlayerProfile extends QuestionnaireExtras {
   commonCourses: string[];
   handicap: number;
   miss: MissBias;
@@ -48,6 +53,7 @@ export function totalAvgYards(carryYards: number, clubKey: string): number {
 }
 
 export const DEFAULT_PROFILE: GolfPlayerProfile = {
+  ...DEFAULT_QUESTIONNAIRE,
   commonCourses: [],
   handicap: 18,
   miss: 'right',
@@ -116,10 +122,11 @@ export function loadGolfProfile(): GolfPlayerProfile | null {
       return null;
     }
     const profile: GolfPlayerProfile = {
+      ...normalizeQuestionnaire(parsed),
       commonCourses: Array.isArray(parsed.commonCourses)
         ? parsed.commonCourses.filter((x): x is string => typeof x === 'string')
         : [],
-      handicap: Number(parsed.handicap),
+      handicap: Math.max(0, Math.min(54, Number(parsed.handicap))),
       miss:
         parsed.miss === 'left' ||
         parsed.miss === 'right' ||
@@ -152,9 +159,11 @@ export function loadGolfProfile(): GolfPlayerProfile | null {
 export function saveGolfProfile(
   profile: GolfPlayerProfile,
 ): GolfPlayerProfile {
+  const q = normalizeQuestionnaire(profile);
   const safe: GolfPlayerProfile = {
+    ...q,
     commonCourses: profile.commonCourses.slice(0, 8),
-    handicap: Math.max(-10, Math.min(54, profile.handicap)),
+    handicap: Math.max(0, Math.min(54, profile.handicap)),
     miss: profile.miss,
     sevenIronYards: Math.max(80, Math.min(220, profile.sevenIronYards)),
     driverYards: Math.max(140, Math.min(360, profile.driverYards)),
@@ -162,7 +171,7 @@ export function saveGolfProfile(
     customGoals: normalizeCustomGoals(profile.customGoals),
     targetHandicap:
       profile.targetHandicap != null
-        ? Math.max(-10, Math.min(54, profile.targetHandicap))
+        ? Math.max(0, Math.min(54, profile.targetHandicap))
         : undefined,
   };
   try {

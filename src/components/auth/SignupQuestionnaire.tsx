@@ -215,7 +215,7 @@ export function SignupQuestionnaire({
               <input
                 type="number"
                 step={0.1}
-                min={-10}
+                min={0}
                 max={54}
                 value={handicap}
                 onChange={(e) => setHandicap(Number(e.target.value))}
@@ -281,7 +281,7 @@ export function SignupQuestionnaire({
                 <input
                   type="number"
                   step={0.1}
-                  min={-10}
+                  min={0}
                   max={54}
                   value={targetHandicap}
                   onChange={(e) => setTargetHandicap(Number(e.target.value))}
@@ -394,5 +394,6 @@ export function persistSignupProfile(draft: SignupDraft): void {
     targetHandicap: draft.goals.includes('lower-handicap')
       ? draft.targetHandicap
       : undefined,
+    questionnaireCompleted: false,
   });
 }

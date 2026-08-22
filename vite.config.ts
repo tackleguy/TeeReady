@@ -1,17 +1,15 @@
-import { defineConfig, type Plugin } from 'vite';
+import { defineConfig, loadEnv, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
 
-// Set DEV_API_PROXY to a deployed origin to hit real /api routes locally, e.g.
-//   DEV_API_PROXY=https://your-teeready.vercel.app npm run dev
-const API_PROXY = process.env.DEV_API_PROXY;
+const DEFAULT_DEV_API = 'https://tee-ready.vercel.app';
 
-function devApiStub(): Plugin {
+function devApiStub(enabled: boolean): Plugin {
   return {
     name: 'teeready-dev-api-stub',
     apply: 'serve',
     configureServer(server) {
-      if (API_PROXY) return;
+      if (!enabled) return;
       server.middlewares.use((req, res, next) => {
         if (!req.url?.startsWith('/api/')) return next();
         res.statusCode = 503;
@@ -19,7 +17,7 @@ function devApiStub(): Plugin {
         res.end(
           JSON.stringify({
             error:
-              'API routes are only served via `vercel dev` or in production.',
+              'Local API disabled. Run with DEV_API_PROXY=https://tee-ready.vercel.app (default) or use `vercel dev`.',
             path: req.url,
           }),
         );
@@ -28,48 +26,57 @@ function devApiStub(): Plugin {
   };
 }
 
-const apiProxyConfig = API_PROXY
-  ? { '/api': { target: API_PROXY, changeOrigin: true, secure: true } }
-  : undefined;
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  const proxyRaw = env.DEV_API_PROXY;
+  const apiProxy =
+    proxyRaw === 'none' || proxyRaw === 'false'
+      ? undefined
+      : proxyRaw || DEFAULT_DEV_API;
 
-export default defineConfig({
-  plugins: [react(), devApiStub()],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
-  },
-  server: {
-    host: true,
-    port: 5173,
-    proxy: apiProxyConfig,
-    watch: {
-      ignored: ['**/api/**', '**/.vercel/**', '**/dist/**'],
-    },
-  },
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('maplibre-gl')) return 'maplibre';
-            if (id.includes('framer-motion')) return 'motion';
-            if (
-              id.includes('react-router-dom') ||
-              id.includes('@remix-run/router')
-            )
-              return 'router';
-            if (id.includes('lucide-react')) return 'icons';
-            if (id.includes('zustand') || id.includes('swr')) {
-              return 'state';
-            }
-            if (id.includes('react-dom')) return 'react-dom';
-            if (id.includes('/react/')) return 'react';
-          }
-          return undefined;
-        },
+  const apiProxyConfig = apiProxy
+    ? { '/api': { target: apiProxy, changeOrigin: true, secure: true } }
+    : undefined;
+
+  return {
+    plugins: [react(), devApiStub(!apiProxy)],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
       },
     },
-    chunkSizeWarningLimit: 900,
-  },
+    server: {
+      host: true,
+      port: 5173,
+      proxy: apiProxyConfig,
+      watch: {
+        ignored: ['**/api/**', '**/.vercel/**', '**/dist/**'],
+      },
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('maplibre-gl')) return 'maplibre';
+              if (id.includes('framer-motion')) return 'motion';
+              if (
+                id.includes('react-router-dom') ||
+                id.includes('@remix-run/router')
+              )
+                return 'router';
+              if (id.includes('lucide-react')) return 'icons';
+              if (id.includes('zustand') || id.includes('swr')) {
+                return 'state';
+              }
+              if (id.includes('react-dom')) return 'react-dom';
+              if (id.includes('/react/')) return 'react';
+            }
+            return undefined;
+          },
+        },
+      },
+      chunkSizeWarningLimit: 900,
+    },
+  };
 });

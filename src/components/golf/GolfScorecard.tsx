@@ -12,6 +12,8 @@ import {
   roundTotalPar,
   roundTotalStrokes,
   setHoleScore,
+  setHoleStats,
+  type HoleStatExtras,
   type TrackedRound,
 } from '../../lib/golfTracker';
 
@@ -23,7 +25,45 @@ interface Props {
   onClose: () => void;
 }
 
-function NineTable({
+function TriToggle({
+  value,
+  onChange,
+  labels,
+}: {
+  value: boolean | null | undefined;
+  onChange: (v: boolean | null) => void;
+  labels: [string, string, string];
+}) {
+  return (
+    <div className="inline-flex overflow-hidden rounded-lg border border-line">
+      {(
+        [
+          [true, labels[0]],
+          [false, labels[1]],
+          [null, labels[2]],
+        ] as const
+      ).map(([v, label]) => {
+        const on = value === v || (value == null && v === null);
+        return (
+          <button
+            key={label}
+            type="button"
+            onClick={() => onChange(v)}
+            className={
+              on
+                ? 'bg-brand-soft px-2 py-1 text-[10px] font-semibold text-brand'
+                : 'bg-canvas px-2 py-1 text-[10px] font-medium text-muted hover:text-ink'
+            }
+          >
+            {label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function ScoreTable({
   holes,
   round,
   handicap,
@@ -127,6 +167,125 @@ function NineTable({
   );
 }
 
+function StatsTable({
+  holes,
+  round,
+  onStats,
+}: {
+  holes: GolfHole[];
+  round: TrackedRound;
+  onStats: (holeNumber: number, extras: HoleStatExtras) => void;
+}) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[640px] border-collapse text-left text-[12px]">
+        <thead>
+          <tr className="border-b border-line font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-faint">
+            <th className="px-2 py-2">Hole</th>
+            <th className="px-2 py-2 text-right">Par</th>
+            <th className="px-2 py-2 text-center">FIR</th>
+            <th className="px-2 py-2 text-center">GIR</th>
+            <th className="px-2 py-2 text-center">Chips</th>
+            <th className="px-2 py-2 text-center">Pen</th>
+            <th className="px-2 py-2 text-center">Sand</th>
+          </tr>
+        </thead>
+        <tbody>
+          {holes.map((h) => {
+            const par = h.par ?? 4;
+            const scored = getHoleScore(round, h.number);
+            const hasScore = scored != null && scored.strokes >= 1;
+            const firEligible = par >= 4;
+            return (
+              <tr key={h.number} className="border-b border-line/80">
+                <td className="px-2 py-2 font-semibold tabular text-ink">
+                  {h.number}
+                </td>
+                <td className="px-2 py-2 text-right tabular text-muted">{par}</td>
+                <td className="px-2 py-2 text-center">
+                  {firEligible && hasScore ? (
+                    <TriToggle
+                      value={scored.fairwayHit}
+                      labels={['Hit', 'Miss', '—']}
+                      onChange={(v) =>
+                        onStats(h.number, { fairwayHit: v })
+                      }
+                    />
+                  ) : (
+                    <span className="text-[11px] text-faint">n/a</span>
+                  )}
+                </td>
+                <td className="px-2 py-2 text-center">
+                  {hasScore ? (
+                    <TriToggle
+                      value={scored.gir}
+                      labels={['Yes', 'No', '—']}
+                      onChange={(v) =>
+                        onStats(h.number, { gir: v ?? undefined })
+                      }
+                    />
+                  ) : (
+                    <span className="text-[11px] text-faint">—</span>
+                  )}
+                </td>
+                <td className="px-2 py-2 text-center">
+                  <input
+                    type="number"
+                    min={0}
+                    max={5}
+                    disabled={!hasScore}
+                    value={hasScore && scored.chips != null ? scored.chips : ''}
+                    placeholder="—"
+                    onChange={(e) => {
+                      const v = Number(e.target.value);
+                      onStats(h.number, {
+                        chips: Number.isFinite(v) ? Math.max(0, v) : undefined,
+                      });
+                    }}
+                    className="w-12 rounded-lg border border-line bg-canvas px-2 py-1.5 text-center tabular text-ink outline-none focus:border-brand disabled:opacity-40"
+                  />
+                </td>
+                <td className="px-2 py-2 text-center">
+                  <input
+                    type="number"
+                    min={0}
+                    max={3}
+                    disabled={!hasScore}
+                    value={
+                      hasScore && scored.penalties != null ? scored.penalties : ''
+                    }
+                    placeholder="—"
+                    onChange={(e) => {
+                      const v = Number(e.target.value);
+                      onStats(h.number, {
+                        penalties: Number.isFinite(v) ? Math.max(0, v) : 0,
+                      });
+                    }}
+                    className="w-12 rounded-lg border border-line bg-canvas px-2 py-1.5 text-center tabular text-ink outline-none focus:border-brand disabled:opacity-40"
+                  />
+                </td>
+                <td className="px-2 py-2 text-center">
+                  {hasScore ? (
+                    <TriToggle
+                      value={scored.sandSave}
+                      labels={['Up', 'No', '—']}
+                      onChange={(v) =>
+                        onStats(h.number, { sandSave: v })
+                      }
+                    />
+                  ) : (
+                    <span className="text-[11px] text-faint">—</span>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export function GolfScorecard({
   holes,
   round,
@@ -150,6 +309,7 @@ export function GolfScorecard({
   const [tab, setTab] = useState<'front' | 'back' | 'all'>(
     back.length ? 'front' : 'all',
   );
+  const [mode, setMode] = useState<'score' | 'stats'>('score');
 
   const onSet = (
     holeNumber: number,
@@ -163,6 +323,10 @@ export function GolfScorecard({
       return;
     }
     onChange(setHoleScore(round, holeNumber, par, strokes, putts));
+  };
+
+  const onStats = (holeNumber: number, extras: HoleStatExtras) => {
+    onChange(setHoleStats(round, holeNumber, extras));
   };
 
   const gross = roundTotalStrokes(round);
@@ -185,7 +349,6 @@ export function GolfScorecard({
           <h2 className="text-[16px] font-bold text-ink">Scorecard</h2>
           <p className="mt-0.5 text-[12px] text-muted">
             {round.courseName} · HCP {formatHandicap(handicap)}
-            {handicap < 0 ? ' (plus)' : ''}
           </p>
         </div>
         <button
@@ -197,38 +360,65 @@ export function GolfScorecard({
         </button>
       </div>
 
-      <div className="flex gap-2 border-b border-line px-4 py-2">
-        {(
-          [
-            ['front', 'Out'],
-            ['back', 'In'],
-            ['all', 'All'],
-          ] as const
-        ).map(([id, label]) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setTab(id)}
-            className={
-              tab === id
-                ? 'rounded-lg bg-brand-soft px-3 py-1.5 text-[12px] font-semibold text-brand'
-                : 'rounded-lg px-3 py-1.5 text-[12px] font-medium text-muted hover:text-ink'
-            }
-          >
-            {label}
-          </button>
-        ))}
+      <div className="flex flex-wrap items-center gap-2 border-b border-line px-4 py-2">
+        <div className="flex gap-1 rounded-lg border border-line p-0.5">
+          {(
+            [
+              ['score', 'Scoring'],
+              ['stats', 'Stats'],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setMode(id)}
+              className={
+                mode === id
+                  ? 'rounded-md bg-brand-soft px-3 py-1 text-[12px] font-semibold text-brand'
+                  : 'rounded-md px-3 py-1 text-[12px] font-medium text-muted hover:text-ink'
+              }
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-2">
+          {(
+            [
+              ['front', 'Out'],
+              ['back', 'In'],
+              ['all', 'All'],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setTab(id)}
+              className={
+                tab === id
+                  ? 'rounded-lg bg-brand-soft px-3 py-1.5 text-[12px] font-semibold text-brand'
+                  : 'rounded-lg px-3 py-1.5 text-[12px] font-medium text-muted hover:text-ink'
+              }
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-2 py-2">
-        <NineTable
-          holes={shown}
-          round={round}
-          handicap={handicap}
-          strokeIndex={strokeIndex}
-          holeCount={holeCount}
-          onSet={onSet}
-        />
+        {mode === 'score' ? (
+          <ScoreTable
+            holes={shown}
+            round={round}
+            handicap={handicap}
+            strokeIndex={strokeIndex}
+            holeCount={holeCount}
+            onSet={onSet}
+          />
+        ) : (
+          <StatsTable holes={shown} round={round} onStats={onStats} />
+        )}
       </div>
 
       <div className="grid grid-cols-3 gap-2 border-t border-line px-4 py-3">

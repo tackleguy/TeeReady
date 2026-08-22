@@ -29,19 +29,21 @@ export function GoalCoachPanel() {
 
   if (!plan) {
     return (
-      <section className="rounded-2xl border border-line bg-surface p-5 shadow-card">
+      <section className="ledger-card p-5">
         <div className="flex items-start gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-brand-soft text-brand">
+          <div className="grid h-10 w-10 place-items-center rounded-full bg-brand-soft text-brand">
             <Sparkles className="h-5 w-5" strokeWidth={2} />
           </div>
           <div>
-            <h2 className="text-[17px] font-bold text-ink">Your coach</h2>
+            <h2 className="font-display text-[18px] font-semibold text-ink">
+              Your coach
+            </h2>
             <p className="mt-1 text-[14px] text-muted">
-              Add goals in Settings and TeeReady will build a weekly plan around
-              them.
+              Add goals in your profile and TeeReady will build a weekly plan
+              around them.
             </p>
             <Link
-              to="/settings"
+              to="/profile"
               className="mt-3 inline-flex items-center gap-1 text-[13px] font-semibold text-brand"
             >
               Set goals
@@ -56,16 +58,16 @@ export function GoalCoachPanel() {
   const focus = plan.focusGoal ? getGoal(plan.focusGoal) : null;
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-line bg-surface shadow-card">
-      <div className="border-b border-line bg-gradient-to-br from-brand-soft/80 to-canvas px-5 py-4">
+    <section className="ledger-card overflow-hidden">
+      <div className="border-b border-line bg-[color-mix(in_srgb,var(--brand)_6%,var(--surface))] px-5 py-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand text-white">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand text-white">
               <Sparkles className="h-5 w-5" strokeWidth={2} />
             </div>
             <div>
-              <p className="text-[12px] font-medium text-brand">Your coach</p>
-              <h2 className="mt-0.5 text-[20px] font-bold tracking-[-0.03em] text-ink">
+              <p className="section-eyebrow !text-brand">Your coach</p>
+              <h2 className="mt-1 font-display text-[22px] font-semibold tracking-[-0.02em] text-ink">
                 {plan.headline}
               </h2>
               <p className="mt-1 max-w-xl text-[14px] leading-relaxed text-muted">

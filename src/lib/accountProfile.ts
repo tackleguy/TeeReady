@@ -46,6 +46,7 @@ export function applyCloudProfile(row: CloudProfile): void {
 
   const local = loadGolfProfile() ?? DEFAULT_PROFILE;
   const next: GolfPlayerProfile = {
+    ...local,
     commonCourses: Array.isArray(row.common_courses)
       ? row.common_courses.filter((x): x is string => typeof x === 'string')
       : local.commonCourses,

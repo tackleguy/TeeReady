@@ -3,7 +3,7 @@ import { ArrowRight, Flag, Menu, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 
 const HERO_IMAGE =
-  'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&w=1920&q=80';
+  'https://images.unsplash.com/photo-1593111778420-863aee0e5766?auto=format&fit=crop&w=2400&q=80';
 
 type Props = {
   onSignIn?: () => void;
@@ -23,40 +23,46 @@ export function Hero2({ onSignIn, onSignUp }: Props) {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#0a120c]">
-      {/* Gradient background with grain effect — TeeReady greens / dawn sky */}
-      <div className="absolute -right-60 -top-10 z-0 flex flex-col items-end blur-xl">
-        <div className="z-[1] h-[10rem] w-[60rem] rounded-full bg-gradient-to-b from-emerald-600 to-sky-700 blur-[6rem]" />
-        <div className="z-[1] h-[10rem] w-[90rem] rounded-full bg-gradient-to-b from-lime-800 to-amber-500 blur-[6rem]" />
-        <div className="z-[1] h-[10rem] w-[60rem] rounded-full bg-gradient-to-b from-teal-600 to-sky-500 blur-[6rem]" />
-      </div>
-      <div className="bg-noise absolute inset-0 z-0 opacity-30" />
+    <div className="relative min-h-[92vh] overflow-hidden bg-[#0c1218]">
+      <img
+        src={HERO_IMAGE}
+        alt=""
+        aria-hidden
+        className="absolute inset-0 h-full w-full object-cover object-center"
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-[#0c1218]/95 via-[#0c1218]/75 to-[#0c1218]/35" />
+      <div className="bg-noise absolute inset-0 opacity-[0.18]" />
 
-      <div className="relative z-10">
-        <nav className="container mx-auto mt-6 flex items-center justify-between px-4 py-4">
-          <div className="flex items-center">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#0a120c]">
-              <Flag className="h-4 w-4" strokeWidth={2.4} aria-hidden />
-            </div>
-            <span className="ml-2 text-xl font-bold text-white">TeeReady</span>
+      <div className="relative z-10 flex min-h-[92vh] flex-col">
+        <nav className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-6 md:px-8">
+          <div className="flex items-center gap-2.5">
+            <span className="grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-white/10 font-display text-[15px] font-bold text-white backdrop-blur-sm">
+              T
+            </span>
+            <span className="font-display text-[20px] font-semibold text-white">
+              TeeReady
+            </span>
           </div>
 
-          <div className="hidden items-center space-x-6 md:flex">
-            <div className="flex items-center space-x-6">
-              <NavItem label="Prep" href="#features" />
-              <NavItem label="GPS" href="#features" />
-              <NavItem label="Scorecard" href="#features" />
-              <NavItem label="Account" href="#auth" />
+          <div className="hidden items-center gap-8 md:flex">
+            <div className="flex items-center gap-6">
+              {['Prep', 'GPS', 'Scorecard'].map((label) => (
+                <a
+                  key={label}
+                  href="#features"
+                  className="text-[13px] font-medium text-white/70 hover:text-white"
+                >
+                  {label}
+                </a>
+              ))}
             </div>
-            <div className="flex items-center space-x-3">
-              <button
-                type="button"
-                onClick={goSignIn}
-                className="h-12 rounded-full bg-white px-8 text-base font-medium text-black hover:bg-white/90"
-              >
-                Sign in
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={goSignIn}
+              className="btn-secondary !border-white/20 !bg-white/10 !text-white hover:!bg-white/15"
+            >
+              Sign in
+            </button>
           </div>
 
           <button
@@ -76,18 +82,15 @@ export function Hero2({ onSignIn, onSignUp }: Props) {
         <AnimatePresence>
           {mobileMenuOpen ? (
             <motion.div
-              initial={{ y: '-100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '-100%' }}
-              transition={{ duration: 0.3 }}
-              className="fixed inset-0 z-50 flex flex-col bg-black/95 p-4 md:hidden"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="fixed inset-0 z-50 flex flex-col bg-[#0c1218]/98 p-5 md:hidden"
             >
               <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#0a120c]">
-                    <Flag className="h-4 w-4" strokeWidth={2.4} aria-hidden />
-                  </div>
-                  <span className="ml-2 text-xl font-bold text-white">
+                <div className="flex items-center gap-2">
+                  <Flag className="h-5 w-5 text-accent" />
+                  <span className="font-display text-lg font-semibold text-white">
                     TeeReady
                   </span>
                 </div>
@@ -95,48 +98,24 @@ export function Hero2({ onSignIn, onSignUp }: Props) {
                   <X className="h-6 w-6 text-white" />
                 </button>
               </div>
-              <div className="mt-8 flex flex-col space-y-6">
-                <MobileNavItem
-                  label="Prep"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    document.getElementById('features')?.scrollIntoView({
-                      behavior: 'smooth',
-                    });
-                  }}
-                />
-                <MobileNavItem
-                  label="GPS"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    document.getElementById('features')?.scrollIntoView({
-                      behavior: 'smooth',
-                    });
-                  }}
-                />
-                <MobileNavItem
-                  label="Scorecard"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    document.getElementById('features')?.scrollIntoView({
-                      behavior: 'smooth',
-                    });
-                  }}
-                />
-                <div className="pt-4">
+              <div className="mt-10 flex flex-col gap-4">
+                {['Prep', 'GPS', 'Scorecard', 'Account'].map((label) => (
                   <button
+                    key={label}
                     type="button"
-                    onClick={goSignIn}
-                    className="w-full rounded-full border border-gray-700 px-6 py-3 text-left text-white"
+                    className="flex items-center justify-between border-b border-white/10 pb-3 text-left text-lg text-white"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      document
+                        .getElementById(label === 'Account' ? 'auth' : 'features')
+                        ?.scrollIntoView({ behavior: 'smooth' });
+                    }}
                   >
-                    Sign in
+                    {label}
+                    <ArrowRight className="h-4 w-4 text-white/50" />
                   </button>
-                </div>
-                <button
-                  type="button"
-                  onClick={goSignUp}
-                  className="h-12 rounded-full bg-white px-8 text-base font-medium text-black hover:bg-white/90"
-                >
+                ))}
+                <button type="button" onClick={goSignUp} className="btn-accent mt-4">
                   Create account
                 </button>
               </div>
@@ -144,81 +123,44 @@ export function Hero2({ onSignIn, onSignUp }: Props) {
           ) : null}
         </AnimatePresence>
 
-        <div className="mx-auto mt-6 flex max-w-fit items-center justify-center space-x-2 rounded-full bg-white/10 px-4 py-2 backdrop-blur-sm">
-          <span className="text-sm font-medium text-white">
-            Weather-aware golf. Ready for every hole.
-          </span>
-          <ArrowRight className="h-4 w-4 text-white" />
-        </div>
-
-        <div className="container mx-auto mt-12 px-4 text-center">
-          <h1 className="mx-auto max-w-4xl text-5xl font-bold leading-tight tracking-[-0.03em] text-white md:text-6xl lg:text-7xl">
-            Show up ready for every hole
+        <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col justify-center px-5 pb-16 pt-8 md:px-8">
+          <p className="label !text-accent">Golf weather intelligence</p>
+          <h1 className="mt-4 max-w-3xl font-display text-[44px] font-semibold leading-[1.05] tracking-[-0.03em] text-white md:text-[64px] lg:text-[72px]">
+            Hole prep that reads the wind before you do
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-200">
-            Hole plans with miss lines, live GPS ranging, and a scorecard that
-            knows your handicap — synced to your account.
+          <p className="mt-6 max-w-xl text-[17px] leading-relaxed text-white/75">
+            Miss lines, live GPS ranging that keeps running in the background,
+            and a scorecard tuned to your handicap — one account, every round.
           </p>
-          <div className="mt-10 flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
-            <button
-              type="button"
-              onClick={goSignUp}
-              className="h-12 rounded-full bg-white px-8 text-base font-medium text-black hover:bg-white/90"
-            >
+          <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <button type="button" onClick={goSignUp} className="btn-accent">
               Create free account
+              <ArrowRight className="h-4 w-4" />
             </button>
             <button
               type="button"
               onClick={goSignIn}
-              className="h-12 rounded-full border border-gray-600 px-8 text-base font-medium text-white hover:bg-white/10"
+              className="btn-secondary !border-white/25 !bg-transparent !text-white hover:!bg-white/10"
             >
               Sign in
             </button>
           </div>
 
-          <div className="relative mx-auto my-20 w-full max-w-6xl">
-            <div className="bg-grainy absolute inset-0 rounded bg-white opacity-20 blur-[10rem]" />
-            <img
-              src={HERO_IMAGE}
-              alt="Golfer on a fairway at dawn"
-              width={1920}
-              height={1080}
-              className="relative h-auto w-full rounded shadow-md"
-            />
+          <div className="mt-14 grid max-w-2xl grid-cols-3 gap-4 border-t border-white/15 pt-8">
+            {[
+              { n: 'Prep', d: 'Miss-side yardages' },
+              { n: 'GPS', d: 'Background live' },
+              { n: 'Stats', d: 'FIR · GIR · sand' },
+            ].map((item) => (
+              <div key={item.n}>
+                <div className="stat-num text-[11px] text-accent">{item.n}</div>
+                <div className="mt-1 text-[13px] text-white/65">{item.d}</div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
     </div>
-  );
-}
-
-function NavItem({ label, href }: { label: string; href: string }) {
-  return (
-    <a
-      href={href}
-      className="flex items-center text-sm text-gray-200 hover:text-white"
-    >
-      <span>{label}</span>
-    </a>
-  );
-}
-
-function MobileNavItem({
-  label,
-  onClick,
-}: {
-  label: string;
-  onClick?: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex w-full items-center justify-between border-b border-gray-800 pb-2 text-lg text-white"
-    >
-      <span>{label}</span>
-      <ArrowRight className="h-4 w-4 text-gray-300" />
-    </button>
   );
 }
 

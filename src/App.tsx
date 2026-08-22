@@ -17,7 +17,10 @@ import { applyTheme, loadTheme } from './lib/theme';
 import { CoursesView } from './routes/CoursesView';
 import { GroupView } from './routes/GroupView';
 import { HomeLanding } from './routes/HomeLanding';
+import { ProfileView } from './routes/ProfileView';
+import { QuestionnaireView } from './routes/QuestionnaireView';
 import { SettingsView } from './routes/SettingsView';
+import { StatsView } from './routes/StatsView';
 import { TodayView } from './routes/TodayView';
 
 applyTheme(loadTheme());
@@ -182,6 +185,30 @@ function Shell() {
               element={
                 <RequireAuth>
                   <GroupView />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <RequireAuth>
+                  <ProfileView />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/questionnaire"
+              element={
+                <RequireAuth>
+                  <QuestionnaireView />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/stats"
+              element={
+                <RequireAuth>
+                  <StatsView />
                 </RequireAuth>
               }
             />

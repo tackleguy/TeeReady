@@ -16,60 +16,65 @@ export function HomeLanding() {
   };
 
   return (
-    <div>
+    <div className="bg-canvas">
       <Hero2
         onSignIn={() => scrollToAuth('signin')}
         onSignUp={() => scrollToAuth('signup')}
       />
 
-      <section
-        id="features"
-        className="border-t border-white/10 bg-[#0a120c] px-5 py-16 md:px-8"
-      >
-        <div className="mx-auto grid max-w-6xl gap-6 sm:grid-cols-3">
-          {[
-            {
-              k: 'Prep',
-              v: 'Miss lines, wind, and front / mid / back yardages for every hole.',
-            },
-            {
-              k: 'GPS',
-              v: 'Live ranging that keeps running while you switch tabs.',
-            },
-            {
-              k: 'Card',
-              v: 'Net scoring with plus handicaps, synced to your account.',
-            },
-          ].map((item) => (
-            <div
-              key={item.k}
-              className="rounded-2xl border border-white/10 bg-white/5 px-5 py-5 backdrop-blur-sm"
-            >
-              <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-emerald-200">
-                {item.k}
-              </div>
-              <p className="mt-2 text-[15px] leading-relaxed text-gray-100">
-                {item.v}
-              </p>
-            </div>
-          ))}
+      <section id="features" className="border-t border-line px-5 py-20 md:px-8">
+        <div className="mx-auto max-w-6xl">
+          <p className="section-eyebrow">How it works</p>
+          <h2 className="mt-2 font-display text-[32px] font-semibold tracking-[-0.03em] text-ink md:text-[40px]">
+            From forecast to final putt
+          </h2>
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
+            {[
+              {
+                k: '01',
+                t: 'Prep',
+                v: 'Miss lines, wind, and front / mid / back yardages for every hole.',
+              },
+              {
+                k: '02',
+                t: 'GPS',
+                v: 'Live ranging that keeps running while you switch tabs.',
+              },
+              {
+                k: '03',
+                t: 'Card',
+                v: 'Net scoring with your handicap, FIR/GIR stats, synced to your account.',
+              },
+            ].map((item) => (
+              <article key={item.k} className="ledger-card p-6">
+                <div className="stat-num text-[12px] text-accent">{item.k}</div>
+                <h3 className="mt-3 font-display text-[22px] font-semibold text-ink">
+                  {item.t}
+                </h3>
+                <p className="mt-2 text-[15px] leading-relaxed text-muted">
+                  {item.v}
+                </p>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
 
       <section
         id="auth"
-        className="scroll-mt-8 border-t border-white/10 bg-[#07100a] px-5 py-16 md:px-8"
+        className="scroll-mt-8 border-t border-line bg-[color-mix(in_srgb,var(--brand)_4%,var(--canvas))] px-5 py-20 md:px-8"
       >
         <div className="mx-auto max-w-xl">
-          <h2 className="text-center text-[28px] font-bold tracking-[-0.03em] text-white sm:text-[34px]">
+          <p className="text-center section-eyebrow">Account</p>
+          <h2 className="mt-2 text-center font-display text-[32px] font-semibold tracking-[-0.03em] text-ink sm:text-[38px]">
             {authMode === 'signup' ? 'Set up your game' : 'Sign in to tee off'}
           </h2>
-          <p className="mx-auto mt-3 max-w-lg text-center text-[15px] leading-relaxed text-gray-200">
+          <p className="mx-auto mt-3 max-w-lg text-center text-[15px] leading-relaxed text-muted">
             {authMode === 'signup'
-              ? 'Five quick steps — account, game, courses, and goals. Your coach takes it from there.'
+              ? 'Account, game, courses, and goals — your coach takes it from there.'
               : 'Your handicap, bag, and rounds stay with your account.'}
           </p>
-          <div className="on-light mt-8 rounded-2xl border border-white/10 bg-white p-5 shadow-2xl sm:p-6">
+          <div className="on-light ledger-card mt-8 p-5 sm:p-6">
             <AuthForm
               key={authMode}
               variant="landing"

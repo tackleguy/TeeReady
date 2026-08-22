@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { getRememberMe } from '../lib/authStorage';
 import {
@@ -30,6 +31,7 @@ export function AuthForm({
   defaultMode = 'signin',
   onSuccess,
 }: Props) {
+  const navigate = useNavigate();
   const { configured, error, signIn, signUp, clearError } = useAuth();
   const [mode, setMode] = useState<'signin' | 'signup'>(defaultMode);
   const [email, setEmail] = useState('');
@@ -98,8 +100,10 @@ export function AuthForm({
                     'Check spam for a confirm link — or sign in if you already have an account.',
                   );
                 } else {
-                  setInfo('Account created — you are signed in.');
-                  onSuccess?.();
+                  setInfo('Account created — finish your player profile.');
+                  navigate('/questionnaire', {
+                    state: { initialStep: 'rhythm' },
+                  });
                 }
               }
             } finally {

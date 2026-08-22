@@ -1,10 +1,10 @@
-/** Course / playing handicap helpers — supports plus handicaps. */
+/** Course / playing handicap helpers (0–54 index). */
 
 export function formatHandicap(hcp: number): string {
   if (!Number.isFinite(hcp)) return '—';
-  if (hcp < 0) return `+${Math.abs(hcp)}`;
-  if (Object.is(hcp, -0) || hcp === 0) return '0';
-  return String(hcp);
+  const n = Math.max(0, hcp);
+  if (n === 0) return '0';
+  return String(n);
 }
 
 /** Hardest hole → stroke index 1. */
@@ -25,9 +25,8 @@ export function assignStrokeIndexes(
 }
 
 /**
- * Strokes received on a hole for net scoring.
- * Positive HCP → strokes on hardest holes (low SI).
- * Plus HCP (negative) → give strokes on easiest holes (high SI).
+ * Strokes received on a hole for net scoring (positive index only).
+ * Strokes land on the hardest holes (lowest stroke index).
  */
 export function strokesReceived(
   courseHcp: number,
@@ -35,22 +34,13 @@ export function strokesReceived(
   holeCount = 18,
 ): number {
   if (!Number.isFinite(courseHcp) || !Number.isFinite(strokeIndex)) return 0;
-  const h = Math.trunc(courseHcp);
+  const h = Math.max(0, Math.trunc(courseHcp));
   if (h === 0) return 0;
 
-  if (h > 0) {
-    let s = 0;
-    if (strokeIndex <= h) s = 1;
-    if (strokeIndex <= h - holeCount) s = 2;
-    if (strokeIndex <= h - holeCount * 2) s = 3;
-    return s;
-  }
-
-  const plus = -h;
-  const easeRank = holeCount - strokeIndex + 1; // SI 18 → 1
   let s = 0;
-  if (easeRank <= plus) s = -1;
-  if (easeRank <= plus - holeCount) s = -2;
+  if (strokeIndex <= h) s = 1;
+  if (strokeIndex <= h - holeCount) s = 2;
+  if (strokeIndex <= h - holeCount * 2) s = 3;
   return s;
 }
 

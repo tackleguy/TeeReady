@@ -72,6 +72,7 @@ import {
   teeKindLabel,
   teesOnHole,
 } from '../lib/golfTees';
+import { finishAndArchiveRound } from '../lib/roundHistory';
 import {
   type TrackedRound,
   addShot,
@@ -481,9 +482,13 @@ export function GolfView({ active = true }: { active?: boolean }) {
   }, [course, resolvedLoop]);
 
   const endRound = useCallback(() => {
-    clearRound();
+    if (round?.scores.length) {
+      finishAndArchiveRound(round);
+    } else {
+      clearRound();
+    }
     setRound(null);
-  }, []);
+  }, [round]);
 
   const dropShot = useCallback(() => {
     if (!round || !activeHoleObj || !gpsPos) return;

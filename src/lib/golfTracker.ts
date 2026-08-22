@@ -27,7 +27,19 @@ export interface HoleScore {
   par: number;
   strokes: number;
   putts: number;
+  /** Par 4/5 only — true hit, false missed. */
+  fairwayHit?: boolean | null;
+  /** Reached green in regulation. */
+  gir?: boolean;
+  chips?: number;
+  penalties?: number;
+  /** null = no sand on hole. */
+  sandSave?: boolean | null;
 }
+
+export type HoleStatExtras = Partial<
+  Pick<HoleScore, 'fairwayHit' | 'gir' | 'chips' | 'penalties' | 'sandSave'>
+>;
 
 export interface TrackedRound {
   id: string;
@@ -102,10 +114,39 @@ export function setHoleScore(
   par: number,
   strokes: number,
   putts: number,
+  extras?: HoleStatExtras,
 ): TrackedRound {
+  const prev = round.scores.find((s) => s.holeNumber === holeNumber);
   const scores = round.scores.filter((s) => s.holeNumber !== holeNumber);
-  scores.push({ holeNumber, par, strokes, putts });
+  scores.push({
+    holeNumber,
+    par,
+    strokes,
+    putts,
+    fairwayHit: extras?.fairwayHit ?? prev?.fairwayHit,
+    gir: extras?.gir ?? prev?.gir,
+    chips: extras?.chips ?? prev?.chips,
+    penalties: extras?.penalties ?? prev?.penalties,
+    sandSave: extras?.sandSave ?? prev?.sandSave,
+  });
   return { ...round, scores };
+}
+
+export function setHoleStats(
+  round: TrackedRound,
+  holeNumber: number,
+  extras: HoleStatExtras,
+): TrackedRound {
+  const prev = round.scores.find((s) => s.holeNumber === holeNumber);
+  if (!prev) return round;
+  return setHoleScore(
+    round,
+    holeNumber,
+    prev.par,
+    prev.strokes,
+    prev.putts,
+    extras,
+  );
 }
 
 export function roundTotalStrokes(round: TrackedRound): number {
