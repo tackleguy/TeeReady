@@ -190,6 +190,8 @@ export const COURSES: Course[] = [
     distanceMi: 4.1,
     playScore: 91,
     wind: '6 mph',
+    photo:
+      'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?auto=format&fit=crop&w=800&q=80',
   },
   {
     slug: 'rancho-park',
@@ -198,6 +200,8 @@ export const COURSES: Course[] = [
     distanceMi: 2.5,
     playScore: 86,
     wind: '8 mph',
+    photo:
+      'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&w=800&q=80',
   },
   {
     slug: 'wilson-harding',
@@ -206,6 +210,8 @@ export const COURSES: Course[] = [
     distanceMi: 6.0,
     playScore: 79,
     wind: '11 mph',
+    photo:
+      'https://images.unsplash.com/photo-1593111774240-d529f12cf4bb?auto=format&fit=crop&w=800&q=80',
   },
   {
     slug: 'torrey-pines',
@@ -214,6 +220,8 @@ export const COURSES: Course[] = [
     distanceMi: 112,
     playScore: 74,
     wind: '14 mph',
+    photo:
+      'https://images.unsplash.com/photo-1459369510627-9aadc0c5e69b?auto=format&fit=crop&w=800&q=80',
   },
 ];
 
