@@ -16,8 +16,8 @@ import {
 import { bearingDeg, haversineYards, pathLengthYards } from './_lib/geo';
 import { findScorecard, type CourseScorecard } from './_data/scorecards';
 import {
-  bboxArea,
   bboxFromLatLon,
+  clampBboxArea,
   fetchOsmMapElements,
   holesBboxKey,
   padBbox,
@@ -1186,7 +1186,7 @@ async function holesFromOsmMap(
       east: e + 0.002,
     };
   }
-  if (bboxArea(next) > 0.08) return labeled;
+  next = clampBboxArea(next, 0.12);
   const wider = await holesFromOsmMap(
     next,
     osmType,
@@ -1283,9 +1283,12 @@ export default async function handler(req: Request): Promise<Response> {
   // Prefer OSM's main map API for a course bbox. Public Overpass mirrors are
   // often busy; map.json is local-to-the-bbox and keeps Golf working offline
   // from Overpass health. When the client didn't send a bbox, synthesize one.
-  const mapBbox =
+  // Clamp oversized Photon bboxes so map.json is not skipped entirely.
+  const mapBbox = clampBboxArea(
     (bbox ? parseMapBbox(bbox) : null) ??
-    bboxFromLatLon(lat, lon, Math.min(radiusM, 2200));
+      bboxFromLatLon(lat, lon, Math.min(radiusM, 2200)),
+    0.12,
+  );
 
   const tryMap = async (
     box: OsmMapBbox,
@@ -1371,11 +1374,10 @@ out geom;
   }
 
   // Overpass busy / empty → one more direct OSM map attempt with a wider box.
+  // Always run the backup: clamp to the map.json size limit instead of skipping.
   if (!fetchLooksComplete(best.holes)) {
-    const wider = padBbox(mapBbox, 0.5);
-    if (bboxArea(wider) <= 0.1) {
-      await tryMap(wider, 'osm-map-retry');
-    }
+    const wider = clampBboxArea(padBbox(mapBbox, 0.5), 0.12);
+    await tryMap(wider, 'osm-map-retry');
   }
 
   if (!best.holes.length) {

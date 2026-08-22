@@ -57,6 +57,26 @@ export function bboxArea(bbox: OsmMapBbox): number {
   return Math.max(0, bbox.north - bbox.south) * Math.max(0, bbox.east - bbox.west);
 }
 
+/** OSM map.json rejects oversized bboxes; shrink toward center to stay under the cap. */
+export function clampBboxArea(
+  bbox: OsmMapBbox,
+  maxArea = 0.12,
+): OsmMapBbox {
+  const area = bboxArea(bbox);
+  if (area <= maxArea || area <= 0) return bbox;
+  const scale = Math.sqrt(maxArea / area);
+  const midLat = (bbox.south + bbox.north) / 2;
+  const midLon = (bbox.west + bbox.east) / 2;
+  const halfLat = ((bbox.north - bbox.south) / 2) * scale;
+  const halfLon = ((bbox.east - bbox.west) / 2) * scale;
+  return {
+    south: midLat - halfLat,
+    west: midLon - halfLon,
+    north: midLat + halfLat,
+    east: midLon + halfLon,
+  };
+}
+
 export function bboxQuery(bbox: OsmMapBbox): string {
   // OSM map API wants west,south,east,north
   return `${bbox.west},${bbox.south},${bbox.east},${bbox.north}`;
