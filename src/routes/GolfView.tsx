@@ -28,6 +28,7 @@ import { GolfScorecard } from '../components/golf/GolfScorecard';
 import { GolfTargetHud } from '../components/golf/GolfTargetHud';
 import { GolfYardageBook } from '../components/golf/GolfYardageBook';
 import { GpsMod } from '../components/golf/GpsMod';
+import { GoalCoachBanner } from '../components/coach/GoalCoachBanner';
 import { GlassPanel } from '../components/ui/GlassPanel';
 import { DraggableBox, clearPanelPositions } from '../components/ui/DraggableBox';
 import { SearchBar } from '../components/radar/SearchBar';
@@ -943,6 +944,12 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     </div>
                   </div>
                 </div>
+              </div>
+            ) : null}
+
+            {viewMode === 'prep' && course && profile.goals.length > 0 ? (
+              <div className="pointer-events-none absolute left-0 right-0 top-0 z-[21]">
+                <GoalCoachBanner />
               </div>
             ) : null}
 

@@ -25,6 +25,8 @@ import {
   type ThemeId,
 } from '../lib/theme';
 import { formatHandicap } from '../lib/golfHandicap';
+import { GoalPicker } from '../components/coach/GoalPicker';
+import type { GoalId } from '../lib/goals';
 
 const MISS_OPTIONS: Array<{ value: MissBias; label: string; hint: string }> = [
   { value: 'left', label: 'Left', hint: 'Start left, finish further left' },
@@ -55,6 +57,8 @@ export function SettingsView() {
     DEFAULT_PROFILE.sevenIronYards,
   );
   const [driverYards, setDriverYards] = useState(DEFAULT_PROFILE.driverYards);
+  const [goals, setGoals] = useState<GoalId[]>(DEFAULT_PROFILE.goals);
+  const [targetHandicap, setTargetHandicap] = useState<number | ''>('');
   const [theme, setThemeId] = useState<ThemeId>(() => loadTheme());
   const [hasRound, setHasRound] = useState(false);
   const [savedFlash, setSavedFlash] = useState<string | null>(null);
@@ -71,6 +75,8 @@ export function SettingsView() {
       setMiss(saved.miss);
       setSevenIronYards(saved.sevenIronYards);
       setDriverYards(saved.driverYards);
+      setGoals(saved.goals);
+      setTargetHandicap(saved.targetHandicap ?? '');
       setThemeId(loadTheme());
       setHasRound(loadRound() != null);
     };
@@ -121,6 +127,9 @@ export function SettingsView() {
       miss,
       sevenIronYards,
       driverYards,
+      goals,
+      targetHandicap:
+        targetHandicap === '' ? undefined : Number(targetHandicap),
     });
     const next: DisplayProfile = saveDisplayProfile({ name: name.trim() });
     setName(next.name);
@@ -300,6 +309,33 @@ export function SettingsView() {
               })}
             </div>
           </div>
+        </div>
+
+        <div className="mt-5 border-t border-line pt-5">
+          <FieldLabel>Goals · your coach</FieldLabel>
+          <p className="mb-2 text-[12px] text-muted">
+            Today and Rounds adapt to what you&apos;re working on.
+          </p>
+          <GoalPicker value={goals} onChange={setGoals} max={3} />
+          {goals.includes('lower-handicap') ? (
+            <label className="mt-3 block">
+              <FieldLabel>Target handicap</FieldLabel>
+              <input
+                type="number"
+                step={0.1}
+                min={-10}
+                max={54}
+                value={targetHandicap}
+                onChange={(e) =>
+                  setTargetHandicap(
+                    e.target.value === '' ? '' : Number(e.target.value),
+                  )
+                }
+                placeholder={formatHandicap(Math.max(0, handicap - 3))}
+                className={`${inputClassName()} tabular`}
+              />
+            </label>
+          ) : null}
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-3">

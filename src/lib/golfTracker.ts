@@ -7,6 +7,7 @@
 
 import { haversineYards } from './golfMeasure';
 import type { BagClub } from './golfProfile';
+import { logRoundStart } from './roundLog';
 
 export interface TrackedShot {
   id: string;
@@ -45,7 +46,7 @@ export function newRound(
   courseName: string,
   loop?: string,
 ): TrackedRound {
-  return {
+  const round: TrackedRound = {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
     courseId,
     courseName,
@@ -54,6 +55,8 @@ export function newRound(
     shots: [],
     scores: [],
   };
+  logRoundStart(courseName);
+  return round;
 }
 
 export function addShot(

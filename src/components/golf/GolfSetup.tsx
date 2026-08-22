@@ -66,6 +66,8 @@ export function GolfSetup({ initial, onComplete, onCancel }: Props) {
         miss,
         sevenIronYards,
         driverYards,
+        goals: initial?.goals ?? DEFAULT_PROFILE.goals,
+        targetHandicap: initial?.targetHandicap,
       }),
     );
   };

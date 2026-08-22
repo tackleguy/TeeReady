@@ -1,3 +1,5 @@
+import { normalizeGoals, type GoalId } from './goals';
+
 export type MissBias = 'left' | 'right' | 'both' | 'straight';
 
 export interface GolfPlayerProfile {
@@ -6,6 +8,9 @@ export interface GolfPlayerProfile {
   miss: MissBias;
   sevenIronYards: number;
   driverYards: number;
+  goals: GoalId[];
+  /** Optional target when working toward lower-handicap. */
+  targetHandicap?: number;
 }
 
 export interface BagClub {
@@ -46,6 +51,7 @@ export const DEFAULT_PROFILE: GolfPlayerProfile = {
   miss: 'right',
   sevenIronYards: 150,
   driverYards: 225,
+  goals: [],
 };
 
 export function bagFromStocks(
@@ -120,6 +126,12 @@ export function loadGolfProfile(): GolfPlayerProfile | null {
           : DEFAULT_PROFILE.miss,
       sevenIronYards: Number(parsed.sevenIronYards),
       driverYards: Number(parsed.driverYards),
+      goals: normalizeGoals(parsed.goals),
+      targetHandicap:
+        parsed.targetHandicap != null &&
+        Number.isFinite(Number(parsed.targetHandicap))
+          ? Number(parsed.targetHandicap)
+          : undefined,
     };
     // Migrate off shared WeatherStop keys so values stop getting overwritten.
     try {
@@ -142,6 +154,11 @@ export function saveGolfProfile(
     miss: profile.miss,
     sevenIronYards: Math.max(80, Math.min(220, profile.sevenIronYards)),
     driverYards: Math.max(140, Math.min(360, profile.driverYards)),
+    goals: normalizeGoals(profile.goals),
+    targetHandicap:
+      profile.targetHandicap != null
+        ? Math.max(-10, Math.min(54, profile.targetHandicap))
+        : undefined,
   };
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(safe));
