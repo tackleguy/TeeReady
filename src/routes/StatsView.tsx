@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { BarChart3, Flag, Target, TrendingUp } from 'lucide-react';
 import {
   aggregateStats,
-  loadRoundHistory,
+  loadRoundsForStats,
   type SavedRound,
 } from '../lib/roundHistory';
 import { roundScoreLabel } from '../lib/golfTracker';
@@ -37,11 +37,13 @@ function StatCard({
 
 function RoundRow({ round }: { round: SavedRound }) {
   const holes = round.scores.length;
-  const date = new Date(round.finishedAt).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  const date = round.inProgress
+    ? 'In progress'
+    : new Date(round.finishedAt).toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
   let fir = 0;
   let firOpps = 0;
   let gir = 0;
@@ -82,14 +84,16 @@ function RoundRow({ round }: { round: SavedRound }) {
 }
 
 export function StatsView() {
-  const [rounds, setRounds] = useState<SavedRound[]>(() => loadRoundHistory());
+  const [rounds, setRounds] = useState<SavedRound[]>(() => loadRoundsForStats());
 
   useEffect(() => {
-    const refresh = () => setRounds(loadRoundHistory());
+    const refresh = () => setRounds(loadRoundsForStats());
     window.addEventListener('teeready-round-history-changed', refresh);
+    window.addEventListener('teeready-round-changed', refresh);
     window.addEventListener('focus', refresh);
     return () => {
       window.removeEventListener('teeready-round-history-changed', refresh);
+      window.removeEventListener('teeready-round-changed', refresh);
       window.removeEventListener('focus', refresh);
     };
   }, []);
@@ -116,8 +120,9 @@ export function StatsView() {
           <BarChart3 className="mx-auto h-10 w-10 text-faint" strokeWidth={1.5} />
           <h2 className="mt-4 text-[17px] font-bold text-ink">No rounds yet</h2>
           <p className="mt-2 text-[14px] text-muted">
-            Finish a round with the scorecard to start tracking FIR, GIR, chips,
-            penalties, and sand saves.
+            Enter scores on the scorecard (Scoring or Stats tab), then tap{' '}
+            <strong className="font-semibold text-ink">Finish round</strong> to
+            save FIR, GIR, chips, penalties, and sand saves here.
           </p>
           <Link
             to="/rounds/gps"

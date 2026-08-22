@@ -489,6 +489,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
       clearRound();
     }
     setRound(null);
+    setScorecardOpen(false);
   }, [round]);
 
   const dropShot = useCallback(() => {
@@ -1214,6 +1215,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                       saveRound(next);
                     }}
                     onClose={() => setScorecardOpen(false)}
+                    onFinishRound={endRound}
                   />
                 </div>
               </DraggableBox>

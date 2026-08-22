@@ -23,6 +23,7 @@ interface Props {
   handicap: number;
   onChange: (next: TrackedRound) => void;
   onClose: () => void;
+  onFinishRound?: () => void;
 }
 
 function TriToggle({
@@ -220,9 +221,7 @@ function StatsTable({
                     <TriToggle
                       value={scored.gir}
                       labels={['Yes', 'No', '—']}
-                      onChange={(v) =>
-                        onStats(h.number, { gir: v ?? undefined })
-                      }
+                      onChange={(v) => onStats(h.number, { gir: v })}
                     />
                   ) : (
                     <span className="text-[11px] text-faint">—</span>
@@ -292,6 +291,7 @@ export function GolfScorecard({
   handicap,
   onChange,
   onClose,
+  onFinishRound,
 }: Props) {
   const strokeIndex = useMemo(() => {
     const assigned = assignStrokeIndexes(holes);
@@ -421,38 +421,49 @@ export function GolfScorecard({
         )}
       </div>
 
-      <div className="grid grid-cols-3 gap-2 border-t border-line px-4 py-3">
-        <div className="rounded-xl bg-canvas px-3 py-2 text-center">
-          <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-faint">
-            Gross
+      <div className="border-t border-line px-4 py-3">
+        <div className="grid grid-cols-3 gap-2">
+          <div className="rounded-xl bg-canvas px-3 py-2 text-center">
+            <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-faint">
+              Gross
+            </div>
+            <div className="text-[18px] font-bold tabular text-ink">
+              {netHoles ? gross : '—'}
+            </div>
+            <div className="text-[11px] text-muted">
+              {netHoles ? toParLabel(gross - parTotal) : 'vs par'}
+            </div>
           </div>
-          <div className="text-[18px] font-bold tabular text-ink">
-            {netHoles ? gross : '—'}
+          <div className="rounded-xl bg-canvas px-3 py-2 text-center">
+            <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-faint">
+              Net
+            </div>
+            <div className="text-[18px] font-bold tabular text-brand">
+              {netHoles ? netTotal : '—'}
+            </div>
+            <div className="text-[11px] text-muted">
+              {netHoles ? toParLabel(netTotal - parTotal) : 'hcp adj'}
+            </div>
           </div>
-          <div className="text-[11px] text-muted">
-            {netHoles ? toParLabel(gross - parTotal) : 'vs par'}
+          <div className="rounded-xl bg-canvas px-3 py-2 text-center">
+            <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-faint">
+              Thru
+            </div>
+            <div className="text-[18px] font-bold tabular text-ink">
+              {netHoles}/{holes.length}
+            </div>
+            <div className="text-[11px] text-muted">holes</div>
           </div>
         </div>
-        <div className="rounded-xl bg-canvas px-3 py-2 text-center">
-          <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-faint">
-            Net
-          </div>
-          <div className="text-[18px] font-bold tabular text-brand">
-            {netHoles ? netTotal : '—'}
-          </div>
-          <div className="text-[11px] text-muted">
-            {netHoles ? toParLabel(netTotal - parTotal) : 'hcp adj'}
-          </div>
-        </div>
-        <div className="rounded-xl bg-canvas px-3 py-2 text-center">
-          <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-faint">
-            Thru
-          </div>
-          <div className="text-[18px] font-bold tabular text-ink">
-            {netHoles}/{holes.length}
-          </div>
-          <div className="text-[11px] text-muted">holes</div>
-        </div>
+        {onFinishRound && round.scores.length > 0 ? (
+          <button
+            type="button"
+            onClick={onFinishRound}
+            className="mt-3 w-full rounded-xl bg-brand px-4 py-2.5 text-[13px] font-bold text-white"
+          >
+            Finish round
+          </button>
+        ) : null}
       </div>
     </div>
   );

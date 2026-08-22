@@ -10,7 +10,18 @@ const MAX = 50;
 
 export type SavedRound = TrackedRound & {
   finishedAt: number;
+  /** Live round not yet archived via End / Finish. */
+  inProgress?: boolean;
 };
+
+/** History plus any in-progress round with scores (for Stats page). */
+export function loadRoundsForStats(): SavedRound[] {
+  const history = loadRoundHistory();
+  const live = loadRound();
+  if (!live?.scores.length) return history;
+  if (history.some((r) => r.id === live.id)) return history;
+  return [{ ...live, finishedAt: live.startedAt, inProgress: true }, ...history];
+}
 
 export function loadRoundHistory(): SavedRound[] {
   try {

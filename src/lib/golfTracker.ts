@@ -30,7 +30,7 @@ export interface HoleScore {
   /** Par 4/5 only — true hit, false missed. */
   fairwayHit?: boolean | null;
   /** Reached green in regulation. */
-  gir?: boolean;
+  gir?: boolean | null;
   chips?: number;
   penalties?: number;
   /** null = no sand on hole. */
@@ -108,6 +108,15 @@ export function shotsForHole(
   return round.shots.filter((s) => s.holeNumber === holeNumber);
 }
 
+function statField<K extends keyof HoleStatExtras>(
+  extras: HoleStatExtras | undefined,
+  key: K,
+  prev: HoleScore[K] | undefined,
+): HoleScore[K] | undefined {
+  if (extras && key in extras) return extras[key] as HoleScore[K] | undefined;
+  return prev;
+}
+
 export function setHoleScore(
   round: TrackedRound,
   holeNumber: number,
@@ -123,11 +132,11 @@ export function setHoleScore(
     par,
     strokes,
     putts,
-    fairwayHit: extras?.fairwayHit ?? prev?.fairwayHit,
-    gir: extras?.gir ?? prev?.gir,
-    chips: extras?.chips ?? prev?.chips,
-    penalties: extras?.penalties ?? prev?.penalties,
-    sandSave: extras?.sandSave ?? prev?.sandSave,
+    fairwayHit: statField(extras, 'fairwayHit', prev?.fairwayHit),
+    gir: statField(extras, 'gir', prev?.gir),
+    chips: statField(extras, 'chips', prev?.chips),
+    penalties: statField(extras, 'penalties', prev?.penalties),
+    sandSave: statField(extras, 'sandSave', prev?.sandSave),
   });
   return { ...round, scores };
 }
