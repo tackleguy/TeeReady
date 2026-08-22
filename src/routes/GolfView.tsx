@@ -671,7 +671,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     : 'relative h-full'
                   : 'hidden',
               ].join(' ')
-            : 'golf-hud z-10 flex h-full w-[380px] shrink-0 flex-col border-r border-[var(--line-subtle)] bg-[color:rgba(6,10,18,0.72)]'
+            : 'golf-hud z-10 flex h-full w-[380px] shrink-0 flex-col border-r border-[var(--line-subtle)] bg-[rgba(8,12,18,0.94)]'
         }
       >
         <div className="border-b border-[var(--line-subtle)] px-3 py-3">

@@ -343,7 +343,7 @@ export function GolfScorecard({
     tab === 'front' ? front : tab === 'back' ? back : holes;
 
   return (
-    <div className="flex h-full min-h-0 flex-col rounded-card border border-line bg-surface shadow-lift">
+    <div className="hud-card flex h-full min-h-0 flex-col rounded-card border border-line shadow-lift">
       <div className="flex items-start justify-between gap-3 border-b border-line px-4 py-3">
         <div>
           <h2 className="text-[16px] font-bold text-ink">Scorecard</h2>

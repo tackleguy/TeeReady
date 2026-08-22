@@ -38,6 +38,7 @@ html[data-theme='light'] {
 
   --glass: rgba(255, 252, 247, 0.92);
   --glass-hi: var(--surface);
+  --hud-card: var(--surface);
 
   --border-subtle: rgba(20, 28, 36, 0.06);
   --border-default: var(--line);
@@ -113,6 +114,7 @@ html[data-theme='dark'] {
 
   --glass: rgba(18, 26, 34, 0.88);
   --glass-hi: rgba(26, 36, 46, 0.96);
+  --hud-card: rgba(18, 26, 34, 0.96);
 
   --border-subtle: rgba(238, 242, 246, 0.05);
   --border-default: var(--line);
@@ -403,9 +405,25 @@ body {
   --line-strong: rgba(255, 255, 255, 0.22);
   --muted: var(--ink-3);
   --faint: var(--ink-4);
-  --surface: rgba(255, 255, 255, 0.08);
-  --canvas: rgba(0, 0, 0, 0.22);
+  --surface: rgba(16, 22, 30, 0.96);
+  --canvas: rgba(10, 14, 20, 0.92);
+  --hud-card: rgba(14, 20, 28, 0.97);
+  --glass-hi: rgba(14, 20, 28, 0.97);
   color: var(--ink-1);
+}
+
+.hud-card {
+  background: var(--hud-card);
+}
+
+.golf-hud .hud-card {
+  backdrop-filter: blur(20px) saturate(140%);
+}
+
+.golf-hud .floating-panel,
+.golf-hud .floating-subpanel {
+  background: var(--hud-card);
+  backdrop-filter: blur(20px) saturate(140%);
 }
 
 .golf-hud .section-eyebrow {

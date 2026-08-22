@@ -225,7 +225,7 @@ export function DraggableBox({
     >
       {showHandle ? (
         <div
-          className={`flex cursor-grab items-center justify-center gap-1 border-b border-[var(--line-subtle)] bg-[color-mix(in_srgb,var(--surface)_85%,transparent)] px-2 py-1 text-[var(--ink-4)] active:cursor-grabbing ${
+          className={`flex cursor-grab items-center justify-center gap-1 border-b border-[var(--line-subtle)] bg-[var(--hud-card,var(--surface))] px-2 py-1 text-[var(--ink-4)] active:cursor-grabbing ${
             dragging ? 'cursor-grabbing' : ''
           }`}
           onPointerDown={onPointerDown}

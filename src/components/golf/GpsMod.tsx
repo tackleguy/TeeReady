@@ -45,7 +45,7 @@ export function GpsMod({
 
   return (
     <div
-      className={`pointer-events-auto rounded-card border border-[color-mix(in_srgb,#3b82f6_35%,var(--line))] bg-[color-mix(in_srgb,var(--surface)_95%,transparent)] p-3 ${className}`}
+      className={`pointer-events-auto hud-card rounded-card border border-[color-mix(in_srgb,#3b82f6_35%,var(--line))] p-3 ${className}`}
     >
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
