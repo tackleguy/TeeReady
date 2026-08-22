@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { NavLink, useLocation } from 'react-router-dom';
 import { ChevronDown, MapPin } from 'lucide-react';
 import { hasStoredRound } from '../lib/golfTracker';
@@ -33,7 +34,12 @@ function RoundsMenu({ mobile = false }: { mobile?: boolean }) {
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const [liveRound, setLiveRound] = useState(() => hasStoredRound());
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(
+    null,
+  );
   const rootRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const roundsActive = location.pathname.startsWith('/rounds');
 
   useEffect(() => {
@@ -50,25 +56,108 @@ function RoundsMenu({ mobile = false }: { mobile?: boolean }) {
     };
   }, []);
 
+  // Mobile nav uses overflow-x-auto, which clips absolute menus — portal + fixed.
+  useLayoutEffect(() => {
+    if (!open || !mobile) {
+      setMenuPos(null);
+      return;
+    }
+    const update = () => {
+      const btn = buttonRef.current;
+      if (!btn) return;
+      const rect = btn.getBoundingClientRect();
+      const menuWidth = 200;
+      const left = Math.min(
+        Math.max(8, rect.left),
+        window.innerWidth - menuWidth - 8,
+      );
+      setMenuPos({ top: rect.bottom + 8, left });
+    };
+    update();
+    window.addEventListener('resize', update);
+    // Capture scroll from the overflow-x nav (and ancestors).
+    window.addEventListener('scroll', update, true);
+    return () => {
+      window.removeEventListener('resize', update);
+      window.removeEventListener('scroll', update, true);
+    };
+  }, [open, mobile]);
+
   useEffect(() => {
     if (!open) return;
-    const onDoc = (e: MouseEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+    const onDoc = (e: PointerEvent) => {
+      const target = e.target as Node;
+      if (rootRef.current?.contains(target)) return;
+      if (menuRef.current?.contains(target)) return;
+      setOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false);
     };
-    document.addEventListener('mousedown', onDoc);
+    // pointerdown covers touch + mouse; listen in bubble so the toggle
+    // button's own handlers run first.
+    document.addEventListener('pointerdown', onDoc);
     document.addEventListener('keydown', onKey);
     return () => {
-      document.removeEventListener('mousedown', onDoc);
+      document.removeEventListener('pointerdown', onDoc);
       document.removeEventListener('keydown', onKey);
     };
   }, [open]);
 
+  const showMenu = open && (!mobile || menuPos != null);
+
+  const menu = showMenu ? (
+    <div
+      ref={menuRef}
+      role="menu"
+      style={
+        mobile && menuPos
+          ? { position: 'fixed', top: menuPos.top, left: menuPos.left }
+          : undefined
+      }
+      className={`z-[60] overflow-hidden rounded-card border border-line bg-surface shadow-lift ${
+        mobile
+          ? 'min-w-[200px]'
+          : 'absolute left-0 top-full mt-2 min-w-[220px]'
+      }`}
+    >
+      {ROUNDS_LINKS.map((item) => (
+        <NavLink
+          key={item.href}
+          to={item.href}
+          role="menuitem"
+          onClick={() => setOpen(false)}
+          className={({ isActive }) =>
+            `block px-3.5 py-2.5 transition-colors ${
+              isActive
+                ? 'bg-brand-soft'
+                : 'hover:bg-[color-mix(in_srgb,var(--canvas)_80%,transparent)]'
+            }`
+          }
+        >
+          {({ isActive }) => (
+            <>
+              <div
+                className={`text-[13px] ${
+                  isActive
+                    ? 'font-semibold text-brand'
+                    : 'font-semibold text-ink'
+                }`}
+              >
+                {item.label}
+              </div>
+              <div className="mt-0.5 text-[11px] text-muted">{item.hint}</div>
+            </>
+          )}
+        </NavLink>
+      ))}
+    </div>
+  ) : null;
+
   return (
     <div ref={rootRef} className="relative">
       <button
+        ref={buttonRef}
         type="button"
         aria-expanded={open}
         aria-haspopup="menu"
@@ -90,47 +179,7 @@ function RoundsMenu({ mobile = false }: { mobile?: boolean }) {
         />
       </button>
 
-      {open ? (
-        <div
-          role="menu"
-          className={`absolute z-40 overflow-hidden rounded-card border border-line bg-surface shadow-lift ${
-            mobile
-              ? 'left-0 top-full mt-2 min-w-[200px]'
-              : 'left-0 top-full mt-2 min-w-[220px]'
-          }`}
-        >
-          {ROUNDS_LINKS.map((item) => (
-            <NavLink
-              key={item.href}
-              to={item.href}
-              role="menuitem"
-              onClick={() => setOpen(false)}
-              className={({ isActive }) =>
-                `block px-3.5 py-2.5 transition-colors ${
-                  isActive
-                    ? 'bg-brand-soft'
-                    : 'hover:bg-[color-mix(in_srgb,var(--canvas)_80%,transparent)]'
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  <div
-                    className={`text-[13px] ${
-                      isActive
-                        ? 'font-semibold text-brand'
-                        : 'font-semibold text-ink'
-                    }`}
-                  >
-                    {item.label}
-                  </div>
-                  <div className="mt-0.5 text-[11px] text-muted">{item.hint}</div>
-                </>
-              )}
-            </NavLink>
-          ))}
-        </div>
-      ) : null}
+      {mobile && menu ? createPortal(menu, document.body) : menu}
     </div>
   );
 }
