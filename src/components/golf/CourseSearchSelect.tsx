@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useGolfCourses } from '../../hooks/useGolf';
 import type { GolfCourseSummary } from '../../lib/golf';
 import { defaultSearchLoc } from '../../lib/searchLoc';
+import { venueKindLabel } from '../../lib/venueKind';
 
 function courseLabel(c: GolfCourseSummary): string {
   return c.region ? `${c.name} · ${c.region}` : c.name;
@@ -133,6 +134,9 @@ export function CourseSearchSelect({
                       ) : null}
                       {c.access === 'private' ? (
                         <span>Private</span>
+                      ) : null}
+                      {venueKindLabel(c.kind) ? (
+                        <span>{venueKindLabel(c.kind)}</span>
                       ) : null}
                     </span>
                   </button>

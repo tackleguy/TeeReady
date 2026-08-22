@@ -21,6 +21,7 @@ import {
   CloudSun,
 } from 'lucide-react';
 import { GolfMap } from '../components/golf/GolfMap';
+import { CourseHeroImage } from '../components/golf/CourseHeroImage';
 import { GolfMapBoundary } from '../components/golf/GolfMapBoundary';
 import { GolfHoleIntel } from '../components/golf/GolfHoleIntel';
 import { GolfSetup } from '../components/golf/GolfSetup';
@@ -825,7 +826,13 @@ export function GolfView({ active = true }: { active?: boolean }) {
                         : 'hover:bg-white/5',
                     ].join(' ')}
                   >
-                    <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <CourseHeroImage
+                        seed={c.id || c.name}
+                        alt=""
+                        className="h-12 w-12 shrink-0 rounded-lg object-cover"
+                      />
+                      <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
                       <div className="min-w-0">
                         <div className="truncate text-[13px] font-semibold text-[var(--ink-1)]">
                           {c.name}
@@ -859,6 +866,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                           Selected
                         </span>
                       ) : null}
+                      </div>
                     </div>
                   </button>
                 </li>

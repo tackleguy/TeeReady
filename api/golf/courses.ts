@@ -17,6 +17,11 @@ import {
 } from './_lib/overpass';
 import { bboxFromLatLon, fetchOsmMapElements, padBbox } from './_lib/osmMap';
 import { isClubSibling } from './_lib/courseRelate';
+import {
+  classifyVenueKind,
+  isPlayableCourse,
+  type VenueKind,
+} from './_lib/venueKind';
 
 export const config = { runtime: 'edge' };
 
@@ -37,6 +42,8 @@ export interface GolfCourseSummary {
   region?: string;
   /** Best-effort public / private / resort label from name + OSM tags. */
   access?: CourseAccess;
+  /** Outdoor course vs indoor sim bay vs practice range. */
+  kind?: VenueKind;
   distanceMi?: number;
 }
 
@@ -129,6 +136,13 @@ export function classifyAccess(
   return 'unknown';
 }
 
+/** Keep Wilson/Harding-style alias hits only when the query asked for them. */
+function catalogAliasKeep(needle: string): boolean {
+  return /griffith|sepulveda|encino.*golf|balboa.*golf|bethpage|torrey|pelican|riviera/i.test(
+    needle,
+  );
+}
+
 function courseFromPhoton(
   f: PhotonFeature,
   origin?: { lat: number; lon: number },
@@ -164,6 +178,7 @@ function courseFromPhoton(
     region:
       [p.city, p.state, p.country].filter(Boolean).join(', ') || undefined,
     access: classifyAccess(name, p.extratags),
+    kind: classifyVenueKind(name, p.extratags),
     distanceMi: origin
       ? haversineMi(origin.lat, origin.lon, cLat, cLon)
       : undefined,
@@ -375,8 +390,10 @@ async function photonCatalog(
     if (
       tokens.length &&
       nameMatchScore(course.name, needle, tokens) >= 9 &&
-      // Alias expansions (Wilson/Harding for Griffith) are intentional.
-      !/wilson|harding|bethpage|balboa|encino/i.test(course.name)
+      !(
+        catalogAliasKeep(needle) &&
+        /wilson|harding|bethpage|balboa|encino/i.test(course.name)
+      )
     ) {
       continue;
     }
@@ -496,6 +513,7 @@ async function nominatimCatalog(
           .filter(Boolean)
           .join(', ') || undefined,
       access: classifyAccess(name, hit.extratags),
+      kind: classifyVenueKind(name, hit.extratags),
       distanceMi: haversineMi(lat, lon, cLat, cLon),
     });
   }
@@ -562,6 +580,7 @@ async function opengolfCatalog(
         par: Number.isFinite(Number(row.par)) ? Number(row.par) : undefined,
         region: [row.city, row.state].filter(Boolean).join(', ') || undefined,
         access: classifyAccess(name),
+        kind: classifyVenueKind(name),
         distanceMi: haversineMi(lat, lon, cLat, cLon),
       });
     }
@@ -620,6 +639,7 @@ out center tags bb;
       par: Number.isFinite(par) ? par : undefined,
       website: tags.website || tags['contact:website'],
       access: classifyAccess(name, tags),
+      kind: classifyVenueKind(name, tags),
       distanceMi: haversineMi(originLat, originLon, c.lat, c.lon),
     });
   }
@@ -677,10 +697,15 @@ async function mapCourses(
       par: Number.isFinite(par) ? par : undefined,
       website: tags.website || tags['contact:website'],
       access: classifyAccess(name, tags),
+      kind: classifyVenueKind(name, tags),
       distanceMi: haversineMi(originLat, originLon, c.lat, c.lon),
     });
   }
   return courses;
+}
+
+function playableCourses(courses: GolfCourseSummary[]): GolfCourseSummary[] {
+  return courses.filter((c) => isPlayableCourse(c.kind));
 }
 
 function mergeCourses(
@@ -747,11 +772,12 @@ export default async function handler(req: Request): Promise<Response> {
   ) =>
     jsonResponse(
       {
-        courses: (opts?.preserveOrder
-          ? courses
-          : [...courses].sort(
-              (a, b) => (a.distanceMi ?? 0) - (b.distanceMi ?? 0),
-            )
+        courses: playableCourses(
+          opts?.preserveOrder
+            ? courses
+            : [...courses].sort(
+                (a, b) => (a.distanceMi ?? 0) - (b.distanceMi ?? 0),
+              ),
         ).slice(0, limit),
         source,
         attribution: '© OpenStreetMap contributors (ODbL)',

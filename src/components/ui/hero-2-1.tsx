@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { ArrowRight, Flag, Menu, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 
-const HERO_IMAGE =
-  'https://images.unsplash.com/photo-1593111778420-863aee0e5766?auto=format&fit=crop&w=2400&q=80';
+import { DEFAULT_COURSE_HERO } from '../../lib/courseImages';
+
+const HERO_IMAGE = DEFAULT_COURSE_HERO;
 
 type Props = {
   onSignIn?: () => void;

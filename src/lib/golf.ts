@@ -2,6 +2,10 @@
 // Memory + sessionStorage cache so reopening a course / city is instant.
 
 import type { GolfPlayerProfile } from './golfProfile';
+import { isPlayableCourse, venueKindFromName } from './venueKind';
+import { courseHeroImage } from './courseImages';
+
+export type VenueKind = 'course' | 'sim' | 'range';
 
 export interface GolfCourseSummary {
   id: string;
@@ -18,6 +22,10 @@ export interface GolfCourseSummary {
   region?: string;
   /** Best-effort public / private / resort label. */
   access?: 'public' | 'private' | 'resort' | 'unknown';
+  /** Outdoor course vs indoor sim bay vs practice range. */
+  kind?: VenueKind;
+  /** Stable hero photo URL for cards and lists. */
+  photo?: string;
   distanceMi?: number;
 }
 
@@ -208,7 +216,7 @@ export async function fetchGolfCourses(
   const q = opts?.q?.trim().toLowerCase() ?? '';
   // v2 invalidates empty results cached by the retired Nominatim/Overpass
   // discovery path.
-  const key = `golf:v6:courses:${q3(lat)}:${q3(lon)}:${q}:${opts?.radius ?? ''}`;
+  const key = `golf:v7:courses:${q3(lat)}:${q3(lon)}:${q}:${opts?.radius ?? ''}`;
   const cached =
     memGet<GolfCourseSummary[]>(key, COURSES_TTL_MS) ??
     sessionGet<GolfCourseSummary[]>(key, COURSES_TTL_MS);
@@ -243,7 +251,13 @@ export async function fetchGolfCourses(
     throw new Error(detail?.error ?? `courses ${res.status}`);
   }
   const data = (await res.json()) as { courses: GolfCourseSummary[] };
-  const courses = data.courses ?? [];
+  const courses = (data.courses ?? [])
+    .map((c) => ({
+      ...c,
+      kind: c.kind ?? venueKindFromName(c.name),
+      photo: c.photo ?? courseHeroImage(c.id || c.name),
+    }))
+    .filter((c) => isPlayableCourse(c.kind));
   memSet(key, courses);
   sessionSet(key, courses);
   return courses;

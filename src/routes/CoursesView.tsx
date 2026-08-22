@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowUpRight, Loader2, MapPin } from 'lucide-react';
+import { CourseHeroImage } from '../components/golf/CourseHeroImage';
 import { useGolfCourses } from '../hooks/useGolf';
 import type { GolfCourseSummary } from '../lib/golf';
-import { courseHeroImage } from '../lib/courseImages';
 import { stashPendingCourse } from '../lib/pendingCourse';
 import { defaultSearchLoc } from '../lib/searchLoc';
 
@@ -21,7 +21,7 @@ function CourseCard({
   onOpen: (c: GolfCourseSummary) => void;
 }) {
   const access = accessLabel(course.access);
-  const photo = courseHeroImage(course.id || course.name);
+  const photoSeed = course.id || course.name;
 
   return (
     <article className="group overflow-hidden rounded-2xl border border-line bg-surface shadow-card transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-lift">
@@ -31,10 +31,9 @@ function CourseCard({
         className="block w-full text-left"
       >
         <div className="relative aspect-[16/10] overflow-hidden bg-canvas">
-          <img
-            src={photo}
-            alt=""
-            loading="lazy"
+          <CourseHeroImage
+            seed={photoSeed}
+            alt={`${course.name} golf course`}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
