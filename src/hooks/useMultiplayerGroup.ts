@@ -155,7 +155,7 @@ export function useMultiplayerGroup() {
       pot: string,
       gameMode: GameModeId,
     ) => {
-      if (!user) return;
+      if (!user) return false;
       setBusy(true);
       setError(null);
       try {
@@ -168,8 +168,10 @@ export function useMultiplayerGroup() {
           userId: user.id,
         });
         await refresh(g.id);
+        return true;
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Could not create group');
+        return false;
       } finally {
         setBusy(false);
       }

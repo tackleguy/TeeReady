@@ -11,8 +11,8 @@ html[data-theme='light'] {
   --canvas: #f4f5f2;
   --surface: #ffffff;
   --ink: #12160f;
-  --muted: #707a6b;
-  --faint: #98a291;
+  --muted: #4f5a4d;
+  --faint: #667362;
   --line: rgba(18, 30, 15, 0.08);
   --brand: #14713f;
   --brand-soft: #e6f0e8;
@@ -82,8 +82,8 @@ html[data-theme='dark'] {
   --canvas: #0c110e;
   --surface: #161c17;
   --ink: #e8eee6;
-  --muted: #9aa894;
-  --faint: #6f7a6a;
+  --muted: #b4c0b2;
+  --faint: #96a894;
   --line: rgba(232, 238, 230, 0.1);
   --brand: #3d9a62;
   --brand-soft: rgba(61, 154, 98, 0.18);
@@ -141,8 +141,8 @@ html[data-theme='sand'] {
   --canvas: #f3ebe0;
   --surface: #fffaf3;
   --ink: #1c140c;
-  --muted: #7a6a58;
-  --faint: #a0907c;
+  --muted: #5c4f42;
+  --faint: #756658;
   --line: rgba(42, 31, 20, 0.1);
   --brand: #b45309;
   --brand-soft: rgba(180, 83, 9, 0.12);
@@ -230,7 +230,7 @@ body {
 }
 
 .label {
-  @apply font-mono text-[8px] font-semibold uppercase tracking-[0.1em] text-faint;
+  @apply font-mono text-[8px] font-semibold uppercase tracking-[0.1em] text-muted;
 }
 
 .section-eyebrow {
@@ -238,7 +238,63 @@ body {
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--faint);
+  color: var(--muted);
+}
+
+/* Fixed light surfaces (e.g. auth card) — always use dark text even in dark theme */
+.on-light {
+  color-scheme: light;
+  --ink: #12160f;
+  --muted: #4f5a4d;
+  --faint: #667362;
+  --line: rgba(18, 30, 15, 0.12);
+  --canvas: #f4f5f2;
+  --surface: #ffffff;
+  --brand: #14713f;
+  --brand-soft: #e6f0e8;
+  --bad: #d9714f;
+  color: var(--ink);
+}
+
+/* Map / sidebar HUD — light text on dark glass regardless of global theme */
+.golf-hud {
+  --ink: #eef2ec;
+  --ink-1: #eef2ec;
+  --ink-2: rgba(238, 242, 236, 0.9);
+  --ink-3: rgba(238, 242, 236, 0.76);
+  --ink-4: rgba(238, 242, 236, 0.62);
+  --text-primary: var(--ink-1);
+  --text-secondary: var(--ink-3);
+  --text-tertiary: var(--ink-4);
+  --line-subtle: rgba(255, 255, 255, 0.1);
+  --line-default: rgba(255, 255, 255, 0.14);
+  --line-strong: rgba(255, 255, 255, 0.22);
+  --muted: var(--ink-3);
+  --faint: var(--ink-4);
+  --surface: rgba(255, 255, 255, 0.08);
+  --canvas: rgba(0, 0, 0, 0.22);
+  color: var(--ink-1);
+}
+
+.golf-hud .section-eyebrow {
+  color: var(--ink-3);
+}
+
+.golf-hud .chip-button {
+  color: var(--ink-2);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--line-default);
+}
+
+.golf-hud .chip-button:hover {
+  color: var(--ink-1);
+  border-color: var(--line-strong);
+}
+
+.golf-hud .chip-button[data-active='true'] {
+  color: var(--brand);
+  border-color: color-mix(in srgb, var(--brand) 45%, transparent);
+  background: color-mix(in srgb, var(--brand) 18%, transparent);
 }
 
 .no-scrollbar {
@@ -314,10 +370,15 @@ body {
 .floating-panel,
 .floating-subpanel,
 .glass {
-  background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
   border: 1px solid var(--line);
   border-radius: theme('borderRadius.card');
   box-shadow: var(--shadow-card);
+}
+
+.floating-panel,
+.floating-subpanel {
+  backdrop-filter: blur(14px) saturate(120%);
 }
 
 .maplibregl-ctrl-attrib {

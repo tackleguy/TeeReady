@@ -96,7 +96,7 @@ export function GolfSetup({ initial, onComplete, onCancel }: Props) {
             value={commonText}
             onChange={(e) => setCommonText(e.target.value)}
             placeholder="e.g. Torrey Pines, Rancho Park, Riviera"
-            className="w-full rounded-xl border border-[var(--line-default)] bg-black/20 px-3 py-3 text-base text-[var(--ink-1)] placeholder:text-[var(--ink-4)] outline-none focus:border-[var(--accent)] lg:py-2.5 lg:text-[13px]"
+            className="w-full rounded-xl border border-[var(--line-default)] bg-canvas px-3 py-3 text-base text-[var(--ink-1)] placeholder:text-[var(--ink-4)] outline-none focus:border-[var(--accent)] lg:py-2.5 lg:text-[13px]"
           />
           <span className="mt-1 block text-[11px] text-[var(--ink-4)]">
             Comma-separated — shown as quick picks in search.
@@ -115,7 +115,7 @@ export function GolfSetup({ initial, onComplete, onCancel }: Props) {
               step={0.1}
               value={handicap}
               onChange={(e) => setHandicap(Number(e.target.value))}
-              className="w-full rounded-xl border border-[var(--line-default)] bg-black/20 px-3 py-3 text-base tabular-nums text-[var(--ink-1)] outline-none focus:border-[var(--accent)] lg:py-2.5 lg:text-[13px]"
+              className="w-full rounded-xl border border-[var(--line-default)] bg-canvas px-3 py-3 text-base tabular-nums text-[var(--ink-1)] outline-none focus:border-[var(--accent)] lg:py-2.5 lg:text-[13px]"
             />
             <span className="mt-1 block text-[11px] text-[var(--ink-4)]">
               Negatives = plus handicap (e.g. -2 is +2).
@@ -138,7 +138,7 @@ export function GolfSetup({ initial, onComplete, onCancel }: Props) {
                       'rounded-lg px-2 py-2 text-[11px] font-medium transition-colors',
                       on
                         ? 'bg-[var(--accent)]/25 text-[var(--ink-1)] ring-1 ring-[var(--accent)]/50'
-                        : 'bg-black/20 text-[var(--ink-3)] hover:bg-white/5 hover:text-[var(--ink-1)]',
+                        : 'bg-canvas text-[var(--ink-3)] hover:bg-[var(--hover-fill)] hover:text-[var(--ink-1)]',
                     ].join(' ')}
                   >
                     {opt.value === 'straight'
@@ -167,7 +167,7 @@ export function GolfSetup({ initial, onComplete, onCancel }: Props) {
                 max={220}
                 value={sevenIronYards}
                 onChange={(e) => setSevenIronYards(Number(e.target.value))}
-                className="w-full rounded-xl border border-[var(--line-default)] bg-black/20 px-3 py-3 pr-10 text-base tabular-nums text-[var(--ink-1)] outline-none focus:border-[var(--accent)] lg:py-2.5 lg:text-[13px]"
+                className="w-full rounded-xl border border-[var(--line-default)] bg-canvas px-3 py-3 pr-10 text-base tabular-nums text-[var(--ink-1)] outline-none focus:border-[var(--accent)] lg:py-2.5 lg:text-[13px]"
               />
               <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-[var(--ink-4)]">
                 yd
@@ -185,7 +185,7 @@ export function GolfSetup({ initial, onComplete, onCancel }: Props) {
                 max={360}
                 value={driverYards}
                 onChange={(e) => setDriverYards(Number(e.target.value))}
-                className="w-full rounded-xl border border-[var(--line-default)] bg-black/20 px-3 py-3 pr-10 text-base tabular-nums text-[var(--ink-1)] outline-none focus:border-[var(--accent)] lg:py-2.5 lg:text-[13px]"
+                className="w-full rounded-xl border border-[var(--line-default)] bg-canvas px-3 py-3 pr-10 text-base tabular-nums text-[var(--ink-1)] outline-none focus:border-[var(--accent)] lg:py-2.5 lg:text-[13px]"
               />
               <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-[var(--ink-4)]">
                 yd
@@ -200,7 +200,7 @@ export function GolfSetup({ initial, onComplete, onCancel }: Props) {
           </p>
         )}
 
-        <div className="mb-6 rounded-xl border border-[var(--line-subtle)] bg-black/15 px-3 py-3">
+        <div className="mb-6 rounded-xl border border-[var(--line-subtle)] bg-canvas px-3 py-3">
           <div className="mb-2 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-[var(--ink-3)]">
             <Sparkles className="h-3 w-3 text-[var(--accent)]" />
             Your bag preview — total avg
@@ -209,7 +209,7 @@ export function GolfSetup({ initial, onComplete, onCancel }: Props) {
             {bagPreview.map((c) => (
               <div
                 key={c.key}
-                className="rounded-md bg-black/25 px-1.5 py-1 text-center"
+                className="rounded-md bg-surface-1 px-1.5 py-1 text-center"
               >
                 <div className="text-[9px] uppercase tracking-wide text-[var(--ink-4)]">
                   {c.label}
@@ -243,7 +243,7 @@ export function GolfSetup({ initial, onComplete, onCancel }: Props) {
           <button
             type="button"
             onClick={onCancel}
-            className="mt-2 w-full rounded-xl px-4 py-3 text-[13px] font-medium text-[var(--ink-3)] hover:bg-white/5 hover:text-[var(--ink-1)]"
+            className="mt-2 w-full rounded-xl px-4 py-3 text-[13px] font-medium text-[var(--ink-3)] hover:bg-[var(--hover-fill)] hover:text-[var(--ink-1)]"
           >
             Back to courses
           </button>

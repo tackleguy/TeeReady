@@ -80,7 +80,7 @@ export function AuthForm({
       : 'rounded-md px-2.5 py-1 text-[12px] font-medium text-muted';
 
   return (
-    <div>
+    <div className={variant === 'landing' ? 'on-light' : undefined}>
       <div className="flex items-start justify-between gap-3">
         {variant === 'landing' ? (
           <div>

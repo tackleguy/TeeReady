@@ -31,7 +31,8 @@ import { GpsMod } from '../components/golf/GpsMod';
 import { GlassPanel } from '../components/ui/GlassPanel';
 import { DraggableBox, clearPanelPositions } from '../components/ui/DraggableBox';
 import { SearchBar } from '../components/radar/SearchBar';
-import { INITIAL_SEED } from '../constants/cities';
+import { defaultSearchLoc } from '../lib/searchLoc';
+import { takePendingCourse } from '../lib/pendingCourse';
 import { useIsMobile } from '../hooks/useMediaQuery';
 import { bearingCompass, bearingDeg } from '../lib/geo';
 import { formatHandicap } from '../lib/golfHandicap';
@@ -91,33 +92,7 @@ interface Loc {
 }
 
 function defaultLoc(): Loc {
-  try {
-    const raw = localStorage.getItem('cities-v1');
-    if (raw) {
-      const parsed = JSON.parse(raw) as Array<{
-        name: string;
-        latitude: number;
-        longitude: number;
-        isCurrent?: boolean;
-      }>;
-      const current = parsed.find((c) => c.isCurrent) ?? parsed[0];
-      if (current) {
-        return {
-          name: current.name,
-          lat: current.latitude,
-          lon: current.longitude,
-        };
-      }
-    }
-  } catch {
-    // ignore
-  }
-  const seed = INITIAL_SEED[0];
-  return {
-    name: seed?.name ?? 'Kansas City',
-    lat: seed?.latitude ?? 39.1,
-    lon: seed?.longitude ?? -94.6,
-  };
+  return defaultSearchLoc();
 }
 
 function aspectLabel(aspect: string): string {
@@ -472,6 +447,17 @@ export function GolfView({ active = true }: { active?: boolean }) {
     [isMobile],
   );
 
+  // Social → GPS: apply course stashed when a multiplayer group was created.
+  useEffect(() => {
+    if (!active) return;
+    const pending = takePendingCourse();
+    if (!pending) return;
+    pickCourse(pending);
+    if (!location.pathname.includes('/rounds/gps')) {
+      navigate('/rounds/gps', { replace: true });
+    }
+  }, [active, pickCourse, navigate, location.pathname]);
+
   const openScorecard = useCallback(() => {
     if (!course) return;
     if (!round || round.courseId !== course.id) {
@@ -678,7 +664,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     : 'relative h-full'
                   : 'hidden',
               ].join(' ')
-            : 'z-10 flex h-full w-[380px] shrink-0 flex-col border-r border-[var(--line-subtle)] bg-[color:rgba(6,10,18,0.72)]'
+            : 'golf-hud z-10 flex h-full w-[380px] shrink-0 flex-col border-r border-[var(--line-subtle)] bg-[color:rgba(6,10,18,0.72)]'
         }
       >
         <div className="border-b border-[var(--line-subtle)] px-3 py-3">
@@ -761,7 +747,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
             value={courseFilter}
             onChange={(e) => setCourseFilter(e.target.value)}
             placeholder="City courses & private clubs…"
-            className="w-full rounded-2xl border border-[var(--line-default)] bg-black/20 px-3 py-2.5 text-base text-[var(--ink-1)] placeholder:text-[var(--ink-4)] outline-none focus:border-[var(--accent)] md:py-2 md:text-[13px]"
+            className={`w-full rounded-2xl border border-[var(--line-default)] ${isMobile ? 'bg-canvas' : 'bg-black/20'} px-3 py-2.5 text-base text-[var(--ink-1)] placeholder:text-[var(--ink-4)] outline-none focus:border-[var(--accent)] md:py-2 md:text-[13px]`}
           />
         </div>
 
@@ -881,7 +867,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
       {/* Map + hole board */}
       <div
         className={[
-          'relative min-h-0 flex-1 overflow-hidden',
+          'golf-hud relative min-h-0 flex-1 overflow-hidden',
           isMobile && !course ? 'hidden' : '',
         ].join(' ')}
       >

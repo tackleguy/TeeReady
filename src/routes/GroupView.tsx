@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Check,
   Copy,
@@ -21,6 +21,13 @@ import {
 } from '../lib/gameModes';
 import { formatHandicap } from '../lib/golfHandicap';
 import { formatToPar, timeAgo, type MemberRow } from '../lib/multiplayer';
+import {
+  CourseSearchSelect,
+  courseLabel,
+} from '../components/golf/CourseSearchSelect';
+import type { GolfCourseSummary } from '../lib/golf';
+import { loadGolfProfile } from '../lib/golfProfile';
+import { stashPendingCourse } from '../lib/pendingCourse';
 
 function statusDot(status: MemberRow['status']) {
   if (status === 'playing') return 'bg-brand';
@@ -42,17 +49,20 @@ function Lobby({
     format: string,
     pot: string,
     gameMode: GameModeId,
-  ) => void;
+  ) => Promise<boolean>;
   onJoin: (code: string) => void;
 }) {
+  const navigate = useNavigate();
   const [tab, setTab] = useState<'create' | 'join'>('create');
   const [gameMode, setGameMode] = useState<GameModeId>('skins');
   const modeMeta = getGameMode(gameMode);
   const [name, setName] = useState(modeMeta.defaultName);
-  const [course, setCourse] = useState('');
+  const [selectedCourse, setSelectedCourse] =
+    useState<GolfCourseSummary | null>(null);
   const [format, setFormat] = useState(modeMeta.defaultFormat);
   const [pot, setPot] = useState('');
   const [code, setCode] = useState('');
+  const courseHint = loadGolfProfile()?.commonCourses[0] ?? '';
 
   const pickMode = (id: GameModeId) => {
     const next = getGameMode(id);
@@ -105,9 +115,20 @@ function Lobby({
         {tab === 'create' ? (
           <form
             className="flex flex-col gap-4"
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
-              onCreate(name, course, format, pot, gameMode);
+              if (!selectedCourse) return;
+              const ok = await onCreate(
+                name,
+                courseLabel(selectedCourse),
+                format,
+                pot,
+                gameMode,
+              );
+              if (ok) {
+                stashPendingCourse(selectedCourse);
+                navigate('/rounds/gps');
+              }
             }}
           >
             <div>
@@ -151,17 +172,17 @@ function Lobby({
                 className="w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-[14px] text-ink outline-none focus:border-brand"
               />
             </label>
-            <label className="block">
+            <div className="block">
               <span className="mb-1.5 block font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
                 Course
               </span>
-              <input
-                value={course}
-                onChange={(e) => setCourse(e.target.value)}
-                placeholder="e.g. Rancho Park · Blue"
-                className="w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-[14px] text-ink outline-none focus:border-brand"
+              <CourseSearchSelect
+                value={selectedCourse}
+                onChange={setSelectedCourse}
+                initialQuery={courseHint}
+                required
               />
-            </label>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <label className="block">
                 <span className="mb-1.5 block font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
@@ -187,10 +208,10 @@ function Lobby({
             </div>
             <button
               type="submit"
-              disabled={busy || !name.trim()}
+              disabled={busy || !name.trim() || !selectedCourse}
               className="mt-1 rounded-xl bg-brand px-5 py-2.5 text-[13px] font-bold text-white disabled:opacity-40"
             >
-              {busy ? 'Creating…' : `Start ${modeMeta.short}`}
+              {busy ? 'Creating…' : `Start ${modeMeta.short} & open GPS`}
             </button>
           </form>
         ) : (

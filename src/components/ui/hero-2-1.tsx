@@ -155,7 +155,7 @@ export function Hero2({ onSignIn, onSignUp }: Props) {
           <h1 className="mx-auto max-w-4xl text-5xl font-bold leading-tight tracking-[-0.03em] text-white md:text-6xl lg:text-7xl">
             Show up ready for every hole
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-300">
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-200">
             Hole plans with miss lines, live GPS ranging, and a scorecard that
             knows your handicap — synced to your account.
           </p>
@@ -196,7 +196,7 @@ function NavItem({ label, href }: { label: string; href: string }) {
   return (
     <a
       href={href}
-      className="flex items-center text-sm text-gray-300 hover:text-white"
+      className="flex items-center text-sm text-gray-200 hover:text-white"
     >
       <span>{label}</span>
     </a>
@@ -217,7 +217,7 @@ function MobileNavItem({
       className="flex w-full items-center justify-between border-b border-gray-800 pb-2 text-lg text-white"
     >
       <span>{label}</span>
-      <ArrowRight className="h-4 w-4 text-gray-400" />
+      <ArrowRight className="h-4 w-4 text-gray-300" />
     </button>
   );
 }

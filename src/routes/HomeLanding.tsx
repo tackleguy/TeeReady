@@ -45,10 +45,10 @@ export function HomeLanding() {
               key={item.k}
               className="rounded-2xl border border-white/10 bg-white/5 px-5 py-5 backdrop-blur-sm"
             >
-              <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-emerald-300/80">
+              <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-emerald-200">
                 {item.k}
               </div>
-              <p className="mt-2 text-[15px] leading-relaxed text-gray-200">
+              <p className="mt-2 text-[15px] leading-relaxed text-gray-100">
                 {item.v}
               </p>
             </div>
@@ -65,12 +65,12 @@ export function HomeLanding() {
             <h2 className="text-[28px] font-bold tracking-[-0.03em] text-white sm:text-[34px]">
               Sign in to tee off
             </h2>
-            <p className="mt-3 max-w-md text-[15px] leading-relaxed text-gray-300">
+            <p className="mt-3 max-w-md text-[15px] leading-relaxed text-gray-200">
               Your handicap, bag stocks, and rounds stay with your account —
               including Remember me on this device.
             </p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white p-5 shadow-2xl sm:p-6">
+          <div className="on-light rounded-2xl border border-white/10 bg-white p-5 shadow-2xl sm:p-6">
             <AuthForm
               key={authMode}
               variant="landing"
