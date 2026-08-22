@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, ArrowRight, Check, Sparkles } from 'lucide-react';
 import { CourseSearchMultiSelect } from '../golf/CourseSearchMultiSelect';
 import { courseLabel } from '../golf/CourseSearchSelect';
 import { GoalPicker } from '../coach/GoalPicker';
 import type { GolfCourseSummary } from '../../lib/golf';
 import {
+  bagFromStocks,
   DEFAULT_PROFILE,
   loadGolfProfile,
   missLabel,
@@ -28,7 +29,7 @@ import type {
 } from '../../lib/questionnaire';
 
 const STEPS = [
-  { id: 'game', title: 'Your game', subtitle: 'Handicap & miss' },
+  { id: 'game', title: 'Your game', subtitle: 'Handicap, carry & miss' },
   { id: 'courses', title: 'Courses', subtitle: 'Where you play' },
   { id: 'goals', title: 'Goals', subtitle: 'What you want' },
   { id: 'rhythm', title: 'Rhythm', subtitle: 'How often you play' },
@@ -114,6 +115,10 @@ export function PlayerQuestionnaire({
 
   const [handicap, setHandicap] = useState(DEFAULT_PROFILE.handicap);
   const [miss, setMiss] = useState<MissBias>(DEFAULT_PROFILE.miss);
+  const [sevenIronYards, setSevenIronYards] = useState(
+    DEFAULT_PROFILE.sevenIronYards,
+  );
+  const [driverYards, setDriverYards] = useState(DEFAULT_PROFILE.driverYards);
   const [courses, setCourses] = useState<GolfCourseSummary[]>([]);
   const [goals, setGoals] = useState<GoalId[]>([]);
   const [customGoals, setCustomGoals] = useState<string[]>([]);
@@ -133,6 +138,8 @@ export function PlayerQuestionnaire({
     if (!saved) return;
     setHandicap(saved.handicap);
     setMiss(saved.miss);
+    setSevenIronYards(saved.sevenIronYards);
+    setDriverYards(saved.driverYards);
     setGoals(saved.goals);
     setCustomGoals(saved.customGoals);
     setTargetHandicap(
@@ -160,6 +167,11 @@ export function PlayerQuestionnaire({
     }
   }, []);
 
+  const bagPreview = useMemo(
+    () => bagFromStocks(driverYards, sevenIronYards),
+    [driverYards, sevenIronYards],
+  );
+
   const current = STEPS[step]!;
   const isLast = step === STEPS.length - 1;
 
@@ -167,6 +179,12 @@ export function PlayerQuestionnaire({
     switch (current.id) {
       case 'game':
         if (!Number.isFinite(handicap)) return 'Enter a valid handicap.';
+        if (!Number.isFinite(sevenIronYards) || !Number.isFinite(driverYards)) {
+          return 'Enter your 7-iron and driver carry distances.';
+        }
+        if (driverYards <= sevenIronYards + 15) {
+          return 'Driver carry should be at least ~20 yards longer than 7-iron.';
+        }
         return null;
       case 'courses':
         if (courses.length === 0) return 'Add at least one course.';
@@ -215,6 +233,8 @@ export function PlayerQuestionnaire({
       ...(loadGolfProfile() ?? {}),
       handicap,
       miss,
+      sevenIronYards,
+      driverYards,
       commonCourses: courses.map(courseLabel),
       goals,
       customGoals,
@@ -303,6 +323,58 @@ export function PlayerQuestionnaire({
                 ]}
               />
             </div>
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <label className="block">
+              <FieldLabel>7-iron carry</FieldLabel>
+              <div className="relative">
+                <input
+                  type="number"
+                  min={80}
+                  max={220}
+                  value={sevenIronYards}
+                  onChange={(e) => setSevenIronYards(Number(e.target.value))}
+                  className={`${inputClassName()} pr-10 tabular`}
+                />
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-faint">
+                  yd
+                </span>
+              </div>
+            </label>
+            <label className="block">
+              <FieldLabel>Driver carry</FieldLabel>
+              <div className="relative">
+                <input
+                  type="number"
+                  min={140}
+                  max={360}
+                  value={driverYards}
+                  onChange={(e) => setDriverYards(Number(e.target.value))}
+                  className={`${inputClassName()} pr-10 tabular`}
+                />
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-faint">
+                  yd
+                </span>
+              </div>
+            </label>
+          </div>
+          <p className="mt-3 text-[11px] text-muted">
+            Used for club picks and yardage rings in Rounds — same as Profile.
+          </p>
+          <div className="mt-3 grid grid-cols-4 gap-1.5 sm:grid-cols-6">
+            {bagPreview.slice(0, 6).map((c) => (
+              <div
+                key={c.key}
+                className="rounded-lg border border-line bg-canvas px-1.5 py-1 text-center"
+              >
+                <div className="text-[9px] uppercase tracking-wide text-faint">
+                  {c.label}
+                </div>
+                <div className="text-[12px] font-semibold tabular text-ink">
+                  {c.yards}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       ) : null}
@@ -469,6 +541,10 @@ export function PlayerQuestionnaire({
             <ReviewRow
               label="Handicap"
               value={`${formatHandicap(handicap)} · ${missLabel(miss)}`}
+            />
+            <ReviewRow
+              label="Carry"
+              value={`7i ${sevenIronYards} yd · Driver ${driverYards} yd`}
             />
             <ReviewRow
               label="Courses"

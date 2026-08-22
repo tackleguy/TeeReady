@@ -14,7 +14,7 @@ import { formatHandicap, MAX_HANDICAP, MIN_HANDICAP } from '../../lib/golfHandic
 
 const STEPS = [
   { id: 'account', title: 'Account', subtitle: 'Sign-in details' },
-  { id: 'game', title: 'Your game', subtitle: 'Handicap & miss' },
+  { id: 'game', title: 'Your game', subtitle: 'Handicap, carry & miss' },
   { id: 'courses', title: 'Courses', subtitle: 'Where you play' },
   { id: 'goals', title: 'Goals', subtitle: 'What you want' },
   { id: 'review', title: 'Review', subtitle: 'Confirm & go' },
@@ -39,6 +39,8 @@ export type SignupDraft = {
   rememberMe: boolean;
   handicap: number;
   miss: MissBias;
+  sevenIronYards: number;
+  driverYards: number;
   courses: GolfCourseSummary[];
   goals: GoalId[];
   customGoals: string[];
@@ -69,6 +71,10 @@ export function SignupQuestionnaire({
   const [rememberMe, setRememberMe] = useState(true);
   const [handicap, setHandicap] = useState(DEFAULT_PROFILE.handicap);
   const [miss, setMiss] = useState<MissBias>(DEFAULT_PROFILE.miss);
+  const [sevenIronYards, setSevenIronYards] = useState(
+    DEFAULT_PROFILE.sevenIronYards,
+  );
+  const [driverYards, setDriverYards] = useState(DEFAULT_PROFILE.driverYards);
   const [courses, setCourses] = useState<GolfCourseSummary[]>([]);
   const [goals, setGoals] = useState<GoalId[]>([]);
   const [customGoals, setCustomGoals] = useState<string[]>([]);
@@ -86,6 +92,12 @@ export function SignupQuestionnaire({
         return null;
       case 'game':
         if (!Number.isFinite(handicap)) return 'Enter a valid handicap.';
+        if (!Number.isFinite(sevenIronYards) || !Number.isFinite(driverYards)) {
+          return 'Enter your 7-iron and driver carry distances.';
+        }
+        if (driverYards <= sevenIronYards + 15) {
+          return 'Driver carry should be at least ~20 yards longer than 7-iron.';
+        }
         return null;
       case 'courses':
         if (courses.length === 0) return 'Add at least one course.';
@@ -133,6 +145,8 @@ export function SignupQuestionnaire({
       rememberMe,
       handicap,
       miss,
+      sevenIronYards,
+      driverYards,
       courses,
       goals,
       customGoals,
@@ -251,6 +265,40 @@ export function SignupQuestionnaire({
                 ))}
               </div>
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block">
+                <FieldLabel>7-iron carry</FieldLabel>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min={80}
+                    max={220}
+                    value={sevenIronYards}
+                    onChange={(e) => setSevenIronYards(Number(e.target.value))}
+                    className={`${inputClassName()} pr-10 tabular`}
+                  />
+                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-faint">
+                    yd
+                  </span>
+                </div>
+              </label>
+              <label className="block">
+                <FieldLabel>Driver carry</FieldLabel>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min={140}
+                    max={360}
+                    value={driverYards}
+                    onChange={(e) => setDriverYards(Number(e.target.value))}
+                    className={`${inputClassName()} pr-10 tabular`}
+                  />
+                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-faint">
+                    yd
+                  </span>
+                </div>
+              </label>
+            </div>
           </div>
         ) : null}
 
@@ -308,6 +356,10 @@ export function SignupQuestionnaire({
                 value={formatHandicap(handicap)}
               />
               <ReviewRow label="Miss" value={miss} />
+              <ReviewRow
+                label="Carry"
+                value={`7i ${sevenIronYards} yd · Driver ${driverYards} yd`}
+              />
               <ReviewRow
                 label="Courses"
                 value={courses.map(courseLabel).join(', ') || '—'}
@@ -391,6 +443,8 @@ export function persistSignupProfile(draft: SignupDraft): void {
     ...DEFAULT_PROFILE,
     handicap: draft.handicap,
     miss: draft.miss,
+    sevenIronYards: draft.sevenIronYards,
+    driverYards: draft.driverYards,
     commonCourses: draft.courses.map(courseLabel),
     goals: draft.goals,
     customGoals: draft.customGoals,
