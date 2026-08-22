@@ -1,4 +1,4 @@
-import { formatHandicap } from './golfHandicap';
+import { formatHandicap, defaultTargetHandicap } from './golfHandicap';
 import type { GolfPlayerProfile } from './golfProfile';
 import { missLabel } from './golfProfile';
 import { getGoal, type GoalId } from './goals';
@@ -83,7 +83,7 @@ function stepsForGoal(
     case 'lower-handicap': {
       const target =
         profile.targetHandicap ??
-        Math.max(0, Math.round((hcp - 3) * 10) / 10);
+        defaultTargetHandicap(hcp);
       return [
         {
           id: 'hcp-prep',
@@ -262,8 +262,8 @@ function progressForGoal(goalId: GoalId, profile: GolfPlayerProfile): {
   const hcp = profile.handicap;
   switch (goalId) {
     case 'lower-handicap': {
-      const target = profile.targetHandicap ?? Math.max(0, hcp - 3);
-      const span = Math.max(1, hcp - target);
+      const target = profile.targetHandicap ?? defaultTargetHandicap(hcp);
+      const span = Math.max(1, Math.abs(hcp - target));
       const done = Math.max(0, Math.min(span, span * 0.35));
       return {
         label: `${formatHandicap(hcp)} → ${formatHandicap(target)}`,

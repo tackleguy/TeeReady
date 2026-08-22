@@ -10,7 +10,7 @@ import {
   type MissBias,
 } from '../../lib/golfProfile';
 import { getGoal, hasAnyGoals, type GoalId } from '../../lib/goals';
-import { formatHandicap } from '../../lib/golfHandicap';
+import { formatHandicap, MAX_HANDICAP, MIN_HANDICAP } from '../../lib/golfHandicap';
 
 const STEPS = [
   { id: 'account', title: 'Account', subtitle: 'Sign-in details' },
@@ -215,12 +215,15 @@ export function SignupQuestionnaire({
               <input
                 type="number"
                 step={0.1}
-                min={0}
-                max={54}
+                min={MIN_HANDICAP}
+                max={MAX_HANDICAP}
                 value={handicap}
                 onChange={(e) => setHandicap(Number(e.target.value))}
                 className={inputClassName()}
               />
+              <span className="mt-1 block text-[11px] text-muted">
+                Plus handicaps: enter negative (e.g. −2 for +2).
+              </span>
             </label>
             <div>
               <FieldLabel>Typical miss</FieldLabel>
@@ -281,8 +284,8 @@ export function SignupQuestionnaire({
                 <input
                   type="number"
                   step={0.1}
-                  min={0}
-                  max={54}
+                  min={MIN_HANDICAP}
+                  max={MAX_HANDICAP}
                   value={targetHandicap}
                   onChange={(e) => setTargetHandicap(Number(e.target.value))}
                   className={inputClassName()}

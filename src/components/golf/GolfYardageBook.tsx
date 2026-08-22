@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { bearingCompass } from '../../lib/geo';
 import type { GolfCourseSummary, GolfNotebook } from '../../lib/golf';
 import { missLabel, bagFromStocks, type GolfPlayerProfile } from '../../lib/golfProfile';
+import { formatHandicap } from '../../lib/golfHandicap';
 
 interface Props {
   course: GolfCourseSummary;
@@ -127,7 +128,7 @@ export function GolfYardageBook({
             <div>
               <h1 className="text-xl font-semibold">{course.name}</h1>
               <p className="mt-0.5 text-[12px] text-[var(--ink-3)]">
-                {course.region ?? 'Golf course'} · HCP {profile.handicap} ·{' '}
+                {course.region ?? 'Golf course'} · HCP {formatHandicap(profile.handicap)} ·{' '}
                 {missLabel(profile.miss)} · Driver {driverTotal} yd tot avg · 7i{' '}
                 {sevenTotal} yd tot avg
               </p>

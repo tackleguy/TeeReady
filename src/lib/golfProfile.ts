@@ -1,3 +1,4 @@
+import { clampHandicap } from './golfHandicap';
 import { normalizeCustomGoals, normalizeGoals, type GoalId } from './goals';
 import {
   DEFAULT_QUESTIONNAIRE,
@@ -126,7 +127,7 @@ export function loadGolfProfile(): GolfPlayerProfile | null {
       commonCourses: Array.isArray(parsed.commonCourses)
         ? parsed.commonCourses.filter((x): x is string => typeof x === 'string')
         : [],
-      handicap: Math.max(0, Math.min(54, Number(parsed.handicap))),
+      handicap: clampHandicap(Number(parsed.handicap)),
       miss:
         parsed.miss === 'left' ||
         parsed.miss === 'right' ||
@@ -141,7 +142,7 @@ export function loadGolfProfile(): GolfPlayerProfile | null {
       targetHandicap:
         parsed.targetHandicap != null &&
         Number.isFinite(Number(parsed.targetHandicap))
-          ? Number(parsed.targetHandicap)
+          ? clampHandicap(Number(parsed.targetHandicap))
           : undefined,
     };
     // Migrate off shared WeatherStop keys so values stop getting overwritten.
@@ -163,7 +164,7 @@ export function saveGolfProfile(
   const safe: GolfPlayerProfile = {
     ...q,
     commonCourses: profile.commonCourses.slice(0, 8),
-    handicap: Math.max(0, Math.min(54, profile.handicap)),
+    handicap: clampHandicap(profile.handicap),
     miss: profile.miss,
     sevenIronYards: Math.max(80, Math.min(220, profile.sevenIronYards)),
     driverYards: Math.max(140, Math.min(360, profile.driverYards)),
@@ -171,7 +172,7 @@ export function saveGolfProfile(
     customGoals: normalizeCustomGoals(profile.customGoals),
     targetHandicap:
       profile.targetHandicap != null
-        ? Math.max(0, Math.min(54, profile.targetHandicap))
+        ? clampHandicap(profile.targetHandicap)
         : undefined,
   };
   try {

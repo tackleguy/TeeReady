@@ -11,6 +11,7 @@ import {
   type MissBias,
   saveGolfProfile,
 } from '../../lib/golfProfile';
+import { formatHandicap, MAX_HANDICAP, MIN_HANDICAP } from '../../lib/golfHandicap';
 
 interface Props {
   initial?: GolfPlayerProfile | null;
@@ -116,15 +117,15 @@ export function GolfSetup({ initial, onComplete, onCancel }: Props) {
             </span>
             <input
               type="number"
-              min={0}
-              max={54}
+              min={MIN_HANDICAP}
+              max={MAX_HANDICAP}
               step={0.1}
               value={handicap}
               onChange={(e) => setHandicap(Number(e.target.value))}
               className="w-full rounded-xl border border-[var(--line-default)] bg-canvas px-3 py-3 text-base tabular-nums text-[var(--ink-1)] outline-none focus:border-[var(--accent)] lg:py-2.5 lg:text-[13px]"
             />
             <span className="mt-1 block text-[11px] text-[var(--ink-4)]">
-              0–54 index — used for net scoring and hole plans.
+              −10 to 54 index — negative for plus (e.g. −2 = +2).
             </span>
           </label>
           <div>
@@ -232,7 +233,7 @@ export function GolfSetup({ initial, onComplete, onCancel }: Props) {
             ))}
           </div>
           <p className="mt-2 text-[11px] text-[var(--ink-4)]">
-            {missLabel(miss)} · HCP {handicap} — rings and club picks use
+            {missLabel(miss)} · HCP {formatHandicap(handicap)} — rings and club picks use
             total avg (where the ball finishes).
           </p>
         </div>

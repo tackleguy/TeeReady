@@ -13,7 +13,12 @@ import {
   type MissBias,
 } from '../../lib/golfProfile';
 import { getGoal, hasAnyGoals, type GoalId } from '../../lib/goals';
-import { formatHandicap } from '../../lib/golfHandicap';
+import {
+  defaultTargetHandicap,
+  formatHandicap,
+  MAX_HANDICAP,
+  MIN_HANDICAP,
+} from '../../lib/golfHandicap';
 import type {
   BiggestLeak,
   CompetitiveLevel,
@@ -130,7 +135,9 @@ export function PlayerQuestionnaire({
     setMiss(saved.miss);
     setGoals(saved.goals);
     setCustomGoals(saved.customGoals);
-    setTargetHandicap(saved.targetHandicap ?? Math.max(0, saved.handicap - 3));
+    setTargetHandicap(
+      saved.targetHandicap ?? defaultTargetHandicap(saved.handicap),
+    );
     setRoundsPerMonthGoal(saved.roundsPerMonthGoal);
     setPreferredTeeTime(saved.preferredTeeTime);
     setTransport(saved.transport);
@@ -268,8 +275,8 @@ export function PlayerQuestionnaire({
               <FieldLabel>Handicap</FieldLabel>
               <input
                 type="number"
-                min={0}
-                max={54}
+                min={MIN_HANDICAP}
+                max={MAX_HANDICAP}
                 step={0.1}
                 value={Number.isFinite(handicap) ? handicap : ''}
                 onChange={(e) =>
@@ -279,6 +286,9 @@ export function PlayerQuestionnaire({
                 }
                 className={`${inputClassName()} tabular`}
               />
+              <span className="mt-1 block text-[11px] text-muted">
+                Plus handicaps: enter negative (e.g. −2 for +2).
+              </span>
             </label>
             <div>
               <FieldLabel>Typical miss</FieldLabel>
@@ -320,8 +330,8 @@ export function PlayerQuestionnaire({
               <input
                 type="number"
                 step={0.1}
-                min={0}
-                max={54}
+                min={MIN_HANDICAP}
+                max={MAX_HANDICAP}
                 value={targetHandicap}
                 onChange={(e) => setTargetHandicap(Number(e.target.value))}
                 className={`${inputClassName()} tabular`}

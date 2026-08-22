@@ -707,7 +707,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
             type="button"
             className="rounded-lg p-2.5 text-[var(--ink-3)] hover:bg-white/5 hover:text-[var(--ink-1)]"
             aria-label="Edit golf profile"
-            title={`Settings · HCP ${profile.handicap}`}
+            title={`Settings · HCP ${formatHandicap(profile.handicap)}`}
             onClick={() => navigate('/settings')}
           >
             <Settings2 className="h-4 w-4" />

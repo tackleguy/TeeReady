@@ -10,7 +10,7 @@ import {
   type MissBias,
 } from '../lib/golfProfile';
 import { needsQuestionnaire } from '../lib/questionnaire';
-import { formatHandicap } from '../lib/golfHandicap';
+import { formatHandicap, MAX_HANDICAP, MIN_HANDICAP } from '../lib/golfHandicap';
 
 const MISS_OPTIONS: Array<{ value: MissBias; label: string; hint: string }> = [
   { value: 'left', label: 'Left', hint: 'Start left, finish further left' },
@@ -164,8 +164,8 @@ export function ProfileView() {
             <FieldLabel>Handicap</FieldLabel>
             <input
               type="number"
-              min={0}
-              max={54}
+              min={MIN_HANDICAP}
+              max={MAX_HANDICAP}
               step={0.1}
               value={Number.isFinite(handicap) ? handicap : ''}
               onChange={(e) => {
@@ -174,6 +174,9 @@ export function ProfileView() {
               }}
               className={`${inputClassName()} tabular`}
             />
+            <span className="mt-1 block text-[11px] text-muted">
+              Plus handicaps: enter negative (e.g. −2 for +2).
+            </span>
           </label>
           <div>
             <FieldLabel>Typical miss</FieldLabel>
