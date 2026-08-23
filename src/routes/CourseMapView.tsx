@@ -1,340 +1,250 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import {
-  ChevronLeft,
-  ChevronRight,
-  Loader2,
-  Map as MapIcon,
-} from 'lucide-react';
-import { CourseSearchSelect } from '../components/golf/CourseSearchSelect';
-import { GolfMap } from '../components/golf/GolfMap';
+import { ArrowUpRight, Loader2, MapPin, Search } from 'lucide-react';
+import { CourseHeroImage } from '../components/golf/CourseHeroImage';
+import { CoursesLocatorMap } from '../components/golf/CoursesLocatorMap';
 import { GolfMapBoundary } from '../components/golf/GolfMapBoundary';
-import { useGolfCourses, useGolfHoles } from '../hooks/useGolf';
-import type { GolfCourseSummary, TeeKind } from '../lib/golf';
-import {
-  applyTee,
-  availableTeeKinds,
-  holesOnLoop,
-  loopNames,
-  pickLoopForCourse,
-  teeKindLabel,
-} from '../lib/golfTees';
-import {
-  stashPendingCourse,
-  takePendingCourse,
-} from '../lib/pendingCourse';
+import { useGolfCourses } from '../hooks/useGolf';
+import type { GolfCourseSummary } from '../lib/golf';
+import { stashPendingCourse } from '../lib/pendingCourse';
 import { defaultSearchLoc } from '../lib/searchLoc';
+
+function accessLabel(access: GolfCourseSummary['access']) {
+  if (access === 'public') return 'Public';
+  if (access === 'private') return 'Private';
+  if (access === 'resort') return 'Resort';
+  return null;
+}
 
 export function CourseMapView() {
   const navigate = useNavigate();
   const loc = defaultSearchLoc();
-  const [course, setCourse] = useState<GolfCourseSummary | null>(null);
-  const [activeHole, setActiveHole] = useState<number | null>(null);
-  const [loop, setLoop] = useState<string | null>(null);
-  const [teeKind, setTeeKind] = useState<TeeKind>('mid');
+  const [query, setQuery] = useState('');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [mapReady, setMapReady] = useState(false);
-  const [booted, setBooted] = useState(false);
 
-  useEffect(() => {
-    const pending = takePendingCourse();
-    if (pending) setCourse(pending);
-    setBooted(true);
-  }, []);
-
-  const { courses, loading: coursesLoading } = useGolfCourses(
+  const { courses, loading, error, retry } = useGolfCourses(
     loc.lat,
     loc.lon,
-    '',
+    query,
   );
 
-  // Open the nearest course so the satellite map has hole geometry right away.
-  useEffect(() => {
-    if (!booted || course || coursesLoading || !courses.length) return;
-    setCourse(courses[0]!);
-  }, [booted, course, courses, coursesLoading]);
-
-  const {
-    holes,
-    loading: holesLoading,
-    error: holesError,
-    retry: retryHoles,
-  } = useGolfHoles(
-    course?.lat ?? null,
-    course?.lon ?? null,
-    course
-      ? {
-          bbox: course.bbox,
-          osmType: course.osmType,
-          osmId: course.osmId,
-          name: course.name,
-        }
-      : null,
-  );
-
-  const loops = useMemo(() => loopNames(holes), [holes]);
-  const resolvedLoop =
-    loop ??
-    pickLoopForCourse(course?.name ?? '', loops) ??
-    (loops.length ? loops[0]! : null);
-  const loopHoles = useMemo(
-    () => holesOnLoop(holes, resolvedLoop),
-    [holes, resolvedLoop],
-  );
-  const playHoles = useMemo(
-    () => loopHoles.map((h) => applyTee(h, teeKind)),
-    [loopHoles, teeKind],
-  );
-  const teeKinds = useMemo(() => availableTeeKinds(loopHoles), [loopHoles]);
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q || q.length >= 2) return courses;
+    return courses.filter((c) => c.name.toLowerCase().includes(q));
+  }, [courses, query]);
 
   useEffect(() => {
-    const names = loopNames(holes);
-    const next =
-      pickLoopForCourse(course?.name ?? '', names) ?? names[0] ?? null;
-    setLoop(next);
-    setTeeKind('mid');
-    setActiveHole(null);
-  }, [holes, course?.id, course?.name]);
+    if (!filtered.length) {
+      setSelectedId(null);
+      return;
+    }
+    if (selectedId && filtered.some((c) => c.id === selectedId)) return;
+    setSelectedId(filtered[0]!.id);
+  }, [filtered, selectedId]);
 
-  const activeIdx = playHoles.findIndex((h) => h.number === activeHole);
-  const activeHoleObj = activeIdx >= 0 ? playHoles[activeIdx]! : null;
+  const selected =
+    filtered.find((c) => c.id === selectedId) ?? filtered[0] ?? null;
 
-  const pickCourse = useCallback((next: GolfCourseSummary | null) => {
-    setCourse(next);
-    setActiveHole(null);
-    setLoop(null);
-    setTeeKind('mid');
-  }, []);
-
-  const stepHole = useCallback(
-    (dir: -1 | 1) => {
-      if (!playHoles.length) return;
-      if (activeIdx < 0) {
-        setActiveHole(playHoles[0]!.number);
-        return;
-      }
-      const next = playHoles[activeIdx + dir];
-      if (next) setActiveHole(next.number);
-    },
-    [playHoles, activeIdx],
-  );
-
-  const openRounds = (mode: 'prep' | 'gps') => {
-    if (!course) return;
+  const openPrep = (course: GolfCourseSummary) => {
     stashPendingCourse(course);
-    navigate(`/rounds/${mode}`);
+    navigate('/rounds/prep');
   };
 
-  const mapLat = course?.lat ?? loc.lat;
-  const mapLon = course?.lon ?? loc.lon;
-  const showHoleHud = Boolean(course && playHoles.length > 0);
-  const waitingOnGeometry = Boolean(course && holesLoading && !playHoles.length);
+  const openGps = (course: GolfCourseSummary) => {
+    stashPendingCourse(course);
+    navigate('/rounds/gps');
+  };
 
   return (
-    <div className="relative h-full min-h-[inherit] bg-[#0a1210] text-white">
-      <div className="absolute inset-0">
+    <div className="relative flex h-full min-h-[inherit] flex-col bg-canvas md:flex-row">
+      {/* Directory list — Youth-on-Course style course finder */}
+      <aside className="z-10 flex max-h-[42%] w-full flex-col border-b border-line bg-surface md:max-h-none md:w-[22rem] md:shrink-0 md:border-b-0 md:border-r lg:w-[26rem]">
+        <div className="shrink-0 border-b border-line px-4 py-4">
+          <h1 className="font-display text-[22px] font-semibold tracking-[-0.02em] text-ink">
+            Course map
+          </h1>
+          <p className="mt-1 text-[13px] leading-relaxed text-muted">
+            Courses near {loc.name} — pick one to prep or play.
+          </p>
+          <div className="mt-3 flex items-center gap-2 rounded-xl border border-line bg-canvas px-3 py-2.5">
+            <Search className="h-4 w-4 shrink-0 text-muted" strokeWidth={2} />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search courses…"
+              className="min-w-0 flex-1 bg-transparent text-[14px] text-ink outline-none placeholder:text-faint"
+            />
+          </div>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          {loading && filtered.length === 0 ? (
+            <div className="flex items-center justify-center gap-2 px-4 py-10 text-[13px] text-muted">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Finding courses…
+            </div>
+          ) : error && filtered.length === 0 ? (
+            <div className="px-4 py-8 text-center">
+              <p className="text-[14px] font-medium text-ink">
+                Couldn&apos;t load courses
+              </p>
+              <p className="mt-1 text-[12px] text-muted">{error}</p>
+              <button
+                type="button"
+                onClick={retry}
+                className="mt-3 text-[13px] font-semibold text-brand"
+              >
+                Try again
+              </button>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="px-4 py-8 text-center text-[13px] text-muted">
+              No courses match
+              {query.trim() ? ` “${query.trim()}”` : ''}.
+            </div>
+          ) : (
+            <ul className="divide-y divide-line">
+              {filtered.map((c) => {
+                const on = c.id === selected?.id;
+                const access = accessLabel(c.access);
+                return (
+                  <li key={c.id}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedId(c.id)}
+                      className={`flex w-full gap-3 px-4 py-3 text-left transition-colors ${
+                        on
+                          ? 'bg-[color-mix(in_srgb,var(--brand)_8%,var(--surface))]'
+                          : 'hover:bg-canvas'
+                      }`}
+                    >
+                      <CourseHeroImage
+                        seed={c.id || c.name}
+                        alt=""
+                        className="h-14 w-14 shrink-0 rounded-lg object-cover"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-[14px] font-semibold text-ink">
+                          {c.name}
+                        </p>
+                        <p className="mt-0.5 truncate text-[12px] text-muted">
+                          {[
+                            c.region,
+                            c.holes != null ? `${c.holes} holes` : null,
+                            c.par != null ? `Par ${c.par}` : null,
+                          ]
+                            .filter(Boolean)
+                            .join(' · ')}
+                        </p>
+                        <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] text-muted">
+                          {c.distanceMi != null ? (
+                            <span className="inline-flex items-center gap-0.5">
+                              <MapPin className="h-3 w-3" strokeWidth={2} />
+                              {c.distanceMi.toFixed(1)} mi
+                            </span>
+                          ) : null}
+                          {access ? (
+                            <span className="rounded-full border border-line px-1.5 py-0.5 font-medium">
+                              {access}
+                            </span>
+                          ) : null}
+                        </div>
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+
+        <div className="shrink-0 border-t border-line px-4 py-3 text-[12px] text-muted">
+          <Link to="/courses" className="font-semibold text-brand">
+            Browse as cards →
+          </Link>
+        </div>
+      </aside>
+
+      {/* Locator map */}
+      <div className="relative min-h-0 flex-1">
         <GolfMapBoundary
           fallback={
-            <div className="grid h-full place-items-center px-6 text-center">
-              <div>
-                <p className="text-[15px] font-semibold">Map unavailable</p>
-                <p className="mt-1 text-[13px] text-white/60">
-                  WebGL couldn&apos;t start on this device.
-                </p>
-              </div>
+            <div className="grid h-full place-items-center bg-canvas px-6 text-center">
+              <p className="text-[14px] text-muted">
+                Map couldn&apos;t start on this device.
+              </p>
             </div>
           }
         >
-          <GolfMap
-            lat={mapLat}
-            lon={mapLon}
-            holes={playHoles}
-            activeHole={activeHole}
-            onSelectHole={setActiveHole}
-            holeUp={Boolean(activeHole)}
-            compactControls
-            showWindLegend={false}
-            fitPadding={{ top: 96, right: 28, bottom: 150, left: 28 }}
+          <CoursesLocatorMap
+            lat={loc.lat}
+            lon={loc.lon}
+            courses={filtered}
+            selectedId={selected?.id ?? null}
+            onSelect={setSelectedId}
             onReady={() => setMapReady(true)}
             className="h-full w-full"
           />
         </GolfMapBoundary>
 
-        {!mapReady || waitingOnGeometry ? (
-          <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-black/35">
-            <Loader2 className="h-6 w-6 animate-spin text-white/85" />
-            <p className="text-[13px] font-medium text-white/90">
-              {!mapReady
-                ? 'Starting satellite map…'
-                : 'Loading hole geometry…'}
-            </p>
+        {!mapReady ? (
+          <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-canvas/60">
+            <Loader2 className="h-6 w-6 animate-spin text-brand" />
+          </div>
+        ) : null}
+
+        {selected ? (
+          <div className="absolute inset-x-3 bottom-3 z-20 md:inset-x-auto md:bottom-4 md:left-4 md:right-auto md:w-[22rem]">
+            <div className="overflow-hidden rounded-2xl border border-line bg-surface shadow-lift">
+              <div className="flex gap-3 p-3">
+                <CourseHeroImage
+                  seed={selected.id || selected.name}
+                  alt=""
+                  className="h-16 w-16 shrink-0 rounded-xl object-cover"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[15px] font-semibold text-ink">
+                    {selected.name}
+                  </p>
+                  <p className="mt-0.5 truncate text-[12px] text-muted">
+                    {[
+                      selected.region,
+                      selected.distanceMi != null
+                        ? `${selected.distanceMi.toFixed(1)} mi`
+                        : null,
+                      selected.holes != null
+                        ? `${selected.holes} holes`
+                        : null,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </p>
+                  <div className="mt-2.5 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => openPrep(selected)}
+                      className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-brand px-3 py-2 text-[12px] font-bold text-white"
+                    >
+                      Prep
+                      <ArrowUpRight className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => openGps(selected)}
+                      className="inline-flex flex-1 items-center justify-center rounded-xl border border-line px-3 py-2 text-[12px] font-bold text-ink hover:bg-canvas"
+                    >
+                      GPS
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         ) : null}
       </div>
-
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 p-3 md:p-4">
-        <div className="pointer-events-auto mx-auto flex max-w-3xl flex-col gap-2">
-          <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-white/10 bg-[color-mix(in_srgb,#0a1210_88%,transparent)] px-3 py-2.5 shadow-lift backdrop-blur-md">
-            <MapIcon
-              className="h-4 w-4 shrink-0 text-[#7dcea0]"
-              strokeWidth={2}
-            />
-            <div className="min-w-0 flex-1">
-              <CourseSearchSelect value={course} onChange={pickCourse} />
-            </div>
-            {course ? (
-              <div className="flex shrink-0 gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => openRounds('prep')}
-                  className="rounded-xl bg-[#1a5c3a] px-3 py-2 text-[12px] font-bold text-white hover:bg-[#227248]"
-                >
-                  Prep
-                </button>
-                <button
-                  type="button"
-                  onClick={() => openRounds('gps')}
-                  className="rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-[12px] font-bold text-white hover:bg-white/15"
-                >
-                  GPS
-                </button>
-              </div>
-            ) : null}
-          </div>
-
-          {course && (loops.length > 1 || teeKinds.length > 1) ? (
-            <div className="flex flex-wrap gap-2">
-              {loops.length > 1
-                ? loops.map((name) => (
-                    <button
-                      key={name}
-                      type="button"
-                      onClick={() => setLoop(name)}
-                      className={`rounded-full px-3 py-1.5 text-[11px] font-semibold ${
-                        resolvedLoop === name
-                          ? 'bg-white text-[#0a1210]'
-                          : 'border border-white/15 bg-black/40 text-white/80 hover:bg-white/10'
-                      }`}
-                    >
-                      {name}
-                    </button>
-                  ))
-                : null}
-              {teeKinds.length > 1
-                ? teeKinds.map((kind) => (
-                    <button
-                      key={kind}
-                      type="button"
-                      onClick={() => setTeeKind(kind)}
-                      className={`rounded-full px-3 py-1.5 text-[11px] font-semibold ${
-                        teeKind === kind
-                          ? 'bg-[#7dcea0] text-[#0a1210]'
-                          : 'border border-white/15 bg-black/40 text-white/80 hover:bg-white/10'
-                      }`}
-                    >
-                      {teeKindLabel(kind)}
-                    </button>
-                  ))
-                : null}
-            </div>
-          ) : null}
-
-          {holesError && course ? (
-            <div className="rounded-xl border border-red-400/30 bg-black/55 px-3 py-2 text-[12px] text-red-200">
-              {holesError}{' '}
-              <button
-                type="button"
-                onClick={retryHoles}
-                className="font-semibold underline"
-              >
-                Retry
-              </button>
-            </div>
-          ) : null}
-        </div>
-      </div>
-
-      {!course && mapReady && !coursesLoading ? (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 p-3 md:p-4">
-          <div className="pointer-events-auto mx-auto max-w-md rounded-2xl border border-white/10 bg-black/55 px-5 py-4 text-center backdrop-blur-md">
-            <p className="text-[14px] font-semibold">Pick a course</p>
-            <p className="mt-1 text-[13px] leading-relaxed text-white/70">
-              Search above or{' '}
-              <Link
-                to="/courses"
-                className="font-semibold text-[#7dcea0]"
-              >
-                browse nearby
-              </Link>{' '}
-              to overlay hole lines.
-            </p>
-          </div>
-        </div>
-      ) : null}
-
-      {showHoleHud ? (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 p-3 md:p-4">
-          <div className="pointer-events-auto mx-auto max-w-3xl rounded-2xl border border-white/10 bg-[color-mix(in_srgb,#0a1210_90%,transparent)] px-3 py-3 shadow-lift backdrop-blur-md">
-            <div className="mb-2 flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <p className="truncate text-[14px] font-semibold tracking-[-0.01em]">
-                  {course!.name}
-                </p>
-                <p className="truncate text-[12px] text-white/55">
-                  {activeHoleObj
-                    ? `Hole ${activeHoleObj.number} · ${activeHoleObj.yards} yd · Par ${activeHoleObj.par}`
-                    : `${playHoles.length} holes · tap a hole on the map`}
-                </p>
-              </div>
-              <div className="flex shrink-0 items-center gap-1">
-                <button
-                  type="button"
-                  aria-label="Previous hole"
-                  disabled={activeIdx <= 0}
-                  onClick={() => stepHole(-1)}
-                  className="grid h-9 w-9 place-items-center rounded-xl border border-white/12 text-white/80 hover:bg-white/10 disabled:opacity-35"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Next hole"
-                  disabled={
-                    activeIdx < 0 || activeIdx >= playHoles.length - 1
-                  }
-                  onClick={() => stepHole(1)}
-                  className="grid h-9 w-9 place-items-center rounded-xl border border-white/12 text-white/80 hover:bg-white/10 disabled:opacity-35"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-            <div className="flex gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
-              {playHoles.map((h) => {
-                const on = activeHole === h.number;
-                return (
-                  <button
-                    key={h.number}
-                    type="button"
-                    onClick={() => setActiveHole(on ? null : h.number)}
-                    className={`min-w-[2.5rem] shrink-0 rounded-lg px-2 py-2 text-center transition-colors ${
-                      on
-                        ? 'bg-[#7dcea0] text-[#0a1210]'
-                        : 'bg-white/8 text-white/80 hover:bg-white/14'
-                    }`}
-                  >
-                    <span className="block font-mono text-[13px] font-bold tabular">
-                      {h.number}
-                    </span>
-                    <span className="block text-[9px] font-medium opacity-70">
-                      {h.par}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }
