@@ -1,8 +1,9 @@
 # Attributions
 
-TeeReady is MIT-licensed (see `LICENSE`). It bundles open-source software
-and consumes public geospatial / weather data services. This file lists
-the upstream sources and the licenses under which they are used.
+TeeReady is proprietary closed-source software (see `LICENSE`). It bundles
+open-source software and consumes public geospatial / weather data services.
+This file lists the upstream sources and the licenses under which they are
+used.
 
 ## Data sources
 
