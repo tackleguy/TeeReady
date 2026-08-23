@@ -705,4 +705,149 @@ body {
     color: #111 !important;
     border-color: #ccc !important;
   }
+
+  .notebook-sheet {
+    box-shadow: none !important;
+  }
+
+  .notebook-spiral {
+    display: none !important;
+  }
+}
+
+/* Spiral notebook yardage notes */
+.notebook-sheet {
+  position: relative;
+  background: #fffcf5;
+  color: #1c140c;
+  border-radius: 0 0 4px 4px;
+  box-shadow:
+    0 1px 0 rgba(28, 20, 12, 0.06),
+    0 18px 40px rgba(28, 20, 12, 0.18);
+  overflow: hidden;
+}
+
+.notebook-spiral {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: flex-start;
+  height: 22px;
+  padding: 0 10px;
+  background: linear-gradient(180deg, #c8b896 0%, #ebe4d4 100%);
+  border-bottom: 1px solid rgba(28, 20, 12, 0.08);
+}
+
+.notebook-coil {
+  width: 10px;
+  height: 18px;
+  margin-top: 2px;
+  border: 2px solid #2a2a2a;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.notebook-header {
+  display: grid;
+  grid-template-columns: minmax(5.5rem, 7.5rem) 1fr;
+  border-bottom: 1px solid rgba(28, 20, 12, 0.22);
+}
+
+.notebook-date-box,
+.notebook-title-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.55rem 0.75rem 0.45rem;
+  min-height: 3.1rem;
+}
+
+.notebook-date-box {
+  border-right: 1px solid rgba(28, 20, 12, 0.22);
+}
+
+.notebook-field-label {
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8a7b6a;
+}
+
+.notebook-field-value {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #1c140c;
+}
+
+.notebook-ruled {
+  --notebook-line: 1.85rem;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(var(--notebook-line) - 1px),
+    rgba(28, 20, 12, 0.12) calc(var(--notebook-line) - 1px),
+    rgba(28, 20, 12, 0.12) var(--notebook-line)
+  );
+  background-position: 0 0;
+  padding: 0 0.9rem 1.25rem;
+}
+
+.notebook-line {
+  margin: 0;
+  min-height: var(--notebook-line);
+  padding-top: 0.35rem;
+  font-size: 13px;
+  line-height: 1.35;
+  color: #1c140c;
+}
+
+.notebook-meta {
+  font-size: 12px;
+  color: #5c4f42;
+}
+
+.notebook-section {
+  margin-top: 0.15rem;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #1a5c3a;
+}
+
+.notebook-hole-block {
+  padding-bottom: 0.15rem;
+}
+
+.notebook-hole-title {
+  font-size: 13.5px;
+}
+
+.notebook-key {
+  display: inline-block;
+  min-width: 5.5rem;
+  margin-right: 0.35rem;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #8a7b6a;
+  vertical-align: baseline;
+}
+
+.notebook-muted {
+  font-size: 12px;
+  color: #5c4f42;
+}
+
+.notebook-blank {
+  color: transparent;
+}
+
+.notebook-footer {
+  margin-top: 0.25rem;
+  font-size: 10px;
+  color: #8a7b6a;
 }

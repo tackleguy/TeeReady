@@ -36,6 +36,10 @@ import { DraggableBox, clearPanelPositions } from '../components/ui/DraggableBox
 import { SearchBar } from '../components/radar/SearchBar';
 import { defaultSearchLoc } from '../lib/searchLoc';
 import { takePendingCourse } from '../lib/pendingCourse';
+import {
+  loadYardageNotes,
+  saveYardageNotesFromPrep,
+} from '../lib/yardageNotes';
 import { useIsMobile } from '../hooks/useMediaQuery';
 import { bearingCompass, bearingDeg } from '../lib/geo';
 import { formatHandicap } from '../lib/golfHandicap';
@@ -351,6 +355,25 @@ export function GolfView({ active = true }: { active?: boolean }) {
     profile,
     bookOpen,
   );
+
+  // Persist prep notebook so GPS / reopen can transfer hole notes instantly.
+  useEffect(() => {
+    if (!notebook || !course || !profile) return;
+    saveYardageNotesFromPrep({
+      course,
+      profile,
+      notebook,
+      teeKindLabel:
+        teeKinds.length > 1 ? teeKindLabel(teeKind) : undefined,
+    });
+  }, [notebook, course, profile, teeKind, teeKinds.length]);
+
+  const savedYardageNotes = useMemo(
+    () => (course ? loadYardageNotes(course.id) : null),
+    [course, notebook],
+  );
+  const yardageNotebook = notebook ?? savedYardageNotes?.notebook ?? null;
+  const yardageFromPrep = Boolean(!notebook && savedYardageNotes?.notebook);
 
   const bag = useMemo(
     () =>
@@ -1397,7 +1420,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-[var(--accent)]/20 px-2 py-1.5 text-[11px] font-semibold text-[var(--ink-1)] hover:bg-[var(--accent)]/30"
                   >
                     <BookOpen className="h-3.5 w-3.5" />
-                    Yardage book
+                    {savedYardageNotes ? 'Yardage notes' : 'Yardage book'}
                   </button>
                 </div>
                 {(!isMobile || sheetExpanded) && (
@@ -1609,9 +1632,13 @@ export function GolfView({ active = true }: { active?: boolean }) {
         <GolfYardageBook
           course={course}
           profile={profile}
-          notebook={notebook}
-          loading={notebookLoading}
-          error={notebookError}
+          notebook={yardageNotebook}
+          loading={notebookLoading && !yardageNotebook}
+          error={notebookError && !yardageNotebook ? notebookError : null}
+          teeKindLabel={
+            teeKinds.length > 1 ? teeKindLabel(teeKind) : undefined
+          }
+          transferredFromPrep={yardageFromPrep || viewMode === 'gps'}
           onClose={() => setBookOpen(false)}
         />
       ) : null}
