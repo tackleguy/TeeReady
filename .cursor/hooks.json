@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "command": "[ ! -f '/Users/maxr/.cursor/skills/impeccable/scripts/hook-before-edit.mjs' ] || node '/Users/maxr/.cursor/skills/impeccable/scripts/hook-before-edit.mjs'",
+        "timeout": 5
+      }
+    ]
+  }
+}
