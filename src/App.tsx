@@ -6,53 +6,28 @@ import {
   Routes,
   useLocation,
 } from 'react-router-dom';
+import { InstallPrompt } from './components/InstallPrompt';
+import { SearchBar } from './components/radar/SearchBar';
 import { ThemeBoot } from './components/ThemeBoot';
 import { TopNav } from './components/TopNav';
 import { AuthProvider, useAuth } from './lib/auth';
 import { hasStoredRound } from './lib/golfTracker';
 import { CURRENT_LOCATION } from './lib/mock';
 import { applyTheme, loadTheme } from './lib/theme';
+import { CoursesView } from './routes/CoursesView';
+import { GroupView } from './routes/GroupView';
+import { HomeLanding } from './routes/HomeLanding';
+import { ProfileView } from './routes/ProfileView';
+import { QuestionnaireView } from './routes/QuestionnaireView';
+import { SettingsView } from './routes/SettingsView';
+import { StatsView } from './routes/StatsView';
+import { TodayView } from './routes/TodayView';
 
 applyTheme(loadTheme());
 
+/** Map + rounds shell — lazy; prefetched after sign-in. */
 const GolfView = lazy(() =>
   import('./routes/GolfView').then((m) => ({ default: m.GolfView })),
-);
-const TodayView = lazy(() =>
-  import('./routes/TodayView').then((m) => ({ default: m.TodayView })),
-);
-const CoursesView = lazy(() =>
-  import('./routes/CoursesView').then((m) => ({ default: m.CoursesView })),
-);
-const GroupView = lazy(() =>
-  import('./routes/GroupView').then((m) => ({ default: m.GroupView })),
-);
-const ProfileView = lazy(() =>
-  import('./routes/ProfileView').then((m) => ({ default: m.ProfileView })),
-);
-const QuestionnaireView = lazy(() =>
-  import('./routes/QuestionnaireView').then((m) => ({
-    default: m.QuestionnaireView,
-  })),
-);
-const StatsView = lazy(() =>
-  import('./routes/StatsView').then((m) => ({ default: m.StatsView })),
-);
-const SettingsView = lazy(() =>
-  import('./routes/SettingsView').then((m) => ({ default: m.SettingsView })),
-);
-const HomeLanding = lazy(() =>
-  import('./routes/HomeLanding').then((m) => ({ default: m.HomeLanding })),
-);
-const SearchBar = lazy(() =>
-  import('./components/radar/SearchBar').then((m) => ({
-    default: m.SearchBar,
-  })),
-);
-const InstallPrompt = lazy(() =>
-  import('./components/InstallPrompt').then((m) => ({
-    default: m.InstallPrompt,
-  })),
 );
 
 function RouteFallback() {
@@ -91,11 +66,7 @@ function PublicHome() {
   if (configured && user) {
     return <Navigate to="/today" replace />;
   }
-  return (
-    <Suspense fallback={<RouteFallback />}>
-      <HomeLanding />
-    </Suspense>
-  );
+  return <HomeLanding />;
 }
 
 function Shell() {
@@ -108,7 +79,7 @@ function Shell() {
   const [keepRoundsAlive, setKeepRoundsAlive] = useState(() =>
     hasStoredRound(),
   );
-  const [mountRoundsLayer, setMountRoundsLayer] = useState(isRounds);
+  const [backgroundRoundsMounted, setBackgroundRoundsMounted] = useState(false);
 
   useEffect(() => {
     if (isRounds && user) setKeepRoundsAlive(true);
@@ -123,7 +94,6 @@ function Shell() {
     return () => window.removeEventListener('teeready-round-changed', onRound);
   }, []);
 
-  // Drop background round layer after sign-out.
   useEffect(() => {
     if (!user) setKeepRoundsAlive(false);
   }, [user]);
@@ -131,27 +101,18 @@ function Shell() {
   const showAppChrome = Boolean(user) && !isLanding;
   const showRoundsLayer = Boolean(user) && (isRounds || keepRoundsAlive);
 
-  // Mount rounds immediately when navigating there; defer the heavy map chunk
-  // when only keeping a background round alive.
+  // Mount rounds immediately when on /rounds; defer only the background keep-alive layer.
   useEffect(() => {
-    if (!showRoundsLayer) {
-      setMountRoundsLayer(false);
+    if (!showRoundsLayer || isRounds) {
+      setBackgroundRoundsMounted(false);
       return;
     }
-    if (isRounds) {
-      setMountRoundsLayer(true);
-      return;
-    }
-    const idle = window.requestIdleCallback?.(
-      () => setMountRoundsLayer(true),
-      { timeout: 2500 },
-    );
-    const timer = window.setTimeout(() => setMountRoundsLayer(true), 2000);
-    return () => {
-      if (idle != null) window.cancelIdleCallback(idle);
-      window.clearTimeout(timer);
-    };
+    const timer = window.setTimeout(() => setBackgroundRoundsMounted(true), 800);
+    return () => window.clearTimeout(timer);
   }, [showRoundsLayer, isRounds]);
+
+  const mountRoundsLayer =
+    showRoundsLayer && (isRounds || backgroundRoundsMounted);
 
   return (
     <div className="app-shell">
@@ -166,29 +127,27 @@ function Shell() {
       {pickingLocation && showAppChrome ? (
         <div className="mx-auto w-full max-w-[1400px] px-5 pb-2 pt-3 md:px-8">
           <div className="max-w-md rounded-card border border-line bg-surface p-3 shadow-card">
-            <Suspense fallback={<div className="h-10 rounded-lg bg-canvas" />}>
-              <SearchBar
-                onPick={(pick) => {
-                  const short =
-                    pick.label.split(',')[0]?.trim() || pick.label;
-                  setPlace(short);
-                  setPickingLocation(false);
-                  try {
-                    const cities = [
-                      {
-                        name: short,
-                        latitude: pick.lat,
-                        longitude: pick.lon,
-                        isCurrent: true,
-                      },
-                    ];
-                    localStorage.setItem('cities-v1', JSON.stringify(cities));
-                  } catch {
-                    // ignore
-                  }
-                }}
-              />
-            </Suspense>
+            <SearchBar
+              onPick={(pick) => {
+                const short =
+                  pick.label.split(',')[0]?.trim() || pick.label;
+                setPlace(short);
+                setPickingLocation(false);
+                try {
+                  const cities = [
+                    {
+                      name: short,
+                      latitude: pick.lat,
+                      longitude: pick.lon,
+                      isCurrent: true,
+                    },
+                  ];
+                  localStorage.setItem('cities-v1', JSON.stringify(cities));
+                } catch {
+                  // ignore
+                }
+              }}
+            />
           </div>
         </div>
       ) : null}
@@ -202,7 +161,7 @@ function Shell() {
               : 'app-main'
         }
       >
-        {showRoundsLayer && mountRoundsLayer ? (
+        {mountRoundsLayer ? (
           <div
             className={
               isRounds ? 'rounds-keepalive is-active' : 'rounds-keepalive'
@@ -210,104 +169,98 @@ function Shell() {
             data-active={isRounds ? 'true' : 'false'}
             aria-hidden={!isRounds}
           >
-            <Suspense fallback={isRounds ? <RouteFallback /> : null}>
+            <Suspense fallback={<RouteFallback />}>
               <GolfView active={isRounds} />
             </Suspense>
           </div>
         ) : null}
 
-        <Suspense fallback={isRounds ? null : <RouteFallback />}>
-          <Routes>
-            <Route path="/" element={<PublicHome />} />
-            <Route
-              path="/today"
-              element={
-                <RequireAuth>
-                  <TodayView />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/courses"
-              element={
-                <RequireAuth>
-                  <CoursesView />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/group"
-              element={
-                <RequireAuth>
-                  <GroupView />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <RequireAuth>
-                  <ProfileView />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/questionnaire"
-              element={
-                <RequireAuth>
-                  <QuestionnaireView />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/stats"
-              element={
-                <RequireAuth>
-                  <StatsView />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                <RequireAuth>
-                  <SettingsView />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/rounds"
-              element={
-                <RequireAuth>
-                  <Navigate to="/rounds/prep" replace />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/rounds/:mode"
-              element={
-                <RequireAuth>
-                  {null}
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/golf"
-              element={
-                <RequireAuth>
-                  <Navigate to="/rounds/prep" replace />
-                </RequireAuth>
-              }
-            />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
+        <Routes>
+          <Route path="/" element={<PublicHome />} />
+          <Route
+            path="/today"
+            element={
+              <RequireAuth>
+                <TodayView />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/courses"
+            element={
+              <RequireAuth>
+                <CoursesView />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/group"
+            element={
+              <RequireAuth>
+                <GroupView />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <RequireAuth>
+                <ProfileView />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/questionnaire"
+            element={
+              <RequireAuth>
+                <QuestionnaireView />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/stats"
+            element={
+              <RequireAuth>
+                <StatsView />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <RequireAuth>
+                <SettingsView />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/rounds"
+            element={
+              <RequireAuth>
+                <Navigate to="/rounds/prep" replace />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/rounds/:mode"
+            element={
+              <RequireAuth>
+                {mountRoundsLayer ? null : <RouteFallback />}
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/golf"
+            element={
+              <RequireAuth>
+                <Navigate to="/rounds/prep" replace />
+              </RequireAuth>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </main>
-      {showAppChrome ? (
-        <Suspense fallback={null}>
-          <InstallPrompt />
-        </Suspense>
-      ) : null}
+      {showAppChrome ? <InstallPrompt /> : null}
     </div>
   );
 }
