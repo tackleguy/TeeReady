@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useState, type ReactNode } from 'react';
+import { Component, useState, type ReactNode } from 'react';
 import {
   BrowserRouter,
   Navigate,
@@ -11,11 +11,11 @@ import { SearchBar } from './components/radar/SearchBar';
 import { ThemeBoot } from './components/ThemeBoot';
 import { TopNav } from './components/TopNav';
 import { AuthProvider, useAuth } from './lib/auth';
-import { hasStoredRound } from './lib/golfTracker';
 import { CURRENT_LOCATION } from './lib/mock';
 import { applyTheme, loadTheme } from './lib/theme';
 import { CoursesView } from './routes/CoursesView';
 import { GroupView } from './routes/GroupView';
+import { GolfView } from './routes/GolfView';
 import { HomeLanding } from './routes/HomeLanding';
 import { ProfileView } from './routes/ProfileView';
 import { QuestionnaireView } from './routes/QuestionnaireView';
@@ -24,10 +24,6 @@ import { StatsView } from './routes/StatsView';
 import { TodayView } from './routes/TodayView';
 
 applyTheme(loadTheme());
-
-const GolfView = lazy(() =>
-  import('./routes/GolfView').then((m) => ({ default: m.GolfView })),
-);
 
 function RouteFallback() {
   return (
@@ -41,6 +37,40 @@ function RouteFallback() {
       </div>
     </div>
   );
+}
+
+class RoundsErrorBoundary extends Component<
+  { children: ReactNode },
+  { error: Error | null }
+> {
+  state: { error: Error | null } = { error: null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3 px-6 text-center">
+          <p className="text-[15px] font-semibold text-ink">
+            Rounds couldn&apos;t load
+          </p>
+          <p className="max-w-md text-[13px] text-muted">
+            {this.state.error.message}
+          </p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="rounded-xl bg-brand px-4 py-2 text-[13px] font-bold text-white"
+          >
+            Reload
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 function RequireAuth({ children }: { children: ReactNode }) {
@@ -68,6 +98,14 @@ function PublicHome() {
   return <HomeLanding />;
 }
 
+function RoundsPage() {
+  return (
+    <RoundsErrorBoundary>
+      <GolfView active />
+    </RoundsErrorBoundary>
+  );
+}
+
 function Shell() {
   const location = useLocation();
   const { user } = useAuth();
@@ -75,36 +113,8 @@ function Shell() {
   const isRounds = location.pathname.startsWith('/rounds');
   const [place, setPlace] = useState(CURRENT_LOCATION);
   const [pickingLocation, setPickingLocation] = useState(false);
-  const [keepRoundsAlive, setKeepRoundsAlive] = useState(() =>
-    hasStoredRound(),
-  );
-
-  useEffect(() => {
-    if (isRounds && user) setKeepRoundsAlive(true);
-  }, [isRounds, user]);
-
-  useEffect(() => {
-    const onRound = (e: Event) => {
-      const detail = (e as CustomEvent<unknown>).detail;
-      if (detail != null) setKeepRoundsAlive(true);
-    };
-    window.addEventListener('teeready-round-changed', onRound);
-    return () => window.removeEventListener('teeready-round-changed', onRound);
-  }, []);
-
-  useEffect(() => {
-    if (!user) setKeepRoundsAlive(false);
-  }, [user]);
-
-  // Warm the rounds chunk as soon as the user opens Rounds.
-  useEffect(() => {
-    if (user && isRounds) {
-      void import('./routes/GolfView');
-    }
-  }, [user, isRounds]);
 
   const showAppChrome = Boolean(user) && !isLanding;
-  const showGolfLayer = Boolean(user) && (isRounds || keepRoundsAlive);
 
   return (
     <div className="app-shell">
@@ -153,117 +163,90 @@ function Shell() {
               : 'app-main'
         }
       >
-        {showGolfLayer ? (
-          <div
-            className={
-              isRounds ? 'rounds-keepalive is-active' : 'rounds-keepalive'
+        <Routes>
+          <Route path="/" element={<PublicHome />} />
+          <Route
+            path="/today"
+            element={
+              <RequireAuth>
+                <TodayView />
+              </RequireAuth>
             }
-            data-active={isRounds ? 'true' : 'false'}
-            aria-hidden={!isRounds}
-          >
-            <Suspense fallback={<RouteFallback />}>
-              <GolfView active={isRounds} />
-            </Suspense>
-          </div>
-        ) : null}
-
-        {!isRounds ? (
-          <Routes>
-            <Route path="/" element={<PublicHome />} />
-            <Route
-              path="/today"
-              element={
-                <RequireAuth>
-                  <TodayView />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/courses"
-              element={
-                <RequireAuth>
-                  <CoursesView />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/group"
-              element={
-                <RequireAuth>
-                  <GroupView />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <RequireAuth>
-                  <ProfileView />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/questionnaire"
-              element={
-                <RequireAuth>
-                  <QuestionnaireView />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/stats"
-              element={
-                <RequireAuth>
-                  <StatsView />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                <RequireAuth>
-                  <SettingsView />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/golf"
-              element={
-                <RequireAuth>
-                  <Navigate to="/rounds/prep" replace />
-                </RequireAuth>
-              }
-            />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        ) : (
-          <Routes>
-            <Route
-              path="/rounds"
-              element={
-                <RequireAuth>
-                  <Navigate to="/rounds/prep" replace />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/rounds/:mode"
-              element={
-                <RequireAuth>
-                  {showGolfLayer ? null : <RouteFallback />}
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/golf"
-              element={
-                <RequireAuth>
-                  <Navigate to="/rounds/prep" replace />
-                </RequireAuth>
-              }
-            />
-          </Routes>
-        )}
+          />
+          <Route
+            path="/courses"
+            element={
+              <RequireAuth>
+                <CoursesView />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/group"
+            element={
+              <RequireAuth>
+                <GroupView />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <RequireAuth>
+                <ProfileView />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/questionnaire"
+            element={
+              <RequireAuth>
+                <QuestionnaireView />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/stats"
+            element={
+              <RequireAuth>
+                <StatsView />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <RequireAuth>
+                <SettingsView />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/rounds"
+            element={
+              <RequireAuth>
+                <Navigate to="/rounds/prep" replace />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/rounds/*"
+            element={
+              <RequireAuth>
+                <RoundsPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/golf"
+            element={
+              <RequireAuth>
+                <Navigate to="/rounds/prep" replace />
+              </RequireAuth>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </main>
       {showAppChrome ? <InstallPrompt /> : null}
     </div>

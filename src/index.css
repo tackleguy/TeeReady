@@ -584,6 +584,7 @@ body {
   max-width: none;
   padding: 0;
   height: calc(100dvh - 4.75rem);
+  min-height: calc(100dvh - 4.75rem);
   overflow: hidden;
 }
 
