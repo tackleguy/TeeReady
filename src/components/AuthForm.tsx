@@ -87,6 +87,8 @@ export function AuthForm({
             setInfo(null);
             setBusy(true);
             try {
+              // Write local first so sign-in sync doesn't seed empty defaults.
+              persistSignupProfile(draft);
               const res = await signUp(
                 draft.email,
                 draft.password,
@@ -94,7 +96,6 @@ export function AuthForm({
                 draft.rememberMe,
               );
               if (!res.error) {
-                persistSignupProfile(draft);
                 if (res.needsEmailConfirm) {
                   setInfo(
                     'Check spam for a confirm link — or sign in if you already have an account.',

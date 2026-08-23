@@ -132,7 +132,9 @@ export interface GolfEnsemble {
 
 const MEM = new Map<string, { at: number; data: unknown }>();
 const COURSES_TTL_MS = 30 * 60_000;
+const COURSES_LS_TTL_MS = 24 * 60 * 60_000;
 const HOLES_TTL_MS = 6 * 60 * 60_000;
+const LS_PREFIX = 'teeready-golf-cache:';
 
 function q3(n: number): number {
   return Math.round(n * 1000) / 1000;
@@ -178,6 +180,57 @@ function sessionSet(key: string, data: unknown): void {
   }
 }
 
+function localGet<T>(key: string, ttl: number): T | null {
+  try {
+    const raw = localStorage.getItem(`${LS_PREFIX}${key}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { at: number; data: T };
+    if (Date.now() - parsed.at > ttl) {
+      localStorage.removeItem(`${LS_PREFIX}${key}`);
+      return null;
+    }
+    return parsed.data;
+  } catch {
+    return null;
+  }
+}
+
+function localSet(key: string, data: unknown): void {
+  try {
+    localStorage.setItem(
+      `${LS_PREFIX}${key}`,
+      JSON.stringify({ at: Date.now(), data }),
+    );
+  } catch {
+    // quota / private mode
+  }
+}
+
+function coursesCacheKey(
+  lat: number,
+  lon: number,
+  q: string,
+  radius?: number,
+): string {
+  return `golf:v7:courses:${q3(lat)}:${q3(lon)}:${q}:${radius ?? ''}`;
+}
+
+/** Sync cache read — instant course list without a loading spinner. */
+export function peekGolfCoursesCache(
+  lat: number,
+  lon: number,
+  q?: string,
+  radius?: number,
+): GolfCourseSummary[] | null {
+  const query = q?.trim().toLowerCase() ?? '';
+  const key = coursesCacheKey(lat, lon, query, radius);
+  return (
+    memGet<GolfCourseSummary[]>(key, COURSES_TTL_MS) ??
+    sessionGet<GolfCourseSummary[]>(key, COURSES_TTL_MS) ??
+    localGet<GolfCourseSummary[]>(key, COURSES_LS_TTL_MS)
+  );
+}
+
 /**
  * Public Overpass instances answer 504/429 whenever they are busy, and a
  * different mirror usually succeeds moments later, so retry briefly.
@@ -190,7 +243,7 @@ async function fetchWithRetry(
   let lastErr: unknown = null;
   for (let i = 0; i < attempts; i += 1) {
     if (i > 0) {
-      await new Promise((r) => setTimeout(r, 900 * i));
+      await new Promise((r) => setTimeout(r, 350 * i));
       if (signal?.aborted) throw new DOMException('aborted', 'AbortError');
     }
     try {
@@ -214,12 +267,9 @@ export async function fetchGolfCourses(
   opts?: { q?: string; radius?: number; signal?: AbortSignal },
 ): Promise<GolfCourseSummary[]> {
   const q = opts?.q?.trim().toLowerCase() ?? '';
-  // v2 invalidates empty results cached by the retired Nominatim/Overpass
-  // discovery path.
-  const key = `golf:v7:courses:${q3(lat)}:${q3(lon)}:${q}:${opts?.radius ?? ''}`;
+  const key = coursesCacheKey(lat, lon, q, opts?.radius);
   const cached =
-    memGet<GolfCourseSummary[]>(key, COURSES_TTL_MS) ??
-    sessionGet<GolfCourseSummary[]>(key, COURSES_TTL_MS);
+    peekGolfCoursesCache(lat, lon, opts?.q, opts?.radius);
   if (cached) {
     memSet(key, cached);
     return cached;
@@ -260,6 +310,7 @@ export async function fetchGolfCourses(
     .filter((c) => isPlayableCourse(c.kind));
   memSet(key, courses);
   sessionSet(key, courses);
+  localSet(key, courses);
   return courses;
 }
 

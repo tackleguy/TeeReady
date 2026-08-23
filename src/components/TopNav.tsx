@@ -5,6 +5,7 @@ import { hasStoredRound } from '../lib/golfTracker';
 import { loadGolfProfile } from '../lib/golfProfile';
 import { needsQuestionnaire } from '../lib/questionnaire';
 import { useAuth } from '../lib/auth';
+import { prefetchRoute } from '../lib/prefetchRoutes';
 import {
   CURRENT_LOCATION,
   loadDisplayProfile,
@@ -73,6 +74,8 @@ function RoundsMenu({ mobile = false }: { mobile?: boolean }) {
         aria-expanded={open}
         aria-haspopup="menu"
         onClick={() => setOpen((v) => !v)}
+        onMouseEnter={() => prefetchRoute('/rounds/prep')}
+        onFocus={() => prefetchRoute('/rounds/prep')}
         className={`nav-link inline-flex items-center gap-1 ${mobile ? 'whitespace-nowrap' : ''}`}
         aria-current={roundsActive ? 'page' : undefined}
       >
@@ -105,6 +108,8 @@ function RoundsMenu({ mobile = false }: { mobile?: boolean }) {
               to={item.href}
               role="menuitem"
               onClick={() => setOpen(false)}
+              onMouseEnter={() => prefetchRoute(item.href)}
+              onFocus={() => prefetchRoute(item.href)}
               className={({ isActive }) =>
                 `block px-3.5 py-2.5 transition-colors ${
                   isActive
@@ -147,6 +152,8 @@ function NavItem({
   return (
     <NavLink
       to={to}
+      onMouseEnter={() => prefetchRoute(to)}
+      onFocus={() => prefetchRoute(to)}
       className={`${mobile ? 'whitespace-nowrap ' : ''}nav-link`}
     >
       {children}

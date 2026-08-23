@@ -10,6 +10,7 @@ import {
 } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { syncProfileOnSignIn } from './accountProfile';
+import { prefetchAppShell } from './prefetchRoutes';
 import { setRememberMe } from './authStorage';
 import { supabase, supabaseConfigured } from './supabase';
 
@@ -67,25 +68,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (cancelled) return;
       setSession(data.session);
       setLoading(false);
-    });
-    const { data: sub } = supabase.auth.onAuthStateChange(
-      async (event, next) => {
-        setSession(next);
-        setLoading(false);
-        if (
-          (event === 'SIGNED_IN' || event === 'USER_UPDATED') &&
-          next?.user?.id
-        ) {
-          try {
-            await syncProfileOnSignIn(next.user.id);
+      if (data.session?.user?.id) {
+        prefetchAppShell();
+        void syncProfileOnSignIn(data.session.user.id)
+          .then(() => {
             window.dispatchEvent(new Event('teeready-display-changed'));
             window.dispatchEvent(new Event('teeready-profile-changed'));
-          } catch {
-            // Local settings still work if sync fails.
-          }
-        }
-      },
-    );
+          })
+          .catch(() => undefined);
+      }
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((event, next) => {
+      setSession(next);
+      setLoading(false);
+      if (
+        (event === 'SIGNED_IN' || event === 'USER_UPDATED') &&
+        next?.user?.id
+      ) {
+        prefetchAppShell();
+        void syncProfileOnSignIn(next.user.id)
+          .then(() => {
+            window.dispatchEvent(new Event('teeready-display-changed'));
+            window.dispatchEvent(new Event('teeready-profile-changed'));
+          })
+          .catch(() => undefined);
+      }
+    });
     return () => {
       cancelled = true;
       sub.subscription.unsubscribe();

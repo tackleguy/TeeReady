@@ -3,11 +3,17 @@
 import type { MissBias } from './golfProfile';
 import {
   DEFAULT_PROFILE,
+  golfProfileUpdatedAt,
   loadGolfProfile,
   saveGolfProfile,
   type GolfPlayerProfile,
 } from './golfProfile';
 import { normalizeCustomGoals, normalizeGoals } from './goals';
+import {
+  DEFAULT_QUESTIONNAIRE,
+  normalizeQuestionnaire,
+  type QuestionnaireExtras,
+} from './questionnaire';
 import { loadDisplayProfile, saveDisplayProfile } from './mock';
 import { loadTheme, setTheme, type ThemeId } from './theme';
 import { supabase } from './supabase';
@@ -23,6 +29,7 @@ export type CloudProfile = {
   goals?: string[];
   custom_goals?: string[];
   target_handicap?: number | null;
+  questionnaire?: Partial<QuestionnaireExtras> | null;
   theme: string;
   updated_at?: string;
 };
@@ -37,6 +44,10 @@ function isTheme(v: unknown): v is ThemeId {
   return v === 'light' || v === 'dark' || v === 'sand' || v === 'auto';
 }
 
+function questionnairePayload(golf: GolfPlayerProfile): QuestionnaireExtras {
+  return normalizeQuestionnaire(golf);
+}
+
 export function applyCloudProfile(row: CloudProfile): void {
   const displayName =
     typeof row.display_name === 'string' && row.display_name.trim()
@@ -45,8 +56,19 @@ export function applyCloudProfile(row: CloudProfile): void {
   saveDisplayProfile({ name: displayName });
 
   const local = loadGolfProfile() ?? DEFAULT_PROFILE;
+  const remoteQ = normalizeQuestionnaire({
+    ...DEFAULT_QUESTIONNAIRE,
+    ...(row.questionnaire ?? {}),
+  });
+  // Prefer remote questionnaire when it was completed; otherwise keep local.
+  const q =
+    remoteQ.questionnaireCompleted || !local.questionnaireCompleted
+      ? remoteQ
+      : normalizeQuestionnaire(local);
+
   const next: GolfPlayerProfile = {
     ...local,
+    ...q,
     commonCourses: Array.isArray(row.common_courses)
       ? row.common_courses.filter((x): x is string => typeof x === 'string')
       : local.commonCourses,
@@ -72,7 +94,9 @@ export function applyCloudProfile(row: CloudProfile): void {
         ? Number(row.target_handicap)
         : local.targetHandicap,
   };
-  saveGolfProfile(next);
+  saveGolfProfile(next, {
+    fromCloudAt: row.updated_at ? Date.parse(row.updated_at) : undefined,
+  });
 
   if (isTheme(row.theme)) setTheme(row.theme);
 }
@@ -84,7 +108,7 @@ export async function fetchCloudProfile(
   const { data, error } = await supabase
     .from('teeready_profiles')
     .select(
-      'id, display_name, handicap, miss, seven_iron_yards, driver_yards, common_courses, goals, custom_goals, target_handicap, theme, updated_at',
+      'id, display_name, handicap, miss, seven_iron_yards, driver_yards, common_courses, goals, custom_goals, target_handicap, questionnaire, theme, updated_at',
     )
     .eq('id', userId)
     .maybeSingle();
@@ -109,6 +133,7 @@ export async function upsertCloudProfile(userId: string): Promise<void> {
       goals: golf.goals,
       custom_goals: golf.customGoals,
       target_handicap: golf.targetHandicap ?? null,
+      questionnaire: questionnairePayload(golf),
       theme,
       updated_at: new Date().toISOString(),
     },
@@ -117,17 +142,42 @@ export async function upsertCloudProfile(userId: string): Promise<void> {
   if (error) throw error;
 }
 
-/** Pull cloud → local when signing in; seed cloud from local if empty. */
-export async function syncProfileOnSignIn(userId: string): Promise<void> {
-  const remote = await fetchCloudProfile(userId);
-  if (
-    remote &&
-    (remote.display_name.trim() ||
+function remoteLooksPopulated(remote: CloudProfile): boolean {
+  return Boolean(
+    remote.display_name.trim() ||
       remote.handicap !== DEFAULT_PROFILE.handicap ||
       remote.common_courses.length > 0 ||
       (Array.isArray(remote.goals) && remote.goals.length > 0) ||
-      (Array.isArray(remote.custom_goals) && remote.custom_goals.length > 0))
+      (Array.isArray(remote.custom_goals) && remote.custom_goals.length > 0) ||
+      Boolean(remote.questionnaire?.questionnaireCompleted) ||
+      Boolean(remote.questionnaire?.motivation?.trim()),
+  );
+}
+
+/** Pull cloud → local when signing in; seed cloud from local if empty. */
+export async function syncProfileOnSignIn(userId: string): Promise<void> {
+  const remote = await fetchCloudProfile(userId);
+  const local = loadGolfProfile();
+  const localStamp = golfProfileUpdatedAt();
+  const remoteStamp = remote?.updated_at
+    ? Date.parse(remote.updated_at)
+    : 0;
+
+  // Fresher local answers (questionnaire / profile edits) win over stale cloud.
+  if (
+    local &&
+    localStamp > 0 &&
+    (!remote ||
+      !Number.isFinite(remoteStamp) ||
+      localStamp > remoteStamp ||
+      (local.questionnaireCompleted &&
+        !remote.questionnaire?.questionnaireCompleted))
   ) {
+    await upsertCloudProfile(userId);
+    return;
+  }
+
+  if (remote && remoteLooksPopulated(remote)) {
     applyCloudProfile(remote);
     return;
   }

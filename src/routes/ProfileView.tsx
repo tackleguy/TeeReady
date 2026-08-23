@@ -1,14 +1,18 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
+import { useAuth } from '../lib/auth';
+import { upsertCloudProfile } from '../lib/accountProfile';
 import {
   bagFromStocks,
   DEFAULT_PROFILE,
   loadGolfProfile,
   missLabel,
   saveGolfProfile,
+  type GolfPlayerProfile,
   type MissBias,
 } from '../lib/golfProfile';
+import { getGoal, hasAnyGoals } from '../lib/goals';
 import { needsQuestionnaire } from '../lib/questionnaire';
 import { formatHandicap, MAX_HANDICAP, MIN_HANDICAP } from '../lib/golfHandicap';
 
@@ -31,7 +35,17 @@ function inputClassName() {
   return 'w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-[14px] text-ink outline-none transition-colors placeholder:text-faint focus:border-brand';
 }
 
+function QRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex gap-3 border-b border-line py-2.5 last:border-0">
+      <dt className="w-28 shrink-0 text-[12px] font-medium text-muted">{label}</dt>
+      <dd className="min-w-0 flex-1 text-[13px] text-ink">{value}</dd>
+    </div>
+  );
+}
+
 export function ProfileView() {
+  const { user } = useAuth();
   const [commonText, setCommonText] = useState('');
   const [handicap, setHandicap] = useState(DEFAULT_PROFILE.handicap);
   const [miss, setMiss] = useState<MissBias>(DEFAULT_PROFILE.miss);
@@ -39,12 +53,14 @@ export function ProfileView() {
     DEFAULT_PROFILE.sevenIronYards,
   );
   const [driverYards, setDriverYards] = useState(DEFAULT_PROFILE.driverYards);
+  const [profile, setProfile] = useState<GolfPlayerProfile>(DEFAULT_PROFILE);
   const [savedFlash, setSavedFlash] = useState<string | null>(null);
   const [showQuestionnairePrompt, setShowQuestionnairePrompt] = useState(false);
 
   useEffect(() => {
     const refresh = () => {
       const saved = loadGolfProfile() ?? DEFAULT_PROFILE;
+      setProfile(saved);
       setCommonText(saved.commonCourses.join(', '));
       setHandicap(saved.handicap);
       setMiss(saved.miss);
@@ -74,7 +90,7 @@ export function ProfileView() {
     window.setTimeout(() => setSavedFlash(null), 2200);
   };
 
-  const saveAll = () => {
+  const saveAll = async () => {
     if (!canSave) return;
     const existing = loadGolfProfile() ?? DEFAULT_PROFILE;
     const commonCourses = commonText
@@ -90,8 +106,22 @@ export function ProfileView() {
       sevenIronYards,
       driverYards,
     });
-    flash('Golfer info saved');
+    if (user?.id) {
+      try {
+        await upsertCloudProfile(user.id);
+        flash('Golfer info saved · synced');
+      } catch {
+        flash('Golfer info saved locally (sync failed)');
+      }
+    } else {
+      flash('Golfer info saved');
+    }
   };
+
+  const goalLabels = [
+    ...profile.goals.map((id) => getGoal(id)?.label ?? id),
+    ...profile.customGoals,
+  ].filter(Boolean);
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
@@ -269,11 +299,55 @@ export function ProfileView() {
         </div>
       </section>
 
+      {!showQuestionnairePrompt &&
+      (hasAnyGoals(profile.goals, profile.customGoals) ||
+        profile.motivation.trim() ||
+        profile.questionnaireCompleted) ? (
+        <section className="rounded-card bg-surface p-5 shadow-card">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-[15px] font-bold text-ink">
+                From your questionnaire
+              </h2>
+              <p className="mt-1 text-[13px] text-muted">
+                Saved with your account — retake anytime to update.
+              </p>
+            </div>
+            <Link
+              to="/questionnaire"
+              className="shrink-0 text-[12px] font-semibold text-brand"
+            >
+              Edit
+            </Link>
+          </div>
+          <dl className="mt-3">
+            {goalLabels.length ? (
+              <QRow label="Goals" value={goalLabels.join(' · ')} />
+            ) : null}
+            <QRow
+              label="Rounds / mo"
+              value={String(profile.roundsPerMonthGoal)}
+            />
+            <QRow label="Tee time" value={profile.preferredTeeTime} />
+            <QRow label="Transport" value={profile.transport} />
+            <QRow label="Biggest leak" value={profile.biggestLeak} />
+            <QRow label="Practice" value={profile.practiceFocus} />
+            <QRow label="Compete" value={profile.competitiveLevel} />
+            {profile.dreamCourse.trim() ? (
+              <QRow label="Dream course" value={profile.dreamCourse.trim()} />
+            ) : null}
+            {profile.motivation.trim() ? (
+              <QRow label="Why you play" value={profile.motivation.trim()} />
+            ) : null}
+          </dl>
+        </section>
+      ) : null}
+
       <div className="flex flex-wrap items-center gap-3 pb-4">
         <button
           type="button"
           disabled={!canSave}
-          onClick={saveAll}
+          onClick={() => void saveAll()}
           className="rounded-xl bg-brand px-5 py-2.5 text-[13px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
         >
           Save golfer info

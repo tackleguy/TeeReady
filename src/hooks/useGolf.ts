@@ -4,6 +4,7 @@ import {
   fetchGolfEnsemble,
   fetchGolfHoles,
   fetchGolfNotebook,
+  peekGolfCoursesCache,
   type GolfCourseSummary,
   type GolfEnsemble,
   type GolfHole,
@@ -24,9 +25,15 @@ export function useGolfCourses(
   useEffect(() => {
     if (lat == null || lon == null) return;
     const ac = new AbortController();
-    setLoading(true);
     setError(null);
     const nationalQuery = query.trim().length >= 2 ? query.trim() : undefined;
+    const cached = peekGolfCoursesCache(lat, lon, nationalQuery);
+    if (cached?.length) {
+      setCourses(cached);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
     const timer = window.setTimeout(
       () => {
         fetchGolfCourses(lat, lon, {

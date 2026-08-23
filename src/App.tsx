@@ -6,27 +6,53 @@ import {
   Routes,
   useLocation,
 } from 'react-router-dom';
-import { InstallPrompt } from './components/InstallPrompt';
 import { ThemeBoot } from './components/ThemeBoot';
 import { TopNav } from './components/TopNav';
-import { SearchBar } from './components/radar/SearchBar';
 import { AuthProvider, useAuth } from './lib/auth';
 import { hasStoredRound } from './lib/golfTracker';
 import { CURRENT_LOCATION } from './lib/mock';
 import { applyTheme, loadTheme } from './lib/theme';
-import { CoursesView } from './routes/CoursesView';
-import { GroupView } from './routes/GroupView';
-import { HomeLanding } from './routes/HomeLanding';
-import { ProfileView } from './routes/ProfileView';
-import { QuestionnaireView } from './routes/QuestionnaireView';
-import { SettingsView } from './routes/SettingsView';
-import { StatsView } from './routes/StatsView';
-import { TodayView } from './routes/TodayView';
 
 applyTheme(loadTheme());
 
 const GolfView = lazy(() =>
   import('./routes/GolfView').then((m) => ({ default: m.GolfView })),
+);
+const TodayView = lazy(() =>
+  import('./routes/TodayView').then((m) => ({ default: m.TodayView })),
+);
+const CoursesView = lazy(() =>
+  import('./routes/CoursesView').then((m) => ({ default: m.CoursesView })),
+);
+const GroupView = lazy(() =>
+  import('./routes/GroupView').then((m) => ({ default: m.GroupView })),
+);
+const ProfileView = lazy(() =>
+  import('./routes/ProfileView').then((m) => ({ default: m.ProfileView })),
+);
+const QuestionnaireView = lazy(() =>
+  import('./routes/QuestionnaireView').then((m) => ({
+    default: m.QuestionnaireView,
+  })),
+);
+const StatsView = lazy(() =>
+  import('./routes/StatsView').then((m) => ({ default: m.StatsView })),
+);
+const SettingsView = lazy(() =>
+  import('./routes/SettingsView').then((m) => ({ default: m.SettingsView })),
+);
+const HomeLanding = lazy(() =>
+  import('./routes/HomeLanding').then((m) => ({ default: m.HomeLanding })),
+);
+const SearchBar = lazy(() =>
+  import('./components/radar/SearchBar').then((m) => ({
+    default: m.SearchBar,
+  })),
+);
+const InstallPrompt = lazy(() =>
+  import('./components/InstallPrompt').then((m) => ({
+    default: m.InstallPrompt,
+  })),
 );
 
 function RouteFallback() {
@@ -65,7 +91,11 @@ function PublicHome() {
   if (configured && user) {
     return <Navigate to="/today" replace />;
   }
-  return <HomeLanding />;
+  return (
+    <Suspense fallback={<RouteFallback />}>
+      <HomeLanding />
+    </Suspense>
+  );
 }
 
 function Shell() {
@@ -78,6 +108,7 @@ function Shell() {
   const [keepRoundsAlive, setKeepRoundsAlive] = useState(() =>
     hasStoredRound(),
   );
+  const [mountRoundsLayer, setMountRoundsLayer] = useState(isRounds);
 
   useEffect(() => {
     if (isRounds && user) setKeepRoundsAlive(true);
@@ -100,6 +131,28 @@ function Shell() {
   const showAppChrome = Boolean(user) && !isLanding;
   const showRoundsLayer = Boolean(user) && (isRounds || keepRoundsAlive);
 
+  // Mount rounds immediately when navigating there; defer the heavy map chunk
+  // when only keeping a background round alive.
+  useEffect(() => {
+    if (!showRoundsLayer) {
+      setMountRoundsLayer(false);
+      return;
+    }
+    if (isRounds) {
+      setMountRoundsLayer(true);
+      return;
+    }
+    const idle = window.requestIdleCallback?.(
+      () => setMountRoundsLayer(true),
+      { timeout: 2500 },
+    );
+    const timer = window.setTimeout(() => setMountRoundsLayer(true), 2000);
+    return () => {
+      if (idle != null) window.cancelIdleCallback(idle);
+      window.clearTimeout(timer);
+    };
+  }, [showRoundsLayer, isRounds]);
+
   return (
     <div className="app-shell">
       <ThemeBoot />
@@ -113,27 +166,29 @@ function Shell() {
       {pickingLocation && showAppChrome ? (
         <div className="mx-auto w-full max-w-[1400px] px-5 pb-2 pt-3 md:px-8">
           <div className="max-w-md rounded-card border border-line bg-surface p-3 shadow-card">
-            <SearchBar
-              onPick={(pick) => {
-                const short =
-                  pick.label.split(',')[0]?.trim() || pick.label;
-                setPlace(short);
-                setPickingLocation(false);
-                try {
-                  const cities = [
-                    {
-                      name: short,
-                      latitude: pick.lat,
-                      longitude: pick.lon,
-                      isCurrent: true,
-                    },
-                  ];
-                  localStorage.setItem('cities-v1', JSON.stringify(cities));
-                } catch {
-                  // ignore
-                }
-              }}
-            />
+            <Suspense fallback={<div className="h-10 rounded-lg bg-canvas" />}>
+              <SearchBar
+                onPick={(pick) => {
+                  const short =
+                    pick.label.split(',')[0]?.trim() || pick.label;
+                  setPlace(short);
+                  setPickingLocation(false);
+                  try {
+                    const cities = [
+                      {
+                        name: short,
+                        latitude: pick.lat,
+                        longitude: pick.lon,
+                        isCurrent: true,
+                      },
+                    ];
+                    localStorage.setItem('cities-v1', JSON.stringify(cities));
+                  } catch {
+                    // ignore
+                  }
+                }}
+              />
+            </Suspense>
           </div>
         </div>
       ) : null}
@@ -147,7 +202,7 @@ function Shell() {
               : 'app-main'
         }
       >
-        {showRoundsLayer ? (
+        {showRoundsLayer && mountRoundsLayer ? (
           <div
             className={
               isRounds ? 'rounds-keepalive is-active' : 'rounds-keepalive'
@@ -248,7 +303,11 @@ function Shell() {
           </Routes>
         </Suspense>
       </main>
-      {showAppChrome ? <InstallPrompt /> : null}
+      {showAppChrome ? (
+        <Suspense fallback={null}>
+          <InstallPrompt />
+        </Suspense>
+      ) : null}
     </div>
   );
 }

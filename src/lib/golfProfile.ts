@@ -30,7 +30,18 @@ export interface BagClub {
 }
 
 const STORAGE_KEY = 'teeready-golf-player-v1';
+const UPDATED_AT_KEY = 'teeready-golf-player-updated-at';
 const LEGACY_KEYS = ['golf-player-v1', 'ws-golf-player-v1'] as const;
+
+/** Local write timestamp — used to avoid cloud sync stomping fresher answers. */
+export function golfProfileUpdatedAt(): number {
+  try {
+    const n = Number(localStorage.getItem(UPDATED_AT_KEY));
+    return Number.isFinite(n) ? n : 0;
+  } catch {
+    return 0;
+  }
+}
 
 /** Typical roll on top of air carry, so planning uses finish distance. */
 const ROLL_PCT: Record<string, number> = {
@@ -159,6 +170,7 @@ export function loadGolfProfile(): GolfPlayerProfile | null {
 
 export function saveGolfProfile(
   profile: GolfPlayerProfile,
+  options?: { /** When applying cloud, use remote updated_at so sync stays stable. */ fromCloudAt?: number },
 ): GolfPlayerProfile {
   const q = normalizeQuestionnaire(profile);
   const safe: GolfPlayerProfile = {
@@ -177,6 +189,11 @@ export function saveGolfProfile(
   };
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(safe));
+    const stamp =
+      options?.fromCloudAt != null && Number.isFinite(options.fromCloudAt)
+        ? options.fromCloudAt
+        : Date.now();
+    localStorage.setItem(UPDATED_AT_KEY, String(stamp));
     window.dispatchEvent(
       new CustomEvent('teeready-profile-changed', { detail: safe }),
     );
