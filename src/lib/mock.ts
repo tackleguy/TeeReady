@@ -369,6 +369,36 @@ export function scoreColor(score: number): string {
   return '#d9714f';
 }
 
+export type HourGateStatus = 'open' | 'best' | 'closed';
+
+export type HourGateRow = {
+  id: string;
+  time: string;
+  label: string;
+  score: number;
+  summary: string;
+  status?: HourGateStatus;
+};
+
+export function buildHourGateRows(
+  hours: Hour[],
+  bestShort: string,
+): HourGateRow[] {
+  return hours.map((h) => ({
+    id: h.short,
+    time: h.short.toUpperCase(),
+    label: h.label,
+    score: h.score,
+    summary: `${h.summary} · ${h.wind}`,
+    status:
+      h.short === bestShort
+        ? 'best'
+        : h.score < 60
+          ? 'closed'
+          : undefined,
+  }));
+}
+
 export function bestWindowLabel(hours: Hour[]): string {
   if (!hours.length) return '';
   let bestStart = 0;

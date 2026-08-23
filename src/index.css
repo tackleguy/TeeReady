@@ -79,6 +79,13 @@ html[data-theme='light'] {
   --t-slow: 400ms;
 
   --rule: 1px solid var(--line);
+
+  --phosphor: #14713f;
+  --amber: #d9a83a;
+  --pass-ink: var(--ink);
+  --pass-muted: var(--muted);
+  --pass-line: var(--line);
+  --pass-perforation: color-mix(in srgb, var(--muted) 45%, transparent);
 }
 
 html[data-theme='dark'] {
@@ -140,6 +147,13 @@ html[data-theme='dark'] {
   --hover-fill: rgba(255, 255, 255, 0.04);
   --hover-strong: rgba(255, 255, 255, 0.08);
   --track: rgba(255, 255, 255, 0.08);
+
+  --phosphor: #5dff9e;
+  --amber: #f5c842;
+  --pass-ink: var(--ink);
+  --pass-muted: var(--muted);
+  --pass-line: var(--line);
+  --pass-perforation: color-mix(in srgb, var(--muted) 50%, transparent);
 }
 
 html[data-theme='sand'] {
@@ -275,6 +289,35 @@ body {
   border: var(--rule);
   border-radius: theme('borderRadius.card');
   box-shadow: var(--shadow-card), var(--shadow-inset);
+}
+
+.boarding-pass {
+  background: var(--surface);
+  border: var(--rule);
+  border-radius: theme('borderRadius.card');
+  box-shadow: var(--shadow-card), var(--shadow-inset);
+}
+
+.tower-board {
+  --tower-ink: #eef2f6;
+  --tower-muted: #a8b8c8;
+  --tower-dim: #6b7d90;
+  --tower-line: rgba(238, 242, 246, 0.1);
+  --tower-highlight: rgba(93, 255, 158, 0.14);
+  --tower-hover: rgba(238, 242, 246, 0.05);
+  --phosphor: #5dff9e;
+  --amber: #f5c842;
+
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, #0a1218 96%, var(--brand) 4%) 0%,
+    #060a0e 100%
+  );
+  border: 1px solid rgba(93, 255, 158, 0.14);
+  border-radius: theme('borderRadius.card');
+  box-shadow:
+    var(--shadow-card),
+    inset 0 1px 0 rgba(93, 255, 158, 0.08);
 }
 
 .btn-primary {

@@ -1,14 +1,22 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Sparkles, Wind } from 'lucide-react';
-import { HOURS, bestWindowLabel, scoreColor } from '../lib/mock';
+import { Sparkles } from 'lucide-react';
+import {
+  HOURS,
+  bestWindowLabel,
+  buildHourGateRows,
+  scoreColor,
+} from '../lib/mock';
 import { GoalCoachPanel } from '../components/coach/GoalCoachPanel';
+import { BoardingPassStrip } from '../components/ui/BoardingPassStrip';
+import { GateBoard } from '../components/ui/GateBoard';
 import { loadGolfProfile } from '../lib/golfProfile';
 import { needsQuestionnaire } from '../lib/questionnaire';
 
 export function TodayView() {
   const windowLabel = bestWindowLabel(HOURS);
   const bestHour = HOURS.reduce((a, b) => (b.score > a.score ? b : a));
+  const gateRows = buildHourGateRows(HOURS, bestHour.short);
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
 
   useEffect(() => {
@@ -65,80 +73,42 @@ export function TodayView() {
         <GoalCoachPanel />
       </div>
 
-      <section className="ledger-card animate-fade-up overflow-hidden [animation-delay:180ms]">
-        <div className="grid gap-0 lg:grid-cols-[1fr_1.4fr]">
-          <div className="border-b border-line p-6 lg:border-b-0 lg:border-r">
-            <div className="flex items-center gap-2">
-              <Wind className="h-4 w-4 text-brand" strokeWidth={2} />
-              <span className="section-eyebrow">Playability</span>
-            </div>
-            <h2 className="mt-3 font-display text-[26px] font-semibold tracking-[-0.02em] text-ink">
-              Best window · {bestHour.label}
-            </h2>
-            <p className="mt-2 text-[14px] leading-relaxed text-muted">
-              {bestHour.summary}
-            </p>
-            <div className="mt-6 flex items-end gap-4">
+      <section className="animate-fade-up space-y-4 [animation-delay:180ms]">
+        <BoardingPassStrip
+          flight={windowLabel || 'PLAYABILITY'}
+          gate={bestHour.short.toUpperCase()}
+          destination={`Best window · ${bestHour.label}`}
+          detail={bestHour.summary}
+          cta="Prep a round"
+          href="/rounds/prep"
+          footer={
+            <div className="flex flex-wrap items-end gap-4">
               <div>
-                <div className="label">Score</div>
-                <div
-                  className="stat-num mt-1 text-[48px] leading-none"
+                <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--pass-muted)]">
+                  Score
+                </p>
+                <p
+                  className="stat-num mt-0.5 text-[36px] leading-none"
                   style={{ color: scoreColor(bestHour.score) }}
                 >
                   {bestHour.score}
-                </div>
+                </p>
               </div>
-              {windowLabel ? (
-                <div className="mb-1 rounded-pill border border-line bg-canvas px-3 py-1.5 text-[11px] font-semibold text-brand">
-                  {windowLabel}
-                </div>
-              ) : null}
+              <p className="text-[13px] leading-relaxed text-[var(--pass-muted)]">
+                {bestHour.wind} · {bestHour.temp}°F
+              </p>
             </div>
-            <Link
-              to="/rounds/prep"
-              className="btn-primary mt-6 inline-flex"
-            >
-              Prep a round
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
+          }
+        />
 
-          <div className="bg-[color-mix(in_srgb,var(--canvas)_60%,var(--surface))] p-6">
-            <div className="flex items-baseline justify-between gap-3">
-              <h3 className="font-display text-[16px] font-semibold text-ink">
-                Hourly read
-              </h3>
-              <span className="label">0–100</span>
-            </div>
-            <div className="mt-4 grid grid-cols-6 gap-2 sm:grid-cols-12">
-              {HOURS.map((h) => {
-                const hot = h.score === bestHour.score;
-                return (
-                  <div
-                    key={h.short}
-                    className="flex flex-col items-center gap-1.5"
-                    title={h.summary}
-                  >
-                    <span className="stat-num text-[10px] text-muted">
-                      {h.score}
-                    </span>
-                    <div
-                      className={`w-full rounded-sm transition-opacity hover:opacity-90 ${
-                        hot ? 'ring-1 ring-accent ring-offset-1 ring-offset-[var(--canvas)]' : ''
-                      }`}
-                      style={{
-                        height: Math.max(24, Math.round(h.score * 1.15)),
-                        background: scoreColor(h.score),
-                      }}
-                    />
-                    <span className="text-[9px] font-medium text-faint">
-                      {h.short}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
+        <div>
+          <div className="mb-3 flex items-baseline justify-between gap-3 px-0.5">
+            <h2 className="font-display text-[16px] font-semibold text-ink">
+              Hourly read
+            </h2>
+            <span className="label">0–100</span>
           </div>
+          <GateBoard rows={gateRows} highlightId={bestHour.short} />
         </div>
       </section>
     </div>
