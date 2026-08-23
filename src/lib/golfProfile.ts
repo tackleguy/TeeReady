@@ -5,6 +5,7 @@ import {
   normalizeQuestionnaire,
   type QuestionnaireExtras,
 } from './questionnaire';
+import { applyHomeCityToSearchLoc } from './searchLoc';
 
 export type MissBias = 'left' | 'right' | 'both' | 'straight';
 
@@ -194,6 +195,7 @@ export function saveGolfProfile(
         ? options.fromCloudAt
         : Date.now();
     localStorage.setItem(UPDATED_AT_KEY, String(stamp));
+    applyHomeCityToSearchLoc(safe);
     window.dispatchEvent(
       new CustomEvent('teeready-profile-changed', { detail: safe }),
     );

@@ -3,7 +3,9 @@ import { ArrowLeft, ArrowRight, Check, Sparkles } from 'lucide-react';
 import { CourseSearchMultiSelect } from '../golf/CourseSearchMultiSelect';
 import { courseLabel } from '../golf/CourseSearchSelect';
 import { GoalPicker } from '../coach/GoalPicker';
+import { CitySearchField } from './CitySearchField';
 import type { GolfCourseSummary } from '../../lib/golf';
+import type { GeocodeResult } from '../../hooks/useGeocode';
 import {
   bagFromStocks,
   DEFAULT_PROFILE,
@@ -27,9 +29,11 @@ import type {
   TeeTimePref,
   TransportPref,
 } from '../../lib/questionnaire';
+import { defaultSearchLoc } from '../../lib/searchLoc';
 
 const STEPS = [
   { id: 'game', title: 'Your game', subtitle: 'Handicap, carry & miss' },
+  { id: 'city', title: 'Home city', subtitle: 'Where TeeReady looks for courses' },
   { id: 'courses', title: 'Courses', subtitle: 'Where you play' },
   { id: 'goals', title: 'Goals', subtitle: 'What you want' },
   { id: 'rhythm', title: 'Rhythm', subtitle: 'How often you play' },
@@ -132,9 +136,28 @@ export function PlayerQuestionnaire({
     useState<CompetitiveLevel>('casual');
   const [motivation, setMotivation] = useState('');
   const [dreamCourse, setDreamCourse] = useState('');
+  const [homeCity, setHomeCity] = useState<GeocodeResult | null>(null);
 
   useEffect(() => {
     const saved = loadGolfProfile();
+    const loc = defaultSearchLoc();
+    if (
+      saved?.homeCity &&
+      saved.homeCityLat != null &&
+      saved.homeCityLon != null
+    ) {
+      setHomeCity({
+        label: saved.homeCity,
+        lat: saved.homeCityLat,
+        lon: saved.homeCityLon,
+      });
+    } else if (loc.name) {
+      setHomeCity({
+        label: loc.name,
+        lat: loc.lat,
+        lon: loc.lon,
+      });
+    }
     if (!saved) return;
     setHandicap(saved.handicap);
     setMiss(saved.miss);
@@ -185,6 +208,9 @@ export function PlayerQuestionnaire({
         if (driverYards <= sevenIronYards + 15) {
           return 'Driver carry should be at least ~20 yards longer than 7-iron.';
         }
+        return null;
+      case 'city':
+        if (!homeCity?.label.trim()) return 'Pick your home city.';
         return null;
       case 'courses':
         if (courses.length === 0) return 'Add at least one course.';
@@ -249,6 +275,9 @@ export function PlayerQuestionnaire({
       competitiveLevel,
       motivation: motivation.trim(),
       dreamCourse: dreamCourse.trim(),
+      homeCity: (homeCity?.label.split(',')[0]?.trim() || homeCity?.label || '').trim(),
+      homeCityLat: homeCity?.lat ?? null,
+      homeCityLon: homeCity?.lon ?? null,
       questionnaireCompleted: true,
     });
     onComplete?.(profile);
@@ -376,6 +405,17 @@ export function PlayerQuestionnaire({
               </div>
             ))}
           </div>
+        </div>
+      ) : null}
+
+      {current.id === 'city' ? (
+        <div className="rounded-card bg-surface p-4 shadow-card">
+          <FieldLabel>What city do you play around?</FieldLabel>
+          <CitySearchField value={homeCity} onChange={setHomeCity} />
+          <p className="mt-3 text-[12px] leading-relaxed text-muted">
+            Saved to your profile and used for Courses, Map, and nearby
+            course search.
+          </p>
         </div>
       ) : null}
 
@@ -545,6 +585,14 @@ export function PlayerQuestionnaire({
             <ReviewRow
               label="Carry"
               value={`7i ${sevenIronYards} yd · Driver ${driverYards} yd`}
+            />
+            <ReviewRow
+              label="Home city"
+              value={
+                homeCity
+                  ? homeCity.label.split(',')[0]?.trim() || homeCity.label
+                  : '—'
+              }
             />
             <ReviewRow
               label="Courses"

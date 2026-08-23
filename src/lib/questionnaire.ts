@@ -24,6 +24,10 @@ export type QuestionnaireExtras = {
   competitiveLevel: CompetitiveLevel;
   motivation: string;
   dreamCourse: string;
+  /** Home city label (e.g. "Los Angeles"). */
+  homeCity: string;
+  homeCityLat: number | null;
+  homeCityLon: number | null;
 };
 
 export const DEFAULT_QUESTIONNAIRE: QuestionnaireExtras = {
@@ -36,6 +40,9 @@ export const DEFAULT_QUESTIONNAIRE: QuestionnaireExtras = {
   competitiveLevel: 'casual',
   motivation: '',
   dreamCourse: '',
+  homeCity: '',
+  homeCityLat: null,
+  homeCityLon: null,
 };
 
 export function needsQuestionnaire(profile: GolfPlayerProfile): boolean {
@@ -91,5 +98,15 @@ export function normalizeQuestionnaire(
       typeof parsed.motivation === 'string' ? parsed.motivation.slice(0, 280) : '',
     dreamCourse:
       typeof parsed.dreamCourse === 'string' ? parsed.dreamCourse.slice(0, 120) : '',
+    homeCity:
+      typeof parsed.homeCity === 'string' ? parsed.homeCity.trim().slice(0, 80) : '',
+    homeCityLat:
+      parsed.homeCityLat != null && Number.isFinite(Number(parsed.homeCityLat))
+        ? Number(parsed.homeCityLat)
+        : null,
+    homeCityLon:
+      parsed.homeCityLon != null && Number.isFinite(Number(parsed.homeCityLon))
+        ? Number(parsed.homeCityLon)
+        : null,
   };
 }

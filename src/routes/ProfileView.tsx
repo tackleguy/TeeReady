@@ -321,6 +321,9 @@ export function ProfileView() {
             </Link>
           </div>
           <dl className="mt-3">
+            {profile.homeCity.trim() ? (
+              <QRow label="Home city" value={profile.homeCity.trim()} />
+            ) : null}
             {goalLabels.length ? (
               <QRow label="Goals" value={goalLabels.join(' · ')} />
             ) : null}

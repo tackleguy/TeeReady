@@ -1,4 +1,4 @@
-import { Component, useState, type ReactNode } from 'react';
+import { Component, useEffect, useState, type ReactNode } from 'react';
 import {
   BrowserRouter,
   Navigate,
@@ -13,6 +13,7 @@ import { TopNav } from './components/TopNav';
 import { AuthProvider, useAuth } from './lib/auth';
 import { CURRENT_LOCATION } from './lib/mock';
 import { applyTheme, loadTheme } from './lib/theme';
+import { defaultSearchLoc, saveSearchLoc } from './lib/searchLoc';
 import { CourseMapView } from './routes/CourseMapView';
 import { CoursesView } from './routes/CoursesView';
 import { GroupView } from './routes/GroupView';
@@ -113,8 +114,18 @@ function Shell() {
   const isLanding = location.pathname === '/';
   const isRounds = location.pathname.startsWith('/rounds');
   const isCourseMap = location.pathname.startsWith('/courses/map');
-  const [place, setPlace] = useState(CURRENT_LOCATION);
+  const [place, setPlace] = useState(() => defaultSearchLoc().name || CURRENT_LOCATION);
   const [pickingLocation, setPickingLocation] = useState(false);
+
+  useEffect(() => {
+    const sync = () => setPlace(defaultSearchLoc().name || CURRENT_LOCATION);
+    window.addEventListener('teeready-location-changed', sync);
+    window.addEventListener('teeready-profile-changed', sync);
+    return () => {
+      window.removeEventListener('teeready-location-changed', sync);
+      window.removeEventListener('teeready-profile-changed', sync);
+    };
+  }, []);
 
   const showAppChrome = Boolean(user) && !isLanding;
   const fullBleedMain = isRounds || isCourseMap;
@@ -136,21 +147,13 @@ function Shell() {
               onPick={(pick) => {
                 const short =
                   pick.label.split(',')[0]?.trim() || pick.label;
+                saveSearchLoc({
+                  name: short,
+                  lat: pick.lat,
+                  lon: pick.lon,
+                });
                 setPlace(short);
                 setPickingLocation(false);
-                try {
-                  const cities = [
-                    {
-                      name: short,
-                      latitude: pick.lat,
-                      longitude: pick.lon,
-                      isCurrent: true,
-                    },
-                  ];
-                  localStorage.setItem('cities-v1', JSON.stringify(cities));
-                } catch {
-                  // ignore
-                }
               }}
             />
           </div>
