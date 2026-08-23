@@ -13,6 +13,7 @@ import {
   type GolfNotebook,
 } from '../lib/golf';
 import type { GolfPlayerProfile } from '../lib/golfProfile';
+import { warmSatelliteTiles } from '../lib/golfSatelliteCache';
 
 export function useGolfCourses(
   lat: number | null,
@@ -109,6 +110,9 @@ export function useGolfHoles(
       osmId,
       courseName,
     };
+    const courseId =
+      osmType && osmId != null ? `${osmType}:${osmId}` : undefined;
+    warmSatelliteTiles(lat, lon, { courseId });
     const peeked = peekGolfHolesCache(lat, lon, opts);
     if (peeked?.length) {
       setHoles(peeked);

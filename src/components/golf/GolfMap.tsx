@@ -60,6 +60,8 @@ interface Props {
   /** Keep the map centered on the GPS fix. */
   followGps?: boolean;
   planningMode?: 'tee' | 'approach';
+  /** Satellite tiles were prefetched — dismiss loading overlay sooner. */
+  satelliteCached?: boolean;
 }
 
 const SRC = 'golf-holes';
@@ -192,6 +194,7 @@ export function GolfMap({
   gpsHeadingDeg = null,
   followGps = false,
   planningMode = 'tee',
+  satelliteCached = false,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -205,6 +208,8 @@ export function GolfMap({
   onSetTargetRef.current = onSetTarget;
   const onReadyRef = useRef(onReady);
   onReadyRef.current = onReady;
+  const satelliteCachedRef = useRef(satelliteCached);
+  satelliteCachedRef.current = satelliteCached;
   const activeHoleRef = useRef(activeHole);
   activeHoleRef.current = activeHole;
 
@@ -635,7 +640,12 @@ export function GolfMap({
 
       resize();
       readyRef.current = true;
-      onReadyRef.current?.();
+      const signalReady = () => onReadyRef.current?.();
+      if (satelliteCachedRef.current) {
+        signalReady();
+      } else {
+        map.once('idle', signalReady);
+      }
       const queued = queueRef.current;
       queueRef.current = [];
       for (const fn of queued) fn();

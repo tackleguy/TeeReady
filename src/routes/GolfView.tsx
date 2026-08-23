@@ -37,6 +37,10 @@ import { SearchBar } from '../components/radar/SearchBar';
 import { defaultSearchLoc } from '../lib/searchLoc';
 import { takePendingCourse } from '../lib/pendingCourse';
 import {
+  peekSatelliteTilesWarm,
+  warmSatelliteTiles,
+} from '../lib/golfSatelliteCache';
+import {
   loadYardageNotes,
   saveYardageNotesFromPrep,
 } from '../lib/yardageNotes';
@@ -461,7 +465,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
 
   const pickCourse = useCallback(
     (next: GolfCourseSummary) => {
-      setMapReady(false);
+      warmSatelliteTiles(next.lat, next.lon, { courseId: next.id });
       setCourse(next);
       setActiveHole(null);
       setLoop(null);
@@ -958,6 +962,11 @@ export function GolfView({ active = true }: { active?: boolean }) {
                 fitPadding={isMobile ? MOBILE_FIT_PADDING : 60}
                 legendClassName="left-3 top-[13.5rem]"
                 onReady={() => setMapReady(true)}
+                satelliteCached={peekSatelliteTilesWarm(
+                  searchLat,
+                  searchLon,
+                  course.id,
+                )}
                 trackedShots={activeHoleShots}
                 gpsPosition={
                   gpsOn && gpsPos
@@ -970,7 +979,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
               />
             </GolfMapBoundary>
 
-            {!mapReady || holesLoading ? (
+            {!mapReady || (holesLoading && holes.length === 0) ? (
               <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center bg-[linear-gradient(180deg,rgba(4,7,12,0.72),rgba(4,7,12,0.5))] p-6">
                 <div className="floating-panel w-full max-w-md px-5 py-5 text-center">
                   <p className="section-eyebrow">Course map</p>
@@ -978,9 +987,11 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     {course.name}
                   </h2>
                   <p className="mt-2 text-[13px] text-[var(--ink-3)]">
-                    {holesLoading
+                    {holesLoading && holes.length === 0
                       ? 'Loading course map, hole geometry, and weather overlays…'
-                      : 'Starting the satellite course map…'}
+                      : peekSatelliteTilesWarm(searchLat, searchLon, course.id)
+                        ? 'Opening saved satellite imagery…'
+                        : 'Starting the satellite course map…'}
                   </p>
                   <div className="mt-4 space-y-2">
                     <div className="h-40 rounded-2xl shimmer" />

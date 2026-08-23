@@ -4,6 +4,7 @@
 import type { GolfPlayerProfile } from './golfProfile';
 import { isPlayableCourse, venueKindFromName } from './venueKind';
 import { courseHeroImage } from './courseImages';
+import { warmSatelliteTiles } from './golfSatelliteCache';
 
 export type VenueKind = 'course' | 'sim' | 'range';
 
@@ -560,6 +561,8 @@ export function warmNearbyCourseMaps(
 
   const run = () => {
     for (const course of targets) {
+      const id = course.id || `${course.osmType}:${course.osmId}`;
+      warmSatelliteTiles(course.lat, course.lon, { courseId: id });
       const peek = peekGolfHolesCache(course.lat, course.lon, {
         bbox: course.bbox,
         osmType: course.osmType,
@@ -567,7 +570,6 @@ export function warmNearbyCourseMaps(
         courseName: course.name,
       });
       if (peek?.length) continue;
-      const id = course.id || `${course.osmType}:${course.osmId}`;
       if (warmInFlight.has(id)) continue;
       warmInFlight.add(id);
       void fetchGolfHoles(course.lat, course.lon, {

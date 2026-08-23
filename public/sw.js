@@ -8,9 +8,10 @@
 // This is intentionally simple — no Workbox dependency, no precache
 // manifest. Vite's hashed asset filenames give us cache-busting for free.
 
-const VERSION = 'weatherstop-v20';
+const VERSION = 'weatherstop-v21';
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
+const SATELLITE_CACHE = `${VERSION}-satellite`;
 const APP_SHELL = ['/manifest.webmanifest', '/icon.svg'];
 
 // How long a cached /api response may be served before we wait for the
@@ -39,7 +40,12 @@ self.addEventListener('activate', (event) => {
       .then((keys) =>
         Promise.all(
           keys
-            .filter((k) => k !== STATIC_CACHE && k !== RUNTIME_CACHE)
+            .filter(
+              (k) =>
+                k !== STATIC_CACHE &&
+                k !== RUNTIME_CACHE &&
+                k !== SATELLITE_CACHE,
+            )
             .map((k) => caches.delete(k)),
         ),
       )
@@ -53,6 +59,14 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(req.url);
   if (url.origin !== location.origin) {
+    // Esri satellite tiles — cache-first so course maps reopen instantly.
+    if (
+      /server\.arcgisonline\.com/i.test(url.host) &&
+      /World_Imagery\/MapServer\/tile/i.test(url.pathname)
+    ) {
+      event.respondWith(cacheFirstSatellite(req));
+      return;
+    }
     // External weather sources (open-meteo, weather.gov, realearth, etc.)
     // are short-cached so swiping back to a recent city is instant.
     if (
@@ -119,6 +133,22 @@ async function cacheFirst(request) {
   } catch (err) {
     const fallback = await caches.match(request);
     if (fallback) return fallback;
+    throw err;
+  }
+}
+
+async function cacheFirstSatellite(request) {
+  const cache = await caches.open(SATELLITE_CACHE);
+  const cached = await cache.match(request);
+  if (cached) return cached;
+  try {
+    const fresh = await fetch(request);
+    if (fresh && (fresh.ok || fresh.type === 'opaque')) {
+      cache.put(request, fresh.clone());
+    }
+    return fresh;
+  } catch (err) {
+    if (cached) return cached;
     throw err;
   }
 }
