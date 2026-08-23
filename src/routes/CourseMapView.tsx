@@ -9,7 +9,7 @@ import {
 import { CourseSearchSelect } from '../components/golf/CourseSearchSelect';
 import { GolfMap } from '../components/golf/GolfMap';
 import { GolfMapBoundary } from '../components/golf/GolfMapBoundary';
-import { useGolfHoles } from '../hooks/useGolf';
+import { useGolfCourses, useGolfHoles } from '../hooks/useGolf';
 import type { GolfCourseSummary, TeeKind } from '../lib/golf';
 import {
   applyTee,
@@ -33,11 +33,25 @@ export function CourseMapView() {
   const [loop, setLoop] = useState<string | null>(null);
   const [teeKind, setTeeKind] = useState<TeeKind>('mid');
   const [mapReady, setMapReady] = useState(false);
+  const [booted, setBooted] = useState(false);
 
   useEffect(() => {
     const pending = takePendingCourse();
     if (pending) setCourse(pending);
+    setBooted(true);
   }, []);
+
+  const { courses, loading: coursesLoading } = useGolfCourses(
+    loc.lat,
+    loc.lon,
+    '',
+  );
+
+  // Open the nearest course so the satellite map has hole geometry right away.
+  useEffect(() => {
+    if (!booted || course || coursesLoading || !courses.length) return;
+    setCourse(courses[0]!);
+  }, [booted, course, courses, coursesLoading]);
 
   const {
     holes,
@@ -79,19 +93,16 @@ export function CourseMapView() {
     setLoop(next);
     setTeeKind('mid');
     setActiveHole(null);
-    setMapReady(false);
   }, [holes, course?.id, course?.name]);
 
   const activeIdx = playHoles.findIndex((h) => h.number === activeHole);
-  const activeHoleObj =
-    activeIdx >= 0 ? playHoles[activeIdx]! : null;
+  const activeHoleObj = activeIdx >= 0 ? playHoles[activeIdx]! : null;
 
   const pickCourse = useCallback((next: GolfCourseSummary | null) => {
     setCourse(next);
     setActiveHole(null);
     setLoop(null);
     setTeeKind('mid');
-    setMapReady(false);
   }, []);
 
   const stepHole = useCallback(
@@ -115,46 +126,46 @@ export function CourseMapView() {
 
   const mapLat = course?.lat ?? loc.lat;
   const mapLon = course?.lon ?? loc.lon;
+  const showHoleHud = Boolean(course && playHoles.length > 0);
+  const waitingOnGeometry = Boolean(course && holesLoading && !playHoles.length);
 
   return (
     <div className="relative h-full min-h-[inherit] bg-[#0a1210] text-white">
       <div className="absolute inset-0">
-        {course && playHoles.length > 0 ? (
-          <GolfMapBoundary
-            fallback={
-              <div className="grid h-full place-items-center px-6 text-center">
-                <div>
-                  <p className="text-[15px] font-semibold">Map unavailable</p>
-                  <p className="mt-1 text-[13px] text-white/60">
-                    WebGL couldn&apos;t start on this device.
-                  </p>
-                </div>
+        <GolfMapBoundary
+          fallback={
+            <div className="grid h-full place-items-center px-6 text-center">
+              <div>
+                <p className="text-[15px] font-semibold">Map unavailable</p>
+                <p className="mt-1 text-[13px] text-white/60">
+                  WebGL couldn&apos;t start on this device.
+                </p>
               </div>
-            }
-          >
-            <GolfMap
-              lat={mapLat}
-              lon={mapLon}
-              holes={playHoles}
-              activeHole={activeHole}
-              onSelectHole={setActiveHole}
-              holeUp={Boolean(activeHole)}
-              compactControls
-              showWindLegend={false}
-              fitPadding={{ top: 88, right: 24, bottom: 140, left: 24 }}
-              onReady={() => setMapReady(true)}
-              className="h-full w-full"
-            />
-          </GolfMapBoundary>
-        ) : (
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,#1a3d2e_0%,#0a1210_55%)]" />
-        )}
+            </div>
+          }
+        >
+          <GolfMap
+            lat={mapLat}
+            lon={mapLon}
+            holes={playHoles}
+            activeHole={activeHole}
+            onSelectHole={setActiveHole}
+            holeUp={Boolean(activeHole)}
+            compactControls
+            showWindLegend={false}
+            fitPadding={{ top: 96, right: 28, bottom: 150, left: 28 }}
+            onReady={() => setMapReady(true)}
+            className="h-full w-full"
+          />
+        </GolfMapBoundary>
 
-        {course && holesLoading && !mapReady ? (
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-black/45 backdrop-blur-[2px]">
-            <Loader2 className="h-6 w-6 animate-spin text-white/80" />
-            <p className="text-[13px] font-medium text-white/85">
-              Loading course map…
+        {!mapReady || waitingOnGeometry ? (
+          <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-black/35">
+            <Loader2 className="h-6 w-6 animate-spin text-white/85" />
+            <p className="text-[13px] font-medium text-white/90">
+              {!mapReady
+                ? 'Starting satellite map…'
+                : 'Loading hole geometry…'}
             </p>
           </div>
         ) : null}
@@ -163,7 +174,10 @@ export function CourseMapView() {
       <div className="pointer-events-none absolute inset-x-0 top-0 z-20 p-3 md:p-4">
         <div className="pointer-events-auto mx-auto flex max-w-3xl flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-white/10 bg-[color-mix(in_srgb,#0a1210_88%,transparent)] px-3 py-2.5 shadow-lift backdrop-blur-md">
-            <MapIcon className="h-4 w-4 shrink-0 text-[#7dcea0]" strokeWidth={2} />
+            <MapIcon
+              className="h-4 w-4 shrink-0 text-[#7dcea0]"
+              strokeWidth={2}
+            />
             <div className="min-w-0 flex-1">
               <CourseSearchSelect value={course} onChange={pickCourse} />
             </div>
@@ -239,33 +253,31 @@ export function CourseMapView() {
         </div>
       </div>
 
-      {!course ? (
-        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center px-6">
-          <div className="max-w-sm rounded-2xl border border-white/10 bg-black/50 px-6 py-8 text-center backdrop-blur-md">
-            <p className="font-display text-[22px] font-semibold tracking-[-0.02em]">
-              Course map
+      {!course && mapReady && !coursesLoading ? (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 p-3 md:p-4">
+          <div className="pointer-events-auto mx-auto max-w-md rounded-2xl border border-white/10 bg-black/55 px-5 py-4 text-center backdrop-blur-md">
+            <p className="text-[14px] font-semibold">Pick a course</p>
+            <p className="mt-1 text-[13px] leading-relaxed text-white/70">
+              Search above or{' '}
+              <Link
+                to="/courses"
+                className="font-semibold text-[#7dcea0]"
+              >
+                browse nearby
+              </Link>{' '}
+              to overlay hole lines.
             </p>
-            <p className="mt-2 text-[14px] leading-relaxed text-white/70">
-              Search a course above to see hole lines, tees, and greens on
-              satellite.
-            </p>
-            <Link
-              to="/courses"
-              className="pointer-events-auto mt-5 inline-flex text-[13px] font-semibold text-[#7dcea0]"
-            >
-              Browse nearby courses →
-            </Link>
           </div>
         </div>
       ) : null}
 
-      {course && playHoles.length > 0 ? (
+      {showHoleHud ? (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 p-3 md:p-4">
           <div className="pointer-events-auto mx-auto max-w-3xl rounded-2xl border border-white/10 bg-[color-mix(in_srgb,#0a1210_90%,transparent)] px-3 py-3 shadow-lift backdrop-blur-md">
             <div className="mb-2 flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="truncate text-[14px] font-semibold tracking-[-0.01em]">
-                  {course.name}
+                  {course!.name}
                 </p>
                 <p className="truncate text-[12px] text-white/55">
                   {activeHoleObj
@@ -279,7 +291,7 @@ export function CourseMapView() {
                   aria-label="Previous hole"
                   disabled={activeIdx <= 0}
                   onClick={() => stepHole(-1)}
-                  className="grid h-9 w-9 place-items-center rounded-xl border border-white/12 text-white/80 disabled:opacity-35 hover:bg-white/10"
+                  className="grid h-9 w-9 place-items-center rounded-xl border border-white/12 text-white/80 hover:bg-white/10 disabled:opacity-35"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
@@ -290,7 +302,7 @@ export function CourseMapView() {
                     activeIdx < 0 || activeIdx >= playHoles.length - 1
                   }
                   onClick={() => stepHole(1)}
-                  className="grid h-9 w-9 place-items-center rounded-xl border border-white/12 text-white/80 disabled:opacity-35 hover:bg-white/10"
+                  className="grid h-9 w-9 place-items-center rounded-xl border border-white/12 text-white/80 hover:bg-white/10 disabled:opacity-35"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </button>
@@ -303,9 +315,7 @@ export function CourseMapView() {
                   <button
                     key={h.number}
                     type="button"
-                    onClick={() =>
-                      setActiveHole(on ? null : h.number)
-                    }
+                    onClick={() => setActiveHole(on ? null : h.number)}
                     className={`min-w-[2.5rem] shrink-0 rounded-lg px-2 py-2 text-center transition-colors ${
                       on
                         ? 'bg-[#7dcea0] text-[#0a1210]'
