@@ -47,14 +47,14 @@ export function GoalCoachBanner() {
 
   return (
     <DraggableBox
-      id="goal-coach"
+      id="goal-coach-v2"
       title="Your coach"
-      defaultAnchor={{ left: 12, top: 12 }}
+      defaultAnchor={{ left: 12, top: 56 }}
       defaultSize={{ width: 280, height: 148 }}
       minSize={{ width: 220, height: 100 }}
       maxSize={{ width: 400, height: 320 }}
       resizable
-      zIndex={21}
+      zIndex={26}
       onClose={dismiss}
     >
       <div className="flex h-full flex-col overflow-y-auto bg-surface px-3 py-2.5">

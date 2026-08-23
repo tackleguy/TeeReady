@@ -15,7 +15,7 @@ import {
   type QuestionnaireExtras,
 } from './questionnaire';
 import { loadDisplayProfile, saveDisplayProfile } from './mock';
-import { loadTheme, setTheme, type ThemeId } from './theme';
+import { loadTheme } from './theme';
 import { supabase } from './supabase';
 
 export type CloudProfile = {
@@ -38,10 +38,6 @@ function isMiss(v: unknown): v is MissBias {
   return (
     v === 'left' || v === 'right' || v === 'both' || v === 'straight'
   );
-}
-
-function isTheme(v: unknown): v is ThemeId {
-  return v === 'light' || v === 'dark' || v === 'sand' || v === 'auto';
 }
 
 function questionnairePayload(golf: GolfPlayerProfile): QuestionnaireExtras {
@@ -97,8 +93,8 @@ export function applyCloudProfile(row: CloudProfile): void {
   saveGolfProfile(next, {
     fromCloudAt: row.updated_at ? Date.parse(row.updated_at) : undefined,
   });
-
-  if (isTheme(row.theme)) setTheme(row.theme);
+  // Keep appearance device-local. Cloud still receives theme on upsert, but
+  // applying it here snapped the UI light→dark right after signup.
 }
 
 export async function fetchCloudProfile(
