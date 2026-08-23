@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { ChevronDown, MapPin } from 'lucide-react';
+import { ChevronDown, MapPin, MoreHorizontal } from 'lucide-react';
 import { hasStoredRound } from '../lib/golfTracker';
 import { loadGolfProfile } from '../lib/golfProfile';
 import { needsQuestionnaire } from '../lib/questionnaire';
@@ -21,7 +21,7 @@ const ROUNDS_LINKS = [
   {
     label: 'Prep',
     href: '/rounds/prep',
-    hint: 'Miss lines · front / mid / back',
+    hint: 'Miss lines · yardages',
   },
   {
     label: 'GPS',
@@ -30,11 +30,38 @@ const ROUNDS_LINKS = [
   },
 ] as const;
 
+const MORE_LINKS = [
+  { label: 'Course map', href: '/courses/map' },
+  { label: 'Profile', href: '/profile' },
+  { label: 'Social', href: '/group' },
+  { label: 'Settings', href: '/settings' },
+] as const;
+
+function useMenuDismiss(open: boolean, onClose: () => void) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) onClose();
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('mousedown', onDoc);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDoc);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open, onClose]);
+  return rootRef;
+}
+
 function RoundsMenu({ mobile = false }: { mobile?: boolean }) {
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const [liveRound, setLiveRound] = useState(() => hasStoredRound());
-  const rootRef = useRef<HTMLDivElement>(null);
+  const rootRef = useMenuDismiss(open, () => setOpen(false));
   const roundsActive = location.pathname.startsWith('/rounds');
 
   useEffect(() => {
@@ -50,22 +77,6 @@ function RoundsMenu({ mobile = false }: { mobile?: boolean }) {
       window.removeEventListener('focus', sync);
     };
   }, []);
-
-  useEffect(() => {
-    if (!open) return;
-    const onDoc = (e: MouseEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('mousedown', onDoc);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onDoc);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [open]);
 
   return (
     <div ref={rootRef} className="relative">
@@ -140,6 +151,75 @@ function RoundsMenu({ mobile = false }: { mobile?: boolean }) {
   );
 }
 
+function MoreMenu({ mobile = false }: { mobile?: boolean }) {
+  const location = useLocation();
+  const [open, setOpen] = useState(false);
+  const rootRef = useMenuDismiss(open, () => setOpen(false));
+  const moreActive = MORE_LINKS.some((item) =>
+    location.pathname.startsWith(item.href),
+  );
+
+  useEffect(() => {
+    setOpen(false);
+  }, [location.pathname]);
+
+  return (
+    <div ref={rootRef} className="relative">
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-haspopup="menu"
+        onClick={() => setOpen((v) => !v)}
+        className={`nav-link inline-flex items-center gap-1 ${mobile ? 'whitespace-nowrap' : ''}`}
+        aria-current={moreActive ? 'page' : undefined}
+      >
+        {mobile ? (
+          <>
+            More
+            <ChevronDown
+              className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`}
+              strokeWidth={2.2}
+            />
+          </>
+        ) : (
+          <>
+            <MoreHorizontal className="h-4 w-4" strokeWidth={2.2} />
+            <span className="sr-only">More</span>
+          </>
+        )}
+      </button>
+      {open ? (
+        <div
+          role="menu"
+          className={`absolute z-40 min-w-[180px] overflow-hidden rounded-card border border-line bg-surface shadow-lift ${
+            mobile ? 'left-0 top-full mt-2' : 'right-0 top-full mt-2'
+          }`}
+        >
+          {MORE_LINKS.map((item) => (
+            <NavLink
+              key={item.href}
+              to={item.href}
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              onMouseEnter={() => prefetchRoute(item.href)}
+              onFocus={() => prefetchRoute(item.href)}
+              className={({ isActive }) =>
+                `block px-3.5 py-2.5 text-[13px] font-semibold transition-colors ${
+                  isActive
+                    ? 'bg-brand-soft text-brand'
+                    : 'text-ink hover:bg-[color-mix(in_srgb,var(--canvas)_80%,transparent)]'
+                }`
+              }
+            >
+              {item.label}
+            </NavLink>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function NavItem({
   to,
   children,
@@ -190,8 +270,8 @@ export function TopNav({
 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-[color-mix(in_srgb,var(--canvas)_94%,transparent)] backdrop-blur-md">
-      <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between px-5 py-3.5 md:px-8">
-        <div className="flex items-center gap-8">
+      <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between px-5 py-3 md:px-8">
+        <div className="flex items-center gap-7">
           <NavLink to="/today" className="group flex items-center gap-2.5">
             <span className="grid h-9 w-9 place-items-center rounded-full border border-line bg-surface font-display text-[15px] font-bold text-brand shadow-card">
               T
@@ -200,26 +280,23 @@ export function TopNav({
               TeeReady
             </span>
           </NavLink>
-          <nav className="hidden items-center gap-6 md:flex">
+          <nav className="hidden items-center gap-5 md:flex">
             <NavItem to="/today">Today</NavItem>
             <NavItem to="/courses">Courses</NavItem>
-            <NavItem to="/courses/map">Map</NavItem>
             <RoundsMenu />
             <NavItem to="/stats">Stats</NavItem>
-            <NavItem to="/profile">Profile</NavItem>
-            <NavItem to="/group">Social</NavItem>
-            <NavItem to="/settings">Settings</NavItem>
+            <MoreMenu />
           </nav>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={onLocationClick}
-            className="inline-flex items-center gap-1.5 rounded-pill border border-line bg-surface px-3 py-2 text-[12px] font-medium text-muted shadow-card hover:text-ink"
+            className="inline-flex max-w-[9.5rem] items-center gap-1.5 truncate rounded-pill border border-line bg-surface px-3 py-1.5 text-[12px] font-medium text-muted shadow-card hover:text-ink sm:max-w-none"
           >
-            <MapPin className="h-3.5 w-3.5 text-accent" strokeWidth={2.2} />
-            {locationLabel}
+            <MapPin className="h-3.5 w-3.5 shrink-0 text-accent" strokeWidth={2.2} />
+            <span className="truncate">{locationLabel}</span>
           </button>
           <NavLink
             to={needsQ ? '/questionnaire' : '/settings'}
@@ -249,29 +326,18 @@ export function TopNav({
         </div>
       </div>
 
-      <nav className="flex items-center gap-5 overflow-x-auto border-t border-line/60 px-5 py-2.5 no-scrollbar md:hidden">
+      <nav className="flex items-center gap-4 overflow-x-auto border-t border-line/60 px-5 py-2 no-scrollbar md:hidden">
         <NavItem to="/today" mobile>
           Today
         </NavItem>
         <NavItem to="/courses" mobile>
           Courses
         </NavItem>
-        <NavItem to="/courses/map" mobile>
-          Map
-        </NavItem>
         <RoundsMenu mobile />
         <NavItem to="/stats" mobile>
           Stats
         </NavItem>
-        <NavItem to="/profile" mobile>
-          Profile
-        </NavItem>
-        <NavItem to="/group" mobile>
-          Social
-        </NavItem>
-        <NavItem to="/settings" mobile>
-          Settings
-        </NavItem>
+        <MoreMenu mobile />
       </nav>
     </header>
   );

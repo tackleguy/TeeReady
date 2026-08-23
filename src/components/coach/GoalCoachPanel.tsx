@@ -9,7 +9,12 @@ import { buildCoachPlan } from '../../lib/goalCoach';
 import { getGoal } from '../../lib/goals';
 import { loadDisplayProfile } from '../../lib/mock';
 
-export function GoalCoachPanel() {
+type Props = {
+  /** One focus step + progress — for quieter Today layout. */
+  compact?: boolean;
+};
+
+export function GoalCoachPanel({ compact = false }: Props) {
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
@@ -29,25 +34,23 @@ export function GoalCoachPanel() {
 
   if (!plan) {
     return (
-      <section className="ledger-card p-5">
+      <section className="ledger-card p-4 sm:p-5">
         <div className="flex items-start gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-full bg-brand-soft text-brand">
-            <Sparkles className="h-5 w-5" strokeWidth={2} />
+          <div className="grid h-9 w-9 place-items-center rounded-full bg-brand-soft text-brand">
+            <Sparkles className="h-4 w-4" strokeWidth={2} />
           </div>
           <div>
-            <h2 className="font-display text-[18px] font-semibold text-ink">
-              Your coach
-            </h2>
-            <p className="mt-1 text-[14px] text-muted">
-              Add goals in your profile and TeeReady will build a weekly plan
-              around them.
+            <h2 className="text-[15px] font-semibold text-ink">Your coach</h2>
+            <p className="mt-1 text-[13px] text-muted">
+              Add goals in your profile and TeeReady will build a plan around
+              them.
             </p>
             <Link
               to="/profile"
-              className="mt-3 inline-flex items-center gap-1 text-[13px] font-semibold text-brand"
+              className="mt-2 inline-flex items-center gap-1 text-[13px] font-semibold text-brand"
             >
               Set goals
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
         </div>
@@ -55,7 +58,68 @@ export function GoalCoachPanel() {
     );
   }
 
+  const focusStep = plan.steps[0];
   const focus = plan.focusGoal ? getGoal(plan.focusGoal) : null;
+
+  if (compact) {
+    return (
+      <section className="ledger-card p-4 sm:p-5">
+        <div className="flex items-start gap-3">
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand text-white">
+            <Sparkles className="h-4 w-4" strokeWidth={2} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="section-eyebrow !text-brand">Your coach</p>
+            <h2 className="mt-0.5 text-[16px] font-semibold tracking-[-0.02em] text-ink sm:text-[17px]">
+              {plan.headline}
+            </h2>
+            <p className="mt-1 text-[13px] leading-relaxed text-muted">
+              {plan.summary}
+            </p>
+
+            <div className="mt-3">
+              <div className="mb-1 flex items-center justify-between text-[11px] font-medium text-muted">
+                <span>{plan.progressLabel}</span>
+                <span>{plan.progressPct}%</span>
+              </div>
+              <div className="h-1.5 overflow-hidden rounded-full bg-line">
+                <div
+                  className="h-full rounded-full bg-brand transition-all duration-500"
+                  style={{ width: `${plan.progressPct}%` }}
+                />
+              </div>
+            </div>
+
+            {focusStep ? (
+              <div className="mt-3 border-t border-line pt-3">
+                <p className="text-[13px] font-semibold text-ink">
+                  {focusStep.title}
+                </p>
+                <p className="mt-0.5 text-[12px] leading-relaxed text-muted">
+                  {focusStep.detail}
+                </p>
+                {focusStep.href && focusStep.cta ? (
+                  <Link
+                    to={focusStep.href}
+                    className="mt-2 inline-flex items-center gap-1 text-[13px] font-semibold text-brand"
+                  >
+                    {focusStep.cta}
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                ) : null}
+              </div>
+            ) : null}
+
+            {focus ? (
+              <p className="mt-2 text-[11px] text-muted">
+                Focus · {focus.label}
+              </p>
+            ) : null}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="ledger-card overflow-hidden">
@@ -98,27 +162,6 @@ export function GoalCoachPanel() {
             />
           </div>
         </div>
-
-        {(profile.goals.length > 0 || profile.customGoals.length > 0) ? (
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {profile.goals.map((id) => (
-              <span
-                key={id}
-                className="rounded-full border border-line bg-surface/80 px-2 py-0.5 text-[11px] font-medium text-muted"
-              >
-                {getGoal(id).label}
-              </span>
-            ))}
-            {profile.customGoals.map((g) => (
-              <span
-                key={g}
-                className="rounded-full border border-line bg-surface/80 px-2 py-0.5 text-[11px] font-medium text-muted"
-              >
-                {g}
-              </span>
-            ))}
-          </div>
-        ) : null}
       </div>
 
       <ol className="divide-y divide-line">

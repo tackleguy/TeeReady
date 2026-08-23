@@ -30,9 +30,8 @@ import { GolfScorecard } from '../components/golf/GolfScorecard';
 import { GolfTargetHud } from '../components/golf/GolfTargetHud';
 import { GolfYardageBook } from '../components/golf/GolfYardageBook';
 import { GpsMod } from '../components/golf/GpsMod';
-import { GoalCoachBanner } from '../components/coach/GoalCoachBanner';
 import { GlassPanel } from '../components/ui/GlassPanel';
-import { DraggableBox, clearPanelPositions } from '../components/ui/DraggableBox';
+import { DraggableBox } from '../components/ui/DraggableBox';
 import { SearchBar } from '../components/radar/SearchBar';
 import { defaultSearchLoc } from '../lib/searchLoc';
 import { takePendingCourse } from '../lib/pendingCourse';
@@ -91,7 +90,6 @@ import {
   newRound,
   saveRound,
   shotsForHole,
-  roundScoreLabel,
   undoLastShot,
   bestClubForDistance,
 } from '../lib/golfTracker';
@@ -219,7 +217,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
   const [round, setRound] = useState<TrackedRound | null>(() => loadRound());
   const [scorecardOpen, setScorecardOpen] = useState(false);
   const [gpsHudOpen, setGpsHudOpen] = useState(true);
-  const [intelPanelOpen, setIntelPanelOpen] = useState(true);
+  const [intelPanelOpen, setIntelPanelOpen] = useState(false);
 
   // Keep player HCP in sync when Settings (or another tab) saves.
   useEffect(() => {
@@ -960,7 +958,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                 compactControls={isMobile}
                 showWindLegend={!isMobile && viewMode === 'prep'}
                 fitPadding={isMobile ? MOBILE_FIT_PADDING : 60}
-                legendClassName="left-3 top-[13.5rem]"
+                legendClassName="left-3 top-3"
                 onReady={() => setMapReady(true)}
                 satelliteCached={peekSatelliteTilesWarm(
                   searchLat,
@@ -1003,12 +1001,6 @@ export function GolfView({ active = true }: { active?: boolean }) {
                   </div>
                 </div>
               </div>
-            ) : null}
-
-            {viewMode === 'prep' &&
-            course &&
-            (profile.goals.length > 0 || profile.customGoals.length > 0) ? (
-              <GoalCoachBanner />
             ) : null}
 
             {viewMode === 'prep' && activeHoleObj && target && profile ? (
@@ -1099,14 +1091,6 @@ export function GolfView({ active = true }: { active?: boolean }) {
                       Prep
                     </button>
                   ) : null}
-                  <button
-                    type="button"
-                    onClick={() => clearPanelPositions()}
-                    title="Reset panel layout"
-                    className="rounded-md px-1.5 py-1 text-[10px] font-medium text-[var(--ink-4)] hover:bg-white/10 hover:text-[var(--ink-2)]"
-                  >
-                    Reset
-                  </button>
                 </GlassPanel>
               </DraggableBox>
             ) : null}
@@ -1201,20 +1185,8 @@ export function GolfView({ active = true }: { active?: boolean }) {
                             title="Drop shot at GPS position"
                             className="rounded-lg bg-pink-500/20 px-2.5 py-1.5 text-[11px] font-semibold text-pink-300 transition-colors hover:bg-pink-500/30 disabled:opacity-40"
                           >
-                            Drop Shot
+                            Drop
                           </button>
-                          <button
-                            type="button"
-                            onClick={undoShot}
-                            disabled={!round?.shots.length}
-                            title="Undo last shot"
-                            className="rounded-lg px-1.5 py-1.5 text-[11px] text-[var(--ink-3)] hover:bg-white/10 disabled:opacity-30"
-                          >
-                            Undo
-                          </button>
-                          <span className="text-[11px] font-medium tabular-nums text-pink-200">
-                            {roundScoreLabel(round)}
-                          </span>
                           <button
                             type="button"
                             onClick={endRound}
@@ -1320,6 +1292,13 @@ export function GolfView({ active = true }: { active?: boolean }) {
                         {s.shotNumber}. {s.club ?? '?'} {s.yards}yd → {s.remainYards}yd
                       </span>
                     ))}
+                    <button
+                      type="button"
+                      onClick={undoShot}
+                      className="rounded-md px-1.5 py-0.5 font-medium text-[var(--ink-3)] hover:bg-white/10 hover:text-[var(--ink-1)]"
+                    >
+                      Undo
+                    </button>
                   </div>
                 </GlassPanel>
               </DraggableBox>

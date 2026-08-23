@@ -3,10 +3,8 @@ export type NavItem = { label: string; href: string };
 export const NAV_ITEMS: NavItem[] = [
   { label: 'Today', href: '/today' },
   { label: 'Courses', href: '/courses' },
-  { label: 'Map', href: '/courses/map' },
   { label: 'Rounds', href: '/rounds/prep' },
-  { label: 'Social', href: '/group' },
-  { label: 'Settings', href: '/settings' },
+  { label: 'Stats', href: '/stats' },
 ];
 
 export const ROUNDS_MODES = [

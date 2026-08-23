@@ -1,5 +1,4 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
 import { AccountPanel } from '../components/AccountPanel';
 import { useAuth } from '../lib/auth';
 import { upsertCloudProfile } from '../lib/accountProfile';
@@ -104,27 +103,6 @@ export function SettingsView() {
             {savedFlash}
           </span>
         ) : null}
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        <Link
-          to="/profile"
-          className="rounded-xl border border-line bg-surface px-4 py-2 text-[13px] font-semibold text-muted hover:text-ink"
-        >
-          Golfer info
-        </Link>
-        <Link
-          to="/questionnaire"
-          className="rounded-xl border border-line bg-surface px-4 py-2 text-[13px] font-semibold text-muted hover:text-ink"
-        >
-          Questionnaire
-        </Link>
-        <Link
-          to="/stats"
-          className="rounded-xl border border-line bg-surface px-4 py-2 text-[13px] font-semibold text-muted hover:text-ink"
-        >
-          Stats
-        </Link>
       </div>
 
       <AccountPanel />

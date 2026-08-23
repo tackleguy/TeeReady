@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles } from 'lucide-react';
+import { ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 import {
   HOURS,
   bestWindowLabel,
@@ -18,6 +18,7 @@ export function TodayView() {
   const bestHour = HOURS.reduce((a, b) => (b.score > a.score ? b : a));
   const gateRows = buildHourGateRows(HOURS, bestHour.short);
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
+  const [showHours, setShowHours] = useState(false);
 
   useEffect(() => {
     const refresh = () => {
@@ -34,31 +35,30 @@ export function TodayView() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6 md:gap-8">
       <header className="animate-fade-up">
         <p className="section-eyebrow">Today</p>
-        <h1 className="mt-2 font-display text-[32px] font-semibold leading-[1.1] tracking-[-0.03em] text-ink md:text-[40px]">
+        <h1 className="mt-1.5 font-display text-[28px] font-semibold leading-[1.12] tracking-[-0.03em] text-ink md:text-[36px]">
           Your tee sheet
         </h1>
-        <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-muted">
-          Conditions, coaching, and the window to play — everything before you
-          pull a club.
+        <p className="mt-1.5 max-w-lg text-[14px] leading-relaxed text-muted md:text-[15px]">
+          Best window to play, then prep when you&apos;re ready.
         </p>
       </header>
 
       {showQuestionnaire ? (
-        <section className="ledger-card animate-fade-up p-5 [animation-delay:60ms]">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <section className="ledger-card animate-fade-up p-4 sm:p-5 [animation-delay:60ms]">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-accent-soft text-accent">
-                <Sparkles className="h-5 w-5" strokeWidth={2} />
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent-soft text-accent">
+                <Sparkles className="h-4 w-4" strokeWidth={2} />
               </span>
               <div>
-                <h2 className="font-display text-[18px] font-semibold text-ink">
+                <h2 className="text-[15px] font-semibold text-ink">
                   Finish your player profile
                 </h2>
-                <p className="mt-1 text-[14px] text-muted">
-                  Goals, rhythm, and motivation unlock personalized coaching.
+                <p className="mt-0.5 text-[13px] text-muted">
+                  Goals and rhythm unlock personalized coaching.
                 </p>
               </div>
             </div>
@@ -69,11 +69,7 @@ export function TodayView() {
         </section>
       ) : null}
 
-      <div className="animate-fade-up [animation-delay:120ms]">
-        <GoalCoachPanel />
-      </div>
-
-      <section className="animate-fade-up space-y-4 [animation-delay:180ms]">
+      <section className="animate-fade-up space-y-3 [animation-delay:120ms]">
         <BoardingPassStrip
           flight={windowLabel || 'PLAYABILITY'}
           gate={bestHour.short.toUpperCase()}
@@ -88,7 +84,7 @@ export function TodayView() {
                   Score
                 </p>
                 <p
-                  className="stat-num mt-0.5 text-[36px] leading-none"
+                  className="stat-num mt-0.5 text-[32px] leading-none md:text-[36px]"
                   style={{ color: scoreColor(bestHour.score) }}
                 >
                   {bestHour.score}
@@ -102,15 +98,33 @@ export function TodayView() {
         />
 
         <div>
-          <div className="mb-3 flex items-baseline justify-between gap-3 px-0.5">
-            <h2 className="font-display text-[16px] font-semibold text-ink">
+          <button
+            type="button"
+            onClick={() => setShowHours((v) => !v)}
+            className="mb-2 flex w-full items-center justify-between gap-3 rounded-lg px-0.5 py-1 text-left hover:opacity-90"
+            aria-expanded={showHours}
+          >
+            <span className="font-display text-[15px] font-semibold text-ink">
               Hourly read
-            </h2>
-            <span className="label">0–100</span>
-          </div>
-          <GateBoard rows={gateRows} highlightId={bestHour.short} />
+            </span>
+            <span className="inline-flex items-center gap-1 text-[12px] font-medium text-muted">
+              {showHours ? 'Hide' : 'Show all'}
+              {showHours ? (
+                <ChevronUp className="h-3.5 w-3.5" strokeWidth={2.2} />
+              ) : (
+                <ChevronDown className="h-3.5 w-3.5" strokeWidth={2.2} />
+              )}
+            </span>
+          </button>
+          {showHours ? (
+            <GateBoard rows={gateRows} highlightId={bestHour.short} compact />
+          ) : null}
         </div>
       </section>
+
+      <div className="animate-fade-up [animation-delay:180ms]">
+        <GoalCoachPanel compact />
+      </div>
     </div>
   );
 }
