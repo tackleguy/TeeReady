@@ -19,6 +19,7 @@ import {
   Settings2,
   Sparkles,
   CloudSun,
+  X,
 } from 'lucide-react';
 import { GolfMap } from '../components/golf/GolfMap';
 import { CourseHeroImage } from '../components/golf/CourseHeroImage';
@@ -209,6 +210,8 @@ export function GolfView({ active = true }: { active?: boolean }) {
 
   const [round, setRound] = useState<TrackedRound | null>(() => loadRound());
   const [scorecardOpen, setScorecardOpen] = useState(false);
+  const [gpsHudOpen, setGpsHudOpen] = useState(true);
+  const [intelPanelOpen, setIntelPanelOpen] = useState(true);
 
   // Keep player HCP in sync when Settings (or another tab) saves.
   useEffect(() => {
@@ -243,10 +246,16 @@ export function GolfView({ active = true }: { active?: boolean }) {
   useEffect(() => {
     if (viewMode === 'gps' && active) {
       locateOnce();
+      setGpsHudOpen(true);
     } else if (!tracking) {
       setGpsFollow(false);
     }
   }, [viewMode, locateOnce, active, tracking]);
+
+  const leaveGpsMode = useCallback(() => {
+    setGpsFollow(false);
+    navigate('/rounds/prep', { replace: true });
+  }, [navigate]);
 
   // Mapbox needs a resize after the keep-alive layer is shown again.
   useEffect(() => {
@@ -1000,34 +1009,66 @@ export function GolfView({ active = true }: { active?: boolean }) {
                 id="mode-card"
                 defaultAnchor={{ right: 12, top: 12 }}
                 zIndex={24}
+                showHandle={false}
               >
                 <GlassPanel
                   variant="high"
-                  className="flex items-center gap-1 overflow-hidden p-1 shadow-xl"
+                  className="flex items-center gap-0.5 overflow-hidden p-0.5 shadow-xl"
                 >
                   <span
                     className={
                       viewMode === 'gps'
-                        ? 'rounded-lg bg-[#3b82f6] px-2.5 py-1.5 text-[11px] font-bold text-white'
-                        : 'rounded-lg bg-brand px-2.5 py-1.5 text-[11px] font-bold text-white'
+                        ? 'rounded-md bg-[#3b82f6] px-2 py-1 text-[10px] font-bold text-white'
+                        : 'rounded-md bg-brand px-2 py-1 text-[10px] font-bold text-white'
                     }
                   >
                     {viewMode === 'gps' ? 'GPS' : 'Prep'}
                   </span>
+                  {viewMode === 'gps' && !gpsHudOpen ? (
+                    <button
+                      type="button"
+                      onClick={() => setGpsHudOpen(true)}
+                      title="Show GPS panel"
+                      className="rounded-md px-2 py-1 text-[10px] font-semibold text-[#3b82f6] hover:bg-white/10"
+                    >
+                      Show GPS
+                    </button>
+                  ) : null}
                   <button
                     type="button"
                     onClick={openScorecard}
                     title={`Scorecard · HCP ${formatHandicap(profile.handicap)}`}
-                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-semibold text-[var(--ink-2)] hover:bg-white/10"
+                    className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[10px] font-semibold text-[var(--ink-2)] hover:bg-white/10"
                   >
-                    <ClipboardList className="h-3.5 w-3.5" />
+                    <ClipboardList className="h-3 w-3" />
                     Card
                   </button>
+                  {!intelPanelOpen ? (
+                    <button
+                      type="button"
+                      onClick={() => setIntelPanelOpen(true)}
+                      title="Show course panel"
+                      className="rounded-md px-1.5 py-1 text-[10px] font-semibold text-[var(--ink-2)] hover:bg-white/10"
+                    >
+                      Course
+                    </button>
+                  ) : null}
+                  {viewMode === 'gps' ? (
+                    <button
+                      type="button"
+                      onClick={leaveGpsMode}
+                      title="Close GPS · return to Prep"
+                      className="inline-flex items-center gap-0.5 rounded-md px-1.5 py-1 text-[10px] font-semibold text-[var(--ink-2)] hover:bg-white/10"
+                    >
+                      <X className="h-3 w-3" />
+                      Prep
+                    </button>
+                  ) : null}
                   <button
                     type="button"
                     onClick={() => clearPanelPositions()}
                     title="Reset panel layout"
-                    className="rounded-lg px-2 py-1.5 text-[11px] font-medium text-[var(--ink-4)] hover:bg-white/10 hover:text-[var(--ink-2)]"
+                    className="rounded-md px-1.5 py-1 text-[10px] font-medium text-[var(--ink-4)] hover:bg-white/10 hover:text-[var(--ink-2)]"
                   >
                     Reset
                   </button>
@@ -1041,10 +1082,11 @@ export function GolfView({ active = true }: { active?: boolean }) {
                 id="hole-nav"
                 defaultAnchor={{ left: 12, top: 12 }}
                 zIndex={23}
+                showHandle={false}
               >
                 <GlassPanel
                   variant="high"
-                  className="flex max-w-[min(100vw-2rem,28rem)] items-center gap-0.5 overflow-hidden px-1 py-1 shadow-xl"
+                  className="flex max-w-[min(100vw-2rem,24rem)] items-center gap-0 overflow-hidden px-0.5 py-0.5 shadow-xl"
                 >
                   {isMobile ? (
                     <button
@@ -1165,12 +1207,13 @@ export function GolfView({ active = true }: { active?: boolean }) {
             )}
 
             {/* GPS HUD — only in GPS mode */}
-            {course && viewMode === 'gps' ? (
+            {course && viewMode === 'gps' && gpsHudOpen ? (
               <DraggableBox
                 id="gps-mod"
-                defaultAnchor={{ left: 12, top: 64 }}
+                defaultAnchor={{ left: 12, top: 52 }}
                 zIndex={22}
-                style={{ width: 'min(100vw - 1.5rem, 280px)' }}
+                style={{ width: 'min(100vw - 1.5rem, 220px)' }}
+                onClose={() => setGpsHudOpen(false)}
               >
                 <GpsMod
                   enabled={gpsOn}
@@ -1188,6 +1231,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                   }}
                   onDropShot={tracking ? dropShot : undefined}
                   canDropShot={Boolean(tracking && gpsPos && activeHoleObj)}
+                  onClose={() => setGpsHudOpen(false)}
                 />
               </DraggableBox>
             ) : null}
@@ -1201,8 +1245,8 @@ export function GolfView({ active = true }: { active?: boolean }) {
                 defaultAnchor={{ left: 12, top: 56 }}
                 zIndex={40}
                 style={{
-                  width: 'min(100vw - 1.5rem, 640px)',
-                  height: 'min(70dvh, 560px)',
+                  width: 'min(100vw - 1.5rem, 520px)',
+                  height: 'min(58dvh, 480px)',
                 }}
               >
                 <div className="h-full overflow-hidden rounded-b-card">
@@ -1230,9 +1274,9 @@ export function GolfView({ active = true }: { active?: boolean }) {
               >
                 <GlassPanel
                   variant="high"
-                  className="overflow-hidden px-3 py-2 shadow-xl"
+                  className="overflow-hidden px-2 py-1.5 shadow-xl"
                 >
-                  <div className="flex max-w-[min(100vw-2rem,36rem)] flex-wrap items-center gap-3 text-[11px]">
+                  <div className="flex max-w-[min(100vw-2rem,28rem)] flex-wrap items-center gap-2 text-[10px]">
                     <span className="font-semibold text-pink-200">
                       Hole {activeHoleObj.number}
                     </span>
@@ -1246,6 +1290,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
               </DraggableBox>
             )}
 
+            {intelPanelOpen ? (
             <DraggableBox
               id="intel-panel"
               defaultAnchor={
@@ -1254,15 +1299,16 @@ export function GolfView({ active = true }: { active?: boolean }) {
                   : { right: 12, top: 12 }
               }
               zIndex={18}
+              onClose={() => setIntelPanelOpen(false)}
               style={{
                 width: isMobile
                   ? 'min(100vw - 1.5rem, 100%)'
-                  : 'min(100vw - 1.5rem, 332px)',
+                  : 'min(100vw - 1.5rem, 272px)',
                 maxHeight: isMobile
                   ? sheetExpanded
-                    ? 'min(58dvh, 26rem)'
-                    : '11rem'
-                  : 'min(100% - 1.5rem, calc(100dvh - 6rem))',
+                    ? 'min(50dvh, 22rem)'
+                    : '7.5rem'
+                  : 'min(100% - 1.5rem, calc(100dvh - 5.5rem))',
               }}
             >
               <GlassPanel
@@ -1270,8 +1316,8 @@ export function GolfView({ active = true }: { active?: boolean }) {
                   'flex max-h-[inherit] flex-col overflow-hidden p-0 shadow-xl',
                   isMobile
                     ? sheetExpanded
-                      ? 'max-h-[min(58dvh,26rem)]'
-                      : 'max-h-[9.5rem]'
+                      ? 'max-h-[min(50dvh,22rem)]'
+                      : 'max-h-[7.5rem]'
                     : 'max-h-full',
                 ].join(' ')}
               >
@@ -1541,6 +1587,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                 )}
               </GlassPanel>
             </DraggableBox>
+            ) : null}
           </>
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-3 bg-[var(--surface-0)] px-6 text-center">

@@ -1,4 +1,4 @@
-import { Crosshair, LocateFixed, Navigation, Satellite } from 'lucide-react';
+import { Crosshair, LocateFixed, Navigation, Satellite, X } from 'lucide-react';
 import {
   formatAccuracy,
   formatHeading,
@@ -23,6 +23,7 @@ interface Props {
   onLocate: () => void;
   onDropShot?: () => void;
   canDropShot?: boolean;
+  onClose?: () => void;
   className?: string;
 }
 
@@ -39,41 +40,55 @@ export function GpsMod({
   onLocate,
   onDropShot,
   canDropShot = false,
+  onClose,
   className = '',
 }: Props) {
   const qColor = gpsQualityColor(quality);
 
   return (
     <div
-      className={`pointer-events-auto hud-card rounded-card border border-[color-mix(in_srgb,#3b82f6_35%,var(--line))] p-3 ${className}`}
+      className={`pointer-events-auto hud-card rounded-card border border-[color-mix(in_srgb,#3b82f6_35%,var(--line))] p-2 ${className}`}
     >
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-1.5">
+        <div className="flex min-w-0 items-center gap-1.5">
           <div
-            className="grid h-8 w-8 place-items-center rounded-full"
+            className="grid h-7 w-7 shrink-0 place-items-center rounded-full"
             style={{ background: `${qColor}22`, color: qColor }}
           >
-            <Satellite className="h-4 w-4" strokeWidth={2} />
+            <Satellite className="h-3.5 w-3.5" strokeWidth={2} />
           </div>
-          <div>
-            <div className="text-[12px] font-bold text-ink">GPS</div>
-            <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
+          <div className="min-w-0">
+            <div className="text-[11px] font-bold text-ink">GPS</div>
+            <div className="truncate font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-faint">
               {enabled
                 ? locating
                   ? 'Acquiring…'
-                  : `${gpsQualityLabel(quality)} · live ranging`
+                  : `${gpsQualityLabel(quality)} · live`
                 : 'Off'}
             </div>
           </div>
         </div>
-        <span className="rounded-full bg-[color-mix(in_srgb,#3b82f6_16%,transparent)] px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-[#3b82f6]">
-          No misses
-        </span>
+        <div className="flex shrink-0 items-center gap-1">
+          <span className="rounded-full bg-[color-mix(in_srgb,#3b82f6_16%,transparent)] px-1.5 py-0.5 font-mono text-[8px] font-bold uppercase tracking-[0.1em] text-[#3b82f6]">
+            No misses
+          </span>
+          {onClose ? (
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-md p-0.5 text-muted hover:text-ink"
+              aria-label="Close GPS panel"
+              title="Close"
+            >
+              <X className="h-3.5 w-3.5" strokeWidth={2} />
+            </button>
+          ) : null}
+        </div>
       </div>
 
       {enabled ? (
         <>
-          <div className="mt-3 grid grid-cols-3 gap-2">
+          <div className="mt-2 grid grid-cols-3 gap-1">
             {(
               [
                 ['Front', distances?.front],
@@ -83,14 +98,14 @@ export function GpsMod({
             ).map(([label, yd]) => (
               <div
                 key={label}
-                className="rounded-xl bg-canvas px-2 py-2 text-center"
+                className="rounded-lg bg-canvas px-1.5 py-1.5 text-center"
               >
-                <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-faint">
+                <div className="font-mono text-[8px] font-semibold uppercase tracking-[0.08em] text-faint">
                   {label}
                 </div>
-                <div className="mt-0.5 text-[18px] font-bold tabular text-ink">
+                <div className="mt-0.5 text-[15px] font-bold tabular text-ink">
                   {yd != null ? yd : '—'}
-                  <span className="ml-0.5 text-[10px] font-semibold text-muted">
+                  <span className="ml-0.5 text-[9px] font-semibold text-muted">
                     yd
                   </span>
                 </div>
@@ -98,7 +113,7 @@ export function GpsMod({
             ))}
           </div>
 
-          <div className="mt-2 flex items-center justify-between gap-2 text-[11px] text-muted">
+          <div className="mt-1.5 flex items-center justify-between gap-2 text-[10px] text-muted">
             <span style={{ color: qColor }}>
               {formatAccuracy(position?.accuracyM)}
             </span>
@@ -108,17 +123,17 @@ export function GpsMod({
           </div>
 
           {error ? (
-            <p className="mt-2 text-[11px] text-bad">{error}</p>
+            <p className="mt-1.5 text-[10px] text-bad">{error}</p>
           ) : null}
 
-          <div className="mt-3 flex flex-wrap items-center gap-1.5">
+          <div className="mt-2 flex flex-wrap items-center gap-1">
             <button
               type="button"
               onClick={onLocate}
               disabled={locating}
-              className="inline-flex items-center gap-1 rounded-lg border border-line bg-canvas px-2 py-1.5 text-[11px] font-semibold text-muted hover:text-ink disabled:opacity-40"
+              className="inline-flex items-center gap-1 rounded-md border border-line bg-canvas px-1.5 py-1 text-[10px] font-semibold text-muted hover:text-ink disabled:opacity-40"
             >
-              <Crosshair className="h-3.5 w-3.5" />
+              <Crosshair className="h-3 w-3" />
               Fix
             </button>
             <button
@@ -127,11 +142,11 @@ export function GpsMod({
               aria-pressed={follow}
               className={
                 follow
-                  ? 'inline-flex items-center gap-1 rounded-lg bg-[color-mix(in_srgb,#3b82f6_16%,transparent)] px-2 py-1.5 text-[11px] font-semibold text-[#3b82f6] ring-1 ring-[color-mix(in_srgb,#3b82f6_30%,transparent)]'
-                  : 'inline-flex items-center gap-1 rounded-lg border border-line bg-canvas px-2 py-1.5 text-[11px] font-semibold text-muted hover:text-ink'
+                  ? 'inline-flex items-center gap-1 rounded-md bg-[color-mix(in_srgb,#3b82f6_16%,transparent)] px-1.5 py-1 text-[10px] font-semibold text-[#3b82f6] ring-1 ring-[color-mix(in_srgb,#3b82f6_30%,transparent)]'
+                  : 'inline-flex items-center gap-1 rounded-md border border-line bg-canvas px-1.5 py-1 text-[10px] font-semibold text-muted hover:text-ink'
               }
             >
-              <LocateFixed className="h-3.5 w-3.5" />
+              <LocateFixed className="h-3 w-3" />
               Follow
             </button>
             {onDropShot ? (
@@ -139,18 +154,17 @@ export function GpsMod({
                 type="button"
                 onClick={onDropShot}
                 disabled={!canDropShot}
-                className="inline-flex items-center gap-1 rounded-lg bg-[color-mix(in_srgb,#ec4899_18%,transparent)] px-2 py-1.5 text-[11px] font-bold text-[#db2777] disabled:opacity-40"
+                className="inline-flex items-center gap-1 rounded-md bg-[color-mix(in_srgb,#ec4899_18%,transparent)] px-1.5 py-1 text-[10px] font-bold text-[#db2777] disabled:opacity-40"
               >
-                <Navigation className="h-3.5 w-3.5" />
-                Drop shot
+                <Navigation className="h-3 w-3" />
+                Drop
               </button>
             ) : null}
           </div>
         </>
       ) : (
-        <p className="mt-2 text-[12px] leading-snug text-muted">
-          Live front / mid / back green yardages from your phone — no miss
-          lines.
+        <p className="mt-1.5 text-[11px] leading-snug text-muted">
+          Live front / mid / back green yardages from your phone.
         </p>
       )}
     </div>

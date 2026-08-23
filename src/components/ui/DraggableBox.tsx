@@ -8,7 +8,7 @@ import {
   type ReactNode,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
-import { GripHorizontal } from 'lucide-react';
+import { GripHorizontal, X } from 'lucide-react';
 
 export type PanelAnchor = {
   left?: number;
@@ -84,6 +84,8 @@ interface Props {
   style?: CSSProperties;
   /** Hide the grip when false. */
   showHandle?: boolean;
+  /** Show a close control on the drag handle. */
+  onClose?: () => void;
   zIndex?: number;
 }
 
@@ -94,6 +96,7 @@ export function DraggableBox({
   className = '',
   style,
   showHandle = true,
+  onClose,
   zIndex = 20,
 }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -225,30 +228,48 @@ export function DraggableBox({
     >
       {showHandle ? (
         <div
-          className={`flex cursor-grab items-center justify-center gap-1 border-b border-[var(--line-subtle)] bg-[var(--hud-card,var(--surface))] px-2 py-1 text-[var(--ink-4)] active:cursor-grabbing ${
+          className={`flex items-center border-b border-[var(--line-subtle)] bg-[var(--hud-card,var(--surface))] text-[var(--ink-4)] ${
             dragging ? 'cursor-grabbing' : ''
           }`}
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={endDrag}
-          onPointerCancel={endDrag}
-          onDoubleClick={(e) => {
-            e.stopPropagation();
-            try {
-              const all = loadAll();
-              delete all[id];
-              localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
-            } catch {
-              // ignore
-            }
-            setPos(null);
-          }}
-          title="Drag to move · double-click to reset"
         >
-          <GripHorizontal className="h-3.5 w-3.5" strokeWidth={2} />
-          <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.12em]">
-            Move
-          </span>
+          <div
+            className={`flex flex-1 cursor-grab items-center justify-center gap-1 px-2 py-0.5 active:cursor-grabbing`}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={endDrag}
+            onPointerCancel={endDrag}
+            onDoubleClick={(e) => {
+              e.stopPropagation();
+              try {
+                const all = loadAll();
+                delete all[id];
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+              } catch {
+                // ignore
+              }
+              setPos(null);
+            }}
+            title="Drag to move · double-click to reset"
+          >
+            <GripHorizontal className="h-3 w-3" strokeWidth={2} />
+            <span className="font-mono text-[8px] font-semibold uppercase tracking-[0.12em]">
+              Move
+            </span>
+          </div>
+          {onClose ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onClose();
+              }}
+              className="shrink-0 px-2 py-1 text-[var(--ink-3)] hover:text-[var(--ink-1)]"
+              aria-label="Close panel"
+              title="Close"
+            >
+              <X className="h-3.5 w-3.5" strokeWidth={2} />
+            </button>
+          ) : null}
         </div>
       ) : null}
       {children}

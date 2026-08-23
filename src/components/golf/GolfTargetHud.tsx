@@ -62,7 +62,7 @@ export function GolfTargetHud({
 
   return (
       <div
-        className="w-[min(100vw-1.5rem,420px)] rounded-xl border border-[color-mix(in_srgb,var(--brand)_40%,transparent)] px-3 py-2.5 shadow-xl backdrop-blur-[28px]"
+        className="w-[min(100vw-1.5rem,360px)] rounded-xl border border-[color-mix(in_srgb,var(--brand)_40%,transparent)] px-2.5 py-2 shadow-xl backdrop-blur-[28px]"
         style={{ background: 'var(--glass-hi)' }}
       >
         <div className="mb-1.5 flex items-center justify-between gap-2">
