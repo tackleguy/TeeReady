@@ -203,6 +203,7 @@ export function TopNav({
           <nav className="hidden items-center gap-6 md:flex">
             <NavItem to="/today">Today</NavItem>
             <NavItem to="/courses">Courses</NavItem>
+            <NavItem to="/courses/map">Map</NavItem>
             <RoundsMenu />
             <NavItem to="/stats">Stats</NavItem>
             <NavItem to="/profile">Profile</NavItem>
@@ -254,6 +255,9 @@ export function TopNav({
         </NavItem>
         <NavItem to="/courses" mobile>
           Courses
+        </NavItem>
+        <NavItem to="/courses/map" mobile>
+          Map
         </NavItem>
         <RoundsMenu mobile />
         <NavItem to="/stats" mobile>

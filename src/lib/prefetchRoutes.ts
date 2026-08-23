@@ -20,6 +20,9 @@ export function prefetchRoute(path: string): void {
     case '/courses':
       warm('courses', () => import('../routes/CoursesView'));
       break;
+    case '/courses/map':
+      warm('course-map', () => import('../routes/CourseMapView'));
+      break;
     case '/group':
       warm('group', () => import('../routes/GroupView'));
       break;

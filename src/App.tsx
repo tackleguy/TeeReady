@@ -13,6 +13,7 @@ import { TopNav } from './components/TopNav';
 import { AuthProvider, useAuth } from './lib/auth';
 import { CURRENT_LOCATION } from './lib/mock';
 import { applyTheme, loadTheme } from './lib/theme';
+import { CourseMapView } from './routes/CourseMapView';
 import { CoursesView } from './routes/CoursesView';
 import { GroupView } from './routes/GroupView';
 import { GolfView } from './routes/GolfView';
@@ -111,10 +112,12 @@ function Shell() {
   const { user } = useAuth();
   const isLanding = location.pathname === '/';
   const isRounds = location.pathname.startsWith('/rounds');
+  const isCourseMap = location.pathname.startsWith('/courses/map');
   const [place, setPlace] = useState(CURRENT_LOCATION);
   const [pickingLocation, setPickingLocation] = useState(false);
 
   const showAppChrome = Boolean(user) && !isLanding;
+  const fullBleedMain = isRounds || isCourseMap;
 
   return (
     <div className="app-shell">
@@ -156,7 +159,7 @@ function Shell() {
 
       <main
         className={
-          isRounds && showAppChrome
+          fullBleedMain && showAppChrome
             ? 'app-main rounds'
             : isLanding
               ? 'app-main landing'
@@ -170,6 +173,14 @@ function Shell() {
             element={
               <RequireAuth>
                 <TodayView />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/courses/map"
+            element={
+              <RequireAuth>
+                <CourseMapView />
               </RequireAuth>
             }
           />

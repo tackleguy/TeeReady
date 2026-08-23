@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowUpRight, Loader2, MapPin } from 'lucide-react';
+import { ArrowUpRight, Loader2, Map, MapPin } from 'lucide-react';
 import { CourseHeroImage } from '../components/golf/CourseHeroImage';
 import { useGolfCourses } from '../hooks/useGolf';
 import type { GolfCourseSummary } from '../lib/golf';
@@ -15,10 +15,12 @@ function accessLabel(access: GolfCourseSummary['access']) {
 
 function CourseCard({
   course,
-  onOpen,
+  onMap,
+  onPrep,
 }: {
   course: GolfCourseSummary;
-  onOpen: (c: GolfCourseSummary) => void;
+  onMap: (c: GolfCourseSummary) => void;
+  onPrep: (c: GolfCourseSummary) => void;
 }) {
   const access = accessLabel(course.access);
   const photoSeed = course.id || course.name;
@@ -27,7 +29,7 @@ function CourseCard({
     <article className="group overflow-hidden rounded-2xl border border-line bg-surface shadow-card transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-lift">
       <button
         type="button"
-        onClick={() => onOpen(course)}
+        onClick={() => onMap(course)}
         className="block w-full text-left"
       >
         <div className="relative aspect-[16/10] overflow-hidden bg-canvas">
@@ -55,24 +57,38 @@ function CourseCard({
             ) : null}
           </div>
         </div>
-
-        <div className="flex items-center justify-between gap-3 px-4 py-3.5">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted">
-            {course.distanceMi != null ? (
-              <span className="inline-flex items-center gap-1">
-                <MapPin className="h-3.5 w-3.5" strokeWidth={2} />
-                {course.distanceMi.toFixed(1)} mi
-              </span>
-            ) : null}
-            {course.holes != null ? <span>{course.holes} holes</span> : null}
-            {course.par != null ? <span>Par {course.par}</span> : null}
-          </div>
-          <span className="inline-flex items-center gap-1 text-[13px] font-semibold text-brand">
-            Hole plan
-            <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-          </span>
-        </div>
       </button>
+
+      <div className="flex items-center justify-between gap-3 px-4 py-3.5">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted">
+          {course.distanceMi != null ? (
+            <span className="inline-flex items-center gap-1">
+              <MapPin className="h-3.5 w-3.5" strokeWidth={2} />
+              {course.distanceMi.toFixed(1)} mi
+            </span>
+          ) : null}
+          {course.holes != null ? <span>{course.holes} holes</span> : null}
+          {course.par != null ? <span>Par {course.par}</span> : null}
+        </div>
+        <div className="flex shrink-0 items-center gap-3">
+          <button
+            type="button"
+            onClick={() => onMap(course)}
+            className="inline-flex items-center gap-1 text-[13px] font-semibold text-muted hover:text-ink"
+          >
+            <Map className="h-3.5 w-3.5" strokeWidth={2} />
+            Map
+          </button>
+          <button
+            type="button"
+            onClick={() => onPrep(course)}
+            className="inline-flex items-center gap-1 text-[13px] font-semibold text-brand"
+          >
+            Prep
+            <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          </button>
+        </div>
+      </div>
     </article>
   );
 }
@@ -82,7 +98,12 @@ export function CoursesView() {
   const loc = defaultSearchLoc();
   const { courses, loading, error } = useGolfCourses(loc.lat, loc.lon, '');
 
-  const openCourse = (course: GolfCourseSummary) => {
+  const openMap = (course: GolfCourseSummary) => {
+    stashPendingCourse(course);
+    navigate('/courses/map');
+  };
+
+  const openPrep = (course: GolfCourseSummary) => {
     stashPendingCourse(course);
     navigate('/rounds/prep');
   };
@@ -95,8 +116,8 @@ export function CoursesView() {
           Courses
         </h1>
         <p className="mt-2 text-[15px] leading-relaxed text-muted">
-          Public and private tracks around you — open a hole plan or jump
-          straight into GPS.
+          Public and private tracks around you — open the satellite map or
+          jump into prep.
         </p>
       </header>
 
@@ -116,13 +137,18 @@ export function CoursesView() {
         <div className="rounded-2xl border border-line bg-surface px-5 py-8 text-center">
           <p className="text-[15px] font-medium text-ink">No courses nearby</p>
           <p className="mt-1 text-[13px] text-muted">
-            Try changing your city in Settings, or search from Rounds.
+            Try changing your city in Settings, or search from Map / Rounds.
           </p>
         </div>
       ) : (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {courses.map((course) => (
-            <CourseCard key={course.id} course={course} onOpen={openCourse} />
+            <CourseCard
+              key={course.id}
+              course={course}
+              onMap={openMap}
+              onPrep={openPrep}
+            />
           ))}
         </div>
       )}
