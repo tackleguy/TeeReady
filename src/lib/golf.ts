@@ -133,7 +133,12 @@ export interface GolfEnsemble {
 const MEM = new Map<string, { at: number; data: unknown }>();
 const COURSES_TTL_MS = 30 * 60_000;
 const COURSES_LS_TTL_MS = 24 * 60 * 60_000;
+/** Short-lived tab cache for the exact holes request key. */
 const HOLES_TTL_MS = 6 * 60 * 60_000;
+/** Durable course-map backup — survives OSM outages across sessions. */
+const HOLES_BACKUP_TTL_MS = 30 * 24 * 60 * 60_000;
+const HOLES_BACKUP_MAX = 40;
+const HOLES_BACKUP_INDEX_KEY = 'golf:v1:hole-backup-index';
 const LS_PREFIX = 'teeready-golf-cache:';
 
 function q3(n: number): number {
@@ -195,15 +200,115 @@ function localGet<T>(key: string, ttl: number): T | null {
   }
 }
 
+/** Prefer fresh cache, but keep expired entries for OSM outage fallback. */
+function localGetAllowStale<T>(key: string, ttl: number): T | null {
+  try {
+    const raw = localStorage.getItem(`${LS_PREFIX}${key}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { at: number; data: T };
+    if (Date.now() - parsed.at > ttl) {
+      return parsed.data ?? null;
+    }
+    return parsed.data;
+  } catch {
+    return null;
+  }
+}
+
+function localRemove(key: string): void {
+  try {
+    localStorage.removeItem(`${LS_PREFIX}${key}`);
+  } catch {
+    // ignore
+  }
+}
+
 function localSet(key: string, data: unknown): void {
+  const payload = JSON.stringify({ at: Date.now(), data });
+  try {
+    localStorage.setItem(`${LS_PREFIX}${key}`, payload);
+  } catch {
+    pruneHoleBackups(Math.floor(HOLES_BACKUP_MAX / 2));
+    try {
+      localStorage.setItem(`${LS_PREFIX}${key}`, payload);
+    } catch {
+      // quota / private mode
+    }
+  }
+}
+
+function readBackupIndex(): string[] {
+  try {
+    const raw = localStorage.getItem(`${LS_PREFIX}${HOLES_BACKUP_INDEX_KEY}`);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as string[];
+    return Array.isArray(parsed) ? parsed.filter((k) => typeof k === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeBackupIndex(keys: string[]): void {
   try {
     localStorage.setItem(
-      `${LS_PREFIX}${key}`,
-      JSON.stringify({ at: Date.now(), data }),
+      `${LS_PREFIX}${HOLES_BACKUP_INDEX_KEY}`,
+      JSON.stringify(keys),
     );
   } catch {
-    // quota / private mode
+    // ignore
   }
+}
+
+function pruneHoleBackups(keep: number): void {
+  const index = readBackupIndex();
+  const drop = index.slice(0, Math.max(0, index.length - keep));
+  for (const key of drop) localRemove(key);
+  writeBackupIndex(index.slice(drop.length));
+}
+
+function touchBackupIndex(key: string): void {
+  const next = readBackupIndex().filter((k) => k !== key);
+  next.push(key);
+  while (next.length > HOLES_BACKUP_MAX) {
+    const oldest = next.shift();
+    if (oldest) localRemove(oldest);
+  }
+  writeBackupIndex(next);
+}
+
+function holesRequestKey(
+  lat: number,
+  lon: number,
+  opts?: {
+    radius?: number;
+    bbox?: [number, number, number, number];
+    osmType?: string;
+    osmId?: number;
+    courseName?: string;
+  },
+): { requestKey: string; backupKey: string; bbox: [number, number, number, number] } {
+  const bbox =
+    opts?.bbox ??
+    ([
+      lat - 0.012,
+      lon - 0.012 / Math.max(0.2, Math.cos((lat * Math.PI) / 180)),
+      lat + 0.012,
+      lon + 0.012 / Math.max(0.2, Math.cos((lat * Math.PI) / 180)),
+    ] as [number, number, number, number]);
+  const bboxKey = bbox.map((n) => q4(n)).join(',');
+  const courseKey = [
+    opts?.osmType ?? '',
+    opts?.osmId ?? '',
+    opts?.courseName?.trim().toLowerCase() ?? '',
+  ].join(':');
+  const requestKey =
+    `golf:v11:holes:${q4(lat)}:${q4(lon)}:${bboxKey}:` +
+    `${opts?.radius ?? ''}:${courseKey}`;
+  const backupKey =
+    opts?.osmType && opts?.osmId
+      ? `golf:v1:hole-backup:${opts.osmType}:${opts.osmId}`
+      : `golf:v1:hole-backup:geo:${q3(lat)}:${q3(lon)}:${opts?.courseName?.trim().toLowerCase() ?? ''}`;
+  return { requestKey, backupKey, bbox };
 }
 
 function coursesCacheKey(
@@ -229,6 +334,40 @@ export function peekGolfCoursesCache(
     sessionGet<GolfCourseSummary[]>(key, COURSES_TTL_MS) ??
     localGet<GolfCourseSummary[]>(key, COURSES_LS_TTL_MS)
   );
+}
+
+type HolesFetchOpts = {
+  radius?: number;
+  bbox?: [number, number, number, number];
+  osmType?: string;
+  osmId?: number;
+  courseName?: string;
+  signal?: AbortSignal;
+};
+
+/** Instant course-map geometry from memory, session, or durable backup. */
+export function peekGolfHolesCache(
+  lat: number,
+  lon: number,
+  opts?: Omit<HolesFetchOpts, 'signal'>,
+): GolfHole[] | null {
+  const { requestKey, backupKey } = holesRequestKey(lat, lon, opts);
+  const live =
+    memGet<GolfHole[]>(requestKey, HOLES_TTL_MS) ??
+    sessionGet<GolfHole[]>(requestKey, HOLES_TTL_MS);
+  if (live?.length) return live;
+  const backup =
+    localGet<GolfHole[]>(backupKey, HOLES_BACKUP_TTL_MS) ??
+    localGetAllowStale<GolfHole[]>(backupKey, HOLES_BACKUP_TTL_MS);
+  return backup?.length ? backup : null;
+}
+
+function saveHolesBackup(backupKey: string, requestKey: string, holes: GolfHole[]): void {
+  if (!holes.length) return;
+  memSet(requestKey, holes);
+  sessionSet(requestKey, holes);
+  localSet(backupKey, holes);
+  touchBackupIndex(backupKey);
 }
 
 /**
@@ -268,8 +407,7 @@ export async function fetchGolfCourses(
 ): Promise<GolfCourseSummary[]> {
   const q = opts?.q?.trim().toLowerCase() ?? '';
   const key = coursesCacheKey(lat, lon, q, opts?.radius);
-  const cached =
-    peekGolfCoursesCache(lat, lon, opts?.q, opts?.radius);
+  const cached = peekGolfCoursesCache(lat, lon, opts?.q, opts?.radius);
   if (cached) {
     memSet(key, cached);
     return cached;
@@ -290,11 +428,14 @@ export async function fetchGolfCourses(
       2,
     );
   } catch {
-    // Upstream OSM mirrors occasionally answer 502/503 after retries.
-    return [];
+    const stale = localGetAllowStale<GolfCourseSummary[]>(key, COURSES_LS_TTL_MS);
+    return stale?.length ? stale : [];
   }
   if (!res.ok) {
-    if (res.status >= 500) return [];
+    if (res.status >= 500) {
+      const stale = localGetAllowStale<GolfCourseSummary[]>(key, COURSES_LS_TTL_MS);
+      return stale?.length ? stale : [];
+    }
     const detail = (await res.json().catch(() => null)) as {
       error?: string;
     } | null;
@@ -314,47 +455,34 @@ export async function fetchGolfCourses(
   return courses;
 }
 
+export type GolfHolesLoadResult = {
+  holes: GolfHole[];
+  /** True when OSM failed/empty and a durable course-map backup was used. */
+  fromBackup: boolean;
+};
+
 export async function fetchGolfHoles(
   lat: number,
   lon: number,
-  opts?: {
-    radius?: number;
-    bbox?: [number, number, number, number];
-    osmType?: string;
-    osmId?: number;
-    courseName?: string;
-    signal?: AbortSignal;
-  },
+  opts?: HolesFetchOpts,
 ): Promise<GolfHole[]> {
-  // Synthesize a ~1.4 km box when Photon had no extent — still better than a
-  // blind tiny radius for sprawling clubs.
-  const bbox =
-    opts?.bbox ??
-    ([
-      lat - 0.012,
-      lon - 0.012 / Math.max(0.2, Math.cos((lat * Math.PI) / 180)),
-      lat + 0.012,
-      lon + 0.012 / Math.max(0.2, Math.cos((lat * Math.PI) / 180)),
-    ] as [number, number, number, number]);
-  const bboxKey = bbox.map((n) => q4(n)).join(',');
-  const courseKey = [
-    opts?.osmType ?? '',
-    opts?.osmId ?? '',
-    opts?.courseName?.trim().toLowerCase() ?? '',
-  ].join(':');
-  // Course identity matters here: nearby sibling layouts can share a center
-  // point or even a synthesized bbox, and reusing the wrong hole payload
-  // makes tee selection feel random when hopping between courses.
-  const key =
-    `golf:v11:holes:${q4(lat)}:${q4(lon)}:${bboxKey}:` +
-    `${opts?.radius ?? ''}:${courseKey}`;
-  const cached =
-    memGet<GolfHole[]>(key, HOLES_TTL_MS) ??
-    sessionGet<GolfHole[]>(key, HOLES_TTL_MS);
-  // Never reuse an empty cache entry — that freezes a transient Overpass miss.
-  if (cached && cached.length > 0) {
-    memSet(key, cached);
-    return cached;
+  const result = await loadGolfHoles(lat, lon, opts);
+  return result.holes;
+}
+
+export async function loadGolfHoles(
+  lat: number,
+  lon: number,
+  opts?: HolesFetchOpts,
+): Promise<GolfHolesLoadResult> {
+  const { requestKey, backupKey, bbox } = holesRequestKey(lat, lon, opts);
+  const cached = peekGolfHolesCache(lat, lon, opts);
+  const fresh =
+    memGet<GolfHole[]>(requestKey, HOLES_TTL_MS) ??
+    sessionGet<GolfHole[]>(requestKey, HOLES_TTL_MS);
+  if (fresh?.length) {
+    memSet(requestKey, fresh);
+    return { holes: fresh, fromBackup: false };
   }
 
   const params = new URLSearchParams({
@@ -363,14 +491,13 @@ export async function fetchGolfHoles(
     v: '10',
   });
   if (opts?.radius) params.set('radius', String(opts.radius));
-  params.set('bbox', bboxKey);
+  params.set('bbox', bbox.map((n) => q4(n)).join(','));
   if (opts?.osmType && opts.osmId) {
     params.set('osmType', opts.osmType);
     params.set('osmId', String(opts.osmId));
   }
   if (opts?.courseName) params.set('courseName', opts.courseName);
 
-  // Escalating radii so a rate-limited first attempt still lands geometry.
   const radii = opts?.bbox
     ? [opts.radius ?? 1800]
     : [opts?.radius ?? 1800, 2800];
@@ -394,12 +521,14 @@ export async function fetchGolfHoles(
       const data = (await res.json()) as { holes: GolfHole[] };
       const holes = data.holes ?? [];
       if (holes.length) {
-        memSet(key, holes);
-        sessionSet(key, holes);
-        return holes;
+        saveHolesBackup(backupKey, requestKey, holes);
+        return { holes, fromBackup: false };
       }
-      // Empty but successful — OSM may simply not have hole tags; stop.
-      return [];
+      if (cached?.length) {
+        saveHolesBackup(backupKey, requestKey, cached);
+        return { holes: cached, fromBackup: true };
+      }
+      return { holes: [], fromBackup: false };
     } catch (err) {
       if (opts?.signal?.aborted) throw err;
       lastErr = err;
@@ -407,9 +536,65 @@ export async function fetchGolfHoles(
     }
   }
 
+  if (cached?.length) {
+    saveHolesBackup(backupKey, requestKey, cached);
+    return { holes: cached, fromBackup: true };
+  }
+
   throw lastErr instanceof Error
     ? lastErr
     : new Error('Failed to load hole geometry');
+}
+
+const warmInFlight = new Set<string>();
+
+/** Idle-prefetch nearby course maps so OSM outages still open instantly. */
+export function warmNearbyCourseMaps(
+  courses: GolfCourseSummary[],
+  limit = 8,
+): void {
+  if (typeof window === 'undefined') return;
+  const targets = courses
+    .filter((c) => Number.isFinite(c.lat) && Number.isFinite(c.lon))
+    .slice(0, limit);
+
+  const run = () => {
+    for (const course of targets) {
+      const peek = peekGolfHolesCache(course.lat, course.lon, {
+        bbox: course.bbox,
+        osmType: course.osmType,
+        osmId: course.osmId,
+        courseName: course.name,
+      });
+      if (peek?.length) continue;
+      const id = course.id || `${course.osmType}:${course.osmId}`;
+      if (warmInFlight.has(id)) continue;
+      warmInFlight.add(id);
+      void fetchGolfHoles(course.lat, course.lon, {
+        bbox: course.bbox,
+        osmType: course.osmType,
+        osmId: course.osmId,
+        courseName: course.name,
+      })
+        .catch(() => {
+          // Warm is best-effort.
+        })
+        .finally(() => {
+          warmInFlight.delete(id);
+        });
+    }
+  };
+
+  const ric = (
+    window as Window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+    }
+  ).requestIdleCallback;
+  if (typeof ric === 'function') {
+    ric(run, { timeout: 4000 });
+  } else {
+    window.setTimeout(run, 1200);
+  }
 }
 
 export interface GolfNotebookDay {

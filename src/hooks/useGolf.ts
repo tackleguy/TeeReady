@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react';
 import {
   fetchGolfCourses,
   fetchGolfEnsemble,
-  fetchGolfHoles,
   fetchGolfNotebook,
+  loadGolfHoles,
   peekGolfCoursesCache,
+  peekGolfHolesCache,
+  warmNearbyCourseMaps,
   type GolfCourseSummary,
   type GolfEnsemble,
   type GolfHole,
@@ -40,13 +42,20 @@ export function useGolfCourses(
           q: nationalQuery,
           signal: ac.signal,
         })
-          .then(setCourses)
+          .then((next) => {
+            if (ac.signal.aborted) return;
+            setCourses(next);
+            // Warm hole-map backups for nearby courses while OSM is healthy.
+            if (!nationalQuery && next.length) {
+              warmNearbyCourseMaps(next, 8);
+            }
+          })
           .catch((err) => {
             if (ac.signal.aborted) return;
             setError(
               err instanceof Error ? err.message : 'Failed to load courses',
             );
-            setCourses([]);
+            if (!cached?.length) setCourses([]);
           })
           .finally(() => {
             if (!ac.signal.aborted) setLoading(false);
@@ -81,6 +90,7 @@ export function useGolfHoles(
   const [holes, setHoles] = useState<GolfHole[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fromBackup, setFromBackup] = useState(false);
   const [attempt, setAttempt] = useState(0);
 
   const bboxKey = course?.bbox?.join(',') ?? '';
@@ -91,24 +101,52 @@ export function useGolfHoles(
   useEffect(() => {
     if (lat == null || lon == null) return;
     const ac = new AbortController();
-    setHoles([]);
-    setLoading(true);
-    setError(null);
-    const bounds = bboxKey
-      ? (bboxKey.split(',').map(Number) as [number, number, number, number])
-      : undefined;
-    fetchGolfHoles(lat, lon, {
-      bbox: bounds,
+    const opts = {
+      bbox: bboxKey
+        ? (bboxKey.split(',').map(Number) as [number, number, number, number])
+        : undefined,
       osmType,
       osmId,
       courseName,
+    };
+    const peeked = peekGolfHolesCache(lat, lon, opts);
+    if (peeked?.length) {
+      setHoles(peeked);
+      setLoading(false);
+      setFromBackup(true);
+      setError(null);
+    } else {
+      setHoles([]);
+      setLoading(true);
+      setFromBackup(false);
+      setError(null);
+    }
+
+    loadGolfHoles(lat, lon, {
+      ...opts,
       signal: ac.signal,
     })
-      .then(setHoles)
+      .then((result) => {
+        if (ac.signal.aborted) return;
+        setHoles(result.holes);
+        setFromBackup(result.fromBackup);
+        setError(
+          result.fromBackup
+            ? 'OpenStreetMap is busy — showing saved course map.'
+            : null,
+        );
+      })
       .catch((err) => {
         if (ac.signal.aborted) return;
+        if (peeked?.length) {
+          setHoles(peeked);
+          setFromBackup(true);
+          setError('OpenStreetMap is busy — showing saved course map.');
+          return;
+        }
         setError(err instanceof Error ? err.message : 'Failed to load holes');
         setHoles([]);
+        setFromBackup(false);
       })
       .finally(() => {
         if (!ac.signal.aborted) setLoading(false);
@@ -120,6 +158,7 @@ export function useGolfHoles(
     holes,
     loading,
     error,
+    fromBackup,
     retry: () => setAttempt((n) => n + 1),
   };
 }

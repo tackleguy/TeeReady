@@ -280,6 +280,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
     holes,
     loading: holesLoading,
     error: holesError,
+    fromBackup: holesFromBackup,
     retry: retryHoles,
   } = useGolfHoles(
     course?.lat ?? null,
@@ -1333,15 +1334,17 @@ export function GolfView({ active = true }: { active?: boolean }) {
                         {course.name}
                       </div>
                       <div className="text-[11px] text-[var(--ink-3)]">
-                        {holesLoading
+                        {holesLoading && !playHoles.length
                           ? 'Loading hole geometry…'
-                          : holesError
-                            ? 'OpenStreetMap is busy — hole data unavailable'
-                            : playHoles.length
-                              ? ensemble?.ensemble.windMph != null
-                                ? `${layoutLabel} · ${Math.round(ensemble.ensemble.windMph)} mph ${bearingCompass(ensemble.ensemble.windFromDeg)}`
-                                : `${layoutLabel} · yardage, bearing & elevation`
-                              : 'No hole geometry in OSM for this course yet'}
+                          : holesFromBackup && playHoles.length
+                            ? `Saved course map · ${layoutLabel}`
+                            : holesError && !playHoles.length
+                              ? 'OpenStreetMap is busy — hole data unavailable'
+                              : playHoles.length
+                                ? ensemble?.ensemble.windMph != null
+                                  ? `${layoutLabel} · ${Math.round(ensemble.ensemble.windMph)} mph ${bearingCompass(ensemble.ensemble.windFromDeg)}`
+                                  : `${layoutLabel} · yardage, bearing & elevation`
+                                : 'No hole geometry in OSM for this course yet'}
                       </div>
                     </div>
                     {sheetExpanded ? (
@@ -1357,13 +1360,15 @@ export function GolfView({ active = true }: { active?: boolean }) {
                       {course.name}
                     </div>
                     <div className="mt-1 text-[11px] text-[var(--ink-3)]">
-                      {holesLoading
+                      {holesLoading && !playHoles.length
                         ? 'Loading hole geometry…'
-                        : holesError
-                          ? 'OpenStreetMap is busy — hole data unavailable'
-                          : playHoles.length
-                            ? `${layoutLabel} · yardage, bearing & elevation`
-                            : 'No hole geometry in OSM for this course yet'}
+                        : holesFromBackup && playHoles.length
+                          ? `Saved course map · ${layoutLabel}`
+                          : holesError && !playHoles.length
+                            ? 'OpenStreetMap is busy — hole data unavailable'
+                            : playHoles.length
+                              ? `${layoutLabel} · yardage, bearing & elevation`
+                              : 'No hole geometry in OSM for this course yet'}
                     </div>
                     {ensemble?.ensemble.windMph != null ? (
                       <div className="mt-2 flex flex-wrap gap-2 text-[10px] uppercase tracking-wider text-[var(--ink-3)]">
@@ -1381,7 +1386,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                       onClick={retryHoles}
                       className="mt-1.5 rounded-md bg-white/10 px-2 py-1 text-[11px] font-medium text-[var(--ink-1)] hover:bg-white/15"
                     >
-                      Retry holes
+                      {holesFromBackup ? 'Refresh from OSM' : 'Retry holes'}
                     </button>
                   </div>
                 )}
