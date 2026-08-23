@@ -970,10 +970,10 @@ export function GolfView({ active = true }: { active?: boolean }) {
               </div>
             ) : null}
 
-            {viewMode === 'prep' && course && (profile.goals.length > 0 || profile.customGoals.length > 0) ? (
-              <div className="pointer-events-none absolute left-0 right-0 top-0 z-[21]">
-                <GoalCoachBanner />
-              </div>
+            {viewMode === 'prep' &&
+            course &&
+            (profile.goals.length > 0 || profile.customGoals.length > 0) ? (
+              <GoalCoachBanner />
             ) : null}
 
             {viewMode === 'prep' && activeHoleObj && target && profile ? (
