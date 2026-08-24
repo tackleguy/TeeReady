@@ -321,6 +321,21 @@ async function readBulkRecords(path) {
 
 async function main() {
   const skipGeocode = process.argv.includes('--skip-geocode');
+  const { access } = await import('node:fs/promises');
+  const cachePresent = await access(BULK_CACHE).then(() => true).catch(() => false);
+  if (!cachePresent) {
+    const catalogPresent = await access(OUT_CATALOG_JSON).then(() => true).catch(() => false);
+    if (catalogPresent) {
+      console.log(
+        `Skipping catalog rebuild — ${BULK_CACHE} missing; using committed ${OUT_CATALOG_JSON}`,
+      );
+      return;
+    }
+    throw new Error(
+      `Missing bulk cache ${BULK_CACHE} and no committed catalog at ${OUT_CATALOG_JSON}`,
+    );
+  }
+
   const records = await readBulkRecords(BULK_CACHE);
   const bulkById = new Map();
   for (const feature of records) {
