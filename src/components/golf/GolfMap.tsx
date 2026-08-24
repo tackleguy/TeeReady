@@ -25,6 +25,7 @@ import {
 import { bearingCompass } from '../../lib/geo';
 import { accuracyCircleGeoJSON } from '../../lib/gps';
 import {
+  greenContoursGeoJSON,
   greenMeshSlug,
   loadGreenMeshCourse,
   type GreenMeshCourse,
@@ -70,6 +71,8 @@ interface Props {
   satelliteCached?: boolean;
   /** When set, loads pre-built 3D green meshes for supported courses. */
   courseName?: string | null;
+  /** User toggle — show LiDAR green contours + 3D mesh. */
+  greens3d?: boolean;
 }
 
 const SRC = 'golf-holes';
@@ -86,6 +89,7 @@ const SRC_SHOT_PTS = 'golf-shot-pts';
 const SRC_GPS = 'golf-gps-pos';
 const SRC_GPS_ACC = 'golf-gps-acc';
 const SRC_GPS_HDG = 'golf-gps-hdg';
+const SRC_GREEN_CONTOUR = 'golf-green-contours';
 
 const LINE = 'golf-hole-lines';
 const LINE_ACTIVE = 'golf-hole-lines-active';
@@ -94,6 +98,9 @@ const LYR_GREEN = 'golf-greens-lyr';
 const LYR_TEE_HIT = 'golf-tees-hit';
 const LYR_GREEN_HIT = 'golf-greens-hit';
 const LINE_HIT = 'golf-hole-lines-hit';
+const LYR_GREEN_FILL = 'golf-green-contour-fill';
+const LYR_GREEN_OUTLINE = 'golf-green-contour-line';
+const LYR_GREEN_OUTLINE_ACTIVE = 'golf-green-contour-line-active';
 const LYR_FLOW = 'golf-wind-flow-lyr';
 const LYR_FLOW_ARROW = 'golf-wind-arrow-lyr';
 const LYR_AIM = 'golf-aim-lyr';
@@ -204,6 +211,7 @@ export function GolfMap({
   planningMode = 'tee',
   satelliteCached = false,
   courseName = null,
+  greens3d = false,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -222,10 +230,20 @@ export function GolfMap({
   const activeHoleRef = useRef(activeHole);
   activeHoleRef.current = activeHole;
   const green3dRef = useRef<GreenMeshCourse | null>(null);
-  const green3dStateRef = useRef({ course: null as GreenMeshCourse | null, activeHole: null as number | null });
-  green3dStateRef.current = { course: green3dRef.current, activeHole };
+  const greens3dRef = useRef(greens3d);
+  greens3dRef.current = greens3d;
+  const green3dStateRef = useRef({
+    course: null as GreenMeshCourse | null,
+    activeHole: null as number | null,
+    enabled: false,
+  });
+  green3dStateRef.current = {
+    course: green3dRef.current,
+    activeHole,
+    enabled: greens3d,
+  };
   const green3dSlug = greenMeshSlug(courseName);
-  const green3dEnabled = green3dSlug != null;
+  const canGreens3d = green3dSlug != null;
 
   // Layers only exist after `load`, so defer any data/camera work until then.
   const whenReady = useCallback((fn: () => void) => {
@@ -249,9 +267,9 @@ export function GolfMap({
         center: [lon, lat],
         zoom: 15.2,
         attributionControl: { compact: true },
-        pitchWithRotate: green3dEnabled,
-        touchPitch: green3dEnabled,
-        maxPitch: green3dEnabled ? 62 : 0,
+        pitchWithRotate: true,
+        touchPitch: true,
+        maxPitch: 72,
         trackResize: true,
       });
     } catch (err) {
@@ -315,6 +333,10 @@ export function GolfMap({
       map.addSource(SRC_GPS, { type: 'geojson', data: emptyCollection() });
       map.addSource(SRC_GPS_ACC, { type: 'geojson', data: emptyCollection() });
       map.addSource(SRC_GPS_HDG, { type: 'geojson', data: emptyCollection() });
+      map.addSource(SRC_GREEN_CONTOUR, {
+        type: 'geojson',
+        data: emptyCollection(),
+      });
 
       // Fat invisible stroke first so tees/fairways are tappable on phones.
       map.addLayer({
@@ -347,6 +369,48 @@ export function GolfMap({
           'line-color': '#ffffff',
           'line-width': 3,
           'line-opacity': 0.85,
+        },
+      });
+
+      map.addLayer({
+        id: LYR_GREEN_FILL,
+        type: 'fill',
+        source: SRC_GREEN_CONTOUR,
+        paint: {
+          'fill-color': [
+            'case',
+            ['==', ['get', 'active'], 1],
+            '#86efac',
+            '#4ade80',
+          ],
+          'fill-opacity': [
+            'case',
+            ['==', ['get', 'active'], 1],
+            0.42,
+            0.22,
+          ],
+        },
+      });
+      map.addLayer({
+        id: LYR_GREEN_OUTLINE,
+        type: 'line',
+        source: SRC_GREEN_CONTOUR,
+        filter: ['==', ['get', 'active'], 0],
+        paint: {
+          'line-color': '#bbf7d0',
+          'line-width': 1.6,
+          'line-opacity': 0.85,
+        },
+      });
+      map.addLayer({
+        id: LYR_GREEN_OUTLINE_ACTIVE,
+        type: 'line',
+        source: SRC_GREEN_CONTOUR,
+        filter: ['==', ['get', 'active'], 1],
+        paint: {
+          'line-color': '#ecfdf5',
+          'line-width': 2.8,
+          'line-opacity': 1,
         },
       });
 
@@ -658,9 +722,7 @@ export function GolfMap({
       }
 
       resize();
-      if (green3dEnabled) {
-        attachGreen3DLayer(map, () => green3dStateRef.current);
-      }
+      attachGreen3DLayer(map, () => green3dStateRef.current);
       readyRef.current = true;
       const signalReady = () => onReadyRef.current?.();
       // Don't wait for every peripheral tile — show the map as soon as the
@@ -703,6 +765,13 @@ export function GolfMap({
   useEffect(() => {
     if (!green3dSlug) {
       green3dRef.current = null;
+      const map = mapRef.current;
+      whenReady(() => {
+        (
+          map?.getSource(SRC_GREEN_CONTOUR) as maplibregl.GeoJSONSource | undefined
+        )?.setData(emptyCollection());
+        map?.triggerRepaint();
+      });
       return;
     }
     let cancelled = false;
@@ -710,11 +779,37 @@ export function GolfMap({
       if (cancelled) return;
       green3dRef.current = course;
       mapRef.current?.triggerRepaint();
+      const map = mapRef.current;
+      if (!map) return;
+      whenReady(() => {
+        (
+          map.getSource(SRC_GREEN_CONTOUR) as maplibregl.GeoJSONSource | undefined
+        )?.setData(
+          greens3dRef.current
+            ? greenContoursGeoJSON(course, activeHoleRef.current)
+            : emptyCollection(),
+        );
+      });
     });
     return () => {
       cancelled = true;
     };
-  }, [green3dSlug]);
+  }, [green3dSlug, whenReady]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    whenReady(() => {
+      (
+        map.getSource(SRC_GREEN_CONTOUR) as maplibregl.GeoJSONSource | undefined
+      )?.setData(
+        greens3d
+          ? greenContoursGeoJSON(green3dRef.current, activeHole)
+          : emptyCollection(),
+      );
+      map.triggerRepaint();
+    });
+  }, [greens3d, activeHole, whenReady]);
 
   // Animate the streamlines so the flow direction reads at a glance.
   useEffect(() => {
@@ -763,28 +858,30 @@ export function GolfMap({
 
     const move = () => {
       if (hole) {
-        const greenMesh = green3dRef.current?.greens.find((g) => g.hole === hole.number);
+        const greenMesh = green3dRef.current?.greens.find(
+          (g) => g.hole === hole.number,
+        );
         const aim = greenMesh
           ? { lon: greenMesh.lon, lat: greenMesh.lat }
           : { lon: hole.green.lon, lat: hole.green.lat };
-        const mid: [number, number] = green3dEnabled && greenMesh
+        const useGreen = greens3d && greenMesh;
+        const mid: [number, number] = useGreen
           ? [aim.lon, aim.lat]
           : [
               (hole.tee.lon + hole.green.lon) / 2,
               (hole.tee.lat + hole.green.lat) / 2,
             ];
-        const zoom =
-          green3dEnabled && greenMesh
-            ? 18.2
-            : hole.yards > 520
-              ? 15.4
-              : hole.yards > 380
-                ? 15.9
-                : 16.4;
+        const zoom = useGreen
+          ? 18.1
+          : hole.yards > 520
+            ? 15.4
+            : hole.yards > 380
+              ? 15.9
+              : 16.4;
         map.easeTo({
           center: mid,
           zoom,
-          pitch: green3dEnabled && greenMesh ? 52 : 0,
+          pitch: useGreen ? 55 : 0,
           bearing: holeUp ? hole.bearingDeg : 0,
           duration: 700,
         });
@@ -809,7 +906,7 @@ export function GolfMap({
 
     whenReady(move);
     // Course-level recentering is driven by lat/lon; hole framing by activeHole.
-  }, [holes, activeHole, holeUp, lat, lon, whenReady, green3dEnabled]);
+  }, [holes, activeHole, holeUp, lat, lon, whenReady, greens3d]);
 
   // Wind streamlines + predicted shot path for the selected hole.
   useEffect(() => {
@@ -979,14 +1076,14 @@ export function GolfMap({
   return (
     <div className={`relative h-full min-h-0 w-full overflow-hidden ${className}`}>
       <div ref={containerRef} className="absolute inset-0" />
-      {showWindLegend && (windLabel || (green3dEnabled && activeHole != null)) && (
+      {showWindLegend && (windLabel || (greens3d && canGreens3d && activeHole != null)) && (
         <div
           className={`pointer-events-none absolute flex flex-col gap-1 rounded-2xl border border-white/10 bg-black/55 px-3 py-2 text-[11px] font-medium backdrop-blur-md ${legendClassName}`}
         >
           {windLabel ? <span className="text-cyan-200">{windLabel}</span> : null}
-          {green3dEnabled && activeHole != null && (
+          {greens3d && canGreens3d && activeHole != null && (
             <span className="text-emerald-200">
-              3D green · LiDAR mesh · drag to tilt
+              3D greens · LiDAR contours · drag to tilt
             </span>
           )}
           {activeHole != null && (

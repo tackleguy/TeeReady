@@ -1,5 +1,6 @@
 /**
  * MapLibre custom layer — renders LiDAR green meshes with Three.js.
+ * MapLibre v4 passes CustomRenderMethodInput (not a raw matrix) as arg 2.
  */
 import maplibregl from 'maplibre-gl';
 import * as THREE from 'three';
@@ -10,23 +11,34 @@ const LAYER_ID = 'golf-green-3d';
 export interface Green3DState {
   course: GreenMeshCourse | null;
   activeHole: number | null;
+  enabled: boolean;
 }
 
 type Getter = () => Green3DState;
 
-function rebuildScene(
+function clearMeshes(scene: THREE.Scene) {
+  const keep: THREE.Object3D[] = [];
+  for (const child of [...scene.children]) {
+    if (child instanceof THREE.Light) {
+      keep.push(child);
+      continue;
+    }
+    scene.remove(child);
+    if (child instanceof THREE.Mesh) {
+      child.geometry.dispose();
+      const mat = child.material;
+      if (Array.isArray(mat)) mat.forEach((m) => m.dispose());
+      else mat.dispose();
+    }
+  }
+}
+
+function rebuildMeshes(
   scene: THREE.Scene,
   course: GreenMeshCourse | null,
   activeHole: number | null,
 ) {
-  while (scene.children.length) {
-    const child = scene.children[0];
-    scene.remove(child);
-    if (child instanceof THREE.Mesh) {
-      child.geometry.dispose();
-      (child.material as THREE.Material).dispose();
-    }
-  }
+  clearMeshes(scene);
   if (!course?.greens.length) return;
 
   for (const g of course.greens) {
@@ -38,15 +50,39 @@ function rebuildScene(
     geom.setIndex(g.indices);
     geom.computeVertexNormals();
 
-    const active = activeHole === g.hole;
-    const mat = new THREE.MeshLambertMaterial({
-      color: active ? 0x86efac : 0x4ade80,
+    const active = activeHole == null || activeHole === g.hole;
+    const mat = new THREE.MeshPhongMaterial({
+      color: activeHole === g.hole ? 0xa7f3d0 : 0x4ade80,
       transparent: true,
-      opacity: active ? 0.94 : 0.62,
+      opacity: active ? (activeHole === g.hole ? 0.92 : 0.55) : 0.28,
       side: THREE.DoubleSide,
+      shininess: 18,
+      depthWrite: false,
     });
-    scene.add(new THREE.Mesh(geom, mat));
+    const mesh = new THREE.Mesh(geom, mat);
+    // Exaggerate relief so contours read on satellite.
+    mesh.scale.set(1, 4.5, 1);
+    scene.add(mesh);
   }
+}
+
+function asMatrix4(input: unknown): THREE.Matrix4 {
+  const mat = new THREE.Matrix4();
+  if (!input) return mat;
+  if (Array.isArray(input) || ArrayBuffer.isView(input)) {
+    return mat.fromArray(input as ArrayLike<number>);
+  }
+  if (typeof input === 'object' && input !== null) {
+    const obj = input as {
+      modelViewProjectionMatrix?: ArrayLike<number>;
+      defaultProjectionData?: { mainMatrix?: ArrayLike<number> };
+    };
+    const arr =
+      obj.modelViewProjectionMatrix ??
+      obj.defaultProjectionData?.mainMatrix;
+    if (arr) return mat.fromArray(arr);
+  }
+  return mat;
 }
 
 export function attachGreen3DLayer(
@@ -66,10 +102,13 @@ export function attachGreen3DLayer(
     renderingMode: '3d',
     onAdd(_map, gl) {
       camera = new THREE.Camera();
-      scene.add(new THREE.AmbientLight(0xffffff, 0.55));
-      const sun = new THREE.DirectionalLight(0xffffff, 0.85);
-      sun.position.set(120, 180, 80);
+      scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+      const sun = new THREE.DirectionalLight(0xffffff, 1.05);
+      sun.position.set(80, 220, 40);
       scene.add(sun);
+      const fill = new THREE.DirectionalLight(0xb8f0c8, 0.45);
+      fill.position.set(-60, 40, -80);
+      scene.add(fill);
 
       renderer = new THREE.WebGLRenderer({
         canvas: map.getCanvas(),
@@ -78,15 +117,19 @@ export function attachGreen3DLayer(
       });
       renderer.autoClear = false;
     },
-    render(_gl, matrix) {
+    render(_gl, options) {
       if (!renderer || !camera) return;
-      const { course, activeHole } = getState();
-      const key = `${course?.id ?? ''}:${activeHole ?? ''}:${course?.greens.length ?? 0}`;
+      const { course, activeHole, enabled } = getState();
+      const key = `${enabled ? 1 : 0}:${course?.id ?? ''}:${activeHole ?? ''}:${course?.greens.length ?? 0}`;
       if (key !== lastKey) {
-        rebuildScene(scene, course, activeHole);
+        if (enabled && course?.greens.length) {
+          rebuildMeshes(scene, course, activeHole);
+        } else {
+          clearMeshes(scene);
+        }
         lastKey = key;
       }
-      if (!course?.greens.length) return;
+      if (!enabled || !course?.greens.length) return;
 
       const baseElev =
         course.greens.find((g) => g.hole === activeHole)?.baseElevM ??
@@ -98,20 +141,14 @@ export function attachGreen3DLayer(
       );
       const scale = origin.meterInMercatorCoordinateUnits();
 
-      const translate = new THREE.Matrix4().makeTranslation(
-        origin.x,
-        origin.y,
-        origin.z,
-      );
+      const model = new THREE.Matrix4()
+        .makeTranslation(origin.x, origin.y, origin.z)
+        .scale(new THREE.Vector3(scale, -scale, scale));
+      // Local mesh uses Y-up; MapLibre mercator uses Z-up after rotateX.
       const rotate = new THREE.Matrix4().makeRotationX(Math.PI / 2);
-      const scaleMat = new THREE.Matrix4().makeScale(scale, -scale, scale);
-      const local = new THREE.Matrix4()
-        .multiply(translate)
-        .multiply(rotate)
-        .multiply(scaleMat);
+      const local = model.multiply(rotate);
 
-      const proj = new THREE.Matrix4().fromArray(matrix);
-      camera.projectionMatrix = proj.multiply(local);
+      camera.projectionMatrix = asMatrix4(options).clone().multiply(local);
 
       renderer.resetState();
       renderer.render(scene, camera);

@@ -13,6 +13,7 @@ import {
   Flag,
   Loader2,
   MapPin,
+  Mountain,
   Navigation,
   RefreshCw,
   Search,
@@ -71,6 +72,7 @@ import {
 } from '../lib/golfProfile';
 import { weatherAppHref } from '../lib/golfApp';
 import { warmGolfCatalog } from '../lib/golfCatalogPrefetch';
+import { hasGreenMeshes } from '../lib/golfGreen3d';
 import type { LonLat } from '../lib/golfWind';
 import {
   applyTee,
@@ -181,6 +183,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [courseFilter, setCourseFilter] = useState('');
   const [holeUp, setHoleUp] = useState(true);
+  const [greens3d, setGreens3d] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(true);
   const [sheetExpanded, setSheetExpanded] = useState(false);
   const [target, setTarget] = useState<LonLat | null>(null);
@@ -473,6 +476,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
         priority: 'high',
       });
       setCourse(next);
+      setGreens3d(hasGreenMeshes(next.name));
       setActiveHole(null);
       setLoop(null);
       setTeeKind('mid');
@@ -975,6 +979,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                   course.id,
                 )}
                 courseName={course.name}
+                greens3d={greens3d}
                 trackedShots={activeHoleShots}
                 gpsPosition={
                   gpsOn && gpsPos
@@ -1080,6 +1085,31 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     <ClipboardList className="h-3 w-3" />
                     Card
                   </button>
+                  {course && hasGreenMeshes(course.name) ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setGreens3d((v) => {
+                          const next = !v;
+                          if (next && activeHole == null && playHoles[0]) {
+                            setActiveHole(playHoles[0].number);
+                          }
+                          return next;
+                        });
+                      }}
+                      aria-pressed={greens3d}
+                      title="Show LiDAR green contours and 3D mesh"
+                      className={[
+                        'inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[10px] font-semibold transition-colors',
+                        greens3d
+                          ? 'bg-emerald-500/30 text-emerald-100'
+                          : 'text-[var(--ink-2)] hover:bg-white/10',
+                      ].join(' ')}
+                    >
+                      <Mountain className="h-3 w-3" />
+                      3D greens
+                    </button>
+                  ) : null}
                   {!intelPanelOpen ? (
                     <button
                       type="button"
