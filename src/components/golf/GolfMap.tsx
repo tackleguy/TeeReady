@@ -24,6 +24,12 @@ import {
 } from '../../lib/golfWind';
 import { bearingCompass } from '../../lib/geo';
 import { accuracyCircleGeoJSON } from '../../lib/gps';
+import {
+  greenMeshSlug,
+  loadGreenMeshCourse,
+  type GreenMeshCourse,
+} from '../../lib/golfGreen3d';
+import { attachGreen3DLayer } from './GolfGreen3DLayer';
 
 interface Props {
   lat: number;
@@ -62,6 +68,8 @@ interface Props {
   planningMode?: 'tee' | 'approach';
   /** Satellite tiles were prefetched — dismiss loading overlay sooner. */
   satelliteCached?: boolean;
+  /** When set, loads pre-built 3D green meshes for supported courses. */
+  courseName?: string | null;
 }
 
 const SRC = 'golf-holes';
@@ -195,6 +203,7 @@ export function GolfMap({
   followGps = false,
   planningMode = 'tee',
   satelliteCached = false,
+  courseName = null,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -212,6 +221,11 @@ export function GolfMap({
   satelliteCachedRef.current = satelliteCached;
   const activeHoleRef = useRef(activeHole);
   activeHoleRef.current = activeHole;
+  const green3dRef = useRef<GreenMeshCourse | null>(null);
+  const green3dStateRef = useRef({ course: null as GreenMeshCourse | null, activeHole: null as number | null });
+  green3dStateRef.current = { course: green3dRef.current, activeHole };
+  const green3dSlug = greenMeshSlug(courseName);
+  const green3dEnabled = green3dSlug != null;
 
   // Layers only exist after `load`, so defer any data/camera work until then.
   const whenReady = useCallback((fn: () => void) => {
@@ -230,9 +244,9 @@ export function GolfMap({
         center: [lon, lat],
         zoom: 15.2,
         attributionControl: { compact: true },
-        pitchWithRotate: false,
-        touchPitch: false,
-        maxPitch: 0,
+        pitchWithRotate: green3dEnabled,
+        touchPitch: green3dEnabled,
+        maxPitch: green3dEnabled ? 62 : 0,
         trackResize: true,
       });
     } catch (err) {
@@ -639,6 +653,9 @@ export function GolfMap({
       }
 
       resize();
+      if (green3dEnabled) {
+        attachGreen3DLayer(map, () => green3dStateRef.current);
+      }
       readyRef.current = true;
       const signalReady = () => onReadyRef.current?.();
       if (satelliteCachedRef.current) {
@@ -665,6 +682,22 @@ export function GolfMap({
     // Mount once; data updates run in the effects below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!green3dSlug) {
+      green3dRef.current = null;
+      return;
+    }
+    let cancelled = false;
+    loadGreenMeshCourse(green3dSlug).then((course) => {
+      if (cancelled) return;
+      green3dRef.current = course;
+      mapRef.current?.triggerRepaint();
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [green3dSlug]);
 
   // Animate the streamlines so the flow direction reads at a glance.
   useEffect(() => {
@@ -713,16 +746,28 @@ export function GolfMap({
 
     const move = () => {
       if (hole) {
-        const mid: [number, number] = [
-          (hole.tee.lon + hole.green.lon) / 2,
-          (hole.tee.lat + hole.green.lat) / 2,
-        ];
-        // Longer holes need a wider frame to fit tee through green.
+        const greenMesh = green3dRef.current?.greens.find((g) => g.hole === hole.number);
+        const aim = greenMesh
+          ? { lon: greenMesh.lon, lat: greenMesh.lat }
+          : { lon: hole.green.lon, lat: hole.green.lat };
+        const mid: [number, number] = green3dEnabled && greenMesh
+          ? [aim.lon, aim.lat]
+          : [
+              (hole.tee.lon + hole.green.lon) / 2,
+              (hole.tee.lat + hole.green.lat) / 2,
+            ];
         const zoom =
-          hole.yards > 520 ? 15.4 : hole.yards > 380 ? 15.9 : 16.4;
+          green3dEnabled && greenMesh
+            ? 18.2
+            : hole.yards > 520
+              ? 15.4
+              : hole.yards > 380
+                ? 15.9
+                : 16.4;
         map.easeTo({
           center: mid,
           zoom,
+          pitch: green3dEnabled && greenMesh ? 52 : 0,
           bearing: holeUp ? hole.bearingDeg : 0,
           duration: 700,
         });
@@ -747,7 +792,7 @@ export function GolfMap({
 
     whenReady(move);
     // Course-level recentering is driven by lat/lon; hole framing by activeHole.
-  }, [holes, activeHole, holeUp, lat, lon, whenReady]);
+  }, [holes, activeHole, holeUp, lat, lon, whenReady, green3dEnabled]);
 
   // Wind streamlines + predicted shot path for the selected hole.
   useEffect(() => {
@@ -917,11 +962,16 @@ export function GolfMap({
   return (
     <div className={`relative h-full min-h-0 w-full overflow-hidden ${className}`}>
       <div ref={containerRef} className="absolute inset-0" />
-      {showWindLegend && windLabel && (
+      {showWindLegend && (windLabel || (green3dEnabled && activeHole != null)) && (
         <div
           className={`pointer-events-none absolute flex flex-col gap-1 rounded-2xl border border-white/10 bg-black/55 px-3 py-2 text-[11px] font-medium backdrop-blur-md ${legendClassName}`}
         >
-          <span className="text-cyan-200">{windLabel}</span>
+          {windLabel ? <span className="text-cyan-200">{windLabel}</span> : null}
+          {green3dEnabled && activeHole != null && (
+            <span className="text-emerald-200">
+              3D green · LiDAR mesh · drag to tilt
+            </span>
+          )}
           {activeHole != null && (
             <span className="flex flex-wrap items-center gap-1.5 text-[10px] text-[var(--ink-3)]">
               <span className="inline-block h-0.5 w-4 rounded bg-cyan-300" />

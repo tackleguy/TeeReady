@@ -971,6 +971,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                   searchLon,
                   course.id,
                 )}
+                courseName={course.name}
                 trackedShots={activeHoleShots}
                 gpsPosition={
                   gpsOn && gpsPos
