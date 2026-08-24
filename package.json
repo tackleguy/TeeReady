@@ -11,7 +11,10 @@
     "typecheck": "tsc -b --noEmit",
     "audit:golf-scorecards": "tsx src/dev/golfScorecardAudit.ts",
     "audit:golf-coverage": "tsx src/dev/golfScorecardCoverage.ts",
-    "import:golf-scorecards": "node scripts/import-opengolf-scorecards.mjs"
+    "audit:golf-catalog": "tsx src/dev/golfCatalogAudit.ts",
+    "import:golf-scorecards": "node scripts/import-opengolf-scorecards.mjs",
+    "build:golf-catalog": "node scripts/build-golf-catalog.mjs",
+    "prebuild": "node scripts/build-golf-catalog.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",

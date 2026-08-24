@@ -1,8 +1,8 @@
 // Golf course discovery.
 //
 // Nearby: Photon reverse search around the selected city.
-// Catalog: nationwide name search over OSM leisure=golf_course — covers
-// municipal/public, resort, and private/country-club courses (1,000+).
+// Catalog: static OpenGolf bulk index (15k+ U.S. courses) for instant name
+// search, then Photon / Nominatim / live OpenGolf as fallbacks.
 // Query variants ("golf", "country club", …) catch park complexes that
 // OSM names by hole course rather than park (e.g. Griffith → Wilson/Harding).
 
@@ -22,6 +22,7 @@ import {
   isPlayableCourse,
   type VenueKind,
 } from './_lib/venueKind';
+import { nearbyUsCatalog, searchUsCatalog } from './_lib/usCatalogSearch';
 
 export const config = { runtime: 'edge' };
 
@@ -356,10 +357,20 @@ function nameMatchScore(name: string, needle: string, tokens: string[]): number 
   return 9;
 }
 
+/** Search the bundled U.S. catalog (15k+ courses, instant). */
+function staticCatalog(
+  q: string,
+  lat: number,
+  lon: number,
+  limit: number,
+): GolfCourseSummary[] {
+  return searchUsCatalog(q, lat, lon, limit);
+}
+
 /**
- * Search 1,000+ U.S. courses by name. OSM's leisure=golf_course index
- * contains municipal/public, resort, country-club, and private courses; do
- * not add an `access` filter here or private/member courses disappear.
+ * Search U.S. courses by name via Photon (fallback when static catalog misses).
+ * OSM's leisure=golf_course index contains municipal/public, resort,
+ * country-club, and private courses; do not add an `access` filter here.
  */
 async function photonCatalog(
   q: string,
@@ -767,7 +778,13 @@ export default async function handler(req: Request): Promise<Response> {
 
   const finish = (
     courses: GolfCourseSummary[],
-    source: 'photon' | 'overpass' | 'osm-map' | 'nominatim' | 'opengolf',
+    source:
+      | 'catalog'
+      | 'photon'
+      | 'overpass'
+      | 'osm-map'
+      | 'nominatim'
+      | 'opengolf',
     opts?: { preserveOrder?: boolean },
   ) =>
     jsonResponse(
@@ -790,14 +807,18 @@ export default async function handler(req: Request): Promise<Response> {
     const catalogAc = new AbortController();
     const catalogStop = setTimeout(() => catalogAc.abort(), 8_000);
     try {
-      let courses = await photonCatalog(
-        q,
-        rawLat,
-        rawLon,
-        limit,
-        catalogAc.signal,
-      );
-      let source: 'photon' | 'nominatim' | 'opengolf' = 'photon';
+      let courses = staticCatalog(q, rawLat, rawLon, limit);
+      let source: 'catalog' | 'photon' | 'nominatim' | 'opengolf' = 'catalog';
+      if (!courses.length) {
+        courses = await photonCatalog(
+          q,
+          rawLat,
+          rawLon,
+          limit,
+          catalogAc.signal,
+        );
+        source = 'photon';
+      }
       if (!courses.length) {
         const backupAc = new AbortController();
         const backupStop = setTimeout(() => backupAc.abort(), 8_000);
@@ -873,8 +894,18 @@ export default async function handler(req: Request): Promise<Response> {
   const osm = osmSettled.status === 'fulfilled' ? osmSettled.value : [];
   const local = mapSettled.status === 'fulfilled' ? mapSettled.value : [];
 
+  const staticNearby = nearbyUsCatalog(rawLat, rawLon, radiusM, limit);
   if (photon.length) {
-    return finish(expandWithOsmSiblings(photon, mergeCourses(osm, local)), 'photon');
+    return finish(
+      expandWithOsmSiblings(
+        mergeCourses(photon, staticNearby),
+        mergeCourses(osm, local),
+      ),
+      staticNearby.length && !photon.length ? 'catalog' : 'photon',
+    );
+  }
+  if (staticNearby.length) {
+    return finish(expandWithOsmSiblings(staticNearby, mergeCourses(osm, local)), 'catalog');
   }
   if (osm.length) return finish(osm, 'overpass');
   if (local.length) return finish(local, 'osm-map');

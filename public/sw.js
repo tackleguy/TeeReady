@@ -8,11 +8,11 @@
 // This is intentionally simple — no Workbox dependency, no precache
 // manifest. Vite's hashed asset filenames give us cache-busting for free.
 
-const VERSION = 'weatherstop-v21';
+const VERSION = 'weatherstop-v22';
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 const SATELLITE_CACHE = `${VERSION}-satellite`;
-const APP_SHELL = ['/manifest.webmanifest', '/icon.svg'];
+const APP_SHELL = ['/manifest.webmanifest', '/icon.svg', '/golf/catalog.us.json'];
 
 // How long a cached /api response may be served before we wait for the
 // network instead. Previously there was no age check at all, so a cached

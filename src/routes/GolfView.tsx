@@ -70,6 +70,7 @@ import {
   type GolfPlayerProfile,
 } from '../lib/golfProfile';
 import { weatherAppHref } from '../lib/golfApp';
+import { warmGolfCatalog } from '../lib/golfCatalogPrefetch';
 import type { LonLat } from '../lib/golfWind';
 import {
   applyTee,
@@ -202,6 +203,10 @@ export function GolfView({ active = true }: { active?: boolean }) {
   const viewMode: 'prep' | 'gps' = pathMode ?? lastMode;
 
   useEffect(() => {
+    warmGolfCatalog();
+  }, []);
+
+  useEffect(() => {
     if (!active) return;
     if (
       location.pathname === '/rounds' ||
@@ -274,7 +279,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
 
   const searchLat = course?.lat ?? loc.lat;
   const searchLon = course?.lon ?? loc.lon;
-  const showPicker = !isMobile || pickerOpen || !course;
+  const showPicker = pickerOpen || !course;
 
   const {
     courses,
@@ -327,7 +332,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
   }, [holes, course?.id, course?.name]);
 
   // One character filters the nearby list; two or more searches the
-  // nationwide 1,000+ public and private course catalog through Photon.
+  // bundled 14,000+ U.S. course catalog (11,000+ verified with par/yardage).
   const filteredCourses = useMemo(() => {
     const q = courseFilter.trim().toLowerCase();
     if (!q) return courses;
@@ -480,9 +485,9 @@ export function GolfView({ active = true }: { active?: boolean }) {
         }
         return prev;
       });
-      if (isMobile) setPickerOpen(false);
+      setPickerOpen(false);
     },
-    [isMobile],
+    [],
   );
 
   // Social → GPS: apply course stashed when a multiplayer group was created.
@@ -507,8 +512,11 @@ export function GolfView({ active = true }: { active?: boolean }) {
       setRound(r);
       saveRound(r);
     }
+    if (activeHole == null && playHoles.length) {
+      setActiveHole(playHoles[0]!.number);
+    }
     setScorecardOpen(true);
-  }, [course, round, resolvedLoop]);
+  }, [course, round, resolvedLoop, activeHole, playHoles]);
 
   const startRound = useCallback(() => {
     if (!course) return;
@@ -698,16 +706,14 @@ export function GolfView({ active = true }: { active?: boolean }) {
       {/* Course picker — full screen on phones until a course is chosen. */}
       <aside
         className={
-          isMobile
-            ? [
-                'z-20 flex min-h-0 flex-col bg-[var(--surface-0)]',
-                showPicker
-                  ? course
-                    ? 'absolute inset-0'
-                    : 'relative h-full'
-                  : 'hidden',
-              ].join(' ')
-            : 'golf-hud z-10 flex h-full w-[380px] shrink-0 flex-col border-r border-[var(--line-subtle)] bg-[rgba(8,12,18,0.94)]'
+          showPicker
+            ? isMobile
+              ? [
+                  'z-20 flex min-h-0 flex-col bg-[var(--surface-0)]',
+                  course ? 'absolute inset-0' : 'relative h-full',
+                ].join(' ')
+              : 'golf-hud z-10 flex h-full w-[380px] shrink-0 flex-col border-r border-[var(--line-subtle)] bg-[rgba(8,12,18,0.94)]'
+            : 'hidden'
         }
       >
         <div className="border-b border-[var(--line-subtle)] px-3 py-3">
@@ -719,7 +725,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
               TeeReady
             </h1>
             <p className="truncate text-[11px] text-[var(--ink-3)]">
-              1,000+ public &amp; private · multi-model wind
+              11,000+ verified · 14,000+ searchable
             </p>
           </div>
           <a
@@ -730,7 +736,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
           >
             <CloudSun className="h-4 w-4" />
           </a>
-          {isMobile && course ? (
+          {course ? (
             <button
               type="button"
               className="rounded-lg px-2 py-2 text-[12px] font-medium text-[var(--ink-2)] hover:bg-white/5 hover:text-[var(--ink-1)]"
@@ -814,7 +820,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
             <div className="floating-subpanel flex items-center gap-2 px-3 py-3 text-xs text-[var(--ink-3)]">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />{' '}
               {courseFilter.trim().length >= 2
-                ? 'Searching 1,000+ U.S. courses…'
+                ? 'Searching 14,000+ courses…'
                 : 'Finding nearby courses…'}
             </div>
           )}
@@ -1107,7 +1113,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                   variant="high"
                   className="flex max-w-[min(100vw-2rem,24rem)] items-center gap-0 overflow-hidden px-0.5 py-0.5 shadow-xl"
                 >
-                  {isMobile ? (
+                  {course ? (
                     <button
                       type="button"
                       onClick={() => setPickerOpen(true)}
@@ -1160,6 +1166,17 @@ export function GolfView({ active = true }: { active?: boolean }) {
                       >
                         <ChevronRight className="h-5 w-5 md:h-4 md:w-4" />
                       </button>
+                      {activeHole != null &&
+                      activeIdx >= 0 &&
+                      activeIdx < playHoles.length - 1 ? (
+                        <button
+                          type="button"
+                          onClick={() => stepHole(1)}
+                          className="ml-0.5 rounded-lg bg-brand/25 px-2 py-1.5 text-[11px] font-semibold text-[var(--ink-1)] hover:bg-brand/35"
+                        >
+                          Next hole
+                        </button>
+                      ) : null}
                       <span className="mx-0.5 h-6 w-px bg-[var(--line-subtle)]" />
                       <button
                         type="button"
@@ -1252,8 +1269,8 @@ export function GolfView({ active = true }: { active?: boolean }) {
                 defaultAnchor={{ left: 12, top: 56 }}
                 zIndex={40}
                 style={{
-                  width: 'min(100vw - 1.5rem, 520px)',
-                  height: 'min(58dvh, 480px)',
+                  width: 'min(100vw - 1.5rem, 420px)',
+                  height: 'min(72dvh, 640px)',
                 }}
               >
                 <div className="h-full overflow-hidden rounded-b-card">
@@ -1261,12 +1278,16 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     holes={playHoles}
                     round={round}
                     handicap={profile.handicap}
+                    activeHoleNumber={activeHole}
                     onChange={(next) => {
                       setRound(next);
                       saveRound(next);
                     }}
                     onClose={() => setScorecardOpen(false)}
                     onFinishRound={endRound}
+                    onSelectHole={setActiveHole}
+                    onNextHole={() => stepHole(1)}
+                    onPrevHole={() => stepHole(-1)}
                   />
                 </div>
               </DraggableBox>

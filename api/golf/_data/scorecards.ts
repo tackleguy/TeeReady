@@ -1,4 +1,5 @@
 import { IMPORTED_SCORECARDS } from './importedScorecards';
+import { findCatalogScorecard } from '../_lib/syntheticScorecard';
 
 /**
  * Official scorecard par + yardage overrides for popular courses.
@@ -493,6 +494,8 @@ export function findScorecard(opts: {
     const exact = ALL_SCORECARDS.filter((card) => card.osmIds?.includes(opts.osmId!));
     const match = pickScorecard(exact, opts.loop);
     if (match) return match;
+    const catalog = findCatalogScorecard({ osmId: opts.osmId });
+    if (catalog) return catalog;
   }
 
   const courseName = opts.courseName?.trim();
@@ -514,7 +517,10 @@ export function findScorecard(opts: {
   const match = pickScorecard([...imported, ...manual], opts.loop);
   if (match) return match;
 
-  return null;
+  return findCatalogScorecard({
+    courseName,
+    osmId: opts.osmId,
+  });
 }
 
 export function findScorecardByLoop(

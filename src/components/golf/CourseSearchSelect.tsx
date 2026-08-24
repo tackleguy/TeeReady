@@ -64,7 +64,7 @@ export function CourseSearchSelect({
           type="search"
           required={required && !value}
           value={open ? query : display}
-          placeholder="Search 1,000+ courses…"
+          placeholder="Search 14,000+ courses (11,000+ verified)…"
           onChange={(e) => {
             setQuery(e.target.value);
             if (value) onChange(null);

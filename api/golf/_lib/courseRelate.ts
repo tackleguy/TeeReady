@@ -60,6 +60,27 @@ export function clubStem(name: string): string {
     .join(' ');
 }
 
+/** Facility name after "At …" (e.g. "North At Torrey Pines" → torrey pines). */
+function facilityStem(name: string): string | null {
+  const match = name.match(/\bat\s+(.+)$/i);
+  if (!match?.[1]) return null;
+  const stem = clubStem(match[1]);
+  return stem || null;
+}
+
+function stemsMatch(a: string, b: string): boolean {
+  if (!a || !b) return false;
+  if (a === b) return true;
+  if (a.includes(b) || b.includes(a)) return true;
+  const ta = a.split(' ');
+  const tb = b.split(' ');
+  const shared = ta.filter((t) => tb.includes(t) && t.length >= 4);
+  return (
+    shared.length >= 2 ||
+    (shared.length >= 1 && Math.min(ta.length, tb.length) === 1)
+  );
+}
+
 export function layoutKey(name: string): string | null {
   for (const t of tokens(name)) {
     if (LAYOUT.has(t)) return t;
@@ -82,18 +103,22 @@ export function layoutLabelFromName(name: string): string {
 }
 
 export function sameClub(a: string, b: string): boolean {
+  const ta = tokens(a);
+  const tb = tokens(b);
+  let prefix = 0;
+  for (let i = 0; i < Math.min(ta.length, tb.length); i += 1) {
+    if (ta[i] !== tb[i]) break;
+    prefix += 1;
+  }
+  if (prefix >= 3) return true;
+
+  const facilityA = facilityStem(a);
+  const facilityB = facilityStem(b);
+  if (facilityA && facilityB && stemsMatch(facilityA, facilityB)) return true;
+
   const sa = clubStem(a);
   const sb = clubStem(b);
-  if (!sa || !sb) return false;
-  if (sa === sb) return true;
-  if (sa.includes(sb) || sb.includes(sa)) return true;
-  const ta = sa.split(' ');
-  const tb = sb.split(' ');
-  const shared = ta.filter((t) => tb.includes(t) && t.length >= 4);
-  return (
-    shared.length >= 2 ||
-    (shared.length >= 1 && Math.min(ta.length, tb.length) === 1)
-  );
+  return stemsMatch(sa, sb);
 }
 
 /** True when OSM should list / load both (North + South, Black + Red, …). */

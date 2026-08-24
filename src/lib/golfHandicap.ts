@@ -86,3 +86,69 @@ export function toParLabel(diff: number): string {
   if (diff === 0) return 'E';
   return diff > 0 ? `+${diff}` : `${diff}`;
 }
+
+/** Birdie / bogey color language used by 18Birdies-style score UIs. */
+export function scoreVsParStyle(diff: number): {
+  text: string;
+  bg: string;
+  ring: string;
+} {
+  if (diff <= -2) {
+    return {
+      text: 'text-brand',
+      bg: 'bg-brand-soft',
+      ring: 'ring-brand/40',
+    };
+  }
+  if (diff === -1) {
+    return {
+      text: 'text-[var(--cool)]',
+      bg: 'bg-[var(--cool-glow)]',
+      ring: 'ring-[var(--cool)]/35',
+    };
+  }
+  if (diff === 0) {
+    return {
+      text: 'text-ink',
+      bg: 'bg-canvas',
+      ring: 'ring-line',
+    };
+  }
+  if (diff === 1) {
+    return {
+      text: 'text-warn',
+      bg: 'bg-accent-soft',
+      ring: 'ring-warn/40',
+    };
+  }
+  return {
+    text: 'text-bad',
+    bg: 'bg-[color-mix(in_srgb,var(--bad)_14%,transparent)]',
+    ring: 'ring-bad/35',
+  };
+}
+
+/** Birdie, bogey, etc. — Grint / 18Birdies style hole result label. */
+export function holeScoreName(strokes: number, par: number): string {
+  const d = strokes - par;
+  if (d <= -3) return 'Albatross';
+  if (d === -2) return 'Eagle';
+  if (d === -1) return 'Birdie';
+  if (d === 0) return 'Par';
+  if (d === 1) return 'Bogey';
+  if (d === 2) return 'Double';
+  if (d === 3) return 'Triple';
+  return `+${d}`;
+}
+
+export function holeScoreTone(
+  strokes: number,
+  par: number,
+): 'great' | 'good' | 'even' | 'bad' | 'worse' {
+  const d = strokes - par;
+  if (d <= -2) return 'great';
+  if (d === -1) return 'good';
+  if (d === 0) return 'even';
+  if (d === 1) return 'bad';
+  return 'worse';
+}
