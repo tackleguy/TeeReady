@@ -112,7 +112,7 @@ export function useGolfHoles(
     };
     const courseId =
       osmType && osmId != null ? `${osmType}:${osmId}` : undefined;
-    warmSatelliteTiles(lat, lon, { courseId });
+    warmSatelliteTiles(lat, lon, { courseId, priority: 'high' });
     const peeked = peekGolfHolesCache(lat, lon, opts);
     if (peeked?.length) {
       setHoles(peeked);

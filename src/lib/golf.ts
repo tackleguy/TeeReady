@@ -719,7 +719,7 @@ export async function fetchGolfEnsemble(
   return (await res.json()) as GolfEnsemble;
 }
 
-/** Esri World Imagery — high-detail satellite basemap for course maps. */
+/** Esri World Imagery — dual hosts for more parallel tile downloads. */
 export const GOLF_SATELLITE_STYLE = {
   version: 8 as const,
   name: 'Golf Satellite',
@@ -728,6 +728,7 @@ export const GOLF_SATELLITE_STYLE = {
       type: 'raster' as const,
       tiles: [
         'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
       ],
       tileSize: 256,
       attribution:
@@ -742,6 +743,9 @@ export const GOLF_SATELLITE_STYLE = {
       source: 'esri',
       minzoom: 0,
       maxzoom: 22,
+      paint: {
+        'raster-fade-duration': 0,
+      },
     },
   ],
 };

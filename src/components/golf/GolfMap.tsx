@@ -236,6 +236,11 @@ export function GolfMap({
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const container = containerRef.current;
+    try {
+      maplibregl.setMaxParallelImageRequests(32);
+    } catch {
+      // older maplibre
+    }
     let map: maplibregl.Map;
     try {
       map = new maplibregl.Map({
@@ -658,10 +663,22 @@ export function GolfMap({
       }
       readyRef.current = true;
       const signalReady = () => onReadyRef.current?.();
-      if (satelliteCachedRef.current) {
+      // Don't wait for every peripheral tile — show the map as soon as the
+      // first full frame paints (or a short cap), so satellite feels instant.
+      let signaled = false;
+      const done = () => {
+        if (signaled) return;
+        signaled = true;
         signalReady();
+      };
+      if (satelliteCachedRef.current) {
+        done();
       } else {
-        map.once('idle', signalReady);
+        map.once('idle', done);
+        map.once('render', () => {
+          window.setTimeout(done, 280);
+        });
+        window.setTimeout(done, 900);
       }
       const queued = queueRef.current;
       queueRef.current = [];

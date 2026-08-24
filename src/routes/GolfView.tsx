@@ -468,7 +468,10 @@ export function GolfView({ active = true }: { active?: boolean }) {
 
   const pickCourse = useCallback(
     (next: GolfCourseSummary) => {
-      warmSatelliteTiles(next.lat, next.lon, { courseId: next.id });
+      warmSatelliteTiles(next.lat, next.lon, {
+        courseId: next.id,
+        priority: 'high',
+      });
       setCourse(next);
       setActiveHole(null);
       setLoop(null);

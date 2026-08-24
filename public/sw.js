@@ -8,7 +8,7 @@
 // This is intentionally simple — no Workbox dependency, no precache
 // manifest. Vite's hashed asset filenames give us cache-busting for free.
 
-const VERSION = 'weatherstop-v22';
+const VERSION = 'weatherstop-v23';
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 const SATELLITE_CACHE = `${VERSION}-satellite`;
@@ -61,7 +61,7 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== location.origin) {
     // Esri satellite tiles — cache-first so course maps reopen instantly.
     if (
-      /server\.arcgisonline\.com/i.test(url.host) &&
+      /(?:server|services)\.arcgisonline\.com/i.test(url.host) &&
       /World_Imagery\/MapServer\/tile/i.test(url.pathname)
     ) {
       event.respondWith(cacheFirstSatellite(req));
