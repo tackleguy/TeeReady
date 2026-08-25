@@ -171,7 +171,7 @@ function holesGeoJSON(holes: GolfHole[], active: number | null) {
         type: 'Feature' as const,
         properties: {
           number: h.number,
-          active: active === h.number ? 1 : 0,
+          active: Number(active) === Number(h.number) ? 1 : 0,
           yards: h.yards,
           bearing: h.bearingDeg,
         },
@@ -604,7 +604,7 @@ export function GolfMap({
         layout: {
           'text-field': ['get', 'callout'],
           'text-size': 12,
-          'text-font': ['Open Sans Bold', 'Open Sans Regular'],
+          'text-font': ['Noto Sans Bold', 'Noto Sans Regular'],
           'text-offset': [0, -0.7],
           'text-anchor': 'bottom',
           'text-allow-overlap': true,
@@ -675,7 +675,7 @@ export function GolfMap({
         layout: {
           'text-field': ['get', 'label'],
           'text-size': 10,
-          'text-font': ['Open Sans Bold', 'Open Sans Regular'],
+          'text-font': ['Noto Sans Bold', 'Noto Sans Regular'],
           'text-offset': [0, 1.15],
           'text-anchor': 'top',
           'text-allow-overlap': true,
@@ -706,7 +706,7 @@ export function GolfMap({
         layout: {
           'text-field': ['get', 'yardsText'],
           'text-size': 14,
-          'text-font': ['Open Sans Bold', 'Open Sans Regular'],
+          'text-font': ['Noto Sans Bold', 'Noto Sans Regular'],
           'text-anchor': 'center',
           'text-allow-overlap': true,
           'text-ignore-placement': true,
@@ -734,7 +734,7 @@ export function GolfMap({
         layout: {
           'text-field': ['get', 'clubText'],
           'text-size': 11,
-          'text-font': ['Open Sans Bold', 'Open Sans Regular'],
+          'text-font': ['Noto Sans Bold', 'Noto Sans Regular'],
           'text-anchor': 'center',
           'text-allow-overlap': true,
           'text-ignore-placement': true,
@@ -796,7 +796,7 @@ export function GolfMap({
         layout: {
           'text-field': ['get', 'label'],
           'text-size': 10,
-          'text-font': ['Open Sans Bold', 'Open Sans Regular'],
+          'text-font': ['Noto Sans Bold', 'Noto Sans Regular'],
           'text-allow-overlap': true,
         },
         paint: {
@@ -982,8 +982,42 @@ export function GolfMap({
       (
         map.getSource(SRC_GREEN) as maplibregl.GeoJSONSource | undefined
       )?.setData(pointsGeoJSON(holes, 'green'));
+
+      // GPS mode: hide static hole centerlines (yardageless / unmovable white
+      // paths). The rangefinder guide is the only white path that should show.
+      const holeLinesVisible = showRangefinder ? 'none' : 'visible';
+      for (const id of [LINE, LINE_ACTIVE, LINE_HIT]) {
+        if (map.getLayer(id)) {
+          map.setLayoutProperty(id, 'visibility', holeLinesVisible);
+        }
+      }
+      // Only keep the active hole's tee/green dots while ranging.
+      const activeFilter =
+        showRangefinder && activeHole != null
+          ? ([
+              '==',
+              ['to-number', ['get', 'number']],
+              Number(activeHole),
+            ] as maplibregl.FilterSpecification)
+          : (['has', 'number'] as maplibregl.FilterSpecification);
+      if (map.getLayer(LYR_TEE)) map.setFilter(LYR_TEE, activeFilter);
+      if (map.getLayer(LYR_GREEN)) map.setFilter(LYR_GREEN, activeFilter);
+      if (map.getLayer(LYR_TEE_HIT)) map.setFilter(LYR_TEE_HIT, activeFilter);
+      if (map.getLayer(LYR_GREEN_HIT)) {
+        map.setFilter(LYR_GREEN_HIT, activeFilter);
+      }
+      // Wind streamlines also look like fixed undecorated lines in GPS — hide.
+      for (const id of [LYR_FLOW, LYR_FLOW_ARROW]) {
+        if (map.getLayer(id)) {
+          map.setLayoutProperty(
+            id,
+            'visibility',
+            showRangefinder ? 'none' : 'visible',
+          );
+        }
+      }
     });
-  }, [holes, activeHole, whenReady]);
+  }, [holes, activeHole, showRangefinder, whenReady]);
 
   // Camera: frame the whole course, or fly down the selected hole.
   useEffect(() => {

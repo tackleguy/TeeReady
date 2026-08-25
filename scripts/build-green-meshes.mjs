@@ -38,7 +38,7 @@ const CURATED = [
     minLat: 32.904,
   },
   {
-    slug: 'pebble-beach',
+    slug: 'pebble-beach-golf-links',
     name: 'Pebble Beach Golf Links',
     lat: 36.56071,
     lon: -121.9296,

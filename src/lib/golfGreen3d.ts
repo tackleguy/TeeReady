@@ -52,7 +52,8 @@ const SLUGS: Array<{ slug: string; test: (name: string) => boolean }> = [
       (n.includes('torrey pines') && n.includes('north')),
   },
   {
-    slug: 'pebble-beach',
+    // Prefer the full 18-hole pack over the truncated `pebble-beach.json`.
+    slug: 'pebble-beach-golf-links',
     test: (n) =>
       n.includes('pebble beach golf links') ||
       (n.includes('pebble beach') &&
@@ -97,6 +98,40 @@ function matchSlugFromManifest(
 ): string | null {
   if (!manifest?.courses?.length) return null;
 
+  // Name match first when possible — avoids lat/lon collisions at multi-course
+  // facilities (Sepulveda, Admirals Cove, Torrey, Pebble duplicates, etc.).
+  if (courseName) {
+    const n = courseName.toLowerCase().trim();
+    const exact = manifest.courses.find((c) => c.name.toLowerCase() === n);
+    if (exact) return exact.slug;
+
+    const named = manifest.courses
+      .filter(
+        (c) =>
+          n.includes(c.name.toLowerCase()) ||
+          c.name.toLowerCase().includes(n),
+      )
+      .sort((a, b) => b.holes - a.holes || a.slug.localeCompare(b.slug));
+    if (named.length === 1) return named[0]!.slug;
+    if (named.length > 1 && lat != null && lon != null) {
+      let best: GreenMeshManifestEntry | null = null;
+      let bestScore = -Infinity;
+      for (const c of named) {
+        const d = haversineM(lat, lon, c.lat, c.lon);
+        if (d > MATCH_M) continue;
+        // Prefer closer packs, then more complete hole coverage.
+        const score = -d + c.holes * 40;
+        if (score > bestScore) {
+          bestScore = score;
+          best = c;
+        }
+      }
+      if (best) return best.slug;
+    } else if (named.length > 1) {
+      return named[0]!.slug;
+    }
+  }
+
   if (
     lat != null &&
     lon != null &&
@@ -104,27 +139,19 @@ function matchSlugFromManifest(
     Number.isFinite(lon)
   ) {
     let best: GreenMeshManifestEntry | null = null;
-    let bestD = Infinity;
+    let bestScore = -Infinity;
     for (const c of manifest.courses) {
       const d = haversineM(lat, lon, c.lat, c.lon);
-      if (d < bestD) {
-        bestD = d;
+      if (d > MATCH_M) continue;
+      const score = -d + c.holes * 40;
+      if (score > bestScore) {
+        bestScore = score;
         best = c;
       }
     }
-    if (best && bestD <= MATCH_M) return best.slug;
+    if (best) return best.slug;
   }
 
-  if (courseName) {
-    const n = courseName.toLowerCase();
-    const hit = manifest.courses.find(
-      (c) =>
-        c.name.toLowerCase() === n ||
-        n.includes(c.name.toLowerCase()) ||
-        c.name.toLowerCase().includes(n),
-    );
-    if (hit) return hit.slug;
-  }
   return null;
 }
 
