@@ -197,7 +197,7 @@ export function CourseMapView() {
         ) : null}
 
         {selected ? (
-          <div className="absolute inset-x-3 bottom-3 z-20 md:inset-x-auto md:bottom-4 md:left-4 md:right-auto md:w-[22rem]">
+          <div className="absolute inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-20 md:inset-x-auto md:bottom-4 md:left-4 md:right-auto md:w-[22rem]">
             <div className="overflow-hidden rounded-2xl border border-line bg-surface shadow-lift">
               <div className="flex gap-3 p-3">
                 <CourseHeroImage

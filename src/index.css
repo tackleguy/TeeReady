@@ -673,6 +673,13 @@ body {
   .rounds-keepalive {
     top: calc(7rem + env(safe-area-inset-top));
   }
+
+  /* Prevent iOS Safari zoom-on-focus for form fields */
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1em);
+  }
 }
 
 @media print {

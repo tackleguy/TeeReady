@@ -53,11 +53,11 @@ export function InstallPrompt() {
   if (!event || !visible) return null;
 
   return (
-    <div className="fixed bottom-4 left-1/2 z-40 -translate-x-1/2 px-3 sm:bottom-6">
+    <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 z-40 w-[min(100vw-1.5rem,24rem)] -translate-x-1/2 sm:bottom-6">
       <div className="flex items-center gap-3 rounded-2xl border border-white/15 bg-[rgba(11,16,32,0.92)] px-4 py-3 shadow-2xl backdrop-blur-xl">
-        <Download className="h-4 w-4 text-white" strokeWidth={2.2} />
-        <div className="text-[13px] text-white/85">
-          Install WeatherStop for fast offline-friendly access.
+        <Download className="h-4 w-4 shrink-0 text-white" strokeWidth={2.2} />
+        <div className="min-w-0 text-[13px] text-white/85">
+          Install TeeReady for fast on-course access.
         </div>
         <button
           type="button"
