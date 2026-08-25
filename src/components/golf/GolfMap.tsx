@@ -614,94 +614,134 @@ export function GolfMap({
         id: LYR_GPS_GUIDE,
         type: 'line',
         source: SRC_GPS_GUIDE,
-        filter: ['==', ['get', 'kind'], 'guide'],
+        filter: ['==', ['get', 'kind'], 'whisker'],
         paint: {
-          'line-color': '#ffffff',
-          'line-width': 2.2,
-          'line-opacity': 0.95,
+          'line-color': '#a7f3d0',
+          'line-width': 1.15,
+          'line-opacity': 0.45,
+          'line-dasharray': [1.2, 1.8],
         },
       });
-      // Black circular FRONT / MID / BACK yardage badges.
+      map.addLayer({
+        id: 'golf-gps-aim-line',
+        type: 'line',
+        source: SRC_GPS_GUIDE,
+        filter: ['==', ['get', 'kind'], 'guide'],
+        paint: {
+          'line-color': '#3d9970',
+          'line-width': 2.8,
+          'line-opacity': 0.95,
+          'line-blur': 0.15,
+        },
+      });
+      // Compact front / back depth ticks.
       map.addLayer({
         id: LYR_GPS_PIN,
         type: 'circle',
         source: SRC_GPS_GUIDE,
-        filter: ['==', ['get', 'kind'], 'badge'],
+        filter: ['==', ['get', 'kind'], 'depth'],
         paint: {
-          'circle-radius': ['match', ['get', 'major'], 1, 28, 24],
-          'circle-color': '#0a0a0a',
-          'circle-opacity': 0.92,
+          'circle-radius': 5,
+          'circle-color': '#0f1c16',
           'circle-stroke-width': 1.5,
-          'circle-stroke-color': '#ffffff',
+          'circle-stroke-color': '#6ee7b7',
         },
       });
       map.addLayer({
         id: LYR_GPS_PIN_LABEL,
         type: 'symbol',
         source: SRC_GPS_GUIDE,
-        filter: ['==', ['get', 'kind'], 'badge'],
+        filter: ['==', ['get', 'kind'], 'depth'],
         layout: {
-          'text-field': [
-            'format',
-            ['get', 'yardsLabel'],
-            { 'font-scale': 1.05 },
-            '\n',
-            {},
-            ['get', 'roleLabel'],
-            { 'font-scale': 0.72 },
-          ],
+          'text-field': ['get', 'label'],
           'text-size': 11,
           'text-font': ['Open Sans Bold', 'Open Sans Regular'],
-          'text-anchor': 'center',
+          'text-offset': [0, 1.2],
+          'text-anchor': 'top',
           'text-allow-overlap': true,
           'text-ignore-placement': true,
-          'text-line-height': 1.05,
         },
         paint: {
-          'text-color': '#ffffff',
+          'text-color': '#ecfdf5',
+          'text-halo-color': '#0a1210',
+          'text-halo-width': 1.6,
         },
       });
-      // White crosshair reticle on the aim point.
+      // Soft emerald aim bloom + core.
       map.addLayer({
         id: LYR_GPS_GUIDE_LABEL,
         type: 'circle',
         source: SRC_GPS_GUIDE,
-        filter: ['==', ['get', 'kind'], 'crosshair'],
+        filter: ['==', ['get', 'kind'], 'aim'],
         paint: {
-          'circle-radius': 14,
-          'circle-color': 'rgba(0,0,0,0)',
-          'circle-stroke-width': 2.5,
-          'circle-stroke-color': '#ffffff',
+          'circle-radius': 18,
+          'circle-color': '#3d9970',
+          'circle-opacity': 0.22,
+          'circle-blur': 0.55,
         },
       });
       map.addLayer({
-        id: 'golf-gps-crosshair-dot',
+        id: 'golf-gps-aim-ring',
         type: 'circle',
         source: SRC_GPS_GUIDE,
-        filter: ['==', ['get', 'kind'], 'crosshair'],
+        filter: ['==', ['get', 'kind'], 'aim'],
         paint: {
-          'circle-radius': 3,
-          'circle-color': '#ffffff',
+          'circle-radius': 9,
+          'circle-color': 'rgba(0,0,0,0)',
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#6ee7b7',
         },
       });
       map.addLayer({
-        id: 'golf-gps-plays-like',
+        id: 'golf-gps-aim-core',
+        type: 'circle',
+        source: SRC_GPS_GUIDE,
+        filter: ['==', ['get', 'kind'], 'aim'],
+        paint: {
+          'circle-radius': 3.5,
+          'circle-color': '#ecfdf5',
+          'circle-stroke-width': 1.5,
+          'circle-stroke-color': '#3d9970',
+        },
+      });
+      map.addLayer({
+        id: 'golf-gps-aim-yards',
         type: 'symbol',
         source: SRC_GPS_GUIDE,
-        filter: ['==', ['get', 'kind'], 'plays-like'],
+        filter: ['==', ['get', 'kind'], 'aim'],
         layout: {
-          'text-field': ['get', 'label'],
-          'text-size': 12,
+          'text-field': ['concat', ['get', 'yardsLabel'], ' yd'],
+          'text-size': 15,
           'text-font': ['Open Sans Bold', 'Open Sans Regular'],
-          'text-offset': [3.2, 0],
-          'text-anchor': 'left',
+          'text-offset': [0, -1.55],
+          'text-anchor': 'bottom',
           'text-allow-overlap': true,
           'text-ignore-placement': true,
         },
         paint: {
-          'text-color': '#0a0a0a',
-          'text-halo-color': '#ffffff',
-          'text-halo-width': 6,
+          'text-color': '#ecfdf5',
+          'text-halo-color': '#0a1210',
+          'text-halo-width': 2,
+        },
+      });
+      map.addLayer({
+        id: 'golf-gps-reads',
+        type: 'symbol',
+        source: SRC_GPS_GUIDE,
+        filter: ['==', ['get', 'kind'], 'reads'],
+        layout: {
+          'text-field': ['get', 'label'],
+          'text-size': 12,
+          'text-font': ['Open Sans Bold', 'Open Sans Regular'],
+          'text-offset': [0, 1.7],
+          'text-anchor': 'top',
+          'text-allow-overlap': true,
+          'text-ignore-placement': true,
+        },
+        paint: {
+          'text-color': '#a7f3d0',
+          'text-halo-color': '#0a1210',
+          'text-halo-width': 1.8,
         },
       });
 

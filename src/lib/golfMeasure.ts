@@ -254,7 +254,7 @@ export function distancesToGreen(
   };
 }
 
-/** GPS rangefinder overlay — 18Birdies-style F / MID / BACK badges + aim line. */
+/** GPS rangefinder — TeeReady caddie line (emerald aim, soft F/B depth). */
 export function gpsGuideGeoJSON(
   from: LonLat | null,
   hole: GolfHole | null,
@@ -280,10 +280,26 @@ export function gpsGuideGeoJSON(
   );
   const features: GeoJSON.Feature[] = [];
 
-  // Single white play line to the aim / mid target.
+  for (const row of [
+    { key: 'F', pt: marks.front, yards: dist.front },
+    { key: 'B', pt: marks.back, yards: dist.back },
+  ] as const) {
+    features.push({
+      type: 'Feature',
+      properties: { kind: 'whisker', role: row.key, yards: row.yards },
+      geometry: {
+        type: 'LineString',
+        coordinates: [
+          [from.lon, from.lat],
+          [row.pt.lon, row.pt.lat],
+        ],
+      },
+    });
+  }
+
   features.push({
     type: 'Feature',
-    properties: { kind: 'guide', role: 'M', color: '#ffffff' },
+    properties: { kind: 'guide', role: 'M', color: '#3d9970' },
     geometry: {
       type: 'LineString',
       coordinates: [
@@ -293,59 +309,33 @@ export function gpsGuideGeoJSON(
     },
   });
 
-  const badges: Array<{
-    key: string;
-    roleLabel: string;
-    pt: LonLat;
-    yards: number;
-    major: number;
-  }> = [
-    {
-      key: 'B',
-      roleLabel: 'BACK',
-      pt: marks.back,
-      yards: dist.back,
-      major: 0,
-    },
-    {
-      key: 'M',
-      roleLabel: 'MID',
-      pt: aim,
-      yards: aimYd,
-      major: 1,
-    },
-    {
-      key: 'F',
-      roleLabel: 'FRONT',
-      pt: marks.front,
-      yards: dist.front,
-      major: 0,
-    },
-  ];
-
-  for (const b of badges) {
+  for (const row of [
+    { key: 'F', label: 'F', pt: marks.front, yards: dist.front },
+    { key: 'B', label: 'B', pt: marks.back, yards: dist.back },
+  ] as const) {
     features.push({
       type: 'Feature',
       properties: {
-        kind: 'badge',
-        role: b.key,
-        roleLabel: b.roleLabel,
-        yardsLabel: `${b.yards}y`,
-        label: `${b.yards}y ${b.roleLabel}`,
-        yards: b.yards,
-        major: b.major,
+        kind: 'depth',
+        role: row.key,
+        label: `${row.label} ${row.yards}`,
+        yards: row.yards,
       },
       geometry: {
         type: 'Point',
-        coordinates: [b.pt.lon, b.pt.lat],
+        coordinates: [row.pt.lon, row.pt.lat],
       },
     });
   }
 
-  // Crosshair reticle on the aim point.
   features.push({
     type: 'Feature',
-    properties: { kind: 'crosshair', role: 'M' },
+    properties: {
+      kind: 'aim',
+      role: 'M',
+      yards: aimYd,
+      yardsLabel: String(aimYd),
+    },
     geometry: {
       type: 'Point',
       coordinates: [aim.lon, aim.lat],
@@ -355,28 +345,27 @@ export function gpsGuideGeoJSON(
   const playsLike = opts?.playsLikeYd;
   const club = opts?.midClub;
   if (playsLike != null || club) {
-    const playsText =
-      playsLike != null && club
-        ? `Plays like ${playsLike}y ${club}`
-        : playsLike != null
-          ? `Plays like ${playsLike}y`
-          : club
-            ? String(club)
-            : '';
-    features.push({
-      type: 'Feature',
-      properties: {
-        kind: 'plays-like',
-        label: playsText,
-        yards: aimYd,
-        playsLike: playsLike ?? aimYd,
-        club: club ?? '',
-      },
-      geometry: {
-        type: 'Point',
-        coordinates: [aim.lon, aim.lat],
-      },
-    });
+    const parts: string[] = [];
+    if (playsLike != null && playsLike !== aimYd) {
+      parts.push(`reads ${playsLike}`);
+    }
+    if (club) parts.push(club);
+    if (parts.length) {
+      features.push({
+        type: 'Feature',
+        properties: {
+          kind: 'reads',
+          label: parts.join(' · '),
+          yards: aimYd,
+          playsLike: playsLike ?? aimYd,
+          club: club ?? '',
+        },
+        geometry: {
+          type: 'Point',
+          coordinates: [aim.lon, aim.lat],
+        },
+      });
+    }
   }
 
   return { type: 'FeatureCollection', features };

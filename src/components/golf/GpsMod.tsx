@@ -59,7 +59,7 @@ export function GpsMod({
 
   return (
     <div
-      className={`pointer-events-auto hud-card rounded-card border border-[color-mix(in_srgb,#3b82f6_35%,var(--line))] p-2 ${className}`}
+      className={`pointer-events-auto hud-card rounded-card border border-[color-mix(in_srgb,var(--brand)_40%,var(--line))] p-2 ${className}`}
     >
       <div className="flex items-center justify-between gap-1.5">
         <div className="flex min-w-0 items-center gap-1.5">
@@ -114,7 +114,7 @@ export function GpsMod({
                 </span>
               </div>
               <p className="mt-1 text-[9px] text-faint">
-                Over {farThresholdYd} yd from green · move closer for F / M / B
+                Over {farThresholdYd} yd out · move closer for green depth
               </p>
             </div>
           ) : (
