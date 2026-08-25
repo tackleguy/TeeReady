@@ -16,6 +16,7 @@
     "audit:golf-scorecards": "tsx src/dev/golfScorecardAudit.ts",
     "audit:golf-coverage": "tsx src/dev/golfScorecardCoverage.ts",
     "audit:golf-catalog": "tsx src/dev/golfCatalogAudit.ts",
+    "audit:course-data": "node scripts/audit-course-data.mjs",
     "import:golf-scorecards": "node scripts/import-opengolf-scorecards.mjs",
     "build:golf-catalog": "node scripts/build-golf-catalog.mjs",
     "build:green-meshes": "node scripts/build-green-meshes.mjs",

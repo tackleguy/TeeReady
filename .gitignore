@@ -21,6 +21,7 @@ scripts/.cache
 
 # Local audit screenshots
 tmp/
+reports/
 
 # Env / logs
 .env
