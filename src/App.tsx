@@ -26,6 +26,7 @@ import { ProfileView } from './routes/ProfileView';
 import { QuestionnaireView } from './routes/QuestionnaireView';
 import { SettingsView } from './routes/SettingsView';
 import { StatsView } from './routes/StatsView';
+import { SwingView } from './routes/SwingView';
 import { TodayView } from './routes/TodayView';
 
 applyTheme(loadTheme());
@@ -248,6 +249,14 @@ function Shell() {
             element={
               <RequireAuth>
                 <StatsView />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/swing"
+            element={
+              <RequireAuth>
+                <SwingView />
               </RequireAuth>
             }
           />

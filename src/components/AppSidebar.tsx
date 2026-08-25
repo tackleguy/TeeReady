@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   Map as MapIcon,
+  PersonStanding,
   Settings,
   UserRound,
   Users,
@@ -11,6 +12,7 @@ import { prefetchRoute } from '../lib/prefetchRoutes';
 
 export const SIDE_LINKS = [
   { label: 'Course map', href: '/courses/map', icon: MapIcon },
+  { label: 'Swing', href: '/swing', icon: PersonStanding },
   { label: 'Profile', href: '/profile', icon: UserRound },
   { label: 'Social', href: '/group', icon: Users },
   { label: 'Settings', href: '/settings', icon: Settings },

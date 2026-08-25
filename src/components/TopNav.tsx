@@ -299,6 +299,7 @@ export function TopNav({
             <NavItem to="/stats" tutorialId="stats">
               Stats
             </NavItem>
+            <NavItem to="/swing">Swing</NavItem>
           </nav>
         </div>
 
@@ -349,6 +350,9 @@ export function TopNav({
         <RoundsMenu mobile />
         <NavItem to="/stats" mobile tutorialId="stats">
           Stats
+        </NavItem>
+        <NavItem to="/swing" mobile>
+          Swing
         </NavItem>
       </nav>
     </header>
