@@ -18,6 +18,7 @@ import { applyTheme, loadTheme } from './lib/theme';
 import { defaultSearchLoc, saveSearchLoc } from './lib/searchLoc';
 import { HomeLanding } from './routes/HomeLanding';
 import { TodayView } from './routes/TodayView';
+import { GolfView } from './routes/GolfView';
 import { RouteFallback } from './components/ui/RouteFallback';
 
 applyTheme(loadTheme());
@@ -30,9 +31,6 @@ const CoursesView = lazy(() =>
 );
 const GroupView = lazy(() =>
   import('./routes/GroupView').then((m) => ({ default: m.GroupView })),
-);
-const GolfView = lazy(() =>
-  import('./routes/GolfView').then((m) => ({ default: m.GolfView })),
 );
 const ProfileView = lazy(() =>
   import('./routes/ProfileView').then((m) => ({ default: m.ProfileView })),
@@ -124,9 +122,7 @@ function PublicHome() {
 function RoundsPage() {
   return (
     <RoundsErrorBoundary>
-      <Suspense fallback={<RouteFallback />}>
-        <GolfView active />
-      </Suspense>
+      <GolfView active />
     </RoundsErrorBoundary>
   );
 }
@@ -147,11 +143,9 @@ function Shell() {
     const handle = useIdle
       ? requestIdleCallback(() => {
           void import('./routes/CoursesView');
-          void import('./routes/GolfView');
         })
       : window.setTimeout(() => {
           void import('./routes/CoursesView');
-          void import('./routes/GolfView');
         }, 2000);
     return () => {
       if (useIdle) cancelIdleCallback(handle as number);
