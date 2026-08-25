@@ -254,6 +254,69 @@ export function distancesToGreen(
   };
 }
 
+/** GPS → front / mid / back guide lines with yardage (+ optional club) labels. */
+export function gpsGuideGeoJSON(
+  from: LonLat | null,
+  hole: GolfHole | null,
+  opts?: { midClub?: string | null; maxYards?: number },
+): GeoJSON.FeatureCollection {
+  if (!from || !hole) return { type: 'FeatureCollection', features: [] };
+  const marks = greenMarks(hole);
+  const dist = distancesToGreen(from, marks);
+  const maxYd = opts?.maxYards ?? 700;
+  if (dist.mid > maxYd) return { type: 'FeatureCollection', features: [] };
+
+  const features: GeoJSON.Feature[] = [];
+  const rows: Array<{ key: string; pt: LonLat; yards: number; club?: string }> = [
+    { key: 'F', pt: marks.front, yards: dist.front },
+    {
+      key: 'M',
+      pt: marks.mid,
+      yards: dist.mid,
+      club: opts?.midClub ?? undefined,
+    },
+    { key: 'B', pt: marks.back, yards: dist.back },
+  ];
+
+  for (const row of rows) {
+    features.push({
+      type: 'Feature',
+      properties: {
+        kind: 'guide',
+        role: row.key,
+        label: row.key,
+      },
+      geometry: {
+        type: 'LineString',
+        coordinates: [
+          [from.lon, from.lat],
+          [row.pt.lon, row.pt.lat],
+        ],
+      },
+    });
+    const midLon = (from.lon + row.pt.lon) / 2;
+    const midLat = (from.lat + row.pt.lat) / 2;
+    const text =
+      row.key === 'M' && row.club
+        ? `${row.club} · ${row.yards} yd`
+        : `${row.key} ${row.yards}`;
+    features.push({
+      type: 'Feature',
+      properties: {
+        kind: 'guide-label',
+        role: row.key,
+        label: text,
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: [midLon, midLat],
+      },
+    });
+  }
+
+  return { type: 'FeatureCollection', features };
+}
+
 export function greenMarksGeoJSON(
   marks: GreenMarks | null,
 ): GeoJSON.FeatureCollection {

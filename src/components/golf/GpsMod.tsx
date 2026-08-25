@@ -18,6 +18,11 @@ interface Props {
   locating?: boolean;
   /** Front / mid / back yards from GPS to the green. */
   distances: GreenDistances | null;
+  /** When mid is beyond this, show hole yardage only (default 700). */
+  farThresholdYd?: number;
+  /** Scorecard / playing yardage for the active hole. */
+  holeYards?: number | null;
+  holeNumber?: number | null;
   bearingToPin: number | null;
   onToggleFollow: () => void;
   onLocate: () => void;
@@ -35,6 +40,9 @@ export function GpsMod({
   error,
   locating = false,
   distances,
+  farThresholdYd = 700,
+  holeYards = null,
+  holeNumber = null,
   bearingToPin,
   onToggleFollow,
   onLocate,
@@ -44,6 +52,10 @@ export function GpsMod({
   className = '',
 }: Props) {
   const qColor = gpsQualityColor(quality);
+  const farAway =
+    distances != null &&
+    Number.isFinite(distances.mid) &&
+    distances.mid > farThresholdYd;
 
   return (
     <div
@@ -69,9 +81,11 @@ export function GpsMod({
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-1">
-          <span className="rounded-full bg-[color-mix(in_srgb,#3b82f6_16%,transparent)] px-1.5 py-0.5 font-mono text-[8px] font-bold uppercase tracking-[0.1em] text-[#3b82f6]">
-            No misses
-          </span>
+          {farAway ? (
+            <span className="rounded-full bg-[color-mix(in_srgb,#3b82f6_16%,transparent)] px-1.5 py-0.5 font-mono text-[8px] font-bold uppercase tracking-[0.1em] text-[#3b82f6]">
+              Hole yardage
+            </span>
+          ) : null}
           {onClose ? (
             <button
               type="button"
@@ -88,30 +102,47 @@ export function GpsMod({
 
       {enabled ? (
         <>
-          <div className="mt-2 grid grid-cols-3 gap-1">
-            {(
-              [
-                ['Front', distances?.front],
-                ['Mid', distances?.mid],
-                ['Back', distances?.back],
-              ] as const
-            ).map(([label, yd]) => (
-              <div
-                key={label}
-                className="rounded-lg bg-canvas px-1.5 py-1.5 text-center"
-              >
-                <div className="font-mono text-[8px] font-semibold uppercase tracking-[0.08em] text-faint">
-                  {label}
-                </div>
-                <div className="mt-0.5 text-[15px] font-bold tabular text-ink">
-                  {yd != null ? yd : '—'}
-                  <span className="ml-0.5 text-[9px] font-semibold text-muted">
-                    yd
-                  </span>
-                </div>
+          {farAway ? (
+            <div className="mt-2 rounded-lg bg-canvas px-3 py-2.5 text-center">
+              <div className="font-mono text-[8px] font-semibold uppercase tracking-[0.08em] text-faint">
+                {holeNumber != null ? `Hole ${holeNumber}` : 'Hole'}
               </div>
-            ))}
-          </div>
+              <div className="mt-0.5 text-[22px] font-bold tabular text-ink">
+                {holeYards != null ? holeYards : '—'}
+                <span className="ml-0.5 text-[11px] font-semibold text-muted">
+                  yd
+                </span>
+              </div>
+              <p className="mt-1 text-[9px] text-faint">
+                Over {farThresholdYd} yd from green · move closer for F / M / B
+              </p>
+            </div>
+          ) : (
+            <div className="mt-2 grid grid-cols-3 gap-1">
+              {(
+                [
+                  ['Front', distances?.front],
+                  ['Mid', distances?.mid],
+                  ['Back', distances?.back],
+                ] as const
+              ).map(([label, yd]) => (
+                <div
+                  key={label}
+                  className="rounded-lg bg-canvas px-1.5 py-1.5 text-center"
+                >
+                  <div className="font-mono text-[8px] font-semibold uppercase tracking-[0.08em] text-faint">
+                    {label}
+                  </div>
+                  <div className="mt-0.5 text-[15px] font-bold tabular text-ink">
+                    {yd != null ? yd : '—'}
+                    <span className="ml-0.5 text-[9px] font-semibold text-muted">
+                      yd
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="mt-1.5 flex items-center justify-between gap-2 text-[10px] text-muted">
             <span style={{ color: qColor }}>

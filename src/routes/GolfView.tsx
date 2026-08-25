@@ -622,6 +622,11 @@ export function GolfView({ active = true }: { active?: boolean }) {
     );
   }, [gpsPos, activeHoleObj]);
 
+  const gpsMidClub = useMemo(() => {
+    if (!gpsGreenDistances || gpsGreenDistances.mid > 700) return null;
+    return bestClubForDistance(gpsGreenDistances.mid, bag) ?? null;
+  }, [gpsGreenDistances, bag]);
+
   useEffect(() => {
     if (!course) setMapReady(false);
   }, [course]);
@@ -980,6 +985,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                 )}
                 courseName={course.name}
                 greens3d={greens3d}
+                gpsMidClub={viewMode === 'gps' ? gpsMidClub : null}
                 trackedShots={activeHoleShots}
                 gpsPosition={
                   gpsOn && gpsPos
@@ -1281,6 +1287,8 @@ export function GolfView({ active = true }: { active?: boolean }) {
                   error={gpsError}
                   locating={gpsLocating}
                   distances={gpsGreenDistances}
+                  holeYards={activeHoleObj?.yards ?? null}
+                  holeNumber={activeHoleObj?.number ?? null}
                   bearingToPin={gpsBearingToPin}
                   onToggleFollow={() => setGpsFollow((v) => !v)}
                   onLocate={() => {

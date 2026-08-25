@@ -7,6 +7,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { GOLF_SATELLITE_STYLE, type GolfHole } from '../../lib/golf';
 import {
   bagRingsGeoJSON,
+  gpsGuideGeoJSON,
   targetLineGeoJSON,
   targetPointGeoJSON,
 } from '../../lib/golfMeasure';
@@ -25,7 +26,6 @@ import {
 import { bearingCompass } from '../../lib/geo';
 import { accuracyCircleGeoJSON } from '../../lib/gps';
 import {
-  greenContoursGeoJSON,
   greenMeshSlug,
   loadGreenMeshCourse,
   type GreenMeshCourse,
@@ -71,8 +71,10 @@ interface Props {
   satelliteCached?: boolean;
   /** When set, loads pre-built 3D green meshes for supported courses. */
   courseName?: string | null;
-  /** User toggle — show LiDAR green contours + 3D mesh. */
+  /** User toggle — show LiDAR green 3D mesh. */
   greens3d?: boolean;
+  /** Club label for mid-green GPS guide (18Birdies-style). */
+  gpsMidClub?: string | null;
 }
 
 const SRC = 'golf-holes';
@@ -89,7 +91,7 @@ const SRC_SHOT_PTS = 'golf-shot-pts';
 const SRC_GPS = 'golf-gps-pos';
 const SRC_GPS_ACC = 'golf-gps-acc';
 const SRC_GPS_HDG = 'golf-gps-hdg';
-const SRC_GREEN_CONTOUR = 'golf-green-contours';
+const SRC_GPS_GUIDE = 'golf-gps-guide';
 
 const LINE = 'golf-hole-lines';
 const LINE_ACTIVE = 'golf-hole-lines-active';
@@ -98,9 +100,6 @@ const LYR_GREEN = 'golf-greens-lyr';
 const LYR_TEE_HIT = 'golf-tees-hit';
 const LYR_GREEN_HIT = 'golf-greens-hit';
 const LINE_HIT = 'golf-hole-lines-hit';
-const LYR_GREEN_FILL = 'golf-green-contour-fill';
-const LYR_GREEN_OUTLINE = 'golf-green-contour-line';
-const LYR_GREEN_OUTLINE_ACTIVE = 'golf-green-contour-line-active';
 const LYR_FLOW = 'golf-wind-flow-lyr';
 const LYR_FLOW_ARROW = 'golf-wind-arrow-lyr';
 const LYR_AIM = 'golf-aim-lyr';
@@ -115,6 +114,9 @@ const LYR_PLAY_APP = 'golf-play-app-lyr';
 const LYR_PLAY_CHIP = 'golf-play-chip-lyr';
 const LYR_PLAY_PUTT = 'golf-play-putt-lyr';
 const LYR_PLAY_TICK = 'golf-play-tick-lyr';
+const LYR_PLAY_LABEL = 'golf-play-label-lyr';
+const LYR_GPS_GUIDE = 'golf-gps-guide-lyr';
+const LYR_GPS_GUIDE_LABEL = 'golf-gps-guide-label-lyr';
 const LYR_SHOT_TRACE = 'golf-shot-trace-lyr';
 const LYR_SHOT_PT = 'golf-shot-pt-lyr';
 const LYR_SHOT_LABEL = 'golf-shot-label-lyr';
@@ -212,6 +214,7 @@ export function GolfMap({
   satelliteCached = false,
   courseName = null,
   greens3d = false,
+  gpsMidClub = null,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -230,8 +233,6 @@ export function GolfMap({
   const activeHoleRef = useRef(activeHole);
   activeHoleRef.current = activeHole;
   const green3dRef = useRef<GreenMeshCourse | null>(null);
-  const greens3dRef = useRef(greens3d);
-  greens3dRef.current = greens3d;
   const green3dStateRef = useRef({
     course: null as GreenMeshCourse | null,
     activeHole: null as number | null,
@@ -333,10 +334,7 @@ export function GolfMap({
       map.addSource(SRC_GPS, { type: 'geojson', data: emptyCollection() });
       map.addSource(SRC_GPS_ACC, { type: 'geojson', data: emptyCollection() });
       map.addSource(SRC_GPS_HDG, { type: 'geojson', data: emptyCollection() });
-      map.addSource(SRC_GREEN_CONTOUR, {
-        type: 'geojson',
-        data: emptyCollection(),
-      });
+      map.addSource(SRC_GPS_GUIDE, { type: 'geojson', data: emptyCollection() });
 
       // Fat invisible stroke first so tees/fairways are tappable on phones.
       map.addLayer({
@@ -369,48 +367,6 @@ export function GolfMap({
           'line-color': '#ffffff',
           'line-width': 3,
           'line-opacity': 0.85,
-        },
-      });
-
-      map.addLayer({
-        id: LYR_GREEN_FILL,
-        type: 'fill',
-        source: SRC_GREEN_CONTOUR,
-        paint: {
-          'fill-color': [
-            'case',
-            ['==', ['get', 'active'], 1],
-            '#86efac',
-            '#4ade80',
-          ],
-          'fill-opacity': [
-            'case',
-            ['==', ['get', 'active'], 1],
-            0.42,
-            0.22,
-          ],
-        },
-      });
-      map.addLayer({
-        id: LYR_GREEN_OUTLINE,
-        type: 'line',
-        source: SRC_GREEN_CONTOUR,
-        filter: ['==', ['get', 'active'], 0],
-        paint: {
-          'line-color': '#bbf7d0',
-          'line-width': 1.6,
-          'line-opacity': 0.85,
-        },
-      });
-      map.addLayer({
-        id: LYR_GREEN_OUTLINE_ACTIVE,
-        type: 'line',
-        source: SRC_GREEN_CONTOUR,
-        filter: ['==', ['get', 'active'], 1],
-        paint: {
-          'line-color': '#ecfdf5',
-          'line-width': 2.8,
-          'line-opacity': 1,
         },
       });
 
@@ -620,6 +576,65 @@ export function GolfMap({
           'line-opacity': 0.9,
         },
       });
+      map.addLayer({
+        id: LYR_PLAY_LABEL,
+        type: 'symbol',
+        source: SRC_PLAY,
+        filter: ['==', ['get', 'kind'], 'callout'],
+        layout: {
+          'text-field': ['get', 'callout'],
+          'text-size': 11,
+          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+          'text-offset': [0, -0.6],
+          'text-anchor': 'bottom',
+          'text-allow-overlap': true,
+          'text-ignore-placement': true,
+        },
+        paint: {
+          'text-color': '#f8fafc',
+          'text-halo-color': '#0f172a',
+          'text-halo-width': 1.4,
+        },
+      });
+      map.addLayer({
+        id: LYR_GPS_GUIDE,
+        type: 'line',
+        source: SRC_GPS_GUIDE,
+        filter: ['==', ['get', 'kind'], 'guide'],
+        paint: {
+          'line-color': [
+            'match',
+            ['get', 'role'],
+            'F',
+            '#86efac',
+            'B',
+            '#fde68a',
+            '#38bdf8',
+          ],
+          'line-width': ['match', ['get', 'role'], 'M', 2.8, 1.8],
+          'line-opacity': 0.92,
+        },
+      });
+      map.addLayer({
+        id: LYR_GPS_GUIDE_LABEL,
+        type: 'symbol',
+        source: SRC_GPS_GUIDE,
+        filter: ['==', ['get', 'kind'], 'guide-label'],
+        layout: {
+          'text-field': ['get', 'label'],
+          'text-size': 12,
+          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+          'text-offset': [0, -0.55],
+          'text-anchor': 'bottom',
+          'text-allow-overlap': true,
+          'text-ignore-placement': true,
+        },
+        paint: {
+          'text-color': '#ffffff',
+          'text-halo-color': '#0f172a',
+          'text-halo-width': 1.6,
+        },
+      });
 
       // Shot tracker layers
       map.addLayer({
@@ -765,13 +780,7 @@ export function GolfMap({
   useEffect(() => {
     if (!green3dSlug) {
       green3dRef.current = null;
-      const map = mapRef.current;
-      whenReady(() => {
-        (
-          map?.getSource(SRC_GREEN_CONTOUR) as maplibregl.GeoJSONSource | undefined
-        )?.setData(emptyCollection());
-        map?.triggerRepaint();
-      });
+      mapRef.current?.triggerRepaint();
       return;
     }
     let cancelled = false;
@@ -779,37 +788,15 @@ export function GolfMap({
       if (cancelled) return;
       green3dRef.current = course;
       mapRef.current?.triggerRepaint();
-      const map = mapRef.current;
-      if (!map) return;
-      whenReady(() => {
-        (
-          map.getSource(SRC_GREEN_CONTOUR) as maplibregl.GeoJSONSource | undefined
-        )?.setData(
-          greens3dRef.current
-            ? greenContoursGeoJSON(course, activeHoleRef.current)
-            : emptyCollection(),
-        );
-      });
     });
     return () => {
       cancelled = true;
     };
-  }, [green3dSlug, whenReady]);
+  }, [green3dSlug]);
 
   useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
-    whenReady(() => {
-      (
-        map.getSource(SRC_GREEN_CONTOUR) as maplibregl.GeoJSONSource | undefined
-      )?.setData(
-        greens3d
-          ? greenContoursGeoJSON(green3dRef.current, activeHole)
-          : emptyCollection(),
-      );
-      map.triggerRepaint();
-    });
-  }, [greens3d, activeHole, whenReady]);
+    mapRef.current?.triggerRepaint();
+  }, [greens3d, activeHole]);
 
   // Animate the streamlines so the flow direction reads at a glance.
   useEffect(() => {
@@ -1052,8 +1039,19 @@ export function GolfMap({
       (
         map.getSource(SRC_GPS_HDG) as maplibregl.GeoJSONSource | undefined
       )?.setData(hdg);
+
+      const hole = holes.find((h) => h.number === activeHoleRef.current) ?? null;
+      (
+        map.getSource(SRC_GPS_GUIDE) as maplibregl.GeoJSONSource | undefined
+      )?.setData(
+        gpsGuideGeoJSON(
+          gpsPosition ? { lat: gpsPosition.lat, lon: gpsPosition.lon } : null,
+          hole,
+          { midClub: gpsMidClub, maxYards: 700 },
+        ),
+      );
     });
-  }, [gpsPosition, gpsAccuracyM, gpsHeadingDeg, whenReady]);
+  }, [gpsPosition, gpsAccuracyM, gpsHeadingDeg, holes, activeHole, gpsMidClub, whenReady]);
 
   // Follow GPS — ease camera when the fix moves
   useEffect(() => {
@@ -1083,7 +1081,7 @@ export function GolfMap({
           {windLabel ? <span className="text-cyan-200">{windLabel}</span> : null}
           {greens3d && canGreens3d && activeHole != null && (
             <span className="text-emerald-200">
-              3D greens · LiDAR contours · drag to tilt
+              3D greens · LiDAR mesh · drag to tilt
             </span>
           )}
           {activeHole != null && (
