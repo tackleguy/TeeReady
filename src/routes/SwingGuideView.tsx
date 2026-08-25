@@ -154,7 +154,7 @@ export function SwingGuideView() {
         if (!doc) {
           if (!cancelled) {
             setError(
-              'No actionable fault detected from high-confidence metrics. Re-record at the matching camera angle with 60+ fps when possible.',
+              'No actionable fault detected from high-confidence metrics. Re-record at the matching camera angle with 30+ fps when possible.',
             );
             setLoading(false);
           }

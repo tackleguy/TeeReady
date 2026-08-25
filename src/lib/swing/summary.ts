@@ -145,7 +145,7 @@ export function buildRuleSummary(
   }
 
   if (parts.length === 0) {
-    return 'Swing positions were found, but there isn’t enough high-confidence signal for a coaching summary. Re-record at 60+ fps with full body in frame.';
+    return 'Swing positions were found, but there isn’t enough high-confidence signal for a coaching summary. Re-record with full body in frame at 30+ fps when possible.';
   }
 
   return parts.join(' ');

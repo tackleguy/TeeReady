@@ -10,9 +10,9 @@ export const SWING_THRESHOLDS = {
   /** Frames required for a usable swing. */
   minFrames: 20,
   /** Impact / P7-dependent metrics need at least this fps. */
-  impactMetricMinFps: 60,
+  impactMetricMinFps: 30,
   /** Soft warn below this. */
-  warnBelowFps: 60,
+  warnBelowFps: 30,
 
   faceOn: {
     /** Head lateral move at impact, as fraction of shoulder width. */

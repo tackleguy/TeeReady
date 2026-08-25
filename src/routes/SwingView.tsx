@@ -466,8 +466,8 @@ export function SwingView() {
             <div className="flex gap-2 rounded-card border border-amber-500/40 bg-[color-mix(in_srgb,#f59e0b_12%,transparent)] px-3 py-2.5 text-[12px] text-ink">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
               <p>
-                Below 60 fps — impact-position metrics will be flagged unreliable.
-                Use a phone that can capture 60–120 fps when possible.
+                Below 30 fps — impact-position metrics will be flagged unreliable.
+                Most phones at 30 fps are fine; higher frame rates still help at impact.
               </p>
             </div>
           ) : null}
@@ -518,7 +518,7 @@ export function SwingView() {
             <div className="flex gap-2 rounded-card border border-amber-500/40 bg-[color-mix(in_srgb,#f59e0b_12%,transparent)] px-3 py-2.5 text-[12px] text-ink">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
               <p>
-                Impact metrics need 60+ fps. They’ll show as low confidence on this clip.
+                Impact metrics need 30+ fps. They’ll show as low confidence on this clip.
               </p>
             </div>
           ) : null}
