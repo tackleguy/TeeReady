@@ -11,9 +11,10 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT_DIR = join(ROOT, 'public/golf/greens');
 const CATALOG_PATH = join(ROOT, 'api/golf/_data/usCatalog.json');
 const OVERPASS_URLS = [
-  'https://overpass-api.de/api/interpreter',
+  'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
   'https://overpass.private.coffee/api/interpreter',
   'https://overpass.kumi.systems/api/interpreter',
+  'https://overpass-api.de/api/interpreter',
 ];
 const USGS =
   'https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer/exportImage';
@@ -359,13 +360,21 @@ function holeEnds(elements) {
   return out;
 }
 
-function assignHoles(greenItems, holeEndsList) {
+function assignHoles(greenItems, holeEndsList, targetHoles = 18) {
   const assigned = new Map();
   const used = new Set();
   const sortedHoles = [...holeEndsList].sort((a, b) => a.number - b.number);
+  const maxHole = Math.max(
+    targetHoles,
+    ...sortedHoles.map((h) => h.number),
+    ...greenItems.map((g) => (Number.isFinite(g.ref) ? g.ref : 0)),
+    9,
+  );
+  const holeCap = Math.min(18, Math.max(targetHoles, maxHole));
 
   const claimNearest = (maxM) => {
     for (const h of sortedHoles) {
+      if (h.number < 1 || h.number > holeCap) continue;
       if ([...assigned.values()].includes(h.number)) continue;
       let bestIdx = -1;
       let bestD = Infinity;
@@ -384,10 +393,11 @@ function assignHoles(greenItems, holeEndsList) {
     }
   };
 
-  // Tight match first, then a wider pass so all 18 get a green when OSM is sparse.
+  // Tight match first, then wider passes so sparse OSM still maps.
   claimNearest(55);
   claimNearest(120);
   claimNearest(220);
+  claimNearest(380);
 
   // Any greens with explicit ref tags
   greenItems.forEach((g, idx) => {
@@ -396,7 +406,7 @@ function assignHoles(greenItems, holeEndsList) {
     if (
       Number.isFinite(ref) &&
       ref >= 1 &&
-      ref <= 18 &&
+      ref <= holeCap &&
       ![...assigned.values()].includes(ref)
     ) {
       assigned.set(idx, ref);
@@ -404,20 +414,41 @@ function assignHoles(greenItems, holeEndsList) {
     }
   });
 
-  // Fill any still-missing hole numbers with the nearest leftover green.
+  // Fill missing hole numbers with the nearest leftover green.
   const missing = [];
-  for (let n = 1; n <= 18; n++) {
+  for (let n = 1; n <= holeCap; n++) {
     if (![...assigned.values()].includes(n)) missing.push(n);
   }
   for (const n of missing) {
     const end = sortedHoles.find((h) => h.number === n);
+    // Prefer greens near adjacent assigned holes when hole-end is missing.
+    const neighbors = [n - 1, n + 1]
+      .map((hn) => {
+        const idx = [...assigned.entries()].find(([, hole]) => hole === hn)?.[0];
+        return idx != null ? greenItems[idx] : null;
+      })
+      .filter(Boolean);
     let bestIdx = -1;
     let bestD = Infinity;
     greenItems.forEach((g, idx) => {
       if (used.has(idx)) return;
-      const d = end
-        ? haversineM(g.centroid.lat, g.centroid.lon, end.lat, end.lon)
-        : 0;
+      let d = Infinity;
+      if (end) {
+        d = haversineM(g.centroid.lat, g.centroid.lon, end.lat, end.lon);
+      } else if (neighbors.length) {
+        d = Math.min(
+          ...neighbors.map((nb) =>
+            haversineM(
+              g.centroid.lat,
+              g.centroid.lon,
+              nb.centroid.lat,
+              nb.centroid.lon,
+            ),
+          ),
+        );
+      } else {
+        d = 0;
+      }
       if (d < bestD) {
         bestD = d;
         bestIdx = idx;
@@ -433,7 +464,8 @@ function assignHoles(greenItems, holeEndsList) {
 }
 
 async function buildCourse(course) {
-  const { slug, lat, lon, radiusM, name, maxLat, minLat } = course;
+  const { slug, lat, lon, radiusM, name, maxLat, minLat, targetHoles = 18 } =
+    course;
   const greenQuery = `
 [out:json][timeout:60];
 (
@@ -447,14 +479,10 @@ way["golf"="hole"](around:${radiusM},${lat},${lon});
 out tags geom;
 `.trim();
 
-  const greenBody = await overpass(greenQuery, {
-    urls: ['https://overpass-api.de/api/interpreter'],
-  });
+  const greenBody = await overpass(greenQuery);
   let holeBody = { elements: [] };
   try {
-    holeBody = await overpass(holeQuery, {
-      urls: ['https://overpass-api.de/api/interpreter'],
-    });
+    holeBody = await overpass(holeQuery);
   } catch {
     console.warn(`${slug}: hole lines unavailable — matching by proximity only`);
   }
@@ -465,7 +493,7 @@ out tags geom;
   console.log(`${slug}: ${greens.length} greens, ${holes.length} hole ends`);
 
   const scale = mPerDegree(lat);
-  const greenItems = greens
+  let greenItems = greens
     .map((el) => {
       const ring = el.geometry.map((p) => ({ lat: p.lat, lon: p.lon }));
       const centroid = ringCentroid(ring);
@@ -484,7 +512,21 @@ out tags geom;
       return true;
     });
 
-  const holeAssign = assignHoles(greenItems, holes);
+  // When a dense cluster pulls in neighboring courses, keep greens near hole
+  // ends or the course pin (within ~1.1 km of pin / any hole end).
+  if (greenItems.length > targetHoles + 8 && holes.length >= 9) {
+    const anchors = holes.length
+      ? holes
+      : [{ lat, lon }];
+    greenItems = greenItems.filter((g) =>
+      anchors.some(
+        (a) => haversineM(g.centroid.lat, g.centroid.lon, a.lat, a.lon) < 1100,
+      ),
+    );
+    console.log(`${slug}: filtered to ${greenItems.length} greens near hole ends`);
+  }
+
+  const holeAssign = assignHoles(greenItems, holes, targetHoles);
   /** @type {Array<{ hole: number; lat: number; lon: number; baseElevM: number; positions: number[]; indices: number[] }>} */
   const meshes = [];
 
@@ -493,35 +535,36 @@ out tags geom;
     if (hole == null) continue;
     const { ring, centroid, ringLocal } = greenItems[idx];
     let minLon = Infinity;
-    let minLat = Infinity;
+    let minLatG = Infinity;
     let maxLon = -Infinity;
-    let maxLat = -Infinity;
+    let maxLatG = -Infinity;
     for (const p of ring) {
       minLon = Math.min(minLon, p.lon);
-      minLat = Math.min(minLat, p.lat);
+      minLatG = Math.min(minLatG, p.lat);
       maxLon = Math.max(maxLon, p.lon);
-      maxLat = Math.max(maxLat, p.lat);
+      maxLatG = Math.max(maxLatG, p.lat);
     }
     const pad = 0.00008;
     const size = Math.min(
       120,
-      Math.max(24, Math.ceil(Math.max(maxLon - minLon, maxLat - minLat) / 0.000009)),
+      Math.max(24, Math.ceil(Math.max(maxLon - minLon, maxLatG - minLatG) / 0.000009)),
     );
-    let patch;
+    let patch = null;
     try {
       patch = await fetch3dep(
         minLon - pad,
-        minLat - pad,
+        minLatG - pad,
         maxLon + pad,
-        maxLat + pad,
+        maxLatG + pad,
         size,
       );
     } catch (err) {
-      console.warn(`  hole ${hole}: 3DEP failed — ${err.message}`);
-      continue;
+      console.warn(`  hole ${hole}: 3DEP failed — flat mesh (${err.message})`);
     }
 
-    const mesh = buildMesh(ringLocal, patch, { lat, lon, scale });
+    const mesh = patch
+      ? buildMesh(ringLocal, patch, { lat, lon, scale })
+      : buildFlatMesh(ringLocal);
     if (mesh.indices.length < 6) {
       console.warn(`  hole ${hole}: mesh too sparse`);
       continue;
@@ -556,6 +599,51 @@ out tags geom;
   };
 }
 
+function buildFlatMesh(ringLocal) {
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (const p of ringLocal) {
+    minX = Math.min(minX, p.x);
+    minY = Math.min(minY, p.y);
+    maxX = Math.max(maxX, p.x);
+    maxY = Math.max(maxY, p.y);
+  }
+  minX -= PAD_M;
+  minY -= PAD_M;
+  maxX += PAD_M;
+  maxY += PAD_M;
+  const nx = Math.max(2, Math.ceil((maxX - minX) / GRID_M) + 1);
+  const ny = Math.max(2, Math.ceil((maxY - minY) / GRID_M) + 1);
+  const positions = [];
+  const indices = [];
+  const grid = new Array(nx * ny).fill(null);
+  for (let j = 0; j < ny; j++) {
+    const y = minY + j * GRID_M;
+    for (let i = 0; i < nx; i++) {
+      const x = minX + i * GRID_M;
+      if (!pointInRing(x, y, ringLocal)) continue;
+      const idx = positions.length / 3;
+      grid[j * nx + i] = idx;
+      positions.push(Math.round(x * 100) / 100, 0, Math.round(y * 100) / 100);
+    }
+  }
+  for (let j = 0; j < ny - 1; j++) {
+    for (let i = 0; i < nx - 1; i++) {
+      const a = grid[j * nx + i];
+      const b = grid[j * nx + i + 1];
+      const c = grid[(j + 1) * nx + i];
+      const d = grid[(j + 1) * nx + i + 1];
+      if (a == null || b == null || c == null) continue;
+      indices.push(a, b, c);
+      if (d == null) continue;
+      indices.push(b, d, c);
+    }
+  }
+  return { positions, indices, baseElev: 0 };
+}
+
 function slugify(name) {
   return String(name)
     .toLowerCase()
@@ -579,6 +667,8 @@ function parseArgs(argv) {
   for (const a of argv) {
     if (a === '--bulk') flags.add('bulk');
     else if (a === '--skip-existing') flags.add('skip-existing');
+    else if (a === '--force') flags.add('force');
+    else if (a === '--complete-incomplete') flags.add('complete-incomplete');
     else if (a === '--manifest-only') flags.add('manifest-only');
     else if (a === '--all-catalog') flags.add('all-catalog');
     else if (a.startsWith('--limit=')) limit = Number(a.slice(8)) || limit;
@@ -692,9 +782,89 @@ function writeManifest() {
   return manifest;
 }
 
-async function writeCourse(course, { skipExisting, minGreens }) {
+function catalogHoleCount(name, lat, lon) {
+  if (!existsSync(CATALOG_PATH)) return null;
+  const cat = JSON.parse(readFileSync(CATALOG_PATH, 'utf8'));
+  const n = String(name || '').toLowerCase();
+  let best = null;
+  let bestD = Infinity;
+  for (const c of cat) {
+    if (c.h == null) continue;
+    if (String(c.n || '').toLowerCase() === n) return c.h;
+    if (lat != null && lon != null && c.la != null && c.lo != null) {
+      const d = haversineM(lat, lon, c.la, c.lo);
+      if (d < bestD && d < 800) {
+        bestD = d;
+        best = c.h;
+      }
+    }
+  }
+  return best;
+}
+
+function loadIncompleteFromDisk() {
+  /** @type {Array<{ slug: string; name: string; lat: number; lon: number; radiusM: number; targetHoles: number }>} */
+  const out = [];
+  if (!existsSync(OUT_DIR)) return out;
+  for (const f of readdirSync(OUT_DIR)) {
+    if (!f.endsWith('.json') || f === 'manifest.json') continue;
+    try {
+      const data = JSON.parse(readFileSync(join(OUT_DIR, f), 'utf8'));
+      const holes = (data.greens ?? []).map((g) => g.hole);
+      if (!holes.length) continue;
+      const catalogH = catalogHoleCount(data.name, data.lat, data.lon);
+      // Genuine 9-hole (or ≤10) courses are complete if they cover 1..N.
+      const target =
+        catalogH != null && catalogH <= 10
+          ? catalogH
+          : holes.length <= 10 && catalogH == null
+            ? Math.max(...holes)
+            : 18;
+      const missing = [];
+      for (let n = 1; n <= target; n++) {
+        if (!holes.includes(n)) missing.push(n);
+      }
+      if (!missing.length) continue;
+      out.push({
+        slug: data.id || f.replace(/\.json$/, ''),
+        name: data.name,
+        lat: data.lat,
+        lon: data.lon,
+        radiusM: Math.max(DEFAULT_RADIUS_M, 2400),
+        targetHoles: target,
+      });
+      console.log(
+        `incomplete ${data.id || f}: have ${holes.length}/${target}, missing ${missing.join(',')}`,
+      );
+    } catch {
+      /* skip */
+    }
+  }
+  return out;
+}
+
+function loadCourseFromDisk(slug) {
+  const p = join(OUT_DIR, `${slug}.json`);
+  if (!existsSync(p)) return null;
+  try {
+    const data = JSON.parse(readFileSync(p, 'utf8'));
+    const catalogH = catalogHoleCount(data.name, data.lat, data.lon);
+    return {
+      slug: data.id || slug,
+      name: data.name,
+      lat: data.lat,
+      lon: data.lon,
+      radiusM: Math.max(DEFAULT_RADIUS_M, 2400),
+      targetHoles: catalogH != null && catalogH <= 10 ? catalogH : 18,
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function writeCourse(course, { skipExisting, minGreens, force }) {
   const outPath = join(OUT_DIR, `${course.slug}.json`);
-  if (skipExisting && existsSync(outPath)) {
+  if (!force && skipExisting && existsSync(outPath)) {
     try {
       const prev = JSON.parse(readFileSync(outPath, 'utf8'));
       if ((prev.greens?.length ?? 0) >= MIN_MESH_HOLES) {
@@ -707,7 +877,7 @@ async function writeCourse(course, { skipExisting, minGreens }) {
   }
 
   // Quick OSM density check before full geom + 3DEP pull.
-  if (!course.maxLat && !course.minLat) {
+  if (!course.maxLat && !course.minLat && !force) {
     try {
       const n = await countOsmGreens(course.lat, course.lon, course.radiusM);
       console.log(`${course.slug}: OSM green count ≈ ${n}`);
@@ -724,12 +894,30 @@ async function writeCourse(course, { skipExisting, minGreens }) {
   }
 
   const data = await buildCourse(course);
-  if (data.greens.length < MIN_MESH_HOLES) {
+  const target = course.targetHoles ?? 18;
+  if (data.greens.length < Math.min(MIN_MESH_HOLES, target)) {
     console.warn(
       `${course.slug}: only ${data.greens.length} meshes — not writing\n`,
     );
     return 'skipped-mesh';
   }
+
+  // Prefer merging with previous pack so we never lose good holes on a partial rebuild.
+  if (existsSync(outPath)) {
+    try {
+      const prev = JSON.parse(readFileSync(outPath, 'utf8'));
+      const byHole = new Map();
+      for (const g of prev.greens ?? []) byHole.set(g.hole, g);
+      for (const g of data.greens) {
+        const old = byHole.get(g.hole);
+        if (!old || g.indices.length >= old.indices.length) byHole.set(g.hole, g);
+      }
+      data.greens = [...byHole.values()].sort((a, b) => a.hole - b.hole);
+    } catch {
+      /* overwrite */
+    }
+  }
+
   writeFileSync(outPath, JSON.stringify(data));
   console.log(
     `Wrote ${outPath} (${data.greens.length} greens · holes ${data.greens.map((g) => g.hole).join(',')})\n`,
@@ -751,15 +939,29 @@ if (flags.has('manifest-only')) {
 
 /** @type {typeof CURATED} */
 let queue = [];
-if (only.length) {
+if (flags.has('complete-incomplete')) {
+  queue = loadIncompleteFromDisk();
+  if (!queue.length) {
+    console.log('No incomplete green packs found.');
+    writeManifest();
+    process.exit(0);
+  }
+} else if (only.length) {
   const fromCurated = CURATED.filter((c) => only.includes(c.slug));
   const fromCatalog = loadPriorityFromCatalog(500, shard).filter((c) =>
     only.includes(c.slug),
   );
-  queue = [...fromCurated, ...fromCatalog];
+  const fromDisk = only
+    .map((slug) => loadCourseFromDisk(slug))
+    .filter(Boolean);
+  const seen = new Set();
+  queue = [...fromCurated, ...fromCatalog, ...fromDisk].filter((c) => {
+    if (seen.has(c.slug)) return false;
+    seen.add(c.slug);
+    return true;
+  });
   if (!queue.length) {
-    // Allow ad-hoc slug rebuild of existing file coords via curated/priority only.
-    console.error('No matching course slugs in curated/priority lists:', only);
+    console.error('No matching course slugs:', only);
     process.exitCode = 1;
   }
 } else if (flags.has('bulk')) {
@@ -796,8 +998,9 @@ for (const course of queue) {
   }
   try {
     const status = await writeCourse(course, {
-      skipExisting: flags.has('skip-existing'),
+      skipExisting: flags.has('skip-existing') && !flags.has('force'),
       minGreens,
+      force: flags.has('force') || flags.has('complete-incomplete'),
     });
     if (status === 'written') wrote += 1;
     else skipped += 1;
