@@ -197,6 +197,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
   const [pickerOpen, setPickerOpen] = useState(true);
   const [sheetExpanded, setSheetExpanded] = useState(false);
   const [target, setTarget] = useState<LonLat | null>(null);
+  const [gpsAim, setGpsAim] = useState<LonLat | null>(null);
   const [planningMode, setPlanningMode] = useState<'tee' | 'approach'>('tee');
   const [bookOpen, setBookOpen] = useState(false);
   const [mapReady, setMapReady] = useState(false);
@@ -422,18 +423,17 @@ export function GolfView({ active = true }: { active?: boolean }) {
   useEffect(() => {
     if (!activeHoleObj || !profile) {
       setTarget(null);
+      setGpsAim(null);
       return;
     }
-    // GPS rangefinder aims at green mid by default; Prep uses a tee-shot landing.
     setTarget(
-      viewMode === 'gps'
-        ? greenMarks(activeHoleObj).mid
-        : defaultTarget(
-            activeHoleObj,
-            bag[0]?.yards ?? profile.driverYards,
-          ),
+      defaultTarget(
+        activeHoleObj,
+        bag[0]?.yards ?? profile.driverYards,
+      ),
     );
-  }, [activeHoleObj, profile, bag, planningMode, viewMode]);
+    setGpsAim(greenMarks(activeHoleObj).mid);
+  }, [activeHoleObj, profile, bag, planningMode]);
 
   const briefByHole = useMemo(() => {
     const m = new Map<number, HoleBrief>();
@@ -474,10 +474,15 @@ export function GolfView({ active = true }: { active?: boolean }) {
       turf,
     });
   }, [activeHoleObj, target, bag, profile, activeBrief, turf, planningMode]);
-  const playLines = useMemo(
-    () => (viewMode === 'prep' ? playLinesGeoJSON(forecast) : null),
-    [forecast, viewMode],
-  );
+  const playLines = useMemo(() => {
+    if (!forecast) return null;
+    if (viewMode === 'prep') return playLinesGeoJSON(forecast);
+    if (viewMode === 'gps' && forecast.shots[0]) {
+      // Keep the tee-shot miss plan on the map while ranging live.
+      return playLinesGeoJSON({ ...forecast, shots: [forecast.shots[0]] });
+    }
+    return null;
+  }, [forecast, viewMode]);
   const activeIdx = playHoles.findIndex((h) => h.number === activeHole);
   const layoutLabel = [
     `${playHoles.length} holes`,
@@ -500,6 +505,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
       setLoop(null);
       setTeeKind('mid');
       setTarget(null);
+      setGpsAim(null);
       setBookOpen(false);
       setSheetExpanded(false);
       setScorecardOpen(false);
@@ -585,7 +591,8 @@ export function GolfView({ active = true }: { active?: boolean }) {
 
   const dropShotAtTap = useCallback(
     (pt: LonLat) => {
-      setTarget(pt);
+      if (viewMode === 'gps') setGpsAim(pt);
+      else setTarget(pt);
       if (!round || !activeHoleObj) return;
       const holeShots = shotsForHole(round, activeHoleObj.number);
       const from =
@@ -606,7 +613,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
       setRound(updated);
       saveRound(updated);
     },
-    [round, activeHoleObj, bag],
+    [round, activeHoleObj, bag, viewMode],
   );
 
   const undoShot = useCallback(() => {
@@ -659,6 +666,24 @@ export function GolfView({ active = true }: { active?: boolean }) {
     return distancesToGreen(rangefinderFrom, greenMarks(activeHoleObj));
   }, [rangefinderFrom, activeHoleObj]);
 
+  /** GPS fix is nowhere near this hole — show tee yardages instead of raw GPS. */
+  const gpsOffCourse = useMemo(() => {
+    if (!gpsPos || !activeHoleObj || !gpsGreenDistances) return false;
+    if (gpsGreenDistances.mid <= 700) return false;
+    const teeYd = haversineYards(
+      gpsPos.lat,
+      gpsPos.lon,
+      activeHoleObj.tee.lat,
+      activeHoleObj.tee.lon,
+    );
+    return teeYd > Math.max(400, activeHoleObj.yards * 1.2);
+  }, [gpsPos, activeHoleObj, gpsGreenDistances]);
+
+  const gpsHudDistances = useMemo(() => {
+    if (gpsOffCourse || !gpsPos) return rangefinderDistances;
+    return gpsGreenDistances ?? rangefinderDistances;
+  }, [gpsOffCourse, gpsPos, gpsGreenDistances, rangefinderDistances]);
+
   const gpsMidClub = useMemo(() => {
     if (!rangefinderDistances || rangefinderDistances.mid > 700) return null;
     return bestClubForDistance(rangefinderDistances.mid, bag) ?? null;
@@ -667,10 +692,19 @@ export function GolfView({ active = true }: { active?: boolean }) {
   /** Aim point for GPS crosshair — tap moves this; defaults to green mid. */
   const rangefinderAim = useMemo(() => {
     if (viewMode !== 'gps' || !activeHoleObj) return null;
-    if (target) return target;
-    const m = greenMarks(activeHoleObj);
-    return m.mid;
-  }, [viewMode, activeHoleObj, target]);
+    if (gpsAim) return gpsAim;
+    return greenMarks(activeHoleObj).mid;
+  }, [viewMode, activeHoleObj, gpsAim]);
+
+  const mapTarget = viewMode === 'gps' ? gpsAim : target;
+
+  const onMapTap = useCallback(
+    (pt: LonLat) => {
+      if (viewMode === 'gps') setGpsAim(pt);
+      else setTarget(pt);
+    },
+    [viewMode],
+  );
 
   const rangefinderPlaysLikeYd = useMemo(() => {
     if (!rangefinderFrom || !rangefinderAim || !activeHoleObj) return null;
@@ -904,6 +938,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                 setCourse(null);
                 setActiveHole(null);
                 setTarget(null);
+                setGpsAim(null);
                 setBookOpen(false);
                 setPickerOpen(true);
                 setSearchOpen(false);
@@ -1069,9 +1104,9 @@ export function GolfView({ active = true }: { active?: boolean }) {
                 holes={playHoles}
                 activeHole={activeHole}
                 onSelectHole={setActiveHole}
-                target={target}
+                target={mapTarget}
                 arcClubs={viewMode === 'prep' ? arcClubs : []}
-                onSetTarget={tracking ? dropShotAtTap : setTarget}
+                onSetTarget={tracking ? dropShotAtTap : onMapTap}
                 playLines={playLines}
                 planningMode={planningMode}
                 windFromDeg={ensemble?.ensemble.windFromDeg ?? null}
@@ -1141,6 +1176,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                 id="prep-hud"
                 defaultAnchor={{ left: 12, bottom: 16 }}
                 zIndex={22}
+                showHandle={false}
               >
                 <GolfTargetHud
                   hole={activeHoleObj}
@@ -1386,6 +1422,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                 defaultAnchor={{ left: 12, top: 52 }}
                 zIndex={22}
                 style={{ width: 'min(100vw - 1.5rem, 220px)' }}
+                showHandle={false}
                 onClose={() => setGpsHudOpen(false)}
               >
                 <GpsMod
@@ -1395,9 +1432,8 @@ export function GolfView({ active = true }: { active?: boolean }) {
                   quality={gpsQuality}
                   error={gpsError}
                   locating={gpsLocating}
-                  distances={
-                    gpsPos ? gpsGreenDistances : rangefinderDistances
-                  }
+                  distances={gpsHudDistances}
+                  offCourse={gpsOffCourse}
                   holeYards={activeHoleObj?.yards ?? null}
                   holeNumber={activeHoleObj?.number ?? null}
                   bearingToPin={gpsBearingToPin}

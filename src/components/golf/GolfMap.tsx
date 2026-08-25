@@ -540,8 +540,8 @@ export function GolfMap({
         filter: ['==', ['get', 'kind'], 'tee'],
         paint: {
           'line-color': ['get', 'color'],
-          'line-width': ['match', ['get', 'role'], 'start', 4.2, 'more', 2.4, 3.1],
-          'line-opacity': 0.95,
+          'line-width': ['match', ['get', 'role'], 'start', 5, 'more', 3, 3.8],
+          'line-opacity': 0.98,
         },
       });
       map.addLayer({
@@ -614,134 +614,105 @@ export function GolfMap({
         id: LYR_GPS_GUIDE,
         type: 'line',
         source: SRC_GPS_GUIDE,
-        filter: ['==', ['get', 'kind'], 'whisker'],
-        paint: {
-          'line-color': '#a7f3d0',
-          'line-width': 1.15,
-          'line-opacity': 0.45,
-          'line-dasharray': [1.2, 1.8],
-        },
-      });
-      map.addLayer({
-        id: 'golf-gps-aim-line',
-        type: 'line',
-        source: SRC_GPS_GUIDE,
         filter: ['==', ['get', 'kind'], 'guide'],
         paint: {
-          'line-color': '#3d9970',
-          'line-width': 2.8,
+          'line-color': ['get', 'color'],
+          'line-width': ['match', ['get', 'role'], 'M', 3.4, 2.2],
           'line-opacity': 0.95,
-          'line-blur': 0.15,
         },
       });
-      // Compact front / back depth ticks.
       map.addLayer({
         id: LYR_GPS_PIN,
         type: 'circle',
         source: SRC_GPS_GUIDE,
-        filter: ['==', ['get', 'kind'], 'depth'],
+        filter: ['==', ['get', 'kind'], 'pin'],
         paint: {
-          'circle-radius': 5,
-          'circle-color': '#0f1c16',
-          'circle-stroke-width': 1.5,
-          'circle-stroke-color': '#6ee7b7',
+          'circle-radius': ['match', ['get', 'role'], 'M', 7, 5.5],
+          'circle-color': ['get', 'color'],
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#ffffff',
         },
       });
       map.addLayer({
         id: LYR_GPS_PIN_LABEL,
         type: 'symbol',
         source: SRC_GPS_GUIDE,
-        filter: ['==', ['get', 'kind'], 'depth'],
+        filter: ['==', ['get', 'kind'], 'pin'],
         layout: {
           'text-field': ['get', 'label'],
-          'text-size': 11,
+          'text-size': 10,
           'text-font': ['Open Sans Bold', 'Open Sans Regular'],
-          'text-offset': [0, 1.2],
+          'text-offset': [0, 1.15],
           'text-anchor': 'top',
           'text-allow-overlap': true,
           'text-ignore-placement': true,
         },
         paint: {
-          'text-color': '#ecfdf5',
-          'text-halo-color': '#0a1210',
-          'text-halo-width': 1.6,
+          'text-color': '#ffffff',
+          'text-halo-color': '#020617',
+          'text-halo-width': 1.4,
         },
       });
-      // Soft emerald aim bloom + core.
       map.addLayer({
         id: LYR_GPS_GUIDE_LABEL,
-        type: 'circle',
-        source: SRC_GPS_GUIDE,
-        filter: ['==', ['get', 'kind'], 'aim'],
-        paint: {
-          'circle-radius': 18,
-          'circle-color': '#3d9970',
-          'circle-opacity': 0.22,
-          'circle-blur': 0.55,
-        },
-      });
-      map.addLayer({
-        id: 'golf-gps-aim-ring',
-        type: 'circle',
-        source: SRC_GPS_GUIDE,
-        filter: ['==', ['get', 'kind'], 'aim'],
-        paint: {
-          'circle-radius': 9,
-          'circle-color': 'rgba(0,0,0,0)',
-          'circle-stroke-width': 2,
-          'circle-stroke-color': '#6ee7b7',
-        },
-      });
-      map.addLayer({
-        id: 'golf-gps-aim-core',
-        type: 'circle',
-        source: SRC_GPS_GUIDE,
-        filter: ['==', ['get', 'kind'], 'aim'],
-        paint: {
-          'circle-radius': 3.5,
-          'circle-color': '#ecfdf5',
-          'circle-stroke-width': 1.5,
-          'circle-stroke-color': '#3d9970',
-        },
-      });
-      map.addLayer({
-        id: 'golf-gps-aim-yards',
         type: 'symbol',
         source: SRC_GPS_GUIDE,
-        filter: ['==', ['get', 'kind'], 'aim'],
+        filter: ['==', ['get', 'kind'], 'guide-label'],
         layout: {
-          'text-field': ['concat', ['get', 'yardsLabel'], ' yd'],
-          'text-size': 15,
+          'text-field': ['get', 'label'],
+          'text-size': ['match', ['get', 'major'], 1, 16, 12],
           'text-font': ['Open Sans Bold', 'Open Sans Regular'],
-          'text-offset': [0, -1.55],
+          'text-offset': [0, -0.85],
           'text-anchor': 'bottom',
           'text-allow-overlap': true,
           'text-ignore-placement': true,
         },
         paint: {
-          'text-color': '#ecfdf5',
-          'text-halo-color': '#0a1210',
+          'text-color': '#ffffff',
+          'text-halo-color': '#020617',
           'text-halo-width': 2,
         },
       });
       map.addLayer({
-        id: 'golf-gps-reads',
+        id: 'golf-gps-crosshair',
+        type: 'circle',
+        source: SRC_GPS_GUIDE,
+        filter: ['==', ['get', 'kind'], 'crosshair'],
+        paint: {
+          'circle-radius': 14,
+          'circle-color': 'rgba(0,0,0,0)',
+          'circle-stroke-width': 2.5,
+          'circle-stroke-color': '#ffffff',
+        },
+      });
+      map.addLayer({
+        id: 'golf-gps-crosshair-dot',
+        type: 'circle',
+        source: SRC_GPS_GUIDE,
+        filter: ['==', ['get', 'kind'], 'crosshair'],
+        paint: {
+          'circle-radius': 3,
+          'circle-color': '#ffffff',
+        },
+      });
+      map.addLayer({
+        id: 'golf-gps-plays-like',
         type: 'symbol',
         source: SRC_GPS_GUIDE,
-        filter: ['==', ['get', 'kind'], 'reads'],
+        filter: ['==', ['get', 'kind'], 'plays-like'],
         layout: {
           'text-field': ['get', 'label'],
           'text-size': 12,
           'text-font': ['Open Sans Bold', 'Open Sans Regular'],
-          'text-offset': [0, 1.7],
-          'text-anchor': 'top',
+          'text-offset': [3.2, 0],
+          'text-anchor': 'left',
           'text-allow-overlap': true,
           'text-ignore-placement': true,
         },
         paint: {
-          'text-color': '#a7f3d0',
-          'text-halo-color': '#0a1210',
-          'text-halo-width': 1.8,
+          'text-color': '#0a0a0a',
+          'text-halo-color': '#ffffff',
+          'text-halo-width': 6,
         },
       });
 

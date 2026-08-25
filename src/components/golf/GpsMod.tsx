@@ -20,6 +20,8 @@ interface Props {
   distances: GreenDistances | null;
   /** When mid is beyond this, show hole yardage only (default 700). */
   farThresholdYd?: number;
+  /** GPS fix is far from the course — distances are tee-based fallbacks. */
+  offCourse?: boolean;
   /** Scorecard / playing yardage for the active hole. */
   holeYards?: number | null;
   holeNumber?: number | null;
@@ -41,6 +43,7 @@ export function GpsMod({
   locating = false,
   distances,
   farThresholdYd = 700,
+  offCourse = false,
   holeYards = null,
   holeNumber = null,
   bearingToPin,
@@ -53,6 +56,7 @@ export function GpsMod({
 }: Props) {
   const qColor = gpsQualityColor(quality);
   const farAway =
+    !offCourse &&
     distances != null &&
     Number.isFinite(distances.mid) &&
     distances.mid > farThresholdYd;
@@ -114,11 +118,17 @@ export function GpsMod({
                 </span>
               </div>
               <p className="mt-1 text-[9px] text-faint">
-                Over {farThresholdYd} yd out · move closer for green depth
+                Over {farThresholdYd} yd from green · move closer for front /
+                mid / back
               </p>
             </div>
           ) : (
             <div className="mt-2 grid grid-cols-3 gap-1">
+              {offCourse ? (
+                <p className="col-span-3 mb-0.5 text-center text-[9px] text-faint">
+                  Away from course · tee yardages
+                </p>
+              ) : null}
               {(
                 [
                   ['Front', distances?.front],

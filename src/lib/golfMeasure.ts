@@ -254,7 +254,9 @@ export function distancesToGreen(
   };
 }
 
-/** GPS rangefinder — TeeReady caddie line (emerald aim, soft F/B depth). */
+/** GPS → front / mid / back guide lines with yardage (+ optional club) labels.
+ *  18Birdies-style: lines from ball (or tee) to F/M/B, pin markers, callouts.
+ */
 export function gpsGuideGeoJSON(
   from: LonLat | null,
   hole: GolfHole | null,
@@ -279,14 +281,33 @@ export function gpsGuideGeoJSON(
     haversineYards(from.lat, from.lon, aim.lat, aim.lon),
   );
   const features: GeoJSON.Feature[] = [];
+  const rows: Array<{
+    key: string;
+    pt: LonLat;
+    yards: number;
+    club?: string;
+    color: string;
+  }> = [
+    { key: 'F', pt: marks.front, yards: dist.front, color: '#4ade80' },
+    {
+      key: 'M',
+      pt: aim,
+      yards: aimYd,
+      club: opts?.midClub || undefined,
+      color: '#38bdf8',
+    },
+    { key: 'B', pt: marks.back, yards: dist.back, color: '#fbbf24' },
+  ];
 
-  for (const row of [
-    { key: 'F', pt: marks.front, yards: dist.front },
-    { key: 'B', pt: marks.back, yards: dist.back },
-  ] as const) {
+  for (const row of rows) {
     features.push({
       type: 'Feature',
-      properties: { kind: 'whisker', role: row.key, yards: row.yards },
+      properties: {
+        kind: 'guide',
+        role: row.key,
+        color: row.color,
+        yards: row.yards,
+      },
       geometry: {
         type: 'LineString',
         coordinates: [
@@ -295,31 +316,40 @@ export function gpsGuideGeoJSON(
         ],
       },
     });
-  }
 
-  features.push({
-    type: 'Feature',
-    properties: { kind: 'guide', role: 'M', color: '#3d9970' },
-    geometry: {
-      type: 'LineString',
-      coordinates: [
-        [from.lon, from.lat],
-        [aim.lon, aim.lat],
-      ],
-    },
-  });
-
-  for (const row of [
-    { key: 'F', label: 'F', pt: marks.front, yards: dist.front },
-    { key: 'B', label: 'B', pt: marks.back, yards: dist.back },
-  ] as const) {
+    const t = 0.62;
+    const labelLon = from.lon + (row.pt.lon - from.lon) * t;
+    const labelLat = from.lat + (row.pt.lat - from.lat) * t;
+    const text =
+      row.key === 'M'
+        ? row.club
+          ? `${row.yards} · ${row.club}`
+          : `${row.yards} yd`
+        : `${row.key} ${row.yards}`;
     features.push({
       type: 'Feature',
       properties: {
-        kind: 'depth',
+        kind: 'guide-label',
         role: row.key,
-        label: `${row.label} ${row.yards}`,
+        label: text,
         yards: row.yards,
+        club: row.club ?? '',
+        color: row.color,
+        major: row.key === 'M' ? 1 : 0,
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: [labelLon, labelLat],
+      },
+    });
+
+    features.push({
+      type: 'Feature',
+      properties: {
+        kind: 'pin',
+        role: row.key,
+        label: row.key,
+        color: row.color,
       },
       geometry: {
         type: 'Point',
@@ -330,12 +360,7 @@ export function gpsGuideGeoJSON(
 
   features.push({
     type: 'Feature',
-    properties: {
-      kind: 'aim',
-      role: 'M',
-      yards: aimYd,
-      yardsLabel: String(aimYd),
-    },
+    properties: { kind: 'crosshair', role: 'M' },
     geometry: {
       type: 'Point',
       coordinates: [aim.lon, aim.lat],
@@ -345,17 +370,20 @@ export function gpsGuideGeoJSON(
   const playsLike = opts?.playsLikeYd;
   const club = opts?.midClub;
   if (playsLike != null || club) {
-    const parts: string[] = [];
-    if (playsLike != null && playsLike !== aimYd) {
-      parts.push(`reads ${playsLike}`);
-    }
-    if (club) parts.push(club);
-    if (parts.length) {
+    const playsText =
+      playsLike != null && club
+        ? `Plays like ${playsLike}y ${club}`
+        : playsLike != null
+          ? `Plays like ${playsLike}y`
+          : club
+            ? String(club)
+            : '';
+    if (playsText) {
       features.push({
         type: 'Feature',
         properties: {
-          kind: 'reads',
-          label: parts.join(' · '),
+          kind: 'plays-like',
+          label: playsText,
           yards: aimYd,
           playsLike: playsLike ?? aimYd,
           club: club ?? '',

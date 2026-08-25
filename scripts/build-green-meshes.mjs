@@ -202,25 +202,40 @@ function pointInRing(x, y, ring) {
   return inside;
 }
 
-async function overpass(query, { urls = OVERPASS_URLS } = {}) {
+function overpassBackoffMs(status, attempt) {
+  if (status === 429) return 3000 + attempt * 2000 + Math.floor(Math.random() * 2000);
+  if (status === 504 || status === 502) return 4000 + attempt * 1500;
+  return 2000 + attempt * 1000;
+}
+
+async function overpass(query, { urls = OVERPASS_URLS, retries = 3 } = {}) {
   let lastErr = 'Overpass failed';
-  for (const url of urls) {
-    try {
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'User-Agent': UA,
-        },
-        body: new URLSearchParams({ data: query }),
-      });
-      if (!res.ok) {
-        lastErr = `${url} ${res.status}`;
-        continue;
+  let lastStatus = 0;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    for (const url of urls) {
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'User-Agent': UA,
+          },
+          body: new URLSearchParams({ data: query }),
+        });
+        if (!res.ok) {
+          lastStatus = res.status;
+          lastErr = `${url} ${res.status}`;
+          continue;
+        }
+        return res.json();
+      } catch (err) {
+        lastErr = err instanceof Error ? err.message : String(err);
       }
-      return res.json();
-    } catch (err) {
-      lastErr = err instanceof Error ? err.message : String(err);
+    }
+    if (attempt < retries) {
+      const wait = overpassBackoffMs(lastStatus, attempt);
+      console.warn(`Overpass retry ${attempt + 1}/${retries} in ${wait}ms (${lastErr})`);
+      await sleep(wait);
     }
   }
   throw new Error(lastErr);
@@ -559,19 +574,50 @@ function parseArgs(argv) {
   const only = [];
   let limit = 120;
   let minGreens = MIN_GREENS_OSM;
+  let shard = null;
+  let deadlineMs = 0;
   for (const a of argv) {
     if (a === '--bulk') flags.add('bulk');
     else if (a === '--skip-existing') flags.add('skip-existing');
     else if (a === '--manifest-only') flags.add('manifest-only');
+    else if (a === '--all-catalog') flags.add('all-catalog');
     else if (a.startsWith('--limit=')) limit = Number(a.slice(8)) || limit;
     else if (a.startsWith('--min-greens='))
       minGreens = Number(a.slice(13)) || minGreens;
+    else if (a.startsWith('--shard=')) {
+      const m = a.slice(8).match(/^(\d+)\/(\d+)$/);
+      if (m) shard = { index: Number(m[1]), total: Number(m[2]) };
+    } else if (a.startsWith('--deadline-ms='))
+      deadlineMs = Number(a.slice(14)) || 0;
     else if (!a.startsWith('-')) only.push(a);
   }
-  return { flags, only, limit, minGreens };
+  return { flags, only, limit, minGreens, shard, deadlineMs };
 }
 
-function loadPriorityFromCatalog(limit) {
+/** Stable shard key for parallel workers. */
+function shardKey(slug) {
+  let h = 0;
+  for (let i = 0; i < slug.length; i++) {
+    h = (h * 31 + slug.charCodeAt(i)) >>> 0;
+  }
+  return h;
+}
+
+function inShard(slug, shard) {
+  if (!shard || shard.total < 1) return true;
+  return shardKey(slug) % shard.total === shard.index;
+}
+
+function catalogEligible(c) {
+  if (c.la == null || c.lo == null) return false;
+  if (c.h != null && c.h < 9) return false;
+  if (c.st && SKIP_ST.has(c.st)) return false;
+  // HI has poor 3DEP coverage for many islands — skip unless curated.
+  if (c.st === 'HI') return false;
+  return true;
+}
+
+function loadFromCatalog({ limit, allCatalog, shard }) {
   if (!existsSync(CATALOG_PATH)) return [];
   const cat = JSON.parse(readFileSync(CATALOG_PATH, 'utf8'));
   /** @type {Array<{ slug: string; name: string; lat: number; lon: number; radiusM: number }>} */
@@ -579,15 +625,12 @@ function loadPriorityFromCatalog(limit) {
   const seen = new Set(CURATED.map((c) => c.slug));
   for (const c of cat) {
     if (out.length >= limit) break;
-    if (c.la == null || c.lo == null) continue;
-    if (c.h != null && c.h < 9) continue;
-    if (c.st && SKIP_ST.has(c.st)) continue;
-    // HI has poor 3DEP coverage for many islands — skip unless curated.
-    if (c.st === 'HI') continue;
+    if (!catalogEligible(c)) continue;
     const n = String(c.n || '').toLowerCase();
-    if (!PRIORITY_NEEDLES.some((k) => n.includes(k))) continue;
+    if (!allCatalog && !PRIORITY_NEEDLES.some((k) => n.includes(k))) continue;
     const slug = slugify(c.n);
     if (!slug || seen.has(slug)) continue;
+    if (!inShard(slug, shard)) continue;
     seen.add(slug);
     out.push({
       slug,
@@ -598,6 +641,10 @@ function loadPriorityFromCatalog(limit) {
     });
   }
   return out;
+}
+
+function loadPriorityFromCatalog(limit, shard = null) {
+  return loadFromCatalog({ limit, allCatalog: false, shard });
 }
 
 async function countOsmGreens(lat, lon, radiusM) {
@@ -652,7 +699,7 @@ async function writeCourse(course, { skipExisting, minGreens }) {
       const prev = JSON.parse(readFileSync(outPath, 'utf8'));
       if ((prev.greens?.length ?? 0) >= MIN_MESH_HOLES) {
         console.log(`skip ${course.slug} (existing ${prev.greens.length} greens)`);
-        return prev;
+        return 'skipped-existing';
       }
     } catch {
       /* rebuild */
@@ -666,7 +713,7 @@ async function writeCourse(course, { skipExisting, minGreens }) {
       console.log(`${course.slug}: OSM green count ≈ ${n}`);
       if (n < minGreens) {
         console.log(`  skip — need ≥ ${minGreens} greens\n`);
-        return null;
+        return 'skipped-sparse';
       }
     } catch (err) {
       console.warn(
@@ -681,19 +728,21 @@ async function writeCourse(course, { skipExisting, minGreens }) {
     console.warn(
       `${course.slug}: only ${data.greens.length} meshes — not writing\n`,
     );
-    return null;
+    return 'skipped-mesh';
   }
   writeFileSync(outPath, JSON.stringify(data));
   console.log(
     `Wrote ${outPath} (${data.greens.length} greens · holes ${data.greens.map((g) => g.hole).join(',')})\n`,
   );
   await sleep(600);
-  return data;
+  return 'written';
 }
 
 mkdirSync(OUT_DIR, { recursive: true });
 
-const { flags, only, limit, minGreens } = parseArgs(process.argv.slice(2));
+const { flags, only, limit, minGreens, shard, deadlineMs } = parseArgs(
+  process.argv.slice(2),
+);
 
 if (flags.has('manifest-only')) {
   writeManifest();
@@ -704,7 +753,7 @@ if (flags.has('manifest-only')) {
 let queue = [];
 if (only.length) {
   const fromCurated = CURATED.filter((c) => only.includes(c.slug));
-  const fromCatalog = loadPriorityFromCatalog(500).filter((c) =>
+  const fromCatalog = loadPriorityFromCatalog(500, shard).filter((c) =>
     only.includes(c.slug),
   );
   queue = [...fromCurated, ...fromCatalog];
@@ -714,25 +763,59 @@ if (only.length) {
     process.exitCode = 1;
   }
 } else if (flags.has('bulk')) {
-  queue = [...CURATED, ...loadPriorityFromCatalog(limit)];
+  const curated = shard
+    ? CURATED.filter((c) => inShard(c.slug, shard))
+    : [...CURATED];
+  const fromCatalog = loadFromCatalog({
+    limit,
+    allCatalog: flags.has('all-catalog'),
+    shard,
+  });
+  queue = [...curated, ...fromCatalog];
 } else {
   queue = [...CURATED];
 }
 
-console.log(`Building ${queue.length} course(s)…\n`);
+const startedAt = Date.now();
+const shardLabel = shard ? ` shard ${shard.index}/${shard.total}` : '';
+const catalogLabel = flags.has('all-catalog') ? ' (all-catalog)' : '';
+console.log(
+  `Building ${queue.length} course(s)${catalogLabel}${shardLabel}…` +
+    (deadlineMs ? ` deadline ${Math.round(deadlineMs / 1000)}s` : '') +
+    '\n',
+);
+
+let wrote = 0;
+let skipped = 0;
+let failed = 0;
 
 for (const course of queue) {
+  if (deadlineMs && Date.now() - startedAt >= deadlineMs) {
+    console.log(`Deadline reached — stopping after ${wrote} writes\n`);
+    break;
+  }
   try {
-    await writeCourse(course, {
+    const status = await writeCourse(course, {
       skipExisting: flags.has('skip-existing'),
       minGreens,
     });
+    if (status === 'written') wrote += 1;
+    else skipped += 1;
   } catch (err) {
+    failed += 1;
     console.error(`${course.slug} failed:`, err.message || err);
     process.exitCode = 1;
-    await sleep(1500);
+    const msg = String(err.message || err);
+    const isOverpass =
+      msg.includes('429') || msg.includes('504') || msg.includes('Overpass');
+    await sleep(isOverpass ? 5000 + Math.floor(Math.random() * 3000) : 1500);
   }
 }
+
+console.log(
+  `Done${shardLabel}: wrote ${wrote}, skipped ${skipped}, failed ${failed}, ` +
+    `${Math.round((Date.now() - startedAt) / 1000)}s elapsed`,
+);
 
 writeManifest();
 

@@ -110,7 +110,7 @@ export function missSpecs(
 }
 
 export function lineColor(side: LineSide, role: LineRole): string {
-  if (role === 'start') return '#f8fafc';
+  if (role === 'start') return '#34d399';
   if (side === 'left') return role === 'more' ? '#818cf8' : '#38bdf8';
   if (side === 'right') return role === 'more' ? '#fb7185' : '#facc15';
   return '#e2e8f0';
