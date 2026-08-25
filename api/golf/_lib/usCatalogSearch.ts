@@ -60,6 +60,55 @@ function nameMatchScore(name: string, needle: string, tokens: string[]): number 
   return 9;
 }
 
+/** Match city / "City, ST" so typing a place lists courses there — not just name hits. */
+function placeMatchScore(
+  entry: UsCatalogEntry,
+  needle: string,
+  tokens: string[],
+): number {
+  const city = (entry.ci ?? '').toLowerCase().trim();
+  const state = (entry.st ?? '').toLowerCase().trim();
+  if (!city) return 9;
+
+  const needlePlace = needle.replace(/\s*,\s*/g, ', ').trim();
+  const place = state ? `${city}, ${state}` : city;
+
+  if (city === needle || place === needlePlace) return 0;
+  if (state && needlePlace.endsWith(`, ${state}`)) {
+    const cityPart = needlePlace.slice(0, -(state.length + 2)).trim();
+    if (cityPart && city === cityPart) return 0;
+  }
+
+  if (needle.length >= 4 && (city.startsWith(needle) || needle.startsWith(city))) {
+    return 1;
+  }
+  if (needle.length >= 4 && (city.includes(needle) || place.includes(needle))) {
+    return 2;
+  }
+
+  if (tokens.length) {
+    const cityTokens = city.split(/[^a-z0-9]+/).filter((t) => t.length >= 3);
+    const hits = tokens.filter((t) =>
+      cityTokens.some((ct) => ct === t || ct.startsWith(t) || t.startsWith(ct)),
+    ).length;
+    if (hits === tokens.length) return 1;
+    if (hits >= Math.ceil(tokens.length * 0.67) && hits >= 1) return 3;
+  }
+
+  return 9;
+}
+
+function catalogMatchScore(
+  entry: UsCatalogEntry,
+  needle: string,
+  tokens: string[],
+): number {
+  return Math.min(
+    nameMatchScore(entry.n, needle, tokens),
+    placeMatchScore(entry, needle, tokens),
+  );
+}
+
 function entryToSummary(
   entry: UsCatalogEntry,
   originLat: number,
@@ -134,11 +183,11 @@ export function searchUsCatalog(
   const ranked: Array<{ course: GolfCourseSummary; score: number }> = [];
 
   for (const entry of US_CATALOG) {
-    const score = nameMatchScore(entry.n, needle, tokens);
+    const score = catalogMatchScore(entry, needle, tokens);
     if (score >= 9) continue;
     ranked.push({
       course: entryToSummary(entry, lat, lon),
-      score: score - (entry.q === 1 ? 1 : 0),
+      score: score - (entry.q === 1 ? 0.5 : 0),
     });
   }
 
@@ -148,7 +197,7 @@ export function searchUsCatalog(
   });
 
   return expandCatalogFacilitySiblings(
-    ranked.slice(0, limit).map((row) => row.course),
+    ranked.slice(0, Math.max(limit, 40)).map((row) => row.course),
     lat,
     lon,
   ).slice(0, limit);

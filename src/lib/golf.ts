@@ -318,7 +318,7 @@ function coursesCacheKey(
   q: string,
   radius?: number,
 ): string {
-  return `golf:v7:courses:${q3(lat)}:${q3(lon)}:${q}:${radius ?? ''}`;
+  return `golf:v8:courses:${q3(lat)}:${q3(lon)}:${q}:${radius ?? ''}`;
 }
 
 /** Sync cache read — instant course list without a loading spinner. */
@@ -417,7 +417,7 @@ export async function fetchGolfCourses(
   const params = new URLSearchParams({
     lat: String(lat),
     lon: String(lon),
-    v: '3',
+    v: '4',
   });
   if (q) params.set('q', q);
   if (opts?.radius) params.set('radius', String(opts.radius));
@@ -493,7 +493,7 @@ export async function loadGolfHoles(
   });
   if (opts?.radius) params.set('radius', String(opts.radius));
   params.set('bbox', bbox.map((n) => q4(n)).join(','));
-  if (opts?.osmType && opts.osmId) {
+  if (opts?.osmType && opts.osmId != null && Number(opts.osmId) > 0) {
     params.set('osmType', opts.osmType);
     params.set('osmId', String(opts.osmId));
   }
