@@ -615,11 +615,94 @@ body {
   color: var(--ink);
 }
 
+.app-body {
+  display: flex;
+  min-height: 0;
+  width: 100%;
+}
+
+.app-shell.has-sidebar .app-body {
+  min-height: calc(100dvh - 4.75rem);
+}
+
+.app-sidebar {
+  width: 11.5rem;
+  flex-shrink: 0;
+  flex-direction: column;
+  gap: 0.35rem;
+  border-right: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  padding: 1rem 0.65rem 1.25rem;
+}
+
+.app-sidebar-label {
+  margin: 0 0.55rem 0.45rem;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.app-sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  border-radius: 0.75rem;
+  padding: 0.55rem 0.65rem;
+  font-size: 13px;
+  font-weight: 550;
+  color: var(--muted);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.app-sidebar-link:hover {
+  background: color-mix(in srgb, var(--canvas) 70%, transparent);
+  color: var(--ink);
+}
+
+.app-sidebar-link.is-active {
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.app-sidebar-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
+.app-sidebar-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(12, 18, 24, 0.35);
+}
+
+.app-sidebar-panel {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: min(17rem, 86vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+  box-shadow: var(--shadow-lift);
+}
+
 .app-main {
   margin: 0 auto;
   width: 100%;
   max-width: 1400px;
   padding: 1.5rem 2rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.app-shell.has-sidebar .app-main:not(.rounds):not(.landing) {
+  max-width: none;
 }
 
 .app-main.rounds {
@@ -657,6 +740,12 @@ body {
 }
 
 @media (max-width: 768px) {
+  .app-shell.has-sidebar .app-body {
+    min-height: calc(
+      100dvh - 7rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+    );
+  }
+
   .app-main {
     padding: 1rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom));
   }

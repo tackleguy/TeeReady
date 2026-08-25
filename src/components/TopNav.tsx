@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { NavLink, useLocation } from 'react-router-dom';
-import { ChevronDown, MapPin, MoreHorizontal } from 'lucide-react';
+import { ChevronDown, MapPin, PanelLeft } from 'lucide-react';
 import { hasStoredRound } from '../lib/golfTracker';
 import { loadGolfProfile } from '../lib/golfProfile';
 import { needsQuestionnaire } from '../lib/questionnaire';
@@ -16,6 +16,7 @@ import {
 interface Props {
   locationLabel?: string;
   onLocationClick?: () => void;
+  onOpenSidebar?: () => void;
 }
 
 const ROUNDS_LINKS = [
@@ -29,13 +30,6 @@ const ROUNDS_LINKS = [
     href: '/rounds/gps',
     hint: 'Live ranging · keeps running',
   },
-] as const;
-
-const MORE_LINKS = [
-  { label: 'Course map', href: '/courses/map' },
-  { label: 'Profile', href: '/profile' },
-  { label: 'Social', href: '/group' },
-  { label: 'Settings', href: '/settings' },
 ] as const;
 
 function useMenuDismiss(
@@ -220,76 +214,6 @@ function RoundsMenu({ mobile = false }: { mobile?: boolean }) {
   );
 }
 
-function MoreMenu({ mobile = false }: { mobile?: boolean }) {
-  const location = useLocation();
-  const [open, setOpen] = useState(false);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  useMenuDismiss(open, () => setOpen(false), triggerRef, menuRef);
-  const moreActive = MORE_LINKS.some((item) =>
-    location.pathname.startsWith(item.href),
-  );
-
-  useEffect(() => {
-    setOpen(false);
-  }, [location.pathname]);
-
-  return (
-    <div className="relative">
-      <button
-        ref={triggerRef}
-        type="button"
-        aria-expanded={open}
-        aria-haspopup="menu"
-        onClick={() => setOpen((v) => !v)}
-        className={`nav-link inline-flex items-center gap-1 ${mobile ? 'whitespace-nowrap' : ''}`}
-        aria-current={moreActive ? 'page' : undefined}
-      >
-        {mobile ? (
-          <>
-            More
-            <ChevronDown
-              className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`}
-              strokeWidth={2.2}
-            />
-          </>
-        ) : (
-          <>
-            <MoreHorizontal className="h-4 w-4" strokeWidth={2.2} />
-            <span className="sr-only">More</span>
-          </>
-        )}
-      </button>
-      <MenuPortal
-        open={open}
-        triggerRef={triggerRef}
-        menuRef={menuRef}
-        align={mobile ? 'left' : 'right'}
-      >
-        {MORE_LINKS.map((item) => (
-          <NavLink
-            key={item.href}
-            to={item.href}
-            role="menuitem"
-            onClick={() => setOpen(false)}
-            onMouseEnter={() => prefetchRoute(item.href)}
-            onFocus={() => prefetchRoute(item.href)}
-            className={({ isActive }) =>
-              `block px-3.5 py-2.5 text-[13px] font-semibold transition-colors ${
-                isActive
-                  ? 'bg-brand-soft text-brand'
-                  : 'text-ink hover:bg-[color-mix(in_srgb,var(--canvas)_80%,transparent)]'
-              }`
-            }
-          >
-            {item.label}
-          </NavLink>
-        ))}
-      </MenuPortal>
-    </div>
-  );
-}
-
 function NavItem({
   to,
   children,
@@ -317,6 +241,7 @@ function NavItem({
 export function TopNav({
   locationLabel = CURRENT_LOCATION,
   onLocationClick,
+  onOpenSidebar,
 }: Props) {
   const { user } = useAuth();
   const [profile, setProfile] = useState<DisplayProfile>(() =>
@@ -344,7 +269,17 @@ export function TopNav({
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-[color-mix(in_srgb,var(--canvas)_94%,transparent)] pt-[env(safe-area-inset-top)] backdrop-blur-md">
       <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between px-5 py-3 md:px-8">
-        <div className="flex items-center gap-7">
+        <div className="flex items-center gap-3 md:gap-7">
+          {onOpenSidebar ? (
+            <button
+              type="button"
+              onClick={onOpenSidebar}
+              className="grid h-9 w-9 place-items-center rounded-full border border-line bg-surface text-muted shadow-card hover:text-ink md:hidden"
+              aria-label="Open menu"
+            >
+              <PanelLeft className="h-4 w-4" strokeWidth={2.2} />
+            </button>
+          ) : null}
           <NavLink to="/today" className="group flex items-center gap-2.5">
             <span className="grid h-9 w-9 place-items-center rounded-full border border-line bg-surface font-display text-[15px] font-bold text-brand shadow-card">
               T
@@ -364,7 +299,6 @@ export function TopNav({
             <NavItem to="/stats" tutorialId="stats">
               Stats
             </NavItem>
-            <MoreMenu />
           </nav>
         </div>
 
@@ -416,7 +350,6 @@ export function TopNav({
         <NavItem to="/stats" mobile tutorialId="stats">
           Stats
         </NavItem>
-        <MoreMenu mobile />
       </nav>
     </header>
   );

@@ -6,6 +6,7 @@ import {
   Routes,
   useLocation,
 } from 'react-router-dom';
+import { AppSidebar } from './components/AppSidebar';
 import { InstallPrompt } from './components/InstallPrompt';
 import { SearchBar } from './components/radar/SearchBar';
 import { ThemeBoot } from './components/ThemeBoot';
@@ -116,12 +117,18 @@ function Shell() {
   const isLanding = location.pathname === '/';
   const isRounds = location.pathname.startsWith('/rounds');
   const isCourseMap = location.pathname.startsWith('/courses/map');
+  const isCourses = location.pathname === '/courses';
   const [place, setPlace] = useState(() => defaultSearchLoc().name || CURRENT_LOCATION);
   const [pickingLocation, setPickingLocation] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     loadGreenMeshManifest().catch(() => {});
   }, []);
+
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     const sync = () => setPlace(defaultSearchLoc().name || CURRENT_LOCATION);
@@ -134,15 +141,17 @@ function Shell() {
   }, []);
 
   const showAppChrome = Boolean(user) && !isLanding;
-  const fullBleedMain = isRounds || isCourseMap;
+  const fullBleedMain = isRounds || isCourseMap || isCourses;
+  const showSideRail = showAppChrome && !isRounds && !isCourseMap;
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${showSideRail ? 'has-sidebar' : ''}`}>
       <ThemeBoot />
       {showAppChrome ? (
         <TopNav
           locationLabel={place}
           onLocationClick={() => setPickingLocation((v) => !v)}
+          onOpenSidebar={() => setSidebarOpen(true)}
         />
       ) : null}
 
@@ -166,15 +175,24 @@ function Shell() {
         </div>
       ) : null}
 
-      <main
-        className={
-          fullBleedMain && showAppChrome
-            ? 'app-main rounds'
-            : isLanding
-              ? 'app-main landing'
-              : 'app-main'
-        }
-      >
+      <div className={showAppChrome ? 'app-body' : undefined}>
+        {showAppChrome ? (
+          <AppSidebar
+            open={sidebarOpen}
+            onClose={() => setSidebarOpen(false)}
+            showRail={showSideRail}
+          />
+        ) : null}
+
+        <main
+          className={
+            fullBleedMain && showAppChrome
+              ? 'app-main rounds'
+              : isLanding
+                ? 'app-main landing'
+                : 'app-main'
+          }
+        >
         <Routes>
           <Route path="/" element={<PublicHome />} />
           <Route
@@ -267,7 +285,8 @@ function Shell() {
           />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </main>
+        </main>
+      </div>
       {showAppChrome ? <InstallPrompt /> : null}
       {showAppChrome ? <AppTutorial active={showAppChrome} /> : null}
     </div>
