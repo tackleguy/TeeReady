@@ -90,7 +90,7 @@ export function CitySearchField({ value, onChange }: Props) {
                   <button
                     type="button"
                     className="flex w-full items-start gap-2 px-3 py-2.5 text-left text-[13px] hover:bg-canvas"
-                    onMouseDown={(e) => e.preventDefault()}
+                    onPointerDown={(e) => e.preventDefault()}
                     onClick={() => {
                       onChange(r);
                       setQ('');

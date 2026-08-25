@@ -117,7 +117,7 @@ export function CourseSearchSelect({
                 <li key={c.id}>
                   <button
                     type="button"
-                    onMouseDown={(e) => e.preventDefault()}
+                    onPointerDown={(e) => e.preventDefault()}
                     onClick={() => pick(c)}
                     className="flex w-full flex-col gap-0.5 px-3 py-2.5 text-left hover:bg-[var(--hover-fill)]"
                   >

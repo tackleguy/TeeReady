@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { NavLink, useLocation } from 'react-router-dom';
 import { ChevronDown, MapPin, MoreHorizontal } from 'lucide-react';
 import { hasStoredRound } from '../lib/golfTracker';
@@ -37,31 +38,102 @@ const MORE_LINKS = [
   { label: 'Settings', href: '/settings' },
 ] as const;
 
-function useMenuDismiss(open: boolean, onClose: () => void) {
-  const rootRef = useRef<HTMLDivElement>(null);
+function useMenuDismiss(
+  open: boolean,
+  onClose: () => void,
+  triggerRef: React.RefObject<HTMLElement | null>,
+  menuRef: React.RefObject<HTMLElement | null>,
+) {
   useEffect(() => {
     if (!open) return;
     const onDoc = (e: PointerEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) onClose();
+      const t = e.target as Node;
+      if (triggerRef.current?.contains(t) || menuRef.current?.contains(t)) {
+        return;
+      }
+      onClose();
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
-    document.addEventListener('pointerdown', onDoc);
+    // Defer so the opening tap/click does not immediately dismiss.
+    const id = window.setTimeout(() => {
+      document.addEventListener('pointerdown', onDoc);
+    }, 0);
     document.addEventListener('keydown', onKey);
     return () => {
+      window.clearTimeout(id);
       document.removeEventListener('pointerdown', onDoc);
       document.removeEventListener('keydown', onKey);
     };
-  }, [open, onClose]);
-  return rootRef;
+  }, [open, onClose, triggerRef, menuRef]);
+}
+
+function MenuPortal({
+  open,
+  triggerRef,
+  menuRef,
+  align = 'left',
+  children,
+}: {
+  open: boolean;
+  triggerRef: React.RefObject<HTMLElement | null>;
+  menuRef: React.RefObject<HTMLDivElement | null>;
+  align?: 'left' | 'right';
+  children: React.ReactNode;
+}) {
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+
+  useLayoutEffect(() => {
+    if (!open) {
+      setPos(null);
+      return;
+    }
+    const update = () => {
+      const el = triggerRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const menuWidth = menuRef.current?.offsetWidth ?? 220;
+      let left =
+        align === 'right' ? r.right - menuWidth : r.left;
+      left = Math.max(8, Math.min(left, window.innerWidth - menuWidth - 8));
+      setPos({ top: r.bottom + 8, left });
+    };
+    update();
+    // Re-measure after paint once menu width is known.
+    const raf = window.requestAnimationFrame(update);
+    window.addEventListener('resize', update);
+    // Capture scroll from overflow-x nav and page scroll.
+    window.addEventListener('scroll', update, true);
+    return () => {
+      window.cancelAnimationFrame(raf);
+      window.removeEventListener('resize', update);
+      window.removeEventListener('scroll', update, true);
+    };
+  }, [open, triggerRef, menuRef, align]);
+
+  if (!open || !pos || typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div
+      ref={menuRef as React.RefObject<HTMLDivElement>}
+      role="menu"
+      style={{ top: pos.top, left: pos.left }}
+      className="fixed z-[60] min-w-[200px] overflow-hidden rounded-card border border-line bg-surface shadow-lift"
+    >
+      {children}
+    </div>,
+    document.body,
+  );
 }
 
 function RoundsMenu({ mobile = false }: { mobile?: boolean }) {
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const [liveRound, setLiveRound] = useState(() => hasStoredRound());
-  const rootRef = useMenuDismiss(open, () => setOpen(false));
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  useMenuDismiss(open, () => setOpen(false), triggerRef, menuRef);
   const roundsActive = location.pathname.startsWith('/rounds');
 
   useEffect(() => {
@@ -79,8 +151,9 @@ function RoundsMenu({ mobile = false }: { mobile?: boolean }) {
   }, []);
 
   return (
-    <div ref={rootRef} className="relative">
+    <div className="relative">
       <button
+        ref={triggerRef}
         type="button"
         aria-expanded={open}
         aria-haspopup="menu"
@@ -104,49 +177,45 @@ function RoundsMenu({ mobile = false }: { mobile?: boolean }) {
         />
       </button>
 
-      {open ? (
-        <div
-          role="menu"
-          className={`absolute z-40 overflow-hidden rounded-card border border-line bg-surface shadow-lift ${
-            mobile
-              ? 'left-0 top-full mt-2 min-w-[200px]'
-              : 'left-0 top-full mt-2 min-w-[220px]'
-          }`}
-        >
-          {ROUNDS_LINKS.map((item) => (
-            <NavLink
-              key={item.href}
-              to={item.href}
-              role="menuitem"
-              onClick={() => setOpen(false)}
-              onMouseEnter={() => prefetchRoute(item.href)}
-              onFocus={() => prefetchRoute(item.href)}
-              className={({ isActive }) =>
-                `block px-3.5 py-2.5 transition-colors ${
-                  isActive
-                    ? 'bg-brand-soft'
-                    : 'hover:bg-[color-mix(in_srgb,var(--canvas)_80%,transparent)]'
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  <div
-                    className={`text-[13px] ${
-                      isActive
-                        ? 'font-semibold text-brand'
-                        : 'font-semibold text-ink'
-                    }`}
-                  >
-                    {item.label}
-                  </div>
-                  <div className="mt-0.5 text-[11px] text-muted">{item.hint}</div>
-                </>
-              )}
-            </NavLink>
-          ))}
-        </div>
-      ) : null}
+      <MenuPortal
+        open={open}
+        triggerRef={triggerRef}
+        menuRef={menuRef}
+        align="left"
+      >
+        {ROUNDS_LINKS.map((item) => (
+          <NavLink
+            key={item.href}
+            to={item.href}
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            onMouseEnter={() => prefetchRoute(item.href)}
+            onFocus={() => prefetchRoute(item.href)}
+            className={({ isActive }) =>
+              `block px-3.5 py-2.5 transition-colors ${
+                isActive
+                  ? 'bg-brand-soft'
+                  : 'hover:bg-[color-mix(in_srgb,var(--canvas)_80%,transparent)]'
+              }`
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <div
+                  className={`text-[13px] ${
+                    isActive
+                      ? 'font-semibold text-brand'
+                      : 'font-semibold text-ink'
+                  }`}
+                >
+                  {item.label}
+                </div>
+                <div className="mt-0.5 text-[11px] text-muted">{item.hint}</div>
+              </>
+            )}
+          </NavLink>
+        ))}
+      </MenuPortal>
     </div>
   );
 }
@@ -154,7 +223,9 @@ function RoundsMenu({ mobile = false }: { mobile?: boolean }) {
 function MoreMenu({ mobile = false }: { mobile?: boolean }) {
   const location = useLocation();
   const [open, setOpen] = useState(false);
-  const rootRef = useMenuDismiss(open, () => setOpen(false));
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  useMenuDismiss(open, () => setOpen(false), triggerRef, menuRef);
   const moreActive = MORE_LINKS.some((item) =>
     location.pathname.startsWith(item.href),
   );
@@ -164,8 +235,9 @@ function MoreMenu({ mobile = false }: { mobile?: boolean }) {
   }, [location.pathname]);
 
   return (
-    <div ref={rootRef} className="relative">
+    <div className="relative">
       <button
+        ref={triggerRef}
         type="button"
         aria-expanded={open}
         aria-haspopup="menu"
@@ -188,34 +260,32 @@ function MoreMenu({ mobile = false }: { mobile?: boolean }) {
           </>
         )}
       </button>
-      {open ? (
-        <div
-          role="menu"
-          className={`absolute z-40 min-w-[180px] overflow-hidden rounded-card border border-line bg-surface shadow-lift ${
-            mobile ? 'left-0 top-full mt-2' : 'right-0 top-full mt-2'
-          }`}
-        >
-          {MORE_LINKS.map((item) => (
-            <NavLink
-              key={item.href}
-              to={item.href}
-              role="menuitem"
-              onClick={() => setOpen(false)}
-              onMouseEnter={() => prefetchRoute(item.href)}
-              onFocus={() => prefetchRoute(item.href)}
-              className={({ isActive }) =>
-                `block px-3.5 py-2.5 text-[13px] font-semibold transition-colors ${
-                  isActive
-                    ? 'bg-brand-soft text-brand'
-                    : 'text-ink hover:bg-[color-mix(in_srgb,var(--canvas)_80%,transparent)]'
-                }`
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
-        </div>
-      ) : null}
+      <MenuPortal
+        open={open}
+        triggerRef={triggerRef}
+        menuRef={menuRef}
+        align={mobile ? 'left' : 'right'}
+      >
+        {MORE_LINKS.map((item) => (
+          <NavLink
+            key={item.href}
+            to={item.href}
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            onMouseEnter={() => prefetchRoute(item.href)}
+            onFocus={() => prefetchRoute(item.href)}
+            className={({ isActive }) =>
+              `block px-3.5 py-2.5 text-[13px] font-semibold transition-colors ${
+                isActive
+                  ? 'bg-brand-soft text-brand'
+                  : 'text-ink hover:bg-[color-mix(in_srgb,var(--canvas)_80%,transparent)]'
+              }`
+            }
+          >
+            {item.label}
+          </NavLink>
+        ))}
+      </MenuPortal>
     </div>
   );
 }

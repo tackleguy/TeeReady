@@ -129,7 +129,7 @@ export function CourseSearchMultiSelect({
                       <button
                         type="button"
                         disabled={picked}
-                        onMouseDown={(e) => e.preventDefault()}
+                        onPointerDown={(e) => e.preventDefault()}
                         onClick={() => add(c)}
                         className={[
                           'flex w-full items-start justify-between gap-2 px-3 py-2.5 text-left',

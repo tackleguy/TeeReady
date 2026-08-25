@@ -78,7 +78,7 @@ export function SearchBar({ onPick }: Props) {
                 <li key={i}>
                   <button
                     type="button"
-                    onMouseDown={(e) => e.preventDefault()}
+                    onPointerDown={(e) => e.preventDefault()}
                     onClick={() => {
                       onPick(r);
                       setOpen(false);
