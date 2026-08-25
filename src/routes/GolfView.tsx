@@ -426,13 +426,17 @@ export function GolfView({ active = true }: { active?: boolean }) {
       setGpsAim(null);
       return;
     }
-    setTarget(
-      defaultTarget(
-        activeHoleObj,
-        bag[0]?.yards ?? profile.driverYards,
-      ),
+    const landing = defaultTarget(
+      activeHoleObj,
+      bag[0]?.yards ?? profile.driverYards,
     );
-    setGpsAim(greenMarks(activeHoleObj).mid);
+    setTarget(landing);
+    // GPS path: layup on longer holes so carry + approach both get callouts.
+    setGpsAim(
+      (activeHoleObj.par ?? 4) >= 4 && activeHoleObj.yards > 280
+        ? landing
+        : greenMarks(activeHoleObj).mid,
+    );
   }, [activeHoleObj, profile, bag, planningMode]);
 
   const briefByHole = useMemo(() => {
@@ -697,7 +701,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
     return gpsGreenDistances ?? rangefinderDistances;
   }, [gpsOffCourse, gpsPos, gpsGreenDistances, rangefinderDistances]);
 
-  /** Aim point for GPS crosshair — tap moves this; defaults to green mid. */
+  /** Aim point for GPS path — tap moves this; long holes open on a layup. */
   const rangefinderAim = useMemo(() => {
     if (viewMode !== 'gps' || !activeHoleObj) return null;
     if (gpsAim) return gpsAim;
@@ -705,30 +709,45 @@ export function GolfView({ active = true }: { active?: boolean }) {
   }, [viewMode, activeHoleObj, gpsAim]);
 
   const gpsLineClubs = useMemo(() => {
-    if (viewMode !== 'gps' || !rangefinderDistances || !rangefinderFrom) {
+    if (
+      viewMode !== 'gps' ||
+      !rangefinderDistances ||
+      !rangefinderFrom ||
+      !activeHoleObj
+    ) {
       return null;
     }
-    const aimYd =
-      rangefinderAim
-        ? Math.round(
-            haversineYards(
-              rangefinderFrom.lat,
-              rangefinderFrom.lon,
-              rangefinderAim.lat,
-              rangefinderAim.lon,
-            ),
-          )
-        : rangefinderDistances.mid;
+    const aim = rangefinderAim ?? {
+      lat: activeHoleObj.green.lat,
+      lon: activeHoleObj.green.lon,
+    };
+    const aimYd = Math.round(
+      haversineYards(
+        rangefinderFrom.lat,
+        rangefinderFrom.lon,
+        aim.lat,
+        aim.lon,
+      ),
+    );
+    const remainYd = Math.round(
+      haversineYards(
+        aim.lat,
+        aim.lon,
+        activeHoleObj.green.lat,
+        activeHoleObj.green.lon,
+      ),
+    );
     return {
       front: bestClubForDistance(rangefinderDistances.front, bag) ?? null,
       mid: bestClubForDistance(aimYd, bag) ?? null,
-      back: bestClubForDistance(rangefinderDistances.back, bag) ?? null,
+      back: bestClubForDistance(remainYd, bag) ?? null,
     };
   }, [
     viewMode,
     rangefinderDistances,
     rangefinderFrom,
     rangefinderAim,
+    activeHoleObj,
     bag,
   ]);
 

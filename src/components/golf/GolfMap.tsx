@@ -615,14 +615,26 @@ export function GolfMap({
         },
       });
       map.addLayer({
+        id: 'golf-gps-whisker',
+        type: 'line',
+        source: SRC_GPS_GUIDE,
+        filter: ['==', ['get', 'kind'], 'whisker'],
+        paint: {
+          'line-color': ['get', 'color'],
+          'line-width': 1.4,
+          'line-opacity': 0.55,
+          'line-dasharray': [1.5, 1.8],
+        },
+      });
+      map.addLayer({
         id: LYR_GPS_GUIDE,
         type: 'line',
         source: SRC_GPS_GUIDE,
         filter: ['==', ['get', 'kind'], 'guide'],
         paint: {
-          'line-color': ['get', 'color'],
-          'line-width': ['match', ['get', 'role'], 'M', 3.4, 2.2],
-          'line-opacity': 0.95,
+          'line-color': '#ffffff',
+          'line-width': ['match', ['get', 'role'], 'carry', 3.6, 3],
+          'line-opacity': 0.98,
         },
       });
       map.addLayer({
@@ -631,17 +643,21 @@ export function GolfMap({
         source: SRC_GPS_GUIDE,
         filter: ['==', ['get', 'kind'], 'pin'],
         paint: {
-          'circle-radius': ['match', ['get', 'role'], 'M', 7, 5.5],
-          'circle-color': ['get', 'color'],
+          'circle-radius': 6,
+          'circle-color': '#ffffff',
           'circle-stroke-width': 2,
-          'circle-stroke-color': '#ffffff',
+          'circle-stroke-color': '#0a0a0a',
         },
       });
       map.addLayer({
         id: LYR_GPS_PIN_LABEL,
         type: 'symbol',
         source: SRC_GPS_GUIDE,
-        filter: ['==', ['get', 'kind'], 'pin'],
+        filter: [
+          'all',
+          ['==', ['get', 'kind'], 'pin'],
+          ['!=', ['get', 'label'], ''],
+        ],
         layout: {
           'text-field': ['get', 'label'],
           'text-size': 10,
@@ -663,9 +679,9 @@ export function GolfMap({
         source: SRC_GPS_GUIDE,
         filter: ['==', ['get', 'kind'], 'callout-yards'],
         paint: {
-          'circle-radius': ['match', ['get', 'major'], 1, 28, 24],
-          'circle-color': 'rgba(0,0,0,0.88)',
-          'circle-opacity': 1,
+          'circle-radius': ['match', ['get', 'major'], 1, 26, 22],
+          'circle-color': '#000000',
+          'circle-opacity': 0.88,
         },
       });
       map.addLayer({
@@ -675,7 +691,7 @@ export function GolfMap({
         filter: ['==', ['get', 'kind'], 'callout-yards'],
         layout: {
           'text-field': ['get', 'yardsText'],
-          'text-size': 15,
+          'text-size': 14,
           'text-font': ['Open Sans Bold', 'Open Sans Regular'],
           'text-anchor': 'center',
           'text-allow-overlap': true,
@@ -691,10 +707,9 @@ export function GolfMap({
         source: SRC_GPS_GUIDE,
         filter: ['==', ['get', 'kind'], 'callout-club'],
         paint: {
-          'circle-radius': ['match', ['get', 'major'], 1, 26, 22],
+          'circle-radius': ['match', ['get', 'major'], 1, 22, 18],
           'circle-color': '#ffffff',
           'circle-opacity': 0.96,
-          'circle-stroke-width': 0,
         },
       });
       map.addLayer({
@@ -721,8 +736,8 @@ export function GolfMap({
         source: SRC_GPS_GUIDE,
         filter: ['==', ['get', 'kind'], 'crosshair'],
         paint: {
-          'circle-radius': 14,
-          'circle-color': 'rgba(0,0,0,0)',
+          'circle-radius': 16,
+          'circle-color': '#00000000',
           'circle-stroke-width': 2.5,
           'circle-stroke-color': '#ffffff',
         },
@@ -733,7 +748,7 @@ export function GolfMap({
         source: SRC_GPS_GUIDE,
         filter: ['==', ['get', 'kind'], 'crosshair'],
         paint: {
-          'circle-radius': 3,
+          'circle-radius': 3.5,
           'circle-color': '#ffffff',
         },
       });
@@ -1167,27 +1182,37 @@ export function GolfMap({
       (
         map.getSource(SRC_GPS_HDG) as maplibregl.GeoJSONSource | undefined
       )?.setData(hdg);
-
-      const hole = holes.find((h) => h.number === activeHoleRef.current) ?? null;
-      (
-        map.getSource(SRC_GPS_GUIDE) as maplibregl.GeoJSONSource | undefined
-      )?.setData(
-        showRangefinder
-          ? gpsGuideGeoJSON(rangefinderFrom, hole, {
-              frontClub: gpsClubs?.front ?? null,
-              midClub: gpsClubs?.mid ?? null,
-              backClub: gpsClubs?.back ?? null,
-              maxYards: 700,
-              aim: rangefinderAim,
-              playsLikeYd: rangefinderPlaysLikeYd,
-            })
-          : emptyCollection(),
-      );
     });
   }, [
     gpsPosition,
     gpsAccuracyM,
     gpsHeadingDeg,
+    whenReady,
+  ]);
+
+  // GPS rangefinder path + callouts (own effect so it always refreshes in GPS mode)
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    whenReady(() => {
+      const hole =
+        holes.find((h) => h.number === activeHole) ?? null;
+      const guide =
+        showRangefinder && rangefinderFrom && hole
+          ? gpsGuideGeoJSON(rangefinderFrom, hole, {
+              frontClub: gpsClubs?.front ?? null,
+              midClub: gpsClubs?.mid ?? null,
+              backClub: gpsClubs?.back ?? null,
+              maxYards: 900,
+              aim: rangefinderAim,
+              playsLikeYd: rangefinderPlaysLikeYd,
+            })
+          : emptyCollection();
+      (
+        map.getSource(SRC_GPS_GUIDE) as maplibregl.GeoJSONSource | undefined
+      )?.setData(guide);
+    });
+  }, [
     holes,
     activeHole,
     gpsClubs,

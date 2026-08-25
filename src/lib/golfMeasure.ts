@@ -254,8 +254,8 @@ export function distancesToGreen(
   };
 }
 
-/** GPS → front / mid / back guide lines with yardage (+ optional club) labels.
- *  18Birdies-style: lines from ball (or tee) to F/M/B, pin markers, callouts.
+/** GPS rangefinder: white path segments with yardage + club callout boxes.
+ *  Ball/tee → aim, then aim → green when those are distinct (18Birdies-style).
  */
 export function gpsGuideGeoJSON(
   from: LonLat | null,
@@ -273,7 +273,7 @@ export function gpsGuideGeoJSON(
   if (!from || !hole) return { type: 'FeatureCollection', features: [] };
   const marks = greenMarks(hole);
   const dist = distancesToGreen(from, marks);
-  const maxYd = opts?.maxYards ?? 700;
+  const maxYd = opts?.maxYards ?? 900;
   if (!Number.isFinite(dist.mid) || dist.mid > maxYd) {
     return { type: 'FeatureCollection', features: [] };
   }
@@ -282,31 +282,79 @@ export function gpsGuideGeoJSON(
   const aimYd = Math.round(
     haversineYards(from.lat, from.lon, aim.lat, aim.lon),
   );
-  const clubFor = (key: 'F' | 'M' | 'B') =>
-    key === 'F'
-      ? opts?.frontClub
-      : key === 'B'
-        ? opts?.backClub
-        : opts?.midClub;
+  const remainYd = Math.round(
+    haversineYards(aim.lat, aim.lon, marks.mid.lat, marks.mid.lon),
+  );
   const features: GeoJSON.Feature[] = [];
-  const rows: Array<{
-    key: 'F' | 'M' | 'B';
-    roleLabel: string;
-    pt: LonLat;
-    yards: number;
-    color: string;
-  }> = [
-    { key: 'F', roleLabel: 'FRONT', pt: marks.front, yards: dist.front, color: '#4ade80' },
-    { key: 'M', roleLabel: 'MID', pt: aim, yards: aimYd, color: '#38bdf8' },
-    { key: 'B', roleLabel: 'BACK', pt: marks.back, yards: dist.back, color: '#fbbf24' },
-  ];
 
-  for (const row of rows) {
-    const club = clubFor(row.key) ?? '—';
+  const pushSegment = (
+    a: LonLat,
+    b: LonLat,
+    yards: number,
+    club: string,
+    role: string,
+    major: number,
+    playsLike: number | null,
+  ) => {
+    if (yards < 1) return;
+    features.push({
+      type: 'Feature',
+      properties: { kind: 'guide', role, color: '#ffffff', yards },
+      geometry: {
+        type: 'LineString',
+        coordinates: [
+          [a.lon, a.lat],
+          [b.lon, b.lat],
+        ],
+      },
+    });
+
+    const t = 0.5;
+    const mid: LonLat = {
+      lon: a.lon + (b.lon - a.lon) * t,
+      lat: a.lat + (b.lat - a.lat) * t,
+    };
+    const axis = bearingDeg(a.lat, a.lon, b.lat, b.lon);
+    const pillPt = destPoint(mid, axis + 90, Math.min(26, Math.max(14, yards * 0.04)));
+
     features.push({
       type: 'Feature',
       properties: {
-        kind: 'guide',
+        kind: 'callout-yards',
+        role,
+        yardsText: `${yards}y`,
+        yards,
+        major,
+      },
+      geometry: { type: 'Point', coordinates: [mid.lon, mid.lat] },
+    });
+
+    const clubText =
+      playsLike != null && playsLike !== yards
+        ? `${club}\nplays ${playsLike}y`
+        : club;
+    features.push({
+      type: 'Feature',
+      properties: {
+        kind: 'callout-club',
+        role,
+        clubText,
+        club,
+        major,
+      },
+      geometry: { type: 'Point', coordinates: [pillPt.lon, pillPt.lat] },
+    });
+  };
+
+  // Soft front / back depth whiskers (not the main path).
+  for (const row of [
+    { key: 'F', pt: marks.front, yards: dist.front, color: '#86efac' },
+    { key: 'B', pt: marks.back, yards: dist.back, color: '#fde68a' },
+  ] as const) {
+    features.push({
+      type: 'Feature',
+      properties: {
+        kind: 'whisker',
         role: row.key,
         color: row.color,
         yards: row.yards,
@@ -319,77 +367,43 @@ export function gpsGuideGeoJSON(
         ],
       },
     });
+  }
 
-    const t = row.key === 'M' ? 0.52 : 0.58;
-    const labelLon = from.lon + (row.pt.lon - from.lon) * t;
-    const labelLat = from.lat + (row.pt.lat - from.lat) * t;
-    const labelPt: LonLat = { lon: labelLon, lat: labelLat };
-    const axis = bearingDeg(from.lat, from.lon, row.pt.lat, row.pt.lon);
-    const playsLike =
-      row.key === 'M' &&
-      opts?.playsLikeYd != null &&
-      opts.playsLikeYd !== row.yards
-        ? opts.playsLikeYd
-        : null;
-    const pillOffsetYd = Math.min(28, Math.max(18, row.yards * 0.045));
-    const pillPt = destPoint(labelPt, axis + 90, pillOffsetYd);
+  const carryClub = opts?.midClub ?? '—';
+  const remainClub = opts?.backClub ?? opts?.frontClub ?? '—';
 
-    features.push({
-      type: 'Feature',
-      properties: {
-        kind: 'callout-yards',
-        role: row.key,
-        yardsText: `${row.yards}y`,
-        yards: row.yards,
-        major: row.key === 'M' ? 1 : 0,
-      },
-      geometry: {
-        type: 'Point',
-        coordinates: [labelLon, labelLat],
-      },
-    });
+  pushSegment(
+    from,
+    aim,
+    aimYd,
+    carryClub || '—',
+    'carry',
+    1,
+    opts?.playsLikeYd ?? null,
+  );
 
-    const clubLines =
-      row.key === 'M' && playsLike != null
-        ? `${club}\nplays ${playsLike}y`
-        : club;
-    features.push({
-      type: 'Feature',
-      properties: {
-        kind: 'callout-club',
-        role: row.key,
-        clubText: clubLines,
-        club,
-        major: row.key === 'M' ? 1 : 0,
-      },
-      geometry: {
-        type: 'Point',
-        coordinates: [pillPt.lon, pillPt.lat],
-      },
-    });
-
-    features.push({
-      type: 'Feature',
-      properties: {
-        kind: 'pin',
-        role: row.key,
-        label: row.key,
-        color: row.color,
-      },
-      geometry: {
-        type: 'Point',
-        coordinates: [row.pt.lon, row.pt.lat],
-      },
-    });
+  // Second leg only when the aim is meaningfully short of the green.
+  if (remainYd >= 12) {
+    pushSegment(aim, marks.mid, remainYd, remainClub || '—', 'remain', 0, null);
   }
 
   features.push({
     type: 'Feature',
-    properties: { kind: 'crosshair', role: 'M' },
+    properties: { kind: 'pin', role: 'from', label: '', color: '#ffffff' },
+    geometry: { type: 'Point', coordinates: [from.lon, from.lat] },
+  });
+  features.push({
+    type: 'Feature',
+    properties: { kind: 'pin', role: 'green', label: '', color: '#ffffff' },
     geometry: {
       type: 'Point',
-      coordinates: [aim.lon, aim.lat],
+      coordinates: [marks.mid.lon, marks.mid.lat],
     },
+  });
+  features.push({
+    type: 'Feature',
+    properties: { kind: 'crosshair', role: 'M' },
+    geometry: { type: 'Point', coordinates: [aim.lon, aim.lat] },
   });
 
   return { type: 'FeatureCollection', features };
