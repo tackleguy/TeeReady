@@ -1,6 +1,7 @@
 /** Swing capture, on-device measurement, and optional local vision coaching. */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   AlertTriangle,
   Camera,
@@ -300,7 +301,7 @@ export function SwingView() {
   return (
     <div className="mx-auto w-full max-w-lg px-5 pb-16 pt-6 md:px-8">
       <header className="mb-6">
-        <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-faint">
+        <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-faint">
           Practice
         </p>
         <h1 className="mt-1 font-display text-[28px] font-bold tracking-[-0.03em] text-ink">
@@ -320,7 +321,7 @@ export function SwingView() {
       {step === 'setup' ? (
         <div className="space-y-5">
           <section className="rounded-card bg-surface p-4 shadow-card">
-            <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
+            <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
               Camera angle
             </p>
             <div className="mt-3 grid grid-cols-2 gap-2">
@@ -348,7 +349,7 @@ export function SwingView() {
           </section>
 
           <section className="rounded-card bg-surface p-4 shadow-card">
-            <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
+            <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
               Handedness
             </p>
             <div className="mt-3 flex gap-2">
@@ -400,7 +401,7 @@ export function SwingView() {
 
           {history.length > 0 ? (
             <section className="pt-2">
-              <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
+              <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
                 Saved locally
               </p>
               <ul className="mt-2 divide-y divide-line overflow-hidden rounded-card bg-surface shadow-card">
@@ -560,7 +561,7 @@ export function SwingView() {
       {step === 'rejected' && reject ? (
         <div className="space-y-4">
           <div className="rounded-card border border-bad/30 bg-surface p-5 shadow-card">
-            <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-bad">
+            <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-bad">
               Capture rejected
             </p>
             <h2 className="mt-2 text-[18px] font-bold text-ink">Not analysing this clip</h2>
@@ -604,7 +605,7 @@ export function SwingView() {
           </div>
 
           <div className="rounded-card bg-surface p-4 shadow-card">
-            <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
+            <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
               {coach?.source === 'llm' ? 'Caddie notes' : 'Summary'}
             </p>
             {coachLoading ? (
@@ -634,7 +635,7 @@ export function SwingView() {
 
           <div className="overflow-hidden rounded-card bg-surface shadow-card">
             <div className="border-b border-line px-4 py-3">
-              <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
+              <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
                 Metrics
               </p>
             </div>
@@ -650,6 +651,12 @@ export function SwingView() {
           >
             New swing
           </button>
+          <Link
+            to={`/swing/guide?analysis=${result.id}`}
+            className="flex w-full items-center justify-center rounded-xl bg-brand px-4 py-3 text-[14px] font-bold text-white"
+          >
+            Open improvement guide
+          </Link>
         </div>
       ) : null}
     </div>

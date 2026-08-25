@@ -26,7 +26,9 @@ import { ProfileView } from './routes/ProfileView';
 import { QuestionnaireView } from './routes/QuestionnaireView';
 import { SettingsView } from './routes/SettingsView';
 import { StatsView } from './routes/StatsView';
+import { SwingGuideView } from './routes/SwingGuideView';
 import { SwingView } from './routes/SwingView';
+import { UiAuditPreview } from './routes/UiAuditPreview';
 import { TodayView } from './routes/TodayView';
 
 applyTheme(loadTheme());
@@ -196,6 +198,7 @@ function Shell() {
         >
         <Routes>
           <Route path="/" element={<PublicHome />} />
+          <Route path="/dev/ui-audit" element={<UiAuditPreview />} />
           <Route
             path="/today"
             element={
@@ -257,6 +260,14 @@ function Shell() {
             element={
               <RequireAuth>
                 <SwingView />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/swing/guide"
+            element={
+              <RequireAuth>
+                <SwingGuideView />
               </RequireAuth>
             }
           />
