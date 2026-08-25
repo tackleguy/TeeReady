@@ -110,7 +110,7 @@ export function missSpecs(
 }
 
 export function lineColor(side: LineSide, role: LineRole): string {
-  if (role === 'start') return '#34d399';
+  if (role === 'start') return '#f8fafc';
   if (side === 'left') return role === 'more' ? '#818cf8' : '#38bdf8';
   if (side === 'right') return role === 'more' ? '#fb7185' : '#facc15';
   return '#e2e8f0';
@@ -512,11 +512,6 @@ export function playLinesGeoJSON(forecast: HoleForecast | null) {
   }
   const features = forecast.shots.flatMap((shot) =>
     shot.lines.flatMap((line) => {
-      const yardsLabel =
-        shot.kind === 'putt'
-          ? `${Math.round(line.yards * 3)} ft`
-          : `${line.yards} yd`;
-      const callout = `${line.club} · ${yardsLabel}`;
       const path = {
         type: 'Feature' as const,
         properties: {
@@ -525,9 +520,6 @@ export function playLinesGeoJSON(forecast: HoleForecast | null) {
           side: line.side,
           color: line.color,
           label: line.label,
-          club: line.club,
-          yards: line.yards,
-          callout,
         },
         geometry: {
           type: 'LineString' as const,
@@ -563,24 +555,7 @@ export function playLinesGeoJSON(forecast: HoleForecast | null) {
           ] as Array<[number, number]>,
         },
       };
-      // Label near the landing end of start + miss lines (18Birdies-style callouts).
-      const labelAt = line.path[Math.max(0, Math.floor(line.path.length * 0.72))] ?? line.to;
-      const labelPt = {
-        type: 'Feature' as const,
-        properties: {
-          kind: 'callout',
-          role: line.role,
-          side: line.side,
-          color: line.color,
-          label: callout,
-          callout,
-        },
-        geometry: {
-          type: 'Point' as const,
-          coordinates: [labelAt.lon, labelAt.lat] as [number, number],
-        },
-      };
-      return [path, tick, labelPt];
+      return [path, tick];
     }),
   );
   return { type: 'FeatureCollection' as const, features };

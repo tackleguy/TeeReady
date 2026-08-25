@@ -540,8 +540,8 @@ export function GolfMap({
         filter: ['==', ['get', 'kind'], 'tee'],
         paint: {
           'line-color': ['get', 'color'],
-          'line-width': ['match', ['get', 'role'], 'start', 5, 'more', 3, 3.8],
-          'line-opacity': 0.98,
+          'line-width': ['match', ['get', 'role'], 'start', 4.2, 'more', 2.4, 3.1],
+          'line-opacity': 0.95,
         },
       });
       map.addLayer({
@@ -1206,7 +1206,7 @@ export function GolfMap({
             <span className="flex flex-wrap items-center gap-1.5 text-[10px] text-[var(--ink-3)]">
               <span className="inline-block h-0.5 w-4 rounded bg-cyan-300" />
               wind
-              <span className="ml-1 inline-block h-0.5 w-4 rounded bg-emerald-400" />
+              <span className="ml-1 inline-block h-0.5 w-4 rounded bg-[#f8fafc]" />
               start
               <span className="ml-1 inline-block h-0.5 w-4 rounded bg-[#facc15]" />
               miss

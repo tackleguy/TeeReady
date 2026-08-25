@@ -474,15 +474,11 @@ export function GolfView({ active = true }: { active?: boolean }) {
       turf,
     });
   }, [activeHoleObj, target, bag, profile, activeBrief, turf, planningMode]);
-  const playLines = useMemo(() => {
-    if (!forecast) return null;
-    if (viewMode === 'prep') return playLinesGeoJSON(forecast);
-    if (viewMode === 'gps' && forecast.shots[0]) {
-      // Keep the tee-shot miss plan on the map while ranging live.
-      return playLinesGeoJSON({ ...forecast, shots: [forecast.shots[0]] });
-    }
-    return null;
-  }, [forecast, viewMode]);
+  // Prep only — GPS uses the wind-bent shot path instead (Aug 20 look).
+  const playLines = useMemo(
+    () => (viewMode === 'prep' ? playLinesGeoJSON(forecast) : null),
+    [forecast, viewMode],
+  );
   const activeIdx = playHoles.findIndex((h) => h.number === activeHole);
   const layoutLabel = [
     `${playHoles.length} holes`,
@@ -648,23 +644,34 @@ export function GolfView({ active = true }: { active?: boolean }) {
     return distancesToGreen(from, greenMarks(activeHoleObj));
   }, [gpsPos, activeHoleObj, viewMode]);
 
-  /** Ball for F/M/B lines: live GPS when close, otherwise the tee (so lines always show). */
+  /** Ball for F/M/B lines: only with a live on-course fix (else GPS shows wind shot path). */
+  const liveGpsRanging = useMemo(() => {
+    if (viewMode !== 'gps' || !gpsPos || !gpsGreenDistances) return false;
+    return gpsGreenDistances.mid <= 700;
+  }, [viewMode, gpsPos, gpsGreenDistances]);
+
   const rangefinderFrom = useMemo(() => {
-    if (viewMode !== 'gps' || !activeHoleObj) return null;
-    if (
-      gpsPos &&
-      gpsGreenDistances != null &&
-      gpsGreenDistances.mid <= 700
-    ) {
-      return { lat: gpsPos.lat, lon: gpsPos.lon };
-    }
-    return { lat: activeHoleObj.tee.lat, lon: activeHoleObj.tee.lon };
-  }, [viewMode, activeHoleObj, gpsPos, gpsGreenDistances]);
+    if (!liveGpsRanging || !gpsPos) return null;
+    return { lat: gpsPos.lat, lon: gpsPos.lon };
+  }, [liveGpsRanging, gpsPos]);
 
   const rangefinderDistances = useMemo(() => {
-    if (!rangefinderFrom || !activeHoleObj) return null;
-    return distancesToGreen(rangefinderFrom, greenMarks(activeHoleObj));
-  }, [rangefinderFrom, activeHoleObj]);
+    if (!activeHoleObj) return null;
+    if (liveGpsRanging && gpsPos) {
+      return distancesToGreen(
+        { lat: gpsPos.lat, lon: gpsPos.lon },
+        greenMarks(activeHoleObj),
+      );
+    }
+    // HUD fallback from the tee when GPS isn't ranging live.
+    if (viewMode === 'gps') {
+      return distancesToGreen(
+        { lat: activeHoleObj.tee.lat, lon: activeHoleObj.tee.lon },
+        greenMarks(activeHoleObj),
+      );
+    }
+    return null;
+  }, [activeHoleObj, liveGpsRanging, gpsPos, viewMode]);
 
   /** GPS fix is nowhere near this hole — show tee yardages instead of raw GPS. */
   const gpsOffCourse = useMemo(() => {
@@ -1126,13 +1133,13 @@ export function GolfView({ active = true }: { active?: boolean }) {
                 )}
                 courseName={course.name}
                 greens3d={false}
-                showRangefinder={viewMode === 'gps'}
-                rangefinderFrom={viewMode === 'gps' ? rangefinderFrom : null}
-                rangefinderAim={viewMode === 'gps' ? rangefinderAim : null}
+                showRangefinder={liveGpsRanging}
+                rangefinderFrom={rangefinderFrom}
+                rangefinderAim={liveGpsRanging ? rangefinderAim : null}
                 rangefinderPlaysLikeYd={
-                  viewMode === 'gps' ? rangefinderPlaysLikeYd : null
+                  liveGpsRanging ? rangefinderPlaysLikeYd : null
                 }
-                gpsMidClub={viewMode === 'gps' ? gpsMidClub : null}
+                gpsMidClub={liveGpsRanging ? gpsMidClub : null}
                 trackedShots={activeHoleShots}
                 gpsPosition={
                   gpsOn && gpsPos
