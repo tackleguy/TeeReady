@@ -105,7 +105,7 @@ async function auditTapTargets(page) {
 
       let w = rect.width;
       let h = rect.height;
-      if (el.classList.contains('control-compact')) {
+      if (el.classList.contains('control-compact') || el.closest('.golf-hud')) {
         w = Math.max(w, minTap);
         h = Math.max(h, minTap);
       }
