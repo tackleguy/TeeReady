@@ -312,8 +312,6 @@ body,
 
 body {
   overflow-x: hidden;
-  padding: env(safe-area-inset-top) env(safe-area-inset-right)
-    env(safe-area-inset-bottom) env(safe-area-inset-left);
   background-image:
     linear-gradient(
       180deg,
@@ -334,19 +332,11 @@ textarea {
 }
 
 /*
- * On-course tap targets: 44×44pt minimum (iOS HIG).
- * Use .control-compact when the visual must stay small — hit area expands via ::after.
+ * On-course tap targets (iOS HIG 44×44) — touch / narrow viewports only.
+ * Desktop keeps compact map chrome. .control-compact and .golf-hud expand hit
+ * area without forcing the visual to 44px.
  */
-button,
-[role='button'],
-.chip-button {
-  min-height: 44px;
-  min-width: 44px;
-}
-
 .control-compact {
-  min-height: 0;
-  min-width: 0;
   position: relative;
 }
 
@@ -358,7 +348,35 @@ button,
   width: max(100%, 44px);
   height: max(100%, 44px);
   transform: translate(-50%, -50%);
-  pointer-events: auto;
+}
+
+@media (max-width: 768px), (pointer: coarse) {
+  button:not(.control-compact),
+  [role='button']:not(.control-compact),
+  .chip-button:not(.control-compact) {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .golf-hud button,
+  .golf-hud [role='button'],
+  .golf-hud .chip-button {
+    min-height: 0;
+    min-width: 0;
+    position: relative;
+  }
+
+  .golf-hud button::after,
+  .golf-hud [role='button']::after,
+  .golf-hud .chip-button::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
 }
 
 :focus-visible {
@@ -616,8 +634,7 @@ button,
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  min-height: 44px;
-  min-width: 44px;
+  min-height: 2.4rem;
   border-radius: theme('borderRadius.pill');
   border: var(--rule);
   padding: 0 0.85rem;
@@ -721,19 +738,31 @@ button,
 }
 
 .app-shell {
+  display: flex;
   min-height: 100dvh;
+  flex-direction: column;
   background: var(--canvas);
   color: var(--ink);
 }
 
 .app-body {
   display: flex;
-  min-height: 0;
   width: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
 }
 
-.app-shell.has-sidebar .app-body {
-  min-height: calc(100dvh - 4.75rem);
+/* Fill remaining space under TopNav — no hardcoded “100dvh − N rem” fullscreen math */
+.app-shell:has(.app-main.rounds) {
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
+.app-shell:has(.app-main.rounds) .app-body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .app-sidebar {
@@ -819,9 +848,10 @@ button,
 .app-main.rounds {
   position: relative;
   max-width: none;
+  flex: 1;
+  min-height: 0;
+  height: auto;
   padding: 0;
-  height: calc(100dvh - 4.75rem);
-  min-height: calc(100dvh - 4.75rem);
   overflow: hidden;
 }
 
@@ -830,48 +860,13 @@ button,
   padding: 0;
 }
 
-.rounds-keepalive {
-  position: fixed;
-  inset: 0;
-  top: 4.75rem;
-  z-index: -1;
-  visibility: hidden;
-  pointer-events: none;
-  opacity: 0;
-}
-
-.rounds-keepalive.is-active {
-  position: absolute;
-  inset: 0;
-  top: 0;
-  z-index: 1;
-  visibility: visible;
-  pointer-events: auto;
-  opacity: 1;
-}
-
 @media (max-width: 768px) {
-  .app-shell.has-sidebar .app-body {
-    min-height: calc(
-      100dvh - 7rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)
-    );
-  }
-
   .app-main {
     padding: 1rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom));
   }
 
   .app-main.rounds {
-    height: calc(
-      100dvh - 7rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)
-    );
-    min-height: calc(
-      100dvh - 7rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)
-    );
-  }
-
-  .rounds-keepalive {
-    top: calc(7rem + env(safe-area-inset-top));
+    padding: 0;
   }
 
   /* Prevent iOS Safari zoom-on-focus for form fields */

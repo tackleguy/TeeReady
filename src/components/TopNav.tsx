@@ -267,7 +267,7 @@ export function TopNav({
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-[color-mix(in_srgb,var(--canvas)_94%,transparent)] pt-[env(safe-area-inset-top)] backdrop-blur-md">
+    <header className="sticky top-0 z-30 border-b border-line bg-[color-mix(in_srgb,var(--canvas)_94%,transparent)] pt-[env(safe-area-inset-top,0px)] backdrop-blur-md">
       <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between px-5 py-3 md:px-8">
         <div className="flex items-center gap-3 md:gap-7">
           {onOpenSidebar ? (
