@@ -1502,6 +1502,68 @@ export function GolfView({ active = true }: { active?: boolean }) {
               </DraggableBox>
             ) : null}
 
+            {/* Fixed wind + slope chips — GPS only, not draggable */}
+            {course && viewMode === 'gps' && activeHole != null ? (
+              <div
+                className="pointer-events-none absolute right-3 top-[3.25rem] z-[21] flex w-[4.75rem] flex-col gap-1.5"
+                aria-label="Hole wind and slope"
+              >
+                <div className="hud-card rounded-lg border border-[color-mix(in_srgb,var(--brand)_28%,var(--line))] px-1.5 py-1.5 text-center shadow-lg">
+                  <div className="font-mono text-[8px] font-semibold uppercase tracking-[0.1em] text-faint">
+                    {activeBrief
+                      ? activeBrief.headwindMph >= 0
+                        ? 'Into'
+                        : 'Helping'
+                      : 'Wind'}
+                  </div>
+                  <div className="mt-0.5 text-[13px] font-bold tabular-nums leading-none text-ink">
+                    {activeBrief
+                      ? Math.abs(Math.round(activeBrief.headwindMph))
+                      : ensemble?.ensemble.windMph != null
+                        ? Math.round(ensemble.ensemble.windMph)
+                        : '—'}
+                    <span className="ml-0.5 text-[9px] font-semibold text-muted">
+                      mph
+                    </span>
+                  </div>
+                  <div className="mt-0.5 truncate font-mono text-[8px] font-medium text-faint">
+                    {activeBrief
+                      ? aspectLabel(activeBrief.aspect)
+                      : ensemble?.ensemble.windFromDeg != null
+                        ? bearingCompass(ensemble.ensemble.windFromDeg)
+                        : '—'}
+                  </div>
+                </div>
+                <div className="hud-card rounded-lg border border-[color-mix(in_srgb,var(--brand)_28%,var(--line))] px-1.5 py-1.5 text-center shadow-lg">
+                  <div className="font-mono text-[8px] font-semibold uppercase tracking-[0.1em] text-faint">
+                    Slope
+                  </div>
+                  <div className="mt-0.5 text-[13px] font-bold tabular-nums leading-none text-ink">
+                    {activeBrief ? (
+                      <>
+                        {activeBrief.slopeYards > 0 ? '+' : ''}
+                        {activeBrief.slopeYards}
+                        <span className="ml-0.5 text-[9px] font-semibold text-muted">
+                          yd
+                        </span>
+                      </>
+                    ) : (
+                      '—'
+                    )}
+                  </div>
+                  <div className="mt-0.5 font-mono text-[8px] font-medium text-faint">
+                    {activeBrief
+                      ? activeBrief.slopeYards > 0
+                        ? 'Uphill'
+                        : activeBrief.slopeYards < 0
+                          ? 'Downhill'
+                          : 'Flat'
+                      : '—'}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
             {scorecardOpen &&
             round &&
             course &&

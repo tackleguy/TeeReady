@@ -315,7 +315,10 @@ export function gpsGuideGeoJSON(
       lat: a.lat + (b.lat - a.lat) * t,
     };
     const axis = bearingDeg(a.lat, a.lon, b.lat, b.lon);
-    const pillPt = destPoint(mid, axis + 90, Math.min(26, Math.max(14, yards * 0.04)));
+    const sideYd = Math.min(26, Math.max(14, yards * 0.04));
+    // Yardage on the path; club one side; plays-like on the other side.
+    const clubPt = destPoint(mid, axis + 90, sideYd);
+    const playsPt = destPoint(mid, axis - 90, sideYd);
 
     features.push({
       type: 'Feature',
@@ -329,21 +332,31 @@ export function gpsGuideGeoJSON(
       geometry: { type: 'Point', coordinates: [mid.lon, mid.lat] },
     });
 
-    const clubText =
-      playsLike != null && playsLike !== yards
-        ? `${club}\nplays ${playsLike}y`
-        : club;
     features.push({
       type: 'Feature',
       properties: {
         kind: 'callout-club',
         role,
-        clubText,
+        clubText: club,
         club,
         major,
       },
-      geometry: { type: 'Point', coordinates: [pillPt.lon, pillPt.lat] },
+      geometry: { type: 'Point', coordinates: [clubPt.lon, clubPt.lat] },
     });
+
+    if (playsLike != null && Number.isFinite(playsLike)) {
+      features.push({
+        type: 'Feature',
+        properties: {
+          kind: 'callout-plays',
+          role,
+          playsText: `plays ${playsLike}y`,
+          playsLike,
+          major,
+        },
+        geometry: { type: 'Point', coordinates: [playsPt.lon, playsPt.lat] },
+      });
+    }
   };
 
   // Soft front / back depth whiskers (not the main path).

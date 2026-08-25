@@ -250,6 +250,7 @@ function syncGpsCalloutMarkers(
       kind?: string;
       yardsText?: string;
       clubText?: string;
+      playsText?: string;
     } | null;
     const geom = f.geometry;
     if (!props || !geom || geom.type !== 'Point') continue;
@@ -296,6 +297,31 @@ function syncGpsCalloutMarkers(
         'white-space:pre-line',
         'text-align:center',
         'box-shadow:0 1px 4px rgba(0,0,0,0.35)',
+      ].join(';');
+      store.push(
+        new maplibregl.Marker({ element: el, anchor: 'center' })
+          .setLngLat(coords)
+          .addTo(map),
+      );
+    } else if (props.kind === 'callout-plays') {
+      const el = document.createElement('div');
+      el.textContent = props.playsText ?? '';
+      el.style.cssText = [
+        'pointer-events:none',
+        'user-select:none',
+        'display:flex',
+        'align-items:center',
+        'justify-content:center',
+        'min-width:58px',
+        'height:32px',
+        'padding:0 10px',
+        'border-radius:999px',
+        'background:#1e293b',
+        'color:#f8fafc',
+        'font:700 11px/1 Sora, system-ui, sans-serif',
+        'letter-spacing:0.01em',
+        'box-shadow:0 1px 4px rgba(0,0,0,0.4)',
+        'border:1px solid rgba(255,255,255,0.18)',
       ].join(';');
       store.push(
         new maplibregl.Marker({ element: el, anchor: 'center' })
