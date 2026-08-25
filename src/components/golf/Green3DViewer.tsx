@@ -5,6 +5,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { loadThree } from '../../lib/loadThree';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import type { GreenMesh, GreenMeshCourse } from '../../lib/golfGreen3d';
 
 interface Props {
@@ -89,6 +90,97 @@ function pickContourLevels(minY: number, maxY: number): number[] {
     for (let i = 1; i <= 8; i++) levels.push(minY + (span * i) / 9);
   }
   return levels;
+}
+
+function findBoundaryEdges(indices: ArrayLike<number>): Array<[number, number]> {
+  const counts = new Map<string, number>();
+  const verts = new Map<string, [number, number]>();
+  for (let t = 0; t < indices.length; t += 3) {
+    const tri = [indices[t]!, indices[t + 1]!, indices[t + 2]!];
+    for (let i = 0; i < 3; i++) {
+      const a = tri[i]!;
+      const b = tri[(i + 1) % 3]!;
+      const lo = Math.min(a, b);
+      const hi = Math.max(a, b);
+      const key = `${lo},${hi}`;
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+      verts.set(key, [lo, hi]);
+    }
+  }
+  const out: Array<[number, number]> = [];
+  for (const [key, n] of counts) {
+    if (n === 1) out.push(verts.get(key)!);
+  }
+  return out;
+}
+
+/** Vertical walls + base cap so relief scaling does not leave a hollow gap. */
+function buildGreenVolume(
+  THREE: typeof import('three'),
+  positions: Float32Array,
+  indices: ArrayLike<number>,
+): import('three').Group {
+  const volume = new THREE.Group();
+  volume.name = 'green-volume';
+
+  const edges = findBoundaryEdges(indices);
+  if (edges.length) {
+    const sideVerts: number[] = [];
+    const sideIdx: number[] = [];
+    for (const [a, b] of edges) {
+      const ax = positions[a * 3]!;
+      const ay = positions[a * 3 + 1]!;
+      const az = positions[a * 3 + 2]!;
+      const bx = positions[b * 3]!;
+      const by = positions[b * 3 + 1]!;
+      const bz = positions[b * 3 + 2]!;
+      const base = sideVerts.length / 3;
+      sideVerts.push(ax, ay, az, bx, by, bz, bx, 0, bz, ax, 0, az);
+      sideIdx.push(base, base + 1, base + 2, base, base + 2, base + 3);
+    }
+    const sideGeom = new THREE.BufferGeometry();
+    sideGeom.setAttribute(
+      'position',
+      new THREE.Float32BufferAttribute(sideVerts, 3),
+    );
+    sideGeom.setIndex(sideIdx);
+    sideGeom.computeVertexNormals();
+    volume.add(
+      new THREE.Mesh(
+        sideGeom,
+        new THREE.MeshStandardMaterial({
+          color: 0x143528,
+          roughness: 1,
+          metalness: 0,
+          side: THREE.DoubleSide,
+        }),
+      ),
+    );
+  }
+
+  const flat = new Float32Array(positions.length);
+  for (let i = 0; i < positions.length; i += 3) {
+    flat[i] = positions[i]!;
+    flat[i + 1] = 0;
+    flat[i + 2] = positions[i + 2]!;
+  }
+  const capGeom = new THREE.BufferGeometry();
+  capGeom.setAttribute('position', new THREE.BufferAttribute(flat, 3));
+  capGeom.setIndex(Array.from(indices));
+  capGeom.computeVertexNormals();
+  volume.add(
+    new THREE.Mesh(
+      capGeom,
+      new THREE.MeshStandardMaterial({
+        color: 0x0a1f16,
+        roughness: 1,
+        metalness: 0,
+        side: THREE.DoubleSide,
+      }),
+    ),
+  );
+
+  return volume;
 }
 
 function buildTurfMesh(
@@ -181,22 +273,15 @@ function buildTurfMesh(
   addContours(minorLevels, 0xd1fae5, 0.38, 1);
   addContours(majorLevels, 0xecfdf5, 0.72, 2);
 
-  const rim = new THREE.Mesh(
-    geom.clone(),
-    new THREE.MeshStandardMaterial({
-      color: 0x143528,
-      side: THREE.BackSide,
-      roughness: 1,
-    }),
-  );
-  rim.scale.set(1.015, 0.08, 1.015);
-  group.add(rim);
+  group.add(buildGreenVolume(THREE, positions, g.indices));
 
   return group;
 }
 
 export function Green3DViewer({ course, hole, onClose }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(true, dialogRef, onClose);
   const [relief, setRelief] = useState(3);
   const [threeReady, setThreeReady] = useState(false);
   const reliefRef = useRef(relief);
@@ -367,6 +452,10 @@ export function Green3DViewer({ course, hole, onClose }: Props) {
 
   return (
     <div
+      ref={dialogRef}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="green-reader-title"
       className="fixed inset-0 z-[80] flex flex-col text-emerald-50"
       style={{
         background:
@@ -375,7 +464,10 @@ export function Green3DViewer({ course, hole, onClose }: Props) {
     >
       <div className="flex items-center justify-between gap-3 px-4 pb-2 pt-[max(1rem,env(safe-area-inset-top))]">
         <div>
-          <div className="text-[22px] font-semibold tracking-tight text-emerald-50">
+          <div
+            id="green-reader-title"
+            className="text-[22px] font-semibold tracking-tight text-emerald-50"
+          >
             Hole {hole}
           </div>
           <div className="text-[11px] text-emerald-200/70">
@@ -391,7 +483,7 @@ export function Green3DViewer({ course, hole, onClose }: Props) {
           className="rounded-full border border-emerald-400/25 bg-emerald-950/50 p-2.5 text-emerald-100/90 shadow-lg shadow-black/30 transition hover:border-emerald-300/40 hover:bg-emerald-900/60"
           aria-label="Close green reader"
         >
-          <X className="h-5 w-5" />
+          <X className="h-5 w-5" aria-hidden />
         </button>
       </div>
 

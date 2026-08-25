@@ -181,6 +181,7 @@ function PlayMenu({ mobile = false }: { mobile?: boolean }) {
         <ChevronDown
           className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`}
           strokeWidth={2.2}
+          aria-hidden
         />
       </button>
 
@@ -264,6 +265,7 @@ function ProgressMenu({ mobile = false }: { mobile?: boolean }) {
         <ChevronDown
           className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`}
           strokeWidth={2.2}
+          aria-hidden
         />
       </button>
 
@@ -400,9 +402,10 @@ export function TopNav({
           <button
             type="button"
             onClick={onLocationClick}
+            aria-label={`Change location · ${locationLabel}`}
             className="inline-flex max-w-[9.5rem] items-center gap-1.5 truncate rounded-pill border border-line bg-surface px-3 py-1.5 text-[12px] font-medium text-muted shadow-card hover:text-ink sm:max-w-none"
           >
-            <MapPin className="h-3.5 w-3.5 shrink-0 text-accent" strokeWidth={2.2} />
+            <MapPin className="h-3.5 w-3.5 shrink-0 text-accent" strokeWidth={2.2} aria-hidden />
             <span className="truncate">{locationLabel}</span>
           </button>
           <NavLink

@@ -202,7 +202,11 @@ export function AuthForm({
           </span>
         </label>
 
-        {error ? <p className="text-[12px] text-bad">{error}</p> : null}
+        {error ? (
+          <p id="auth-form-error" role="alert" className="text-[12px] text-bad">
+            {error}
+          </p>
+        ) : null}
         {info ? <p className="text-[12px] font-medium text-brand">{info}</p> : null}
 
         <button

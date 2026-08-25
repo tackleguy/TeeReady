@@ -174,6 +174,9 @@ function Shell() {
   return (
     <div className={`app-shell ${showSideRail ? 'has-sidebar' : ''}`}>
       <ThemeBoot />
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
       {showAppChrome ? (
         <TopNav
           locationLabel={place}
@@ -212,6 +215,8 @@ function Shell() {
         ) : null}
 
         <main
+          id="main-content"
+          tabIndex={-1}
           className={
             fullBleedMain && showAppChrome
               ? 'app-main rounds'

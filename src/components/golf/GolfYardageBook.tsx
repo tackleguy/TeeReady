@@ -1,5 +1,5 @@
 import { BookOpen, Printer, X } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { bearingCompass } from '../../lib/geo';
 import type { GolfCourseSummary, GolfNotebook } from '../../lib/golf';
 import {
@@ -9,6 +9,7 @@ import {
 } from '../../lib/golfProfile';
 import { formatHandicap } from '../../lib/golfHandicap';
 import { teeHeightForClub } from '../../lib/yardageNotes';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 interface Props {
   course: GolfCourseSummary;
@@ -78,6 +79,8 @@ export function GolfYardageBook({
   onClose,
 }: Props) {
   const [dayIdx, setDayIdx] = useState(0);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(true, dialogRef, onClose);
 
   useEffect(() => {
     if (!notebook?.days.length) return;
@@ -94,11 +97,20 @@ export function GolfYardageBook({
     bag.find((c) => c.key === '7i')?.yards ?? profile.sevenIronYards;
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col bg-[#d4c4a8]">
+    <div
+      ref={dialogRef}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="yardage-book-title"
+      className="fixed inset-0 z-40 flex flex-col bg-[#d4c4a8]"
+    >
       <header className="golf-print-hide flex items-center gap-2 border-b border-black/10 bg-[#ebe4d4] px-4 py-3">
-        <BookOpen className="h-4 w-4 text-[#1a5c3a]" strokeWidth={2} />
+        <BookOpen className="h-4 w-4 text-[#1a5c3a]" strokeWidth={2} aria-hidden />
         <div className="min-w-0 flex-1">
-          <h2 className="truncate text-sm font-semibold text-[#1c140c]">
+          <h2
+            id="yardage-book-title"
+            className="truncate text-sm font-semibold text-[#1c140c]"
+          >
             Yardage book notes
           </h2>
           <p className="truncate text-[11px] text-[#5c4f42]">
@@ -112,7 +124,7 @@ export function GolfYardageBook({
           onClick={() => window.print()}
           className="inline-flex items-center gap-1.5 rounded-lg border border-black/10 bg-white/70 px-2.5 py-1.5 text-[12px] font-medium text-[#1c140c] hover:bg-white"
         >
-          <Printer className="h-3.5 w-3.5" />
+          <Printer className="h-3.5 w-3.5" aria-hidden />
           Print
         </button>
         <button
@@ -121,7 +133,7 @@ export function GolfYardageBook({
           onClick={onClose}
           className="rounded-lg p-1.5 text-[#5c4f42] hover:bg-black/5 hover:text-[#1c140c]"
         >
-          <X className="h-4 w-4" />
+          <X className="h-4 w-4" aria-hidden />
         </button>
       </header>
 

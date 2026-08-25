@@ -15,6 +15,8 @@ const THEMES = ['light', 'dark', 'sand'];
 const FG_TOKENS = ['ink', 'muted', 'faint', 'brand', 'accent', 'warn', 'bad'];
 const BG_TOKENS = ['canvas', 'surface'];
 const MIN_RATIO = 4.5;
+const MIN_FOCUS_RATIO = 3;
+const FOCUS_BG_TOKENS = ['canvas', 'surface', 'hero'];
 
 function hexToRgb(hex) {
   const h = hex.replace('#', '').trim();
@@ -111,6 +113,30 @@ function main() {
       }
     }
     console.log('');
+    const focusHex = tokens['focus-ring'];
+    if (!focusHex) {
+      failures.push(`${theme}: missing --focus-ring`);
+    } else {
+      const focus = hexToRgb(focusHex);
+      console.log(`── ${theme} focus ring (≥3:1) ──`);
+      for (const bgName of FOCUS_BG_TOKENS) {
+        const bgHex = tokens[bgName];
+        if (!bgHex) continue;
+        const bg = hexToRgb(bgHex);
+        const ratio = contrast(focus, bg);
+        const ok = ratio >= MIN_FOCUS_RATIO;
+        const mark = ok ? '✓' : '✗';
+        console.log(
+          `  ${mark} --focus-ring (${focusHex}) on --${bgName} (${bgHex}): ${ratio.toFixed(2)}`,
+        );
+        if (!ok) {
+          failures.push(
+            `${theme} --focus-ring on --${bgName}: ${ratio.toFixed(2)} < ${MIN_FOCUS_RATIO}`,
+          );
+        }
+      }
+      console.log('');
+    }
   }
 
   if (failures.length) {

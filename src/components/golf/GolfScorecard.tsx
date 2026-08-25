@@ -61,10 +61,14 @@ function HoleChip({
   const scored = strokes != null && strokes >= 1;
   const diff = scored ? strokes - par : null;
   const style = diff != null ? scoreVsParStyle(diff) : null;
+  const label = scored
+    ? `Hole ${hole}, ${strokes} strokes, par ${par}`
+    : `Hole ${hole}, not scored, par ${par}`;
   return (
     <button
       type="button"
       onClick={onClick}
+      aria-label={label}
       className={`flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-lg border text-center transition-colors ${
         selected
           ? 'border-brand bg-brand text-white'

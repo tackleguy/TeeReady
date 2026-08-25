@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Settings, UserRound, Users, X } from 'lucide-react';
 import { prefetchRoute } from '../lib/prefetchRoutes';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 
 export const SIDE_LINKS = [
   { label: 'Profile', href: '/profile', icon: UserRound },
@@ -30,7 +31,7 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
             `app-sidebar-link ${isActive ? 'is-active' : ''}`
           }
         >
-          <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
+          <Icon className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
           {label}
         </NavLink>
       ))}
@@ -39,6 +40,9 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 export function AppSidebar({ open, onClose, showRail = true }: Props) {
+  const panelRef = useRef<HTMLElement>(null);
+  useFocusTrap(open, panelRef, onClose);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -51,30 +55,38 @@ export function AppSidebar({ open, onClose, showRail = true }: Props) {
   return (
     <>
       {showRail ? (
-        <aside className="app-sidebar hidden md:flex" aria-label="More">
+        <aside className="app-sidebar hidden md:flex" aria-label="Account">
           <p className="app-sidebar-label">Account</p>
           <SideNav />
         </aside>
       ) : null}
 
       {open ? (
-        <div className="app-sidebar-drawer md:hidden" role="dialog" aria-modal>
+        <div className="app-sidebar-drawer md:hidden">
           <button
             type="button"
             className="app-sidebar-backdrop"
             aria-label="Close menu"
             onClick={onClose}
           />
-          <aside className="app-sidebar-panel">
+          <aside
+            ref={panelRef}
+            className="app-sidebar-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="app-sidebar-title"
+          >
             <div className="flex items-center justify-between px-4 pb-3 pt-[max(1rem,env(safe-area-inset-top))]">
-              <p className="text-[13px] font-semibold text-ink">Account</p>
+              <p id="app-sidebar-title" className="text-[13px] font-semibold text-ink">
+                Account
+              </p>
               <button
                 type="button"
                 onClick={onClose}
                 className="grid h-8 w-8 place-items-center rounded-full text-muted hover:bg-canvas hover:text-ink"
-                aria-label="Close"
+                aria-label="Close account menu"
               >
-                <X className="h-4 w-4" />
+                <X className="h-4 w-4" aria-hidden />
               </button>
             </div>
             <div className="px-2 pb-[max(1.5rem,env(safe-area-inset-bottom))]">

@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { Flag, X } from 'lucide-react';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import {
   TUTORIAL_START_EVENT,
   hasCompletedTutorial,
@@ -132,6 +133,8 @@ function placeCard(spot: Spot | null): CardPos {
 export function AppTutorial({ active }: { active: boolean }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const reduceMotion = useReducedMotion();
+  const panelRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [spot, setSpot] = useState<Spot | null>(null);
@@ -142,6 +145,8 @@ export function AppTutorial({ active }: { active: boolean }) {
     setOpen(false);
     setStepIndex(0);
   }, []);
+
+  useFocusTrap(open, panelRef, () => finish('skipped'));
 
   const start = useCallback(() => {
     setStepIndex(0);
@@ -221,6 +226,13 @@ export function AppTutorial({ active }: { active: boolean }) {
 
   if (!active || typeof document === 'undefined') return null;
 
+  const overlayFade = reduceMotion
+    ? { duration: 0 }
+    : { duration: 0.22, ease: [0.22, 1, 0.36, 1] as const };
+  const cardMotion = reduceMotion
+    ? { duration: 0 }
+    : { duration: 0.28, ease: [0.22, 1, 0.36, 1] as const };
+
   return createPortal(
     <AnimatePresence>
       {open ? (
@@ -230,7 +242,7 @@ export function AppTutorial({ active }: { active: boolean }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+          transition={overlayFade}
           role="dialog"
           aria-modal="true"
           aria-labelledby="teeready-tutorial-title"
@@ -282,6 +294,7 @@ export function AppTutorial({ active }: { active: boolean }) {
 
           <motion.div
             key={step.id}
+            ref={panelRef}
             className="pointer-events-auto absolute"
             style={{
               top: card.top,
@@ -289,15 +302,19 @@ export function AppTutorial({ active }: { active: boolean }) {
               left: card.left,
               width: card.maxWidth,
             }}
-            initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+            initial={
+              reduceMotion
+                ? { opacity: 1, y: 0, filter: 'blur(0px)' }
+                : { opacity: 0, y: 10, filter: 'blur(4px)' }
+            }
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            exit={reduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: -6 }}
+            transition={cardMotion}
           >
             <div className="overflow-hidden rounded-2xl border border-[color-mix(in_srgb,var(--brand)_35%,var(--line))] bg-surface shadow-lift">
               <div className="flex items-start justify-between gap-3 px-4 pb-0 pt-4">
                 <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand text-white shadow-card">
-                  <Flag className="h-3.5 w-3.5" strokeWidth={2.4} />
+                  <Flag className="h-3.5 w-3.5" strokeWidth={2.4} aria-hidden />
                 </span>
                 <button
                   type="button"
@@ -305,7 +322,7 @@ export function AppTutorial({ active }: { active: boolean }) {
                   onClick={() => finish('skipped')}
                   className="grid h-8 w-8 place-items-center rounded-full text-muted hover:bg-canvas hover:text-ink"
                 >
-                  <X className="h-4 w-4" strokeWidth={2.2} />
+                  <X className="h-4 w-4" strokeWidth={2.2} aria-hidden />
                 </button>
               </div>
 

@@ -159,7 +159,7 @@ export function SignupQuestionnaire({
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-brand" strokeWidth={2} />
+            <Sparkles className="h-4 w-4 text-brand" strokeWidth={2} aria-hidden />
             <span className="text-[12px] font-semibold text-brand">
               Sign up · step {step + 1} of {STEPS.length}
             </span>
@@ -388,9 +388,15 @@ export function SignupQuestionnaire({
       </div>
 
       {localError ? (
-        <p className="text-[12px] font-medium text-bad">{localError}</p>
+        <p id="signup-step-error" role="alert" className="text-[12px] font-medium text-bad">
+          {localError}
+        </p>
       ) : null}
-      {error ? <p className="text-[12px] text-bad">{error}</p> : null}
+      {error ? (
+        <p id="signup-form-error" role="alert" className="text-[12px] text-bad">
+          {error}
+        </p>
+      ) : null}
       {info ? <p className="text-[12px] font-medium text-brand">{info}</p> : null}
 
       <div className="flex gap-2 border-t border-line pt-3">
@@ -400,7 +406,7 @@ export function SignupQuestionnaire({
           disabled={busy}
           className="inline-flex items-center gap-1 rounded-xl border border-line px-4 py-2.5 text-[13px] font-semibold text-muted hover:text-ink disabled:opacity-40"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-4 w-4" aria-hidden />
           {step === 0 ? 'Sign in' : 'Back'}
         </button>
         {isLast ? (
@@ -411,7 +417,7 @@ export function SignupQuestionnaire({
             className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-brand px-4 py-2.5 text-[13px] font-bold text-white disabled:opacity-40"
           >
             {busy ? 'Creating…' : 'Create account'}
-            <Check className="h-4 w-4" />
+            <Check className="h-4 w-4" aria-hidden />
           </button>
         ) : (
           <button
@@ -421,7 +427,7 @@ export function SignupQuestionnaire({
             className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-brand px-4 py-2.5 text-[13px] font-bold text-white disabled:opacity-40"
           >
             Continue
-            <ArrowRight className="h-4 w-4" />
+            <ArrowRight className="h-4 w-4" aria-hidden />
           </button>
         )}
       </div>

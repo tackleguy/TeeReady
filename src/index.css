@@ -134,6 +134,7 @@ html[data-theme='light'] {
 
   --cool: #2563eb;
   --cool-glow: rgba(37, 99, 235, 0.18);
+  --focus-ring: #2563eb;
 
   --hover-fill: rgba(20, 28, 36, 0.04);
   --hover-strong: rgba(20, 28, 36, 0.08);
@@ -226,6 +227,7 @@ html[data-theme='dark'] {
   --accent-glow: rgba(212, 160, 23, 0.3);
   --cool: #60a5fa;
   --cool-glow: rgba(96, 165, 250, 0.2);
+  --focus-ring: #7ec8ff;
 
   --hover-fill: rgba(255, 255, 255, 0.04);
   --hover-strong: rgba(255, 255, 255, 0.08);
@@ -293,6 +295,7 @@ html[data-theme='sand'] {
   --accent-glow: rgba(173, 80, 9, 0.28);
   --cool: #0e7490;
   --cool-glow: rgba(14, 116, 144, 0.22);
+  --focus-ring: #0e7490;
 
   --hover-fill: rgba(28, 20, 12, 0.05);
   --hover-strong: rgba(28, 20, 12, 0.09);
@@ -389,8 +392,28 @@ textarea {
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--type-body);
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: var(--shadow-lift);
+}
+
+.skip-link:focus-visible {
+  left: 1rem;
+  top: max(1rem, env(safe-area-inset-top));
 }
 
 .font-display {
@@ -817,6 +840,15 @@ textarea {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-fade-up,
+  .skeleton,
+  .animate-shimmer {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
 

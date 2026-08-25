@@ -1296,10 +1296,11 @@ export function GolfView({ active = true }: { active?: boolean }) {
                   <button
                     type="button"
                     onClick={openScorecard}
+                    aria-label={`Open scorecard · handicap ${formatHandicap(profile.handicap)}`}
                     title={`Scorecard · HCP ${formatHandicap(profile.handicap)}`}
                     className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] font-semibold text-[var(--ink-2)] hover:bg-white/10"
                   >
-                    <ClipboardList className="h-3 w-3" />
+                    <ClipboardList className="h-3 w-3" aria-hidden />
                     {!isMobile ? 'Card' : null}
                   </button>
                   {course && canGreens3d && !isMobile ? (
@@ -1338,10 +1339,11 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     <button
                       type="button"
                       onClick={leaveGpsMode}
+                      aria-label="Leave GPS and return to Prep"
                       title="Close GPS · return to Prep"
                       className="inline-flex items-center gap-0.5 rounded-md px-1.5 py-1 text-[11px] font-semibold text-[var(--ink-2)] hover:bg-white/10"
                     >
-                      <X className="h-3 w-3" />
+                      <X className="h-3 w-3" aria-hidden />
                       {!isMobile ? 'Prep' : null}
                     </button>
                   ) : null}
