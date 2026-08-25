@@ -232,6 +232,80 @@ function addLayerSafe(
   }
 }
 
+function clearCalloutMarkers(markers: maplibregl.Marker[]) {
+  for (const m of markers) m.remove();
+  markers.length = 0;
+}
+
+/** DOM yardage/club boxes — MapLibre symbol/circle callouts are unreliable on
+ *  the satellite style (glyphs), so render these as HTML markers instead. */
+function syncGpsCalloutMarkers(
+  map: maplibregl.Map,
+  guide: GeoJSON.FeatureCollection,
+  store: maplibregl.Marker[],
+) {
+  clearCalloutMarkers(store);
+  for (const f of guide.features) {
+    const props = f.properties as {
+      kind?: string;
+      yardsText?: string;
+      clubText?: string;
+    } | null;
+    const geom = f.geometry;
+    if (!props || !geom || geom.type !== 'Point') continue;
+    const coords = geom.coordinates as [number, number];
+    if (props.kind === 'callout-yards') {
+      const el = document.createElement('div');
+      el.textContent = props.yardsText ?? '';
+      el.style.cssText = [
+        'pointer-events:none',
+        'user-select:none',
+        'display:flex',
+        'align-items:center',
+        'justify-content:center',
+        'min-width:52px',
+        'height:36px',
+        'padding:0 10px',
+        'border-radius:999px',
+        'background:#0a0a0a',
+        'color:#fff',
+        'font:700 13px/1 Sora, system-ui, sans-serif',
+        'letter-spacing:0.02em',
+        'box-shadow:0 1px 4px rgba(0,0,0,0.45)',
+      ].join(';');
+      store.push(
+        new maplibregl.Marker({ element: el, anchor: 'center' })
+          .setLngLat(coords)
+          .addTo(map),
+      );
+    } else if (props.kind === 'callout-club') {
+      const el = document.createElement('div');
+      el.textContent = props.clubText ?? '';
+      el.style.cssText = [
+        'pointer-events:none',
+        'user-select:none',
+        'display:flex',
+        'align-items:center',
+        'justify-content:center',
+        'min-width:44px',
+        'padding:7px 11px',
+        'border-radius:999px',
+        'background:#fff',
+        'color:#111',
+        'font:700 12px/1.15 Sora, system-ui, sans-serif',
+        'white-space:pre-line',
+        'text-align:center',
+        'box-shadow:0 1px 4px rgba(0,0,0,0.35)',
+      ].join(';');
+      store.push(
+        new maplibregl.Marker({ element: el, anchor: 'center' })
+          .setLngLat(coords)
+          .addTo(map),
+      );
+    }
+  }
+}
+
 /** GPS path + callout frames — registered early so a later layer failure
  *  cannot leave GPS mode with markers but no lines. */
 function ensureGpsGuideLayers(map: maplibregl.Map) {
@@ -426,6 +500,7 @@ export function GolfMap({
   const mapRef = useRef<maplibregl.Map | null>(null);
   const readyRef = useRef(false);
   const queueRef = useRef<Array<() => void>>([]);
+  const calloutMarkersRef = useRef<maplibregl.Marker[]>([]);
   const onSelectRef = useRef(onSelectHole);
   onSelectRef.current = onSelectHole;
   const fitPaddingRef = useRef(fitPadding);
@@ -960,6 +1035,7 @@ export function GolfMap({
       ro?.disconnect();
       window.removeEventListener('resize', resize);
       window.visualViewport?.removeEventListener('resize', resize);
+      clearCalloutMarkers(calloutMarkersRef.current);
       map.remove();
       mapRef.current = null;
     };
@@ -1309,6 +1385,7 @@ export function GolfMap({
       (
         map.getSource(SRC_GPS_GUIDE) as maplibregl.GeoJSONSource | undefined
       )?.setData(guide);
+      syncGpsCalloutMarkers(map, guide, calloutMarkersRef.current);
       // Fallback onto prep carry/remain layers (registered before GPS) so a
       // missing guide layer still shows the white path between tee and green.
       if (showRangefinder) {
@@ -1325,16 +1402,14 @@ export function GolfMap({
           map.setPaintProperty(LYR_REMAIN, 'line-width', 3.2);
           map.setPaintProperty(LYR_REMAIN, 'line-opacity', 0.95);
         }
+      } else {
+        clearCalloutMarkers(calloutMarkersRef.current);
       }
       for (const id of [
         'golf-gps-whisker',
         'golf-gps-guide-casing',
         LYR_GPS_GUIDE,
         LYR_GPS_PIN,
-        'golf-gps-yards-badge',
-        'golf-gps-yards-text',
-        'golf-gps-club-pill',
-        LYR_GPS_GUIDE_LABEL,
         'golf-gps-crosshair',
         'golf-gps-crosshair-dot',
       ]) {
@@ -1344,6 +1419,22 @@ export function GolfMap({
             map.moveLayer(id);
           } catch {
             // Layer may not support layout visibility in older builds.
+          }
+        }
+      }
+      // Prefer HTML markers for yardage/club boxes; hide map symbol callouts.
+      for (const id of [
+        'golf-gps-yards-badge',
+        'golf-gps-yards-text',
+        'golf-gps-club-pill',
+        LYR_GPS_GUIDE_LABEL,
+        LYR_GPS_PIN_LABEL,
+      ]) {
+        if (map.getLayer(id)) {
+          try {
+            map.setLayoutProperty(id, 'visibility', 'none');
+          } catch {
+            // ignore
           }
         }
       }
