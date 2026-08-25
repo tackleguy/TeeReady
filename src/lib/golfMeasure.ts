@@ -1,6 +1,6 @@
 // Tee-only ranging: haversine splits, bag distance rings, altitude vs sea level.
 
-import { haversineMiles } from './geo';
+import { bearingDeg, haversineMiles } from './geo';
 import type { GolfHole } from './golf';
 import { destPoint, type LonLat } from './golfWind';
 import type { BagClub } from './golfProfile';
@@ -320,33 +320,51 @@ export function gpsGuideGeoJSON(
       },
     });
 
-    const t = row.key === 'M' ? 0.58 : 0.64;
+    const t = row.key === 'M' ? 0.52 : 0.58;
     const labelLon = from.lon + (row.pt.lon - from.lon) * t;
     const labelLat = from.lat + (row.pt.lat - from.lat) * t;
+    const labelPt: LonLat = { lon: labelLon, lat: labelLat };
+    const axis = bearingDeg(from.lat, from.lon, row.pt.lat, row.pt.lon);
     const playsLike =
       row.key === 'M' &&
       opts?.playsLikeYd != null &&
       opts.playsLikeYd !== row.yards
         ? opts.playsLikeYd
         : null;
+    const pillOffsetYd = Math.min(28, Math.max(18, row.yards * 0.045));
+    const pillPt = destPoint(labelPt, axis + 90, pillOffsetYd);
+
     features.push({
       type: 'Feature',
       properties: {
-        kind: 'callout-box',
+        kind: 'callout-yards',
         role: row.key,
-        roleLabel: row.roleLabel,
-        yardsLabel: `${row.yards} yd`,
-        clubLabel: club,
-        playsLabel:
-          playsLike != null ? `plays ${playsLike}` : '',
+        yardsText: `${row.yards}y`,
         yards: row.yards,
-        club,
-        color: row.color,
         major: row.key === 'M' ? 1 : 0,
       },
       geometry: {
         type: 'Point',
         coordinates: [labelLon, labelLat],
+      },
+    });
+
+    const clubLines =
+      row.key === 'M' && playsLike != null
+        ? `${club}\nplays ${playsLike}y`
+        : club;
+    features.push({
+      type: 'Feature',
+      properties: {
+        kind: 'callout-club',
+        role: row.key,
+        clubText: clubLines,
+        club,
+        major: row.key === 'M' ? 1 : 0,
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: [pillPt.lon, pillPt.lat],
       },
     });
 

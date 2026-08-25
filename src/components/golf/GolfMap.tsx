@@ -658,56 +658,52 @@ export function GolfMap({
         },
       });
       map.addLayer({
-        id: 'golf-gps-callout-box',
+        id: 'golf-gps-yards-badge',
         type: 'circle',
         source: SRC_GPS_GUIDE,
-        filter: ['==', ['get', 'kind'], 'callout-box'],
+        filter: ['==', ['get', 'kind'], 'callout-yards'],
         paint: {
-          'circle-radius': [
-            'match',
-            ['get', 'major'],
-            1,
-            ['case', ['!=', ['get', 'playsLabel'], ''], 36, 32],
-            ['case', ['!=', ['get', 'playsLabel'], ''], 32, 28],
-          ],
-          'circle-color': '#0a0a0a',
-          'circle-opacity': 0.92,
-          'circle-stroke-width': 1.5,
-          'circle-stroke-color': '#ffffff',
+          'circle-radius': ['match', ['get', 'major'], 1, 28, 24],
+          'circle-color': 'rgba(0,0,0,0.88)',
+          'circle-opacity': 1,
+        },
+      });
+      map.addLayer({
+        id: 'golf-gps-yards-text',
+        type: 'symbol',
+        source: SRC_GPS_GUIDE,
+        filter: ['==', ['get', 'kind'], 'callout-yards'],
+        layout: {
+          'text-field': ['get', 'yardsText'],
+          'text-size': 15,
+          'text-font': ['Open Sans Bold', 'Open Sans Regular'],
+          'text-anchor': 'center',
+          'text-allow-overlap': true,
+          'text-ignore-placement': true,
+        },
+        paint: {
+          'text-color': '#ffffff',
+        },
+      });
+      map.addLayer({
+        id: 'golf-gps-club-pill',
+        type: 'circle',
+        source: SRC_GPS_GUIDE,
+        filter: ['==', ['get', 'kind'], 'callout-club'],
+        paint: {
+          'circle-radius': ['match', ['get', 'major'], 1, 26, 22],
+          'circle-color': '#ffffff',
+          'circle-opacity': 0.96,
+          'circle-stroke-width': 0,
         },
       });
       map.addLayer({
         id: LYR_GPS_GUIDE_LABEL,
         type: 'symbol',
         source: SRC_GPS_GUIDE,
-        filter: ['==', ['get', 'kind'], 'callout-box'],
+        filter: ['==', ['get', 'kind'], 'callout-club'],
         layout: {
-          'text-field': [
-            'case',
-            ['!=', ['get', 'playsLabel'], ''],
-            [
-              'format',
-              ['get', 'yardsLabel'],
-              { 'font-scale': 1.05 },
-              '\n',
-              {},
-              ['get', 'clubLabel'],
-              { 'font-scale': 0.9 },
-              '\n',
-              {},
-              ['get', 'playsLabel'],
-              { 'font-scale': 0.72 },
-            ],
-            [
-              'format',
-              ['get', 'yardsLabel'],
-              { 'font-scale': 1.05 },
-              '\n',
-              {},
-              ['get', 'clubLabel'],
-              { 'font-scale': 0.9 },
-            ],
-          ],
+          'text-field': ['get', 'clubText'],
           'text-size': 11,
           'text-font': ['Open Sans Bold', 'Open Sans Regular'],
           'text-anchor': 'center',
@@ -716,7 +712,7 @@ export function GolfMap({
           'text-line-height': 1.05,
         },
         paint: {
-          'text-color': '#ffffff',
+          'text-color': '#111111',
         },
       });
       map.addLayer({
@@ -1026,7 +1022,9 @@ export function GolfMap({
       )?.setData(
         playLines && playLines.features.length
           ? emptyCollection()
-          : shotPathGeoJSON(hole, crosswindMph, headwindMph),
+          : showRangefinder
+            ? emptyCollection()
+            : shotPathGeoJSON(hole, crosswindMph, headwindMph),
       );
     });
   }, [
@@ -1037,6 +1035,7 @@ export function GolfMap({
     headwindMph,
     crosswindMph,
     playLines,
+    showRangefinder,
     whenReady,
   ]);
 

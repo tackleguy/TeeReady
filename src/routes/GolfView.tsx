@@ -650,10 +650,16 @@ export function GolfView({ active = true }: { active?: boolean }) {
     return gpsGreenDistances.mid <= 700;
   }, [viewMode, gpsPos, gpsGreenDistances]);
 
+  /** Ball for F/M/B lines: live GPS when on course, otherwise tee preview. */
   const rangefinderFrom = useMemo(() => {
-    if (!liveGpsRanging || !gpsPos) return null;
-    return { lat: gpsPos.lat, lon: gpsPos.lon };
-  }, [liveGpsRanging, gpsPos]);
+    if (viewMode !== 'gps' || !activeHoleObj) return null;
+    if (liveGpsRanging && gpsPos) {
+      return { lat: gpsPos.lat, lon: gpsPos.lon };
+    }
+    return { lat: activeHoleObj.tee.lat, lon: activeHoleObj.tee.lon };
+  }, [viewMode, activeHoleObj, liveGpsRanging, gpsPos]);
+
+  const gpsGuideActive = viewMode === 'gps' && rangefinderFrom != null;
 
   const rangefinderDistances = useMemo(() => {
     if (!activeHoleObj) return null;
@@ -699,9 +705,11 @@ export function GolfView({ active = true }: { active?: boolean }) {
   }, [viewMode, activeHoleObj, gpsAim]);
 
   const gpsLineClubs = useMemo(() => {
-    if (!liveGpsRanging || !rangefinderDistances) return null;
+    if (viewMode !== 'gps' || !rangefinderDistances || !rangefinderFrom) {
+      return null;
+    }
     const aimYd =
-      rangefinderFrom && rangefinderAim
+      rangefinderAim
         ? Math.round(
             haversineYards(
               rangefinderFrom.lat,
@@ -717,7 +725,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
       back: bestClubForDistance(rangefinderDistances.back, bag) ?? null,
     };
   }, [
-    liveGpsRanging,
+    viewMode,
     rangefinderDistances,
     rangefinderFrom,
     rangefinderAim,
@@ -754,12 +762,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
       activeBrief?.slopeYards ?? 0,
       metersToFeet(0),
     );
-  }, [
-    rangefinderFrom,
-    rangefinderAim,
-    activeHoleObj,
-    activeBrief,
-  ]);
+  }, [rangefinderFrom, rangefinderAim, activeHoleObj, activeBrief]);
 
   useEffect(() => {
     if (!course) {
@@ -1154,13 +1157,13 @@ export function GolfView({ active = true }: { active?: boolean }) {
                 )}
                 courseName={course.name}
                 greens3d={false}
-                showRangefinder={liveGpsRanging}
+                showRangefinder={gpsGuideActive}
                 rangefinderFrom={rangefinderFrom}
-                rangefinderAim={liveGpsRanging ? rangefinderAim : null}
+                rangefinderAim={gpsGuideActive ? rangefinderAim : null}
                 rangefinderPlaysLikeYd={
-                  liveGpsRanging ? rangefinderPlaysLikeYd : null
+                  gpsGuideActive ? rangefinderPlaysLikeYd : null
                 }
-                gpsClubs={liveGpsRanging ? gpsLineClubs : null}
+                gpsClubs={gpsGuideActive ? gpsLineClubs : null}
                 trackedShots={activeHoleShots}
                 gpsPosition={
                   gpsOn && gpsPos
