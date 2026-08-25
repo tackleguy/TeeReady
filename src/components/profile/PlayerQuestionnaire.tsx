@@ -46,14 +46,14 @@ export type StepId = (typeof STEPS)[number]['id'];
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <span className="mb-1.5 block font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
+    <span className="mb-1.5 block font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
       {children}
     </span>
   );
 }
 
 function inputClassName() {
-  return 'w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-[14px] text-ink outline-none transition-colors placeholder:text-faint focus:border-brand';
+  return 'w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-base text-ink outline-none transition-colors placeholder:text-faint focus:border-brand';
 }
 
 function ChipPick<T extends string>({
@@ -396,7 +396,7 @@ export function PlayerQuestionnaire({
                 key={c.key}
                 className="rounded-lg border border-line bg-canvas px-1.5 py-1 text-center"
               >
-                <div className="text-[9px] uppercase tracking-wide text-faint">
+                <div className="text-[11px] uppercase tracking-wide text-faint">
                   {c.label}
                 </div>
                 <div className="text-[12px] font-semibold tabular text-ink">

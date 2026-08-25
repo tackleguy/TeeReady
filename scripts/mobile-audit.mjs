@@ -6,6 +6,7 @@
 import { chromium, devices } from 'playwright';
 
 const BASE = process.env.SMOKE_BASE || 'http://127.0.0.1:4173';
+const MIN_TAP = 44;
 
 const ROUTES = [
   '/',
@@ -67,11 +68,7 @@ async function auditRoute(page, path) {
     errors.push('empty #root');
   }
 
-  // Auth-gated routes redirect to / — still valid SPA behavior
   const finalPath = new URL(page.url()).pathname;
-  if (path !== '/' && finalPath === '/' && path !== '/today') {
-    // expected for unauthenticated preview
-  }
 
   const criticalConsole = consoleErrors.filter(
     (m) =>
@@ -83,6 +80,57 @@ async function auditRoute(page, path) {
   }
 
   return { path, ok: errors.length === 0, errors, finalPath };
+}
+
+/**
+ * Measure visible button / role=button hit areas.
+ * Elements with .control-compact expand via ::after — count as meeting the floor.
+ */
+async function auditTapTargets(page) {
+  await page.goto(BASE, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(500);
+
+  const undersized = await page.evaluate((minTap) => {
+    const nodes = [
+      ...document.querySelectorAll('button, [role="button"], .chip-button'),
+    ];
+    const bad = [];
+    for (const el of nodes) {
+      const style = getComputedStyle(el);
+      if (style.display === 'none' || style.visibility === 'hidden') continue;
+      if (Number(style.opacity) === 0) continue;
+      const rect = el.getBoundingClientRect();
+      if (rect.width === 0 && rect.height === 0) continue;
+      if (rect.bottom < 0 || rect.top > window.innerHeight) continue;
+
+      let w = rect.width;
+      let h = rect.height;
+      if (el.classList.contains('control-compact')) {
+        w = Math.max(w, minTap);
+        h = Math.max(h, minTap);
+      }
+
+      if (w + 0.5 < minTap || h + 0.5 < minTap) {
+        const label =
+          el.getAttribute('aria-label') ||
+          el.getAttribute('title') ||
+          (el.textContent || '').trim().slice(0, 40) ||
+          el.className?.toString?.().slice(0, 40) ||
+          el.tagName;
+        bad.push({
+          label,
+          w: Math.round(w * 10) / 10,
+          h: Math.round(h * 10) / 10,
+        });
+      }
+    }
+    return bad.slice(0, 12);
+  }, MIN_TAP);
+
+  return {
+    ok: undersized.length === 0,
+    undersized,
+  };
 }
 
 async function testMobileNav(page) {
@@ -145,6 +193,18 @@ async function main() {
       : `✗ nav flow failed${nav.note ? ` (${nav.note})` : ''}`,
   );
   if (!nav.ok) fail += 1;
+
+  console.log(`\nTap targets (≥${MIN_TAP}×${MIN_TAP}px):`);
+  const taps = await auditTapTargets(page);
+  if (taps.ok) {
+    console.log('✓ all visible buttons meet minimum');
+  } else {
+    console.log(`✗ ${taps.undersized.length} undersized control(s):`);
+    for (const u of taps.undersized) {
+      console.log(`  • ${u.w}×${u.h} — ${u.label}`);
+    }
+    fail += 1;
+  }
 
   await browser.close();
   console.log(fail ? `\n${fail} issue(s)` : '\nMobile audit passed');

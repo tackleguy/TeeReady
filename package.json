@@ -21,7 +21,8 @@
     "build:green-meshes": "node scripts/build-green-meshes.mjs",
     "smoke": "node scripts/smoke-mobile.mjs",
     "test:mobile": "node scripts/mobile-audit.mjs",
-    "prebuild": "node scripts/build-golf-catalog.mjs"
+    "audit:contrast": "node scripts/contrast-audit.mjs",
+    "prebuild": "node scripts/build-golf-catalog.mjs && node scripts/contrast-audit.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^1.0.1",

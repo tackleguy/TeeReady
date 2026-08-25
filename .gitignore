@@ -19,6 +19,9 @@ scripts/.cache
 .vscode
 .idea
 
+# Local audit screenshots
+tmp/
+
 # Env / logs
 .env
 .env.*

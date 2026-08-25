@@ -80,7 +80,7 @@ export function TodayView() {
           footer={
             <div className="flex flex-wrap items-end gap-4">
               <div>
-                <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--pass-muted)]">
+                <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--pass-muted)]">
                   Score
                 </p>
                 <p

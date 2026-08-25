@@ -58,7 +58,7 @@ export function CitySearchField({ value, onChange }: Props) {
           onBlur={() => {
             blurTimer.current = window.setTimeout(() => setOpen(false), 150);
           }}
-          className="min-w-0 flex-1 bg-transparent text-[14px] text-ink outline-none placeholder:text-faint"
+          className="min-w-0 flex-1 bg-transparent text-base text-ink outline-none placeholder:text-faint"
         />
         {value || q ? (
           <button

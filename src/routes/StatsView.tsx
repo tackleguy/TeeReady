@@ -22,7 +22,7 @@ function StatCard({
   return (
     <div className="rounded-card bg-surface p-4 shadow-card">
       <div className="flex items-start justify-between gap-2">
-        <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
+        <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
           {label}
         </div>
         <Icon className="h-4 w-4 shrink-0 text-brand" strokeWidth={2} />

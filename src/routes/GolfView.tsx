@@ -1008,7 +1008,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
             value={courseFilter}
             onChange={(e) => setCourseFilter(e.target.value)}
             placeholder="City courses & private clubs…"
-            className={`w-full rounded-2xl border border-[var(--line-default)] ${isMobile ? 'bg-canvas' : 'bg-black/20'} px-3 py-2.5 text-base text-[var(--ink-1)] placeholder:text-[var(--ink-4)] outline-none focus:border-[var(--accent)] md:py-2 md:text-[13px]`}
+            className={`w-full rounded-2xl border border-[var(--line-default)] ${isMobile ? 'bg-canvas' : 'bg-black/20'} px-3 py-2.5 text-base text-[var(--ink-1)] placeholder:text-[var(--ink-4)] outline-none focus:border-[var(--accent)] md:py-2`}
           />
         </div>
 
@@ -1041,7 +1041,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
               <p className="text-xs text-red-300">
                 OpenStreetMap is busy right now.
               </p>
-              <p className="mt-0.5 text-[10px] text-[var(--ink-4)]">
+              <p className="mt-0.5 text-[11px] text-[var(--ink-4)]">
                 {coursesError}
               </p>
               <button
@@ -1091,7 +1091,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                         <div className="truncate text-[13px] font-semibold text-[var(--ink-1)]">
                           {c.name}
                         </div>
-                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-[var(--ink-3)]">
+                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-[var(--ink-3)]">
                       {c.access === 'public' && (
                         <span className="rounded bg-emerald-500/20 px-1 py-px font-medium text-emerald-200">
                           Public
@@ -1269,8 +1269,8 @@ export function GolfView({ active = true }: { active?: boolean }) {
                   <span
                     className={
                       viewMode === 'gps'
-                        ? 'rounded-md bg-[#3b82f6] px-2 py-1 text-[10px] font-bold text-white'
-                        : 'rounded-md bg-brand px-2 py-1 text-[10px] font-bold text-white'
+                        ? 'rounded-md bg-[#3b82f6] px-2 py-1 text-[11px] font-bold text-white'
+                        : 'rounded-md bg-brand px-2 py-1 text-[11px] font-bold text-white'
                     }
                   >
                     {viewMode === 'gps' ? 'GPS' : 'Prep'}
@@ -1283,7 +1283,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                         setGpsHudExpanded(false);
                       }}
                       title="Show GPS panel"
-                      className="rounded-md px-2 py-1 text-[10px] font-semibold text-[#3b82f6] hover:bg-white/10"
+                      className="rounded-md px-2 py-1 text-[11px] font-semibold text-[#3b82f6] hover:bg-white/10"
                     >
                       Show
                     </button>
@@ -1292,7 +1292,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     type="button"
                     onClick={openScorecard}
                     title={`Scorecard · HCP ${formatHandicap(profile.handicap)}`}
-                    className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[10px] font-semibold text-[var(--ink-2)] hover:bg-white/10"
+                    className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] font-semibold text-[var(--ink-2)] hover:bg-white/10"
                   >
                     <ClipboardList className="h-3 w-3" />
                     {!isMobile ? 'Card' : null}
@@ -1309,7 +1309,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                       aria-pressed={greens3d}
                       title="Open 3D green viewer"
                       className={[
-                        'inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[10px] font-semibold transition-colors',
+                        'inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] font-semibold transition-colors',
                         greens3d
                           ? 'bg-emerald-500/30 text-emerald-100'
                           : 'text-[var(--ink-2)] hover:bg-white/10',
@@ -1324,7 +1324,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                       type="button"
                       onClick={() => setIntelPanelOpen(true)}
                       title="Show course panel"
-                      className="rounded-md px-1.5 py-1 text-[10px] font-semibold text-[var(--ink-2)] hover:bg-white/10"
+                      className="rounded-md px-1.5 py-1 text-[11px] font-semibold text-[var(--ink-2)] hover:bg-white/10"
                     >
                       Course
                     </button>
@@ -1334,7 +1334,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                       type="button"
                       onClick={leaveGpsMode}
                       title="Close GPS · return to Prep"
-                      className="inline-flex items-center gap-0.5 rounded-md px-1.5 py-1 text-[10px] font-semibold text-[var(--ink-2)] hover:bg-white/10"
+                      className="inline-flex items-center gap-0.5 rounded-md px-1.5 py-1 text-[11px] font-semibold text-[var(--ink-2)] hover:bg-white/10"
                     >
                       <X className="h-3 w-3" />
                       {!isMobile ? 'Prep' : null}
@@ -1391,7 +1391,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                             : 'Back to full course'
                         }
                       >
-                        <span className="block text-[10px] uppercase tracking-wide text-[var(--ink-4)]">
+                        <span className="block text-[11px] uppercase tracking-wide text-[var(--ink-4)]">
                           {activeHole == null ? 'Course' : 'Hole'}
                         </span>
                         <span className="block text-[13px] font-semibold tabular-nums text-[var(--ink-1)]">
@@ -1544,7 +1544,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                           ? `${Math.round(ensemble.ensemble.windMph)} mph`
                           : '— mph'}
                     </div>
-                    <div className="mt-0.5 text-[10px] font-semibold tabular-nums text-muted">
+                    <div className="mt-0.5 text-[11px] font-semibold tabular-nums text-muted">
                       {activeBrief
                         ? `${activeBrief.slopeYards > 0 ? '+' : ''}${activeBrief.slopeYards} yd slope`
                         : 'slope —'}
@@ -1557,7 +1557,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                   aria-label="Hole wind and slope"
                 >
                   <div className="hud-card rounded-lg border border-[color-mix(in_srgb,var(--brand)_28%,var(--line))] px-1.5 py-1.5 text-center shadow-lg">
-                    <div className="font-mono text-[8px] font-semibold uppercase tracking-[0.1em] text-faint">
+                    <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-faint">
                       {activeBrief
                         ? activeBrief.headwindMph >= 0
                           ? 'Into'
@@ -1570,11 +1570,11 @@ export function GolfView({ active = true }: { active?: boolean }) {
                         : ensemble?.ensemble.windMph != null
                           ? Math.round(ensemble.ensemble.windMph)
                           : '—'}
-                      <span className="ml-0.5 text-[9px] font-semibold text-muted">
+                      <span className="ml-0.5 text-[11px] font-semibold text-muted">
                         mph
                       </span>
                     </div>
-                    <div className="mt-0.5 truncate font-mono text-[8px] font-medium text-faint">
+                    <div className="mt-0.5 truncate font-mono text-[11px] font-medium text-faint">
                       {activeBrief
                         ? aspectLabel(activeBrief.aspect)
                         : ensemble?.ensemble.windFromDeg != null
@@ -1583,7 +1583,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     </div>
                   </div>
                   <div className="hud-card rounded-lg border border-[color-mix(in_srgb,var(--brand)_28%,var(--line))] px-1.5 py-1.5 text-center shadow-lg">
-                    <div className="font-mono text-[8px] font-semibold uppercase tracking-[0.1em] text-faint">
+                    <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-faint">
                       Slope
                     </div>
                     <div className="mt-0.5 text-[13px] font-bold tabular-nums leading-none text-ink">
@@ -1591,7 +1591,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                         <>
                           {activeBrief.slopeYards > 0 ? '+' : ''}
                           {activeBrief.slopeYards}
-                          <span className="ml-0.5 text-[9px] font-semibold text-muted">
+                          <span className="ml-0.5 text-[11px] font-semibold text-muted">
                             yd
                           </span>
                         </>
@@ -1599,7 +1599,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                         '—'
                       )}
                     </div>
-                    <div className="mt-0.5 font-mono text-[8px] font-medium text-faint">
+                    <div className="mt-0.5 font-mono text-[11px] font-medium text-faint">
                       {activeBrief
                         ? activeBrief.slopeYards > 0
                           ? 'Uphill'
@@ -1657,7 +1657,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                   variant="high"
                   className="overflow-hidden px-2 py-1.5 shadow-xl"
                 >
-                  <div className="flex max-w-[min(100vw-2rem,28rem)] flex-wrap items-center gap-2 text-[10px]">
+                  <div className="flex max-w-[min(100vw-2rem,28rem)] flex-wrap items-center gap-2 text-[11px]">
                     <span className="font-semibold text-pink-200">
                       Hole {activeHoleObj.number}
                     </span>
@@ -1758,7 +1758,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                               : 'No hole geometry in OSM for this course yet'}
                     </div>
                     {ensemble?.ensemble.windMph != null ? (
-                      <div className="mt-2 flex flex-wrap gap-2 text-[10px] uppercase tracking-wider text-[var(--ink-3)]">
+                      <div className="mt-2 flex flex-wrap gap-2 text-[11px] uppercase tracking-wider text-[var(--ink-3)]">
                         <span className="chip-button" data-active="true">
                           {Math.round(ensemble.ensemble.windMph)} mph {bearingCompass(ensemble.ensemble.windFromDeg)}
                         </span>
@@ -1832,7 +1832,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                       <span className="text-xs font-semibold text-[var(--ink-1)]">
                         Hole {activeBrief.number}
                       </span>
-                      <span className="rounded-md bg-black/25 px-1.5 py-0.5 text-[10px] font-medium text-[var(--ink-2)]">
+                      <span className="rounded-md bg-black/25 px-1.5 py-0.5 text-[11px] font-medium text-[var(--ink-2)]">
                         {aspectLabel(activeBrief.aspect)}
                       </span>
                     </div>
@@ -1848,7 +1848,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     )}
                     <div className="mt-2 grid grid-cols-4 gap-1 text-center">
                       <div className="rounded-md bg-black/25 px-1 py-1">
-                        <div className="text-[9px] uppercase tracking-wide text-[var(--ink-4)]">
+                        <div className="text-[11px] uppercase tracking-wide text-[var(--ink-4)]">
                           {activeBrief.headwindMph >= 0 ? 'Into' : 'Helping'}
                         </div>
                         <div className="text-[12px] font-semibold tabular-nums text-[var(--ink-1)]">
@@ -1856,7 +1856,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                         </div>
                       </div>
                       <div className="rounded-md bg-black/25 px-1 py-1">
-                        <div className="text-[9px] uppercase tracking-wide text-[var(--ink-4)]">
+                        <div className="text-[11px] uppercase tracking-wide text-[var(--ink-4)]">
                           Slope
                         </div>
                         <div className="text-[11px] font-semibold tabular-nums text-[var(--ink-1)]">
@@ -1865,7 +1865,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                         </div>
                       </div>
                       <div className="rounded-md bg-black/25 px-1 py-1">
-                        <div className="text-[9px] uppercase tracking-wide text-[var(--ink-4)]">
+                        <div className="text-[11px] uppercase tracking-wide text-[var(--ink-4)]">
                           Drift
                         </div>
                         <div className="text-[11px] font-semibold tabular-nums text-[var(--ink-1)]">
@@ -1874,12 +1874,12 @@ export function GolfView({ active = true }: { active?: boolean }) {
                         </div>
                       </div>
                       <div className="rounded-md bg-black/25 px-1 py-1">
-                        <div className="text-[9px] uppercase tracking-wide text-[var(--ink-4)]">
+                        <div className="text-[11px] uppercase tracking-wide text-[var(--ink-4)]">
                           Plays vs {activeBrief.yards}
                         </div>
                         <div className="text-[12px] font-semibold tabular-nums text-[var(--ink-1)]">
                           {activeBrief.playsLikeYards}
-                          <span className="ml-0.5 text-[10px] font-medium text-[var(--accent)]">
+                          <span className="ml-0.5 text-[11px] font-medium text-[var(--accent)]">
                             {activeBrief.playsLikeYards - activeBrief.yards > 0
                               ? '+'
                               : ''}
@@ -1934,24 +1934,24 @@ export function GolfView({ active = true }: { active?: boolean }) {
                                         ? ' · plays even'
                                         : ''}
                                   </span>
-                                  <span className="text-[10px] text-[var(--ink-3)]">
+                                  <span className="text-[11px] text-[var(--ink-3)]">
                                     {h.bearingDeg}°{' '}
                                     {bearingCompass(h.bearingDeg)}
                                   </span>
                                   {h.par != null && (
-                                    <span className="text-[10px] text-[var(--ink-4)]">
+                                    <span className="text-[11px] text-[var(--ink-4)]">
                                       par {h.par}
                                     </span>
                                   )}
                                   {teeCount > 1 && (
-                                    <span className="text-[10px] text-[var(--ink-4)]">
+                                    <span className="text-[11px] text-[var(--ink-4)]">
                                       {teeLabel}
                                       {teeCount > 2 ? ` · ${teeCount} tees` : ''}
                                     </span>
                                   )}
                                 </span>
                                 {brief && (
-                                  <span className="mt-0.5 block truncate text-[10px] text-[var(--ink-3)]">
+                                  <span className="mt-0.5 block truncate text-[11px] text-[var(--ink-3)]">
                                     · {brief.recommendedClub} · {brief.aspect} ·{' '}
                                     {Math.round(brief.windMph)} mph
                                   </span>
@@ -1972,7 +1972,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                 )}
 
                 {ensemble && (!isMobile || sheetExpanded) && (
-                  <div className="border-t border-[var(--line-subtle)] px-3 py-2 text-[10px] text-[var(--ink-4)]">
+                  <div className="border-t border-[var(--line-subtle)] px-3 py-2 text-[11px] text-[var(--ink-4)]">
                     {ensemble.ensemble.modelsUsed.length} models · OSM +
                     Open-Meteo elevation · Esri imagery
                   </div>

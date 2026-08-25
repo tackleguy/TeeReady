@@ -49,7 +49,7 @@ export function SearchBar({ onPick }: Props) {
             blurTimer.current = window.setTimeout(() => setOpen(false), 150);
           }}
           placeholder="Search city, county, or coordinates"
-          className="flex-1 bg-transparent text-[16px] text-[var(--ink-1)] placeholder-[var(--ink-4)] outline-none lg:text-[13px]"
+          className="flex-1 bg-transparent text-base text-[var(--ink-1)] placeholder-[var(--ink-4)] outline-none"
         />
         {q ? (
           <button

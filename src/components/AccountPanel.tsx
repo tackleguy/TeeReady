@@ -36,7 +36,7 @@ export function AccountPanel() {
           Signed in — handicap, bag, and display name sync to this account.
         </p>
         <div className="mt-4 rounded-xl border border-line bg-canvas px-3 py-3">
-          <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
+          <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
             Email
           </div>
           <div className="mt-1 text-[14px] font-medium text-ink">

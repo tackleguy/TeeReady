@@ -88,7 +88,7 @@ export function GoalCoachBanner() {
               style={{ width: `${plan.progressPct}%` }}
             />
           </div>
-          <span className="text-[10px] font-medium tabular text-muted">
+          <span className="text-[11px] font-medium tabular text-muted">
             {plan.progressPct}%
           </span>
         </div>
@@ -98,7 +98,7 @@ export function GoalCoachBanner() {
             {profile.goals.map((id) => (
               <span
                 key={id}
-                className="rounded-md border border-line bg-canvas px-1.5 py-0.5 text-[10px] font-medium text-muted"
+                className="rounded-md border border-line bg-canvas px-1.5 py-0.5 text-[11px] font-medium text-muted"
               >
                 {getGoal(id).label}
               </span>
@@ -106,7 +106,7 @@ export function GoalCoachBanner() {
             {profile.customGoals.map((g) => (
               <span
                 key={g}
-                className="rounded-md border border-line bg-canvas px-1.5 py-0.5 text-[10px] font-medium text-muted"
+                className="rounded-md border border-line bg-canvas px-1.5 py-0.5 text-[11px] font-medium text-muted"
               >
                 {g}
               </span>

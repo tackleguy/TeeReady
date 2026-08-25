@@ -65,7 +65,7 @@ function HoleChip({
     <button
       type="button"
       onClick={onClick}
-      className={`flex h-11 w-9 shrink-0 flex-col items-center justify-center rounded-lg border text-center transition-colors ${
+      className={`flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-lg border text-center transition-colors ${
         selected
           ? 'border-brand bg-brand text-white'
           : scored
@@ -75,7 +75,7 @@ function HoleChip({
       aria-current={selected ? 'true' : undefined}
     >
       <span
-        className={`text-[10px] font-semibold tabular leading-none ${
+        className={`text-[11px] font-semibold tabular leading-none ${
           selected ? 'text-white/80' : 'text-faint'
         }`}
       >
@@ -216,7 +216,7 @@ export function GolfScorecard({
       <div className="flex items-start justify-between gap-3 border-b border-line px-4 py-3">
         <div className="min-w-0">
           <h2 className="text-[16px] font-bold text-ink">Scorecard</h2>
-          <p className="mt-0.5 truncate text-[12px] text-muted">
+          <p className="mt-0.5 truncate text-[13px] text-muted">
             {round.courseName} · HCP {formatHandicap(handicap)}
           </p>
         </div>
@@ -234,8 +234,8 @@ export function GolfScorecard({
                 onClick={() => setView(id)}
                 className={
                   view === id
-                    ? 'rounded-md bg-brand-soft px-2.5 py-1 text-[11px] font-semibold text-brand'
-                    : 'rounded-md px-2.5 py-1 text-[11px] font-medium text-muted hover:text-ink'
+                    ? 'rounded-md bg-brand-soft px-2.5 py-1 text-[13px] font-semibold text-brand'
+                    : 'rounded-md px-2.5 py-1 text-[13px] font-medium text-muted hover:text-ink'
                 }
               >
                 {label}
@@ -245,7 +245,7 @@ export function GolfScorecard({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-line px-2.5 py-1.5 text-[12px] font-semibold text-muted hover:text-ink"
+            className="rounded-lg border border-line px-2.5 py-1.5 text-[13px] font-semibold text-muted hover:text-ink"
           >
             Close
           </button>
@@ -270,7 +270,7 @@ export function GolfScorecard({
         </div>
         <div className="mt-2 grid grid-cols-3 gap-2">
           <div className="rounded-lg bg-canvas px-2 py-1.5 text-center">
-            <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-faint">
+            <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-faint">
               Thru
             </div>
             <div className="text-[15px] font-bold tabular text-ink">
@@ -278,7 +278,7 @@ export function GolfScorecard({
             </div>
           </div>
           <div className="rounded-lg bg-canvas px-2 py-1.5 text-center">
-            <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-faint">
+            <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-faint">
               To par
             </div>
             <div className="text-[15px] font-bold tabular text-ink">
@@ -286,7 +286,7 @@ export function GolfScorecard({
             </div>
           </div>
           <div className="rounded-lg bg-canvas px-2 py-1.5 text-center">
-            <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-faint">
+            <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-faint">
               Gross
             </div>
             <div className="text-[15px] font-bold tabular text-ink">
@@ -304,7 +304,7 @@ export function GolfScorecard({
                 type="button"
                 onClick={goPrev}
                 disabled={!canPrev}
-                className="inline-flex items-center gap-1 rounded-xl border border-line px-2.5 py-2 text-[12px] font-semibold text-muted hover:text-ink disabled:opacity-30"
+                className="inline-flex items-center gap-1 rounded-xl border border-line px-2.5 py-2 text-[13px] font-semibold text-muted hover:text-ink disabled:opacity-30"
               >
                 <ChevronLeft className="h-4 w-4" />
                 Prev
@@ -316,7 +316,7 @@ export function GolfScorecard({
                   <span className="mx-1.5 text-faint">·</span>
                   {hole.yards} yd
                 </p>
-                <p className="mt-0.5 text-[11px] text-muted">
+                <p className="mt-0.5 text-[13px] text-muted">
                   SI {si}
                   {recv !== 0
                     ? recv > 0
@@ -329,7 +329,7 @@ export function GolfScorecard({
                 type="button"
                 onClick={goNext}
                 disabled={!canNext}
-                className="inline-flex items-center gap-1 rounded-xl border border-line px-2.5 py-2 text-[12px] font-semibold text-muted hover:text-ink disabled:opacity-30"
+                className="inline-flex items-center gap-1 rounded-xl border border-line px-2.5 py-2 text-[13px] font-semibold text-muted hover:text-ink disabled:opacity-30"
               >
                 Next
                 <ChevronRight className="h-4 w-4" />
@@ -337,7 +337,7 @@ export function GolfScorecard({
             </div>
 
             <div>
-              <p className="mb-2 text-center font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
+              <p className="mb-2 text-center font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
                 Score
               </p>
               <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
@@ -364,7 +364,7 @@ export function GolfScorecard({
                         {n}
                       </span>
                       <span
-                        className={`mt-0.5 text-[9px] font-semibold uppercase ${
+                        className={`mt-0.5 text-[11px] font-semibold uppercase ${
                           on ? s.text : 'text-faint'
                         }`}
                       >
@@ -380,7 +380,7 @@ export function GolfScorecard({
                   {net != null ? ` · net ${net}` : ''}
                 </p>
               ) : (
-                <p className="mt-2 text-center text-[12px] text-muted">
+                <p className="mt-2 text-center text-[13px] text-muted">
                   Tap a score to mark this hole
                 </p>
               )}
@@ -389,7 +389,7 @@ export function GolfScorecard({
             {strokes != null ? (
               <>
                 <div>
-                  <p className="mb-2 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
+                  <p className="mb-2 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
                     Putts
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -416,7 +416,7 @@ export function GolfScorecard({
                 <div className="grid gap-3 sm:grid-cols-2">
                   {firEligible ? (
                     <div>
-                      <p className="mb-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
+                      <p className="mb-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
                         Fairway
                       </p>
                       <div className="flex gap-1.5">
@@ -439,8 +439,8 @@ export function GolfScorecard({
                               }
                               className={
                                 on
-                                  ? 'flex-1 rounded-xl bg-brand-soft py-2 text-[12px] font-semibold text-brand'
-                                  : 'flex-1 rounded-xl border border-line py-2 text-[12px] font-medium text-muted hover:text-ink'
+                                  ? 'flex-1 rounded-xl bg-brand-soft py-2 text-[13px] font-semibold text-brand'
+                                  : 'flex-1 rounded-xl border border-line py-2 text-[13px] font-medium text-muted hover:text-ink'
                               }
                             >
                               {label}
@@ -451,7 +451,7 @@ export function GolfScorecard({
                     </div>
                   ) : null}
                   <div>
-                    <p className="mb-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
+                    <p className="mb-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
                       GIR
                     </p>
                     <div className="flex gap-1.5">
@@ -472,8 +472,8 @@ export function GolfScorecard({
                             onClick={() => onStats(hole.number, { gir: v })}
                             className={
                               on
-                                ? 'flex-1 rounded-xl bg-brand-soft py-2 text-[12px] font-semibold text-brand'
-                                : 'flex-1 rounded-xl border border-line py-2 text-[12px] font-medium text-muted hover:text-ink'
+                                ? 'flex-1 rounded-xl bg-brand-soft py-2 text-[13px] font-semibold text-brand'
+                                : 'flex-1 rounded-xl border border-line py-2 text-[13px] font-medium text-muted hover:text-ink'
                             }
                           >
                             {label}
@@ -507,9 +507,9 @@ export function GolfScorecard({
           </div>
         ) : (
           <div className="overflow-x-auto px-2 py-2">
-            <table className="w-full min-w-[420px] border-collapse text-left text-[12px]">
+            <table className="w-full min-w-[420px] border-collapse text-left text-[13px]">
               <thead>
-                <tr className="border-b border-line font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-faint">
+                <tr className="border-b border-line font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-faint">
                   <th className="px-2 py-2">Hole</th>
                   <th className="px-2 py-2 text-right">Par</th>
                   <th className="px-2 py-2 text-right">Yds</th>
@@ -572,24 +572,24 @@ export function GolfScorecard({
             </table>
             <div className="mt-3 grid grid-cols-2 gap-2 px-2 pb-2">
               <div className="rounded-xl bg-canvas px-3 py-2 text-center">
-                <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-faint">
+                <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-faint">
                   Gross
                 </div>
                 <div className="text-[18px] font-bold tabular text-ink">
                   {netHoles ? gross : '—'}
                 </div>
-                <div className="text-[11px] text-muted">
+                <div className="text-[13px] text-muted">
                   {netHoles ? toParLabel(gross - parTotal) : 'vs par'}
                 </div>
               </div>
               <div className="rounded-xl bg-canvas px-3 py-2 text-center">
-                <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-faint">
+                <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-faint">
                   Net
                 </div>
                 <div className="text-[18px] font-bold tabular text-brand">
                   {netHoles ? netTotal : '—'}
                 </div>
-                <div className="text-[11px] text-muted">
+                <div className="text-[13px] text-muted">
                   {netHoles ? toParLabel(netTotal - parTotal) : 'hcp adj'}
                 </div>
               </div>

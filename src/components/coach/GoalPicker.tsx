@@ -132,7 +132,7 @@ export function GoalPicker({
                   ? `${maxCustom} custom goals added`
                   : 'Type a goal and press Enter'
               }
-              className="min-w-0 flex-1 rounded-xl border border-line bg-surface px-3 py-2 text-[14px] text-ink outline-none placeholder:text-faint focus:border-brand disabled:opacity-50"
+              className="min-w-0 flex-1 rounded-xl border border-line bg-surface px-3 py-2 text-base text-ink outline-none placeholder:text-faint focus:border-brand disabled:opacity-50"
             />
             <button
               type="button"

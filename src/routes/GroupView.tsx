@@ -74,7 +74,7 @@ function Lobby({
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
       <div>
-        <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-brand">
+        <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-brand">
           Multiplayer
         </span>
         <h1 className="mt-2 text-[28px] font-bold tracking-[-0.03em] text-ink">
@@ -132,7 +132,7 @@ function Lobby({
             }}
           >
             <div>
-              <span className="mb-2 block font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
+              <span className="mb-2 block font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
                 Game mode
               </span>
               <div className="grid gap-2 sm:grid-cols-2">
@@ -162,18 +162,18 @@ function Lobby({
             </div>
 
             <label className="block">
-              <span className="mb-1.5 block font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
+              <span className="mb-1.5 block font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
                 Group name
               </span>
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-[14px] text-ink outline-none focus:border-brand"
+                className="w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-base text-ink outline-none focus:border-brand"
               />
             </label>
             <div className="block">
-              <span className="mb-1.5 block font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
+              <span className="mb-1.5 block font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
                 Course
               </span>
               <CourseSearchSelect
@@ -185,24 +185,24 @@ function Lobby({
             </div>
             <div className="grid grid-cols-2 gap-3">
               <label className="block">
-                <span className="mb-1.5 block font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
+                <span className="mb-1.5 block font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
                   Stakes / notes
                 </span>
                 <input
                   value={format}
                   onChange={(e) => setFormat(e.target.value)}
-                  className="w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-[14px] text-ink outline-none focus:border-brand"
+                  className="w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-base text-ink outline-none focus:border-brand"
                 />
               </label>
               <label className="block">
-                <span className="mb-1.5 block font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
+                <span className="mb-1.5 block font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
                   Pot
                 </span>
                 <input
                   value={pot}
                   onChange={(e) => setPot(e.target.value)}
                   placeholder={gameMode === 'skins' ? '$40' : 'Optional'}
-                  className="w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-[14px] text-ink outline-none focus:border-brand"
+                  className="w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-base text-ink outline-none focus:border-brand"
                 />
               </label>
             </div>
@@ -223,7 +223,7 @@ function Lobby({
             }}
           >
             <label className="block">
-              <span className="mb-1.5 block font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
+              <span className="mb-1.5 block font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
                 Invite code
               </span>
               <input
@@ -523,15 +523,15 @@ export function GroupView() {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             {mp.group.live ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-brand">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-2.5 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-brand">
                 <Radio className="h-3 w-3" aria-hidden />
                 Live
               </span>
             ) : null}
-            <span className="rounded-full border border-line bg-surface px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-ink">
+            <span className="rounded-full border border-line bg-surface px-2.5 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-ink">
               {mode.label}
             </span>
-            <span className="inline-flex items-center gap-1 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
+            <span className="inline-flex items-center gap-1 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
               <Users className="h-3 w-3" />
               {ranked.length} player{ranked.length === 1 ? '' : 's'}
             </span>
@@ -588,7 +588,7 @@ export function GroupView() {
             key={stat.label}
             className="rounded-xl border border-line bg-surface px-3.5 py-3 shadow-card"
           >
-            <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
+            <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
               {stat.label}
             </div>
             <div className="mt-1 text-[16px] font-bold tabular text-ink">
@@ -645,7 +645,7 @@ export function GroupView() {
                     <div className="truncate text-[14px] font-semibold text-ink">
                       {player.display_name}
                       {isYou ? (
-                        <span className="ml-1.5 font-mono text-[10px] font-bold uppercase tracking-wide text-brand">
+                        <span className="ml-1.5 font-mono text-[11px] font-bold uppercase tracking-wide text-brand">
                           You
                         </span>
                       ) : null}
@@ -694,7 +694,7 @@ export function GroupView() {
               if (e.key === 'Enter') send();
             }}
             placeholder="Message the group…"
-            className="min-w-0 flex-1 rounded-xl border border-line bg-canvas px-3 py-2.5 text-[13px] text-ink outline-none placeholder:text-faint focus:border-brand"
+            className="min-w-0 flex-1 rounded-xl border border-line bg-canvas px-3 py-2.5 text-base text-ink outline-none placeholder:text-faint focus:border-brand"
           />
           <button
             type="button"
@@ -709,7 +709,7 @@ export function GroupView() {
         <ul className="max-h-[320px] divide-y divide-line overflow-y-auto">
           {[...mp.messages].reverse().map((item) => (
             <li key={item.id} className="flex gap-3 px-5 py-3.5">
-              <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-soft font-mono text-[10px] font-semibold text-brand">
+              <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-soft font-mono text-[11px] font-semibold text-brand">
                 {item.initials}
               </div>
               <div className="min-w-0 flex-1">
@@ -717,7 +717,7 @@ export function GroupView() {
                   <span className="text-[13px] font-semibold text-ink">
                     {item.user_id === mp.user!.id ? 'You' : item.display_name}
                   </span>
-                  <span className="shrink-0 font-mono text-[10px] text-faint">
+                  <span className="shrink-0 font-mono text-[11px] text-faint">
                     {timeAgo(item.created_at)}
                   </span>
                 </div>

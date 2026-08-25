@@ -25,14 +25,14 @@ const MISS_OPTIONS: Array<{ value: MissBias; label: string; hint: string }> = [
 
 function FieldLabel({ children }: { children: ReactNode }) {
   return (
-    <span className="mb-1.5 block font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
+    <span className="mb-1.5 block font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
       {children}
     </span>
   );
 }
 
 function inputClassName() {
-  return 'w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-[14px] text-ink outline-none transition-colors placeholder:text-faint focus:border-brand';
+  return 'w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-base text-ink outline-none transition-colors placeholder:text-faint focus:border-brand';
 }
 
 function QRow({ label, value }: { label: string; value: string }) {
@@ -275,7 +275,7 @@ export function ProfileView() {
         ) : null}
 
         <div className="mt-5 rounded-xl border border-line bg-canvas px-3 py-3">
-          <div className="mb-2 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
+          <div className="mb-2 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
             Bag preview — total avg
           </div>
           <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-6">
@@ -284,7 +284,7 @@ export function ProfileView() {
                 key={c.key}
                 className="rounded-lg bg-surface px-1.5 py-1.5 text-center shadow-card"
               >
-                <div className="text-[9px] uppercase tracking-wide text-faint">
+                <div className="text-[11px] uppercase tracking-wide text-faint">
                   {c.label}
                 </div>
                 <div className="text-[12px] font-semibold tabular text-ink">

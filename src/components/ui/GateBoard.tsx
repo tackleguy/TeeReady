@@ -18,7 +18,7 @@ type Props = {
 export function GateBoard({ rows, highlightId, compact = false }: Props) {
   return (
     <div className="tower-board overflow-hidden">
-      <div className="tower-board-head grid grid-cols-[4.5rem_1fr_3.5rem_5rem] gap-2 border-b border-[var(--tower-line)] px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--tower-dim)] sm:grid-cols-[5rem_1fr_4rem_5.5rem] sm:px-4">
+      <div className="tower-board-head grid grid-cols-[4.5rem_1fr_3.5rem_5rem] gap-2 border-b border-[var(--tower-line)] px-3 py-2 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--tower-dim)] sm:grid-cols-[5rem_1fr_4rem_5.5rem] sm:px-4">
         <span>Time</span>
         <span>Window</span>
         <span className="text-right">Score</span>
@@ -60,15 +60,15 @@ export function GateBoard({ rows, highlightId, compact = false }: Props) {
               </span>
               <span className="text-right">
                 {isBest ? (
-                  <span className="inline-block rounded-sm bg-[var(--amber)] px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider text-[#1a1200] sm:text-[10px]">
+                  <span className="inline-block rounded-sm bg-[var(--amber)] px-1.5 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider text-[#1a1200] sm:text-[11px]">
                     Open
                   </span>
                 ) : row.status === 'closed' ? (
-                  <span className="font-mono text-[10px] uppercase text-[var(--tower-dim)]">
+                  <span className="font-mono text-[11px] uppercase text-[var(--tower-dim)]">
                     —
                   </span>
                 ) : (
-                  <span className="font-mono text-[10px] uppercase text-[var(--tower-dim)]">
+                  <span className="font-mono text-[11px] uppercase text-[var(--tower-dim)]">
                     Wait
                   </span>
                 )}

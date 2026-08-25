@@ -177,7 +177,7 @@ export function GolfYardageBook({
 
               {notebook.days.length > 1 ? (
                 <div className="notebook-line golf-print-hide flex flex-wrap items-center gap-1.5 py-1">
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#756658]">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#756658]">
                     Day
                   </span>
                   {notebook.days.map((d, i) => (

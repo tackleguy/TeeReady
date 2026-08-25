@@ -4,6 +4,78 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Self-hosted fonts (latin subset) — font-display: swap for fast first paint */
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/sora-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/sora-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/sora-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/sora-700.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Literata';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/literata-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Literata';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/literata-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Literata';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/literata-700.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-700.woff2') format('woff2');
+}
+
 :root,
 html[data-theme='light'] {
   color-scheme: light;
@@ -12,14 +84,15 @@ html[data-theme='light'] {
   --surface: #fffcf7;
   --ink: #141c24;
   --muted: #4a5568;
-  --faint: #64748b;
+  /* Darkened for ≥4.5:1 on --canvas and --surface at normal text sizes */
+  --faint: #617087;
   --line: rgba(20, 28, 36, 0.1);
   --line-strong: rgba(20, 28, 36, 0.18);
   --brand: #1a5c3a;
   --brand-soft: rgba(26, 92, 58, 0.1);
-  --accent: #b8860b;
-  --accent-soft: rgba(184, 134, 11, 0.12);
-  --warn: #c17d0a;
+  --accent: #8f6809;
+  --accent-soft: rgba(143, 104, 9, 0.12);
+  --warn: #9a6408;
   --bad: #b44a3a;
   --hero: #0c1218;
   --shadow-card: 0 1px 0 rgba(20, 28, 36, 0.06), 0 8px 24px rgba(20, 28, 36, 0.06);
@@ -56,8 +129,8 @@ html[data-theme='light'] {
   --ink-3: var(--muted);
   --ink-4: var(--faint);
 
-  --accent-2: #d4a017;
-  --accent-glow: rgba(184, 134, 11, 0.25);
+  --accent-2: #b8860b;
+  --accent-glow: rgba(143, 104, 9, 0.25);
 
   --cool: #2563eb;
   --cool-glow: rgba(37, 99, 235, 0.18);
@@ -95,7 +168,8 @@ html[data-theme='dark'] {
   --surface: #121a22;
   --ink: #eef2f6;
   --muted: #94a3b8;
-  --faint: #64748b;
+  /* Lightened for ≥4.5:1 on --canvas and --surface */
+  --faint: #73839a;
   --line: rgba(238, 242, 246, 0.08);
   --line-strong: rgba(238, 242, 246, 0.16);
   --brand: #3d9970;
@@ -165,12 +239,13 @@ html[data-theme='sand'] {
   --muted: #5c4f42;
   --faint: #756658;
   --line: rgba(42, 31, 20, 0.1);
-  --brand: #8b6914;
-  --brand-soft: rgba(139, 105, 20, 0.12);
-  --accent: #b45309;
-  --accent-soft: rgba(180, 83, 9, 0.12);
-  --warn: #d9a83a;
-  --bad: #c2410c;
+  --brand: #876613;
+  --brand-soft: rgba(135, 102, 19, 0.12);
+  --accent: #ad5009;
+  --accent-soft: rgba(173, 80, 9, 0.12);
+  /* Darkened — previous #d9a83a was ~1.85:1 on sand canvas */
+  --warn: #86651a;
+  --bad: #bd3f0c;
   --hero: #2a1f14;
   --shadow-card: 0 1px 0 rgba(42, 31, 20, 0.08), 0 8px 24px rgba(42, 31, 20, 0.08);
   --shadow-lift: 0 16px 48px rgba(42, 31, 20, 0.14);
@@ -205,8 +280,8 @@ html[data-theme='sand'] {
   --ink-3: var(--muted);
   --ink-4: var(--faint);
 
-  --accent-2: #ea580c;
-  --accent-glow: rgba(180, 83, 9, 0.28);
+  --accent-2: #c2410c;
+  --accent-glow: rgba(173, 80, 9, 0.28);
   --cool: #0e7490;
   --cool-glow: rgba(14, 116, 144, 0.22);
 
@@ -251,6 +326,41 @@ body {
   box-sizing: border-box;
 }
 
+/* iOS Safari auto-zooms focused form controls under 16px — keep a floor */
+input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='hidden']):not([type='button']):not([type='submit']):not([type='reset']),
+select,
+textarea {
+  font-size: 16px !important; /* floor for iOS focus zoom; utilities must not go below */
+}
+
+/*
+ * On-course tap targets: 44×44pt minimum (iOS HIG).
+ * Use .control-compact when the visual must stay small — hit area expands via ::after.
+ */
+button,
+[role='button'],
+.chip-button {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.control-compact {
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+}
+
+.control-compact::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, 44px);
+  height: max(100%, 44px);
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+}
+
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
@@ -263,7 +373,7 @@ body {
 .label,
 .section-eyebrow {
   font-family: theme('fontFamily.mono');
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -271,7 +381,7 @@ body {
 }
 
 .section-eyebrow {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.16em;
   color: var(--muted);
@@ -424,7 +534,7 @@ body {
   color-scheme: light;
   --ink: #141c24;
   --muted: #4a5568;
-  --faint: #64748b;
+  --faint: #617087;
   --line: rgba(20, 28, 36, 0.12);
   --canvas: #f7f4ed;
   --surface: #fffcf7;
@@ -506,11 +616,12 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  min-height: 2.4rem;
+  min-height: 44px;
+  min-width: 44px;
   border-radius: theme('borderRadius.pill');
   border: var(--rule);
   padding: 0 0.85rem;
-  font-size: 0.78rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--muted);
   background: var(--surface);

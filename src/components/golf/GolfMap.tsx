@@ -1519,7 +1519,7 @@ export function GolfMap({
             </span>
           )}
           {activeHole != null && (
-            <span className="flex flex-wrap items-center gap-1.5 text-[10px] text-[var(--ink-3)]">
+            <span className="flex flex-wrap items-center gap-1.5 text-[11px] text-[var(--ink-3)]">
               <span className="inline-block h-0.5 w-4 rounded bg-cyan-300" />
               wind
               <span className="ml-1 inline-block h-0.5 w-4 rounded bg-[#f8fafc]" />
@@ -1528,7 +1528,7 @@ export function GolfMap({
               miss
               <span className="ml-1 inline-block h-0.5 w-4 rounded bg-[#fb7185]" />
               more
-              <span className="text-[9px] text-[var(--ink-4)]">tap to move target</span>
+              <span className="text-[11px] text-[var(--ink-4)]">tap to move target</span>
             </span>
           )}
         </div>

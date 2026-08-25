@@ -75,7 +75,7 @@ export function CourseMapView() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search courses…"
-              className="min-w-0 flex-1 bg-transparent text-[14px] text-ink outline-none placeholder:text-faint"
+              className="min-w-0 flex-1 bg-transparent text-base text-ink outline-none placeholder:text-faint"
             />
           </div>
         </div>

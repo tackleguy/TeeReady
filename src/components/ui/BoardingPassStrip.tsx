@@ -27,7 +27,7 @@ export function BoardingPassStrip({
         <div className="flex-1 p-5 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--pass-muted)]">
+              <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--pass-muted)]">
                 {flight}
               </p>
               <h3 className="mt-1 text-[22px] font-bold tracking-[-0.03em] text-[var(--pass-ink)] sm:text-[26px]">
@@ -38,7 +38,7 @@ export function BoardingPassStrip({
               </p>
             </div>
             <div className="text-right">
-              <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--pass-muted)]">
+              <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--pass-muted)]">
                 Gate
               </p>
               <p className="mt-0.5 font-mono text-[32px] font-bold tabular leading-none text-[var(--phosphor)]">

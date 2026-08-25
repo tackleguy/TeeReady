@@ -103,7 +103,7 @@ export function GolfSetup({ initial, onComplete, onCancel }: Props) {
             value={commonText}
             onChange={(e) => setCommonText(e.target.value)}
             placeholder="e.g. Torrey Pines, Rancho Park, Riviera"
-            className="w-full rounded-xl border border-[var(--line-default)] bg-canvas px-3 py-3 text-base text-[var(--ink-1)] placeholder:text-[var(--ink-4)] outline-none focus:border-[var(--accent)] lg:py-2.5 lg:text-[13px]"
+            className="w-full rounded-xl border border-[var(--line-default)] bg-canvas px-3 py-3 text-base text-[var(--ink-1)] placeholder:text-[var(--ink-4)] outline-none focus:border-[var(--accent)]"
           />
           <span className="mt-1 block text-[11px] text-[var(--ink-4)]">
             Comma-separated — shown as quick picks in search.
@@ -122,7 +122,7 @@ export function GolfSetup({ initial, onComplete, onCancel }: Props) {
               step={0.1}
               value={handicap}
               onChange={(e) => setHandicap(Number(e.target.value))}
-              className="w-full rounded-xl border border-[var(--line-default)] bg-canvas px-3 py-3 text-base tabular-nums text-[var(--ink-1)] outline-none focus:border-[var(--accent)] lg:py-2.5 lg:text-[13px]"
+              className="w-full rounded-xl border border-[var(--line-default)] bg-canvas px-3 py-3 text-base tabular-nums text-[var(--ink-1)] outline-none focus:border-[var(--accent)]"
             />
             <span className="mt-1 block text-[11px] text-[var(--ink-4)]">
               −10 to 54 index — negative for plus (e.g. −2 = +2).
@@ -174,7 +174,7 @@ export function GolfSetup({ initial, onComplete, onCancel }: Props) {
                 max={220}
                 value={sevenIronYards}
                 onChange={(e) => setSevenIronYards(Number(e.target.value))}
-                className="w-full rounded-xl border border-[var(--line-default)] bg-canvas px-3 py-3 pr-10 text-base tabular-nums text-[var(--ink-1)] outline-none focus:border-[var(--accent)] lg:py-2.5 lg:text-[13px]"
+                className="w-full rounded-xl border border-[var(--line-default)] bg-canvas px-3 py-3 pr-10 text-base tabular-nums text-[var(--ink-1)] outline-none focus:border-[var(--accent)]"
               />
               <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-[var(--ink-4)]">
                 yd
@@ -192,7 +192,7 @@ export function GolfSetup({ initial, onComplete, onCancel }: Props) {
                 max={360}
                 value={driverYards}
                 onChange={(e) => setDriverYards(Number(e.target.value))}
-                className="w-full rounded-xl border border-[var(--line-default)] bg-canvas px-3 py-3 pr-10 text-base tabular-nums text-[var(--ink-1)] outline-none focus:border-[var(--accent)] lg:py-2.5 lg:text-[13px]"
+                className="w-full rounded-xl border border-[var(--line-default)] bg-canvas px-3 py-3 pr-10 text-base tabular-nums text-[var(--ink-1)] outline-none focus:border-[var(--accent)]"
               />
               <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-[var(--ink-4)]">
                 yd
@@ -218,14 +218,14 @@ export function GolfSetup({ initial, onComplete, onCancel }: Props) {
                 key={c.key}
                 className="rounded-md bg-surface-1 px-1.5 py-1 text-center"
               >
-                <div className="text-[9px] uppercase tracking-wide text-[var(--ink-4)]">
+                <div className="text-[11px] uppercase tracking-wide text-[var(--ink-4)]">
                   {c.label}
                 </div>
                 <div className="text-[12px] font-semibold tabular-nums text-[var(--ink-1)]">
                   {c.yards}
                 </div>
                 {c.carryYards != null && c.carryYards !== c.yards && (
-                  <div className="text-[9px] tabular-nums text-[var(--ink-4)]">
+                  <div className="text-[11px] tabular-nums text-[var(--ink-4)]">
                     {c.carryYards} carry
                   </div>
                 )}

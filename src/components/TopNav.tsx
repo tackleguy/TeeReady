@@ -317,7 +317,7 @@ export function TopNav({
             title={user?.email ? `Account · ${user.email}` : 'Settings'}
             aria-label={needsQ ? 'Complete questionnaire' : 'Open settings'}
             className={({ isActive }) =>
-              `relative grid h-9 w-9 place-items-center rounded-full border font-mono text-[10px] font-semibold transition-colors ${
+              `relative grid h-9 w-9 place-items-center rounded-full border font-mono text-[11px] font-semibold transition-colors ${
                 isActive
                   ? 'border-brand bg-brand text-white'
                   : 'border-line bg-surface text-brand shadow-card hover:border-brand/40'

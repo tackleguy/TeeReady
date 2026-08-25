@@ -386,7 +386,7 @@ export function Green3DViewer({ course, hole, onClose }: Props) {
             No LiDAR mesh for this hole yet.
           </div>
         )}
-        <div className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full border border-emerald-400/20 bg-emerald-950/55 px-3 py-1 text-[10px] font-medium tracking-wide text-emerald-100/75 backdrop-blur-md">
+        <div className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full border border-emerald-400/20 bg-emerald-950/55 px-3 py-1 text-[11px] font-medium tracking-wide text-emerald-100/75 backdrop-blur-md">
           Drag to orbit · scroll to exaggerate
         </div>
       </div>
