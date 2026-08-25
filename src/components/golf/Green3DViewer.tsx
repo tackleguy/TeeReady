@@ -15,6 +15,82 @@ interface Props {
 
 const RELIEF_STEPS = [1, 2, 3, 4, 5] as const;
 
+type Vec3 = [number, number, number];
+
+function lerp3(a: Vec3, b: Vec3, t: number): Vec3 {
+  return [
+    a[0] + (b[0] - a[0]) * t,
+    a[1] + (b[1] - a[1]) * t,
+    a[2] + (b[2] - a[2]) * t,
+  ];
+}
+
+/** Iso-elevation segments via marching triangles on the green TIN. */
+function contourSegments(
+  positions: Float32Array,
+  indices: ArrayLike<number>,
+  levels: number[],
+  lift = 0.04,
+): Float32Array {
+  const segs: number[] = [];
+  const vert = (i: number): Vec3 => [
+    positions[i * 3]!,
+    positions[i * 3 + 1]! + lift,
+    positions[i * 3 + 2]!,
+  ];
+
+  for (let t = 0; t < indices.length; t += 3) {
+    const ia = indices[t]!;
+    const ib = indices[t + 1]!;
+    const ic = indices[t + 2]!;
+    const a = vert(ia);
+    const b = vert(ib);
+    const c = vert(ic);
+    const ya = a[1] - lift;
+    const yb = b[1] - lift;
+    const yc = c[1] - lift;
+
+    for (const L of levels) {
+      const hits: Vec3[] = [];
+      const edge = (p: Vec3, q: Vec3, yp: number, yq: number) => {
+        if ((yp < L && yq >= L) || (yq < L && yp >= L)) {
+          const u = (L - yp) / (yq - yp + 1e-12);
+          hits.push(lerp3(p, q, u));
+        }
+      };
+      edge(a, b, ya, yb);
+      edge(b, c, yb, yc);
+      edge(c, a, yc, ya);
+      if (hits.length === 2) {
+        segs.push(
+          hits[0]![0],
+          hits[0]![1],
+          hits[0]![2],
+          hits[1]![0],
+          hits[1]![1],
+          hits[1]![2],
+        );
+      }
+    }
+  }
+  return new Float32Array(segs);
+}
+
+function pickContourLevels(minY: number, maxY: number): number[] {
+  const span = Math.max(0.05, maxY - minY);
+  // ~10–14 lines across the green; major every other.
+  const step = span > 1.2 ? 0.15 : span > 0.6 ? 0.1 : 0.05;
+  const levels: number[] = [];
+  const start = Math.ceil((minY + step * 0.35) / step) * step;
+  for (let L = start; L < maxY - step * 0.2; L += step) {
+    levels.push(L);
+  }
+  if (levels.length < 4) {
+    for (let i = 1; i <= 8; i++) levels.push(minY + (span * i) / 9);
+  }
+  return levels;
+}
+
 function buildTurfMesh(g: GreenMesh): THREE.Group {
   const group = new THREE.Group();
   const pos = g.positions;
@@ -69,17 +145,38 @@ function buildTurfMesh(g: GreenMesh): THREE.Group {
   turf.name = 'turf';
   group.add(turf);
 
-  // Soft wire contour for break reading.
-  const wire = new THREE.LineSegments(
-    new THREE.WireframeGeometry(geom),
-    new THREE.LineBasicMaterial({
-      color: 0xa7f3d0,
-      transparent: true,
-      opacity: 0.12,
-    }),
-  );
-  wire.name = 'wire';
-  group.add(wire);
+  // True elevation contours (iso-lines), not triangle wireframe.
+  const levels = pickContourLevels(0, span);
+  const majorEvery = 2;
+  const minorLevels = levels.filter((_, i) => i % majorEvery !== 0);
+  const majorLevels = levels.filter((_, i) => i % majorEvery === 0);
+
+  const addContours = (
+    lvls: number[],
+    color: number,
+    opacity: number,
+    linewidthHint: number,
+  ) => {
+    const data = contourSegments(positions, g.indices, lvls, 0.05);
+    if (data.length < 6) return;
+    const cGeom = new THREE.BufferGeometry();
+    cGeom.setAttribute('position', new THREE.BufferAttribute(data, 3));
+    const lines = new THREE.LineSegments(
+      cGeom,
+      new THREE.LineBasicMaterial({
+        color,
+        transparent: true,
+        opacity,
+        depthWrite: false,
+      }),
+    );
+    lines.name = 'contours';
+    lines.userData.linewidthHint = linewidthHint;
+    group.add(lines);
+  };
+
+  addContours(minorLevels, 0xd1fae5, 0.38, 1);
+  addContours(majorLevels, 0xecfdf5, 0.72, 2);
 
   const rim = new THREE.Mesh(
     geom.clone(),
