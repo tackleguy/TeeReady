@@ -12,7 +12,14 @@ import { createReadStream } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { createInterface } from 'node:readline';
 import { resolve } from 'node:path';
-import { fillMissingCities, EXCLUDE_GOLF_GIDS, MANUAL_COORDS_BY_GID } from './lib/geocodeCity.mjs';
+import {
+  EXCLUDE_GOLF_GIDS,
+  MANUAL_COORDS_BY_GID,
+  CATALOG_PATCH_BY_GID,
+  PREFER_GOLF_GID,
+  applyCatalogPatch,
+} from './lib/catalogFixes.mjs';
+import { fillMissingCities } from './lib/geocodeCity.mjs';
 import { disambiguateSharedCoords } from './lib/resolveCoords.mjs';
 
 const BULK_CACHE = resolve('scripts/.cache/opengolfapi-us.ndjson.gz');
@@ -230,6 +237,7 @@ function catalogKey(entry) {
 
 function entryRank(entry) {
   let rank = 0;
+  if (entry.g && PREFER_GOLF_GID.has(entry.g)) rank += 100;
   if (entry.q === 1) rank += 50;
   if (entry.o) rank += 20;
   if (entry.h === 9 || entry.h === 18) rank += 10;
@@ -303,8 +311,7 @@ function buildEntry(feature) {
   if (props.id) entry.g = String(props.id);
   if (sc?.length) entry.sc = sc;
   entry.a = classifyAccess(name, props.type);
-  if (isVerifiedEntry(entry)) entry.q = 1;
-  return entry;
+  return applyCatalogPatch(entry);
 }
 
 async function readBulkRecords(path) {
@@ -385,6 +392,8 @@ async function main() {
 
   for (const entry of deduped) {
     delete entry.q;
+    const patched = applyCatalogPatch(entry);
+    Object.assign(entry, patched);
     if (isVerifiedEntry(entry)) entry.q = 1;
   }
 

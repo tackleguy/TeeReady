@@ -12,14 +12,10 @@ const UA = 'TeeReady/1.0 (golf catalog build)';
 /** OpenGolf ids with missing/wrong city in bulk — hand-curated. */
 export const MANUAL_CITY_BY_GID = {};
 
-/** OpenGolf ids with wrong coordinates in bulk. */
-export const MANUAL_COORDS_BY_GID = {};
-
-/** OpenGolf ids to drop from the U.S. catalog (bad coords / duplicates / not in U.S.). */
-export const EXCLUDE_GOLF_GIDS = new Set([
-  'a544677d-111d-4169-a655-4c0b2a2b2f51', // Lake of the Sandhills — coords in Canada
-  '8f5f81d9-dc0c-4185-abd8-9fef345d6f88', // TPC Deere Run duplicate with wrong coords
-]);
+export {
+  EXCLUDE_GOLF_GIDS,
+  MANUAL_COORDS_BY_GID,
+} from './catalogFixes.mjs';
 
 const STATE_NAMES = {
   AL: 'Alabama', AK: 'Alaska', AZ: 'Arizona', AR: 'Arkansas', CA: 'California',

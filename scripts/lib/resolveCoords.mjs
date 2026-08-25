@@ -132,7 +132,11 @@ function pause(ms) {
 
 async function geocodeEntry(entry, bulkById, cache, skipNetwork) {
   const bulk = entry.g ? bulkById.get(entry.g) : null;
+  const state = entry.st?.toUpperCase();
   const queries = [
+    bulk?.address && entry.ci
+      ? `${entry.n}, ${bulk.address}, ${entry.ci}, ${entry.st ?? ''}`
+      : null,
     [entry.n, entry.ci, entry.st].filter(Boolean).join(', '),
     [entry.n, entry.st].filter(Boolean).join(', '),
     bulk?.address
@@ -149,7 +153,7 @@ async function geocodeEntry(entry, bulkById, cache, skipNetwork) {
     }
     if (skipNetwork) continue;
 
-    const result = await lookupCoords(query, entry.la, entry.lo);
+    const result = await lookupCoords(query, entry.la, entry.lo, state);
     cache[cacheKey] = result;
     if (result) return result;
   }
@@ -157,7 +161,7 @@ async function geocodeEntry(entry, bulkById, cache, skipNetwork) {
   return null;
 }
 
-async function lookupCoords(query, biasLat, biasLon) {
+async function lookupCoords(query, biasLat, biasLon, stateHint) {
   const params = new URLSearchParams({
     q: query,
     lat: String(biasLat),
@@ -194,6 +198,15 @@ async function lookupCoords(query, biasLat, biasLon) {
       lo: Math.round(Number(coords[0]) * 1e5) / 1e5,
     };
     if (!isUsCoord(result.la, result.lo)) return null;
+    const distMi =
+      Math.hypot(
+        (result.la - biasLat) * 69,
+        (result.lo - biasLon) *
+          69 *
+          Math.max(0.2, Math.cos((biasLat * Math.PI) / 180)),
+      );
+    // Reject geocodes that jumped to another state/region (> ~120 mi from bulk pin).
+    if (distMi > 120) return null;
     return result;
   } catch {
     return null;

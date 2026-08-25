@@ -181,6 +181,26 @@ const SCORECARDS: Record<string, CourseScorecard[]> = {
     },
   ],
 
+  // ─── Augusta National Par 3 Course ───
+  'augusta-national-par-3': [
+    {
+      name: 'Augusta National Par 3 Course',
+      totalPar: 27,
+      aliases: ['Augusta National Par 3', 'The Nine Hole At Augusta National Golf Club'],
+      holes: [
+        { hole: 1, par: 3, back: 130 },
+        { hole: 2, par: 3, back: 145 },
+        { hole: 3, par: 3, back: 75 },
+        { hole: 4, par: 3, back: 140 },
+        { hole: 5, par: 3, back: 120 },
+        { hole: 6, par: 3, back: 95 },
+        { hole: 7, par: 3, back: 115 },
+        { hole: 8, par: 3, back: 80 },
+        { hole: 9, par: 3, back: 160 },
+      ],
+    },
+  ],
+
   // ─── Pinehurst No. 2 (member/resort par-72 layout) ───
   'pinehurst-no2': [
     {
@@ -464,6 +484,10 @@ const NAME_INDEX: NameEntry[] = [
   { key: 'torrey-pines-north', patterns: [/torrey\s*pines.*north/i], loop: 'North' },
   { key: 'pebble-beach', patterns: [/pebble\s*beach\s*golf\s*links/i, /pebble\s*beach(?!.*spyglass)/i] },
   { key: 'bethpage-black', patterns: [/bethpage.*black/i] },
+  {
+    key: 'augusta-national-par-3',
+    patterns: [/augusta\s*national.*par\s*3/i, /par\s*3.*augusta\s*national/i],
+  },
   { key: 'augusta-national', patterns: [/augusta\s*national/i] },
   { key: 'pinehurst-no2', patterns: [/pinehurst.*(?:no\.?\s*2|#2|number\s*2)/i] },
   { key: 'tpc-sawgrass', patterns: [/tpc\s*sawgrass.*stadium/i, /sawgrass.*stadium/i, /players\s*stadium/i] },

@@ -60,7 +60,7 @@ function nameMatchScore(name: string, needle: string, tokens: string[]): number 
   return 9;
 }
 
-/** Match city / "City, ST" so typing a place lists courses there — not just name hits. */
+/** Match city / "City, ST" — not course names like "Augusta National". */
 function placeMatchScore(
   entry: UsCatalogEntry,
   needle: string,
@@ -72,18 +72,37 @@ function placeMatchScore(
 
   const needlePlace = needle.replace(/\s*,\s*/g, ', ').trim();
   const place = state ? `${city}, ${state}` : city;
+  const words = needlePlace.split(/\s+/).filter(Boolean);
 
-  if (city === needle || place === needlePlace) return 0;
+  if (city === needlePlace || place === needlePlace) return 0;
+
   if (state && needlePlace.endsWith(`, ${state}`)) {
     const cityPart = needlePlace.slice(0, -(state.length + 2)).trim();
     if (cityPart && city === cityPart) return 0;
   }
 
-  if (needle.length >= 4 && (city.startsWith(needle) || needle.startsWith(city))) {
-    return 1;
+  // Multi-word queries that are not exactly the city (e.g. "Augusta National")
+  // must not match every course in Augusta, GA/MO.
+  if (words.length >= 2 && city !== needlePlace) {
+    const cityWords = city.split(/\s+/).filter(Boolean);
+    const cityPhrase = cityWords.join(' ');
+    if (needlePlace === cityPhrase) return 0;
+    if (
+      tokens.length >= 2 &&
+      tokens.every((t) => cityWords.some((cw) => cw === t || cw.startsWith(t)))
+    ) {
+      return 1;
+    }
+    return 9;
   }
-  if (needle.length >= 4 && (city.includes(needle) || place.includes(needle))) {
-    return 2;
+
+  if (words.length === 1) {
+    const word = words[0]!;
+    if (city === word) return 0;
+    if (word.length >= 4 && (city.startsWith(word) || word.startsWith(city))) {
+      return 1;
+    }
+    if (word.length >= 4 && city.includes(word)) return 2;
   }
 
   if (tokens.length) {
@@ -103,10 +122,9 @@ function catalogMatchScore(
   needle: string,
   tokens: string[],
 ): number {
-  return Math.min(
-    nameMatchScore(entry.n, needle, tokens),
-    placeMatchScore(entry, needle, tokens),
-  );
+  const nameScore = nameMatchScore(entry.n, needle, tokens);
+  if (nameScore <= 3) return nameScore;
+  return placeMatchScore(entry, needle, tokens);
 }
 
 function entryToSummary(
