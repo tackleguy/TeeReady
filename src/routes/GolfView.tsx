@@ -654,7 +654,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
     return gpsGreenDistances.mid <= 700;
   }, [viewMode, gpsPos, gpsGreenDistances]);
 
-  /** Ball for F/M/B lines: live GPS when on course, otherwise tee preview. */
+  /** Ball for GPS path: live GPS when on course, otherwise tee (always in GPS). */
   const rangefinderFrom = useMemo(() => {
     if (viewMode !== 'gps' || !activeHoleObj) return null;
     if (liveGpsRanging && gpsPos) {
@@ -662,8 +662,6 @@ export function GolfView({ active = true }: { active?: boolean }) {
     }
     return { lat: activeHoleObj.tee.lat, lon: activeHoleObj.tee.lon };
   }, [viewMode, activeHoleObj, liveGpsRanging, gpsPos]);
-
-  const gpsGuideActive = viewMode === 'gps' && rangefinderFrom != null;
 
   const rangefinderDistances = useMemo(() => {
     if (!activeHoleObj) return null;
@@ -1176,13 +1174,17 @@ export function GolfView({ active = true }: { active?: boolean }) {
                 )}
                 courseName={course.name}
                 greens3d={false}
-                showRangefinder={gpsGuideActive}
-                rangefinderFrom={rangefinderFrom}
-                rangefinderAim={gpsGuideActive ? rangefinderAim : null}
-                rangefinderPlaysLikeYd={
-                  gpsGuideActive ? rangefinderPlaysLikeYd : null
+                showRangefinder={viewMode === 'gps' && activeHole != null}
+                rangefinderFrom={
+                  viewMode === 'gps' ? rangefinderFrom : null
                 }
-                gpsClubs={gpsGuideActive ? gpsLineClubs : null}
+                rangefinderAim={
+                  viewMode === 'gps' ? rangefinderAim : null
+                }
+                rangefinderPlaysLikeYd={
+                  viewMode === 'gps' ? rangefinderPlaysLikeYd : null
+                }
+                gpsClubs={viewMode === 'gps' ? gpsLineClubs : null}
                 trackedShots={activeHoleShots}
                 gpsPosition={
                   gpsOn && gpsPos

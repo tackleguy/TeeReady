@@ -244,6 +244,8 @@ export function GolfMap({
   fitPaddingRef.current = fitPadding;
   const onSetTargetRef = useRef(onSetTarget);
   onSetTargetRef.current = onSetTarget;
+  const showRangefinderRef = useRef(showRangefinder);
+  showRangefinderRef.current = showRangefinder;
   const onReadyRef = useRef(onReady);
   onReadyRef.current = onReady;
   const satelliteCachedRef = useRef(satelliteCached);
@@ -627,14 +629,26 @@ export function GolfMap({
         },
       });
       map.addLayer({
+        id: 'golf-gps-guide-casing',
+        type: 'line',
+        source: SRC_GPS_GUIDE,
+        filter: ['==', ['get', 'kind'], 'guide'],
+        paint: {
+          'line-color': '#0a0a0a',
+          'line-width': ['match', ['get', 'role'], 'carry', 7, 6],
+          'line-opacity': 0.75,
+          'line-blur': 0.2,
+        },
+      });
+      map.addLayer({
         id: LYR_GPS_GUIDE,
         type: 'line',
         source: SRC_GPS_GUIDE,
         filter: ['==', ['get', 'kind'], 'guide'],
         paint: {
           'line-color': '#ffffff',
-          'line-width': ['match', ['get', 'role'], 'carry', 3.6, 3],
-          'line-opacity': 0.98,
+          'line-width': ['match', ['get', 'role'], 'carry', 3.8, 3.2],
+          'line-opacity': 1,
         },
       });
       map.addLayer({
@@ -831,6 +845,13 @@ export function GolfMap({
       });
 
       const clickMap = (e: maplibregl.MapMouseEvent) => {
+        // GPS / rangefinder: taps always move the aim so the white path updates.
+        if (showRangefinderRef.current && onSetTargetRef.current) {
+          if (activeHoleRef.current != null) {
+            onSetTargetRef.current({ lat: e.lngLat.lat, lon: e.lngLat.lng });
+            return;
+          }
+        }
         const markerHits = map.queryRenderedFeatures(e.point, {
           layers: [LYR_TEE_HIT, LYR_GREEN_HIT, LYR_TEE, LYR_GREEN],
         });
@@ -949,9 +970,9 @@ export function GolfMap({
   }, []);
 
   useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
     whenReady(() => {
+      const map = mapRef.current;
+      if (!map) return;
       (map.getSource(SRC) as maplibregl.GeoJSONSource | undefined)?.setData(
         holesGeoJSON(holes, activeHole),
       );
@@ -1024,11 +1045,11 @@ export function GolfMap({
 
   // Wind streamlines + predicted shot path for the selected hole.
   useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
-    const hole = holes.find((h) => h.number === activeHole) ?? null;
-
     whenReady(() => {
+      const map = mapRef.current;
+      if (!map) return;
+      const hole =
+        holes.find((h) => Number(h.number) === Number(activeHole)) ?? null;
       (
         map.getSource(SRC_FLOW) as maplibregl.GeoJSONSource | undefined
       )?.setData(windFlowGeoJSON(hole, windFromDeg, windMph));
@@ -1055,15 +1076,16 @@ export function GolfMap({
   ]);
 
   useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
-    const hole = holes.find((h) => h.number === activeHole) ?? null;
-    const tee = hole ? { lon: hole.tee.lon, lat: hole.tee.lat } : null;
-    const green = hole
-      ? { lon: hole.green.lon, lat: hole.green.lat }
-      : null;
-
     whenReady(() => {
+      const map = mapRef.current;
+      if (!map) return;
+      const hole =
+        holes.find((h) => Number(h.number) === Number(activeHole)) ?? null;
+      const tee = hole ? { lon: hole.tee.lon, lat: hole.tee.lat } : null;
+      const green = hole
+        ? { lon: hole.green.lon, lat: hole.green.lat }
+        : null;
+
       (
         map.getSource(SRC_ARCS) as maplibregl.GeoJSONSource | undefined
       )?.setData(bagRingsGeoJSON(tee, hole ? arcClubs : []));
@@ -1190,16 +1212,19 @@ export function GolfMap({
     whenReady,
   ]);
 
-  // GPS rangefinder path + callouts (own effect so it always refreshes in GPS mode)
+  // GPS rangefinder path + callouts.
+  // IMPORTANT: always queue via whenReady — do not early-return when mapRef
+  // is still null or the guide never applies after the map finishes loading.
   useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
     whenReady(() => {
+      const map = mapRef.current;
+      if (!map) return;
       const hole =
-        holes.find((h) => h.number === activeHole) ?? null;
+        holes.find((h) => Number(h.number) === Number(activeHole)) ?? null;
+      const from = rangefinderFrom;
       const guide =
-        showRangefinder && rangefinderFrom && hole
-          ? gpsGuideGeoJSON(rangefinderFrom, hole, {
+        showRangefinder && from && hole
+          ? gpsGuideGeoJSON(from, hole, {
               frontClub: gpsClubs?.front ?? null,
               midClub: gpsClubs?.mid ?? null,
               backClub: gpsClubs?.back ?? null,
