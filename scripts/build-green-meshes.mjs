@@ -18,7 +18,7 @@ const USGS =
   'https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer/exportImage';
 const UA = 'TeeReady/1.0 (green-mesh-builder)';
 
-/** @type {Array<{ slug: string; name: string; lat: number; lon: number; radiusM: number }>} */
+/** @type {Array<{ slug: string; name: string; lat: number; lon: number; radiusM: number; maxLat?: number; minLat?: number }>} */
 const COURSES = [
   {
     slug: 'torrey-pines-south',
@@ -28,6 +28,15 @@ const COURSES = [
     radiusM: 2200,
     /** Drop North Course / practice greens north of this latitude. */
     maxLat: 32.904,
+  },
+  {
+    slug: 'torrey-pines-north',
+    name: 'North At Torrey Pines Municipal Golf Course',
+    lat: 32.90467,
+    lon: -117.24462,
+    radiusM: 2200,
+    /** Drop South Course greens south of this latitude. */
+    minLat: 32.904,
   },
   {
     slug: 'pebble-beach',
@@ -241,37 +250,76 @@ function assignHoles(greenItems, holeEndsList) {
   const used = new Set();
   const sortedHoles = [...holeEndsList].sort((a, b) => a.number - b.number);
 
-  for (const h of sortedHoles) {
-    let bestIdx = -1;
-    let bestD = Infinity;
-    greenItems.forEach((g, idx) => {
-      if (used.has(idx)) return;
-      const d = haversineM(g.centroid.lat, g.centroid.lon, h.lat, h.lon);
-      if (d < bestD) {
-        bestD = d;
-        bestIdx = idx;
+  const claimNearest = (maxM) => {
+    for (const h of sortedHoles) {
+      if ([...assigned.values()].includes(h.number)) continue;
+      let bestIdx = -1;
+      let bestD = Infinity;
+      greenItems.forEach((g, idx) => {
+        if (used.has(idx)) return;
+        const d = haversineM(g.centroid.lat, g.centroid.lon, h.lat, h.lon);
+        if (d < bestD) {
+          bestD = d;
+          bestIdx = idx;
+        }
+      });
+      if (bestIdx >= 0 && bestD < maxM) {
+        used.add(bestIdx);
+        assigned.set(bestIdx, h.number);
       }
-    });
-    if (bestIdx >= 0 && bestD < 55) {
-      used.add(bestIdx);
-      assigned.set(bestIdx, h.number);
     }
-  }
+  };
+
+  // Tight match first, then a wider pass so all 18 get a green when OSM is sparse.
+  claimNearest(55);
+  claimNearest(120);
+  claimNearest(220);
 
   // Any greens with explicit ref tags
   greenItems.forEach((g, idx) => {
     if (assigned.has(idx)) return;
     const ref = g.ref;
-    if (Number.isFinite(ref) && ref >= 1 && ref <= 18 && ! [...assigned.values()].includes(ref)) {
+    if (
+      Number.isFinite(ref) &&
+      ref >= 1 &&
+      ref <= 18 &&
+      ![...assigned.values()].includes(ref)
+    ) {
       assigned.set(idx, ref);
+      used.add(idx);
     }
   });
+
+  // Fill any still-missing hole numbers with the nearest leftover green.
+  const missing = [];
+  for (let n = 1; n <= 18; n++) {
+    if (![...assigned.values()].includes(n)) missing.push(n);
+  }
+  for (const n of missing) {
+    const end = sortedHoles.find((h) => h.number === n);
+    let bestIdx = -1;
+    let bestD = Infinity;
+    greenItems.forEach((g, idx) => {
+      if (used.has(idx)) return;
+      const d = end
+        ? haversineM(g.centroid.lat, g.centroid.lon, end.lat, end.lon)
+        : 0;
+      if (d < bestD) {
+        bestD = d;
+        bestIdx = idx;
+      }
+    });
+    if (bestIdx >= 0) {
+      used.add(bestIdx);
+      assigned.set(bestIdx, n);
+    }
+  }
 
   return assigned;
 }
 
 async function buildCourse(course) {
-  const { slug, lat, lon, radiusM, name, maxLat } = course;
+  const { slug, lat, lon, radiusM, name, maxLat, minLat } = course;
   const greenQuery = `
 [out:json][timeout:60];
 (
@@ -316,7 +364,11 @@ out tags geom;
         ringLocal: ring.map((p) => toLocal(p.lat, p.lon, lat, lon, scale)),
       };
     })
-    .filter((g) => (maxLat == null || g.centroid.lat <= maxLat));
+    .filter((g) => {
+      if (maxLat != null && g.centroid.lat > maxLat) return false;
+      if (minLat != null && g.centroid.lat < minLat) return false;
+      return true;
+    });
 
   const holeAssign = assignHoles(greenItems, holes);
   /** @type {Array<{ hole: number; lat: number; lon: number; baseElevM: number; positions: number[]; indices: number[] }>} */
@@ -392,12 +444,20 @@ out tags geom;
 
 mkdirSync(OUT_DIR, { recursive: true });
 
-for (const course of COURSES) {
+const only = new Set(process.argv.slice(2).filter((a) => !a.startsWith('-')));
+const queue = only.size
+  ? COURSES.filter((c) => only.has(c.slug))
+  : COURSES;
+
+for (const course of queue) {
   try {
     const data = await buildCourse(course);
     const outPath = join(OUT_DIR, `${course.slug}.json`);
     writeFileSync(outPath, JSON.stringify(data));
-    console.log(`Wrote ${outPath} (${data.greens.length} greens)\n`);
+    const holes = data.greens.map((g) => g.hole).join(',');
+    console.log(
+      `Wrote ${outPath} (${data.greens.length} greens · holes ${holes})\n`,
+    );
   } catch (err) {
     console.error(`${course.slug} failed:`, err);
     process.exitCode = 1;

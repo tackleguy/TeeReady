@@ -30,6 +30,13 @@ const SLUGS: Array<{ slug: string; test: (name: string) => boolean }> = [
       (n.includes('torrey pines municipal') && n.includes('south')),
   },
   {
+    slug: 'torrey-pines-north',
+    test: (n) =>
+      n.includes('north at torrey') ||
+      (n.includes('torrey pines') && n.includes('north')) ||
+      (n.includes('torrey pines municipal') && n.includes('north')),
+  },
+  {
     slug: 'pebble-beach',
     test: (n) =>
       n.includes('pebble beach golf links') ||
