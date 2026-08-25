@@ -691,17 +691,38 @@ export function GolfView({ active = true }: { active?: boolean }) {
     return gpsGreenDistances ?? rangefinderDistances;
   }, [gpsOffCourse, gpsPos, gpsGreenDistances, rangefinderDistances]);
 
-  const gpsMidClub = useMemo(() => {
-    if (!rangefinderDistances || rangefinderDistances.mid > 700) return null;
-    return bestClubForDistance(rangefinderDistances.mid, bag) ?? null;
-  }, [rangefinderDistances, bag]);
-
   /** Aim point for GPS crosshair — tap moves this; defaults to green mid. */
   const rangefinderAim = useMemo(() => {
     if (viewMode !== 'gps' || !activeHoleObj) return null;
     if (gpsAim) return gpsAim;
     return greenMarks(activeHoleObj).mid;
   }, [viewMode, activeHoleObj, gpsAim]);
+
+  const gpsLineClubs = useMemo(() => {
+    if (!liveGpsRanging || !rangefinderDistances) return null;
+    const aimYd =
+      rangefinderFrom && rangefinderAim
+        ? Math.round(
+            haversineYards(
+              rangefinderFrom.lat,
+              rangefinderFrom.lon,
+              rangefinderAim.lat,
+              rangefinderAim.lon,
+            ),
+          )
+        : rangefinderDistances.mid;
+    return {
+      front: bestClubForDistance(rangefinderDistances.front, bag) ?? null,
+      mid: bestClubForDistance(aimYd, bag) ?? null,
+      back: bestClubForDistance(rangefinderDistances.back, bag) ?? null,
+    };
+  }, [
+    liveGpsRanging,
+    rangefinderDistances,
+    rangefinderFrom,
+    rangefinderAim,
+    bag,
+  ]);
 
   const mapTarget = viewMode === 'gps' ? gpsAim : target;
 
@@ -1139,7 +1160,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                 rangefinderPlaysLikeYd={
                   liveGpsRanging ? rangefinderPlaysLikeYd : null
                 }
-                gpsMidClub={liveGpsRanging ? gpsMidClub : null}
+                gpsClubs={liveGpsRanging ? gpsLineClubs : null}
                 trackedShots={activeHoleShots}
                 gpsPosition={
                   gpsOn && gpsPos

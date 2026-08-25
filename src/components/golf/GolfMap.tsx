@@ -73,8 +73,12 @@ interface Props {
   courseName?: string | null;
   /** User toggle — show LiDAR green 3D mesh. */
   greens3d?: boolean;
-  /** Club label for mid-green GPS guide (18Birdies-style). */
-  gpsMidClub?: string | null;
+  /** Club labels for GPS F/M/B callout boxes. */
+  gpsClubs?: {
+    front: string | null;
+    mid: string | null;
+    back: string | null;
+  } | null;
   /** Ball/tee origin for F/M/B rangefinder lines (GPS mode). */
   rangefinderFrom?: LonLat | null;
   /** Show 18Birdies-style F/M/B rangefinder overlay. */
@@ -224,7 +228,7 @@ export function GolfMap({
   satelliteCached = false,
   courseName = null,
   greens3d = false,
-  gpsMidClub = null,
+  gpsClubs = null,
   rangefinderFrom = null,
   showRangefinder = false,
   rangefinderAim = null,
@@ -654,23 +658,65 @@ export function GolfMap({
         },
       });
       map.addLayer({
+        id: 'golf-gps-callout-box',
+        type: 'circle',
+        source: SRC_GPS_GUIDE,
+        filter: ['==', ['get', 'kind'], 'callout-box'],
+        paint: {
+          'circle-radius': [
+            'match',
+            ['get', 'major'],
+            1,
+            ['case', ['!=', ['get', 'playsLabel'], ''], 36, 32],
+            ['case', ['!=', ['get', 'playsLabel'], ''], 32, 28],
+          ],
+          'circle-color': '#0a0a0a',
+          'circle-opacity': 0.92,
+          'circle-stroke-width': 1.5,
+          'circle-stroke-color': '#ffffff',
+        },
+      });
+      map.addLayer({
         id: LYR_GPS_GUIDE_LABEL,
         type: 'symbol',
         source: SRC_GPS_GUIDE,
-        filter: ['==', ['get', 'kind'], 'guide-label'],
+        filter: ['==', ['get', 'kind'], 'callout-box'],
         layout: {
-          'text-field': ['get', 'label'],
-          'text-size': ['match', ['get', 'major'], 1, 16, 12],
+          'text-field': [
+            'case',
+            ['!=', ['get', 'playsLabel'], ''],
+            [
+              'format',
+              ['get', 'yardsLabel'],
+              { 'font-scale': 1.05 },
+              '\n',
+              {},
+              ['get', 'clubLabel'],
+              { 'font-scale': 0.9 },
+              '\n',
+              {},
+              ['get', 'playsLabel'],
+              { 'font-scale': 0.72 },
+            ],
+            [
+              'format',
+              ['get', 'yardsLabel'],
+              { 'font-scale': 1.05 },
+              '\n',
+              {},
+              ['get', 'clubLabel'],
+              { 'font-scale': 0.9 },
+            ],
+          ],
+          'text-size': 11,
           'text-font': ['Open Sans Bold', 'Open Sans Regular'],
-          'text-offset': [0, -0.85],
-          'text-anchor': 'bottom',
+          'text-anchor': 'center',
           'text-allow-overlap': true,
           'text-ignore-placement': true,
+          'text-line-height': 1.05,
         },
         paint: {
           'text-color': '#ffffff',
-          'text-halo-color': '#020617',
-          'text-halo-width': 2,
         },
       });
       map.addLayer({
@@ -693,26 +739,6 @@ export function GolfMap({
         paint: {
           'circle-radius': 3,
           'circle-color': '#ffffff',
-        },
-      });
-      map.addLayer({
-        id: 'golf-gps-plays-like',
-        type: 'symbol',
-        source: SRC_GPS_GUIDE,
-        filter: ['==', ['get', 'kind'], 'plays-like'],
-        layout: {
-          'text-field': ['get', 'label'],
-          'text-size': 12,
-          'text-font': ['Open Sans Bold', 'Open Sans Regular'],
-          'text-offset': [3.2, 0],
-          'text-anchor': 'left',
-          'text-allow-overlap': true,
-          'text-ignore-placement': true,
-        },
-        paint: {
-          'text-color': '#0a0a0a',
-          'text-halo-color': '#ffffff',
-          'text-halo-width': 6,
         },
       });
 
@@ -1149,7 +1175,9 @@ export function GolfMap({
       )?.setData(
         showRangefinder
           ? gpsGuideGeoJSON(rangefinderFrom, hole, {
-              midClub: gpsMidClub,
+              frontClub: gpsClubs?.front ?? null,
+              midClub: gpsClubs?.mid ?? null,
+              backClub: gpsClubs?.back ?? null,
               maxYards: 700,
               aim: rangefinderAim,
               playsLikeYd: rangefinderPlaysLikeYd,
@@ -1163,7 +1191,7 @@ export function GolfMap({
     gpsHeadingDeg,
     holes,
     activeHole,
-    gpsMidClub,
+    gpsClubs,
     rangefinderFrom,
     rangefinderAim,
     rangefinderPlaysLikeYd,

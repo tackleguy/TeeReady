@@ -261,7 +261,9 @@ export function gpsGuideGeoJSON(
   from: LonLat | null,
   hole: GolfHole | null,
   opts?: {
+    frontClub?: string | null;
     midClub?: string | null;
+    backClub?: string | null;
     maxYards?: number;
     /** Movable aim point (defaults to green mid). */
     aim?: LonLat | null;
@@ -280,26 +282,27 @@ export function gpsGuideGeoJSON(
   const aimYd = Math.round(
     haversineYards(from.lat, from.lon, aim.lat, aim.lon),
   );
+  const clubFor = (key: 'F' | 'M' | 'B') =>
+    key === 'F'
+      ? opts?.frontClub
+      : key === 'B'
+        ? opts?.backClub
+        : opts?.midClub;
   const features: GeoJSON.Feature[] = [];
   const rows: Array<{
-    key: string;
+    key: 'F' | 'M' | 'B';
+    roleLabel: string;
     pt: LonLat;
     yards: number;
-    club?: string;
     color: string;
   }> = [
-    { key: 'F', pt: marks.front, yards: dist.front, color: '#4ade80' },
-    {
-      key: 'M',
-      pt: aim,
-      yards: aimYd,
-      club: opts?.midClub || undefined,
-      color: '#38bdf8',
-    },
-    { key: 'B', pt: marks.back, yards: dist.back, color: '#fbbf24' },
+    { key: 'F', roleLabel: 'FRONT', pt: marks.front, yards: dist.front, color: '#4ade80' },
+    { key: 'M', roleLabel: 'MID', pt: aim, yards: aimYd, color: '#38bdf8' },
+    { key: 'B', roleLabel: 'BACK', pt: marks.back, yards: dist.back, color: '#fbbf24' },
   ];
 
   for (const row of rows) {
+    const club = clubFor(row.key) ?? '—';
     features.push({
       type: 'Feature',
       properties: {
@@ -317,23 +320,27 @@ export function gpsGuideGeoJSON(
       },
     });
 
-    const t = 0.62;
+    const t = row.key === 'M' ? 0.58 : 0.64;
     const labelLon = from.lon + (row.pt.lon - from.lon) * t;
     const labelLat = from.lat + (row.pt.lat - from.lat) * t;
-    const text =
-      row.key === 'M'
-        ? row.club
-          ? `${row.yards} · ${row.club}`
-          : `${row.yards} yd`
-        : `${row.key} ${row.yards}`;
+    const playsLike =
+      row.key === 'M' &&
+      opts?.playsLikeYd != null &&
+      opts.playsLikeYd !== row.yards
+        ? opts.playsLikeYd
+        : null;
     features.push({
       type: 'Feature',
       properties: {
-        kind: 'guide-label',
+        kind: 'callout-box',
         role: row.key,
-        label: text,
+        roleLabel: row.roleLabel,
+        yardsLabel: `${row.yards} yd`,
+        clubLabel: club,
+        playsLabel:
+          playsLike != null ? `plays ${playsLike}` : '',
         yards: row.yards,
-        club: row.club ?? '',
+        club,
         color: row.color,
         major: row.key === 'M' ? 1 : 0,
       },
@@ -366,35 +373,6 @@ export function gpsGuideGeoJSON(
       coordinates: [aim.lon, aim.lat],
     },
   });
-
-  const playsLike = opts?.playsLikeYd;
-  const club = opts?.midClub;
-  if (playsLike != null || club) {
-    const playsText =
-      playsLike != null && club
-        ? `Plays like ${playsLike}y ${club}`
-        : playsLike != null
-          ? `Plays like ${playsLike}y`
-          : club
-            ? String(club)
-            : '';
-    if (playsText) {
-      features.push({
-        type: 'Feature',
-        properties: {
-          kind: 'plays-like',
-          label: playsText,
-          yards: aimYd,
-          playsLike: playsLike ?? aimYd,
-          club: club ?? '',
-        },
-        geometry: {
-          type: 'Point',
-          coordinates: [aim.lon, aim.lat],
-        },
-      });
-    }
-  }
 
   return { type: 'FeatureCollection', features };
 }
