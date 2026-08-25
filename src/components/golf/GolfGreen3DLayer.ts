@@ -1,12 +1,18 @@
 /**
  * MapLibre custom layer — renders LiDAR green meshes with Three.js.
  * MapLibre v4 passes CustomRenderMethodInput (not a raw matrix) as arg 2.
+ *
+ * Mesh coords are meters [east, up, north] from the course origin. The satellite
+ * basemap has no terrain DEM, so we pin altitude to 0 and keep only relative
+ * relief — using absolute USGS elev here floats greens ~100m above the map.
  */
 import maplibregl from 'maplibre-gl';
 import * as THREE from 'three';
 import type { GreenMeshCourse } from '../../lib/golfGreen3d';
 
 const LAYER_ID = 'golf-green-3d';
+/** Mild vertical exaggerate so 1–2 m of green undulation still reads. */
+const RELIEF_SCALE = 2.5;
 
 export interface Green3DState {
   course: GreenMeshCourse | null;
@@ -17,12 +23,8 @@ export interface Green3DState {
 type Getter = () => Green3DState;
 
 function clearMeshes(scene: THREE.Scene) {
-  const keep: THREE.Object3D[] = [];
   for (const child of [...scene.children]) {
-    if (child instanceof THREE.Light) {
-      keep.push(child);
-      continue;
-    }
+    if (child instanceof THREE.Light) continue;
     scene.remove(child);
     if (child instanceof THREE.Mesh) {
       child.geometry.dispose();
@@ -42,6 +44,10 @@ function rebuildMeshes(
   if (!course?.greens.length) return;
 
   for (const g of course.greens) {
+    // Only the active green — rendering every hole as a floating sheet was
+    // unreadable and blocked the fairway.
+    if (activeHole != null && g.hole !== activeHole) continue;
+
     const geom = new THREE.BufferGeometry();
     geom.setAttribute(
       'position',
@@ -50,18 +56,16 @@ function rebuildMeshes(
     geom.setIndex(g.indices);
     geom.computeVertexNormals();
 
-    const active = activeHole == null || activeHole === g.hole;
     const mat = new THREE.MeshPhongMaterial({
-      color: activeHole === g.hole ? 0xa7f3d0 : 0x4ade80,
+      color: 0xa7f3d0,
       transparent: true,
-      opacity: active ? (activeHole === g.hole ? 0.92 : 0.55) : 0.28,
+      opacity: 0.72,
       side: THREE.DoubleSide,
       shininess: 18,
       depthWrite: false,
     });
     const mesh = new THREE.Mesh(geom, mat);
-    // Exaggerate relief so contours read on satellite.
-    mesh.scale.set(1, 4.5, 1);
+    mesh.scale.set(1, RELIEF_SCALE, 1);
     scene.add(mesh);
   }
 }
@@ -77,9 +81,10 @@ function asMatrix4(input: unknown): THREE.Matrix4 {
       modelViewProjectionMatrix?: ArrayLike<number>;
       defaultProjectionData?: { mainMatrix?: ArrayLike<number> };
     };
+    // MapLibre v5+ prefers defaultProjectionData.mainMatrix; v4 exposes MVP.
     const arr =
-      obj.modelViewProjectionMatrix ??
-      obj.defaultProjectionData?.mainMatrix;
+      obj.defaultProjectionData?.mainMatrix ??
+      obj.modelViewProjectionMatrix;
     if (arr) return mat.fromArray(arr);
   }
   return mat;
@@ -131,22 +136,22 @@ export function attachGreen3DLayer(
       }
       if (!enabled || !course?.greens.length) return;
 
-      const baseElev =
-        course.greens.find((g) => g.hole === activeHole)?.baseElevM ??
-        course.greens[0]?.baseElevM ??
-        0;
+      // Flat satellite basemap → pin to ground (0). Mesh Y is already relative
+      // to each green's base elev, so relief still shows without floating.
       const origin = maplibregl.MercatorCoordinate.fromLngLat(
         [course.lon, course.lat],
-        baseElev,
+        0,
       );
       const scale = origin.meterInMercatorCoordinateUnits();
 
-      const model = new THREE.Matrix4()
+      const rotationX = new THREE.Matrix4().makeRotationAxis(
+        new THREE.Vector3(1, 0, 0),
+        Math.PI / 2,
+      );
+      const local = new THREE.Matrix4()
         .makeTranslation(origin.x, origin.y, origin.z)
-        .scale(new THREE.Vector3(scale, -scale, scale));
-      // Local mesh uses Y-up; MapLibre mercator uses Z-up after rotateX.
-      const rotate = new THREE.Matrix4().makeRotationX(Math.PI / 2);
-      const local = model.multiply(rotate);
+        .scale(new THREE.Vector3(scale, -scale, scale))
+        .multiply(rotationX);
 
       camera.projectionMatrix = asMatrix4(options).clone().multiply(local);
 
