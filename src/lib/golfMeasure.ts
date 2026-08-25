@@ -254,13 +254,17 @@ export function distancesToGreen(
   };
 }
 
-/** GPS → front / mid / back guide lines with yardage (+ optional club) labels.
- *  18Birdies-style: lines from ball (or tee) to F/M/B, pin markers, callouts.
- */
+/** GPS rangefinder overlay — 18Birdies-style F / MID / BACK badges + aim line. */
 export function gpsGuideGeoJSON(
   from: LonLat | null,
   hole: GolfHole | null,
-  opts?: { midClub?: string | null; maxYards?: number },
+  opts?: {
+    midClub?: string | null;
+    maxYards?: number;
+    /** Movable aim point (defaults to green mid). */
+    aim?: LonLat | null;
+    playsLikeYd?: number | null;
+  },
 ): GeoJSON.FeatureCollection {
   if (!from || !hole) return { type: 'FeatureCollection', features: [] };
   const marks = greenMarks(hole);
@@ -270,80 +274,107 @@ export function gpsGuideGeoJSON(
     return { type: 'FeatureCollection', features: [] };
   }
 
+  const aim = opts?.aim ?? marks.mid;
+  const aimYd = Math.round(
+    haversineYards(from.lat, from.lon, aim.lat, aim.lon),
+  );
   const features: GeoJSON.Feature[] = [];
-  const rows: Array<{
+
+  // Single white play line to the aim / mid target.
+  features.push({
+    type: 'Feature',
+    properties: { kind: 'guide', role: 'M', color: '#ffffff' },
+    geometry: {
+      type: 'LineString',
+      coordinates: [
+        [from.lon, from.lat],
+        [aim.lon, aim.lat],
+      ],
+    },
+  });
+
+  const badges: Array<{
     key: string;
+    roleLabel: string;
     pt: LonLat;
     yards: number;
-    club?: string;
-    color: string;
+    major: number;
   }> = [
-    { key: 'F', pt: marks.front, yards: dist.front, color: '#4ade80' },
+    {
+      key: 'B',
+      roleLabel: 'BACK',
+      pt: marks.back,
+      yards: dist.back,
+      major: 0,
+    },
     {
       key: 'M',
-      pt: marks.mid,
-      yards: dist.mid,
-      club: opts?.midClub || undefined,
-      color: '#38bdf8',
+      roleLabel: 'MID',
+      pt: aim,
+      yards: aimYd,
+      major: 1,
     },
-    { key: 'B', pt: marks.back, yards: dist.back, color: '#fbbf24' },
+    {
+      key: 'F',
+      roleLabel: 'FRONT',
+      pt: marks.front,
+      yards: dist.front,
+      major: 0,
+    },
   ];
 
-  for (const row of rows) {
+  for (const b of badges) {
     features.push({
       type: 'Feature',
       properties: {
-        kind: 'guide',
-        role: row.key,
-        color: row.color,
-        yards: row.yards,
-      },
-      geometry: {
-        type: 'LineString',
-        coordinates: [
-          [from.lon, from.lat],
-          [row.pt.lon, row.pt.lat],
-        ],
-      },
-    });
-
-    const t = 0.62;
-    const labelLon = from.lon + (row.pt.lon - from.lon) * t;
-    const labelLat = from.lat + (row.pt.lat - from.lat) * t;
-    const text =
-      row.key === 'M'
-        ? row.club
-          ? `${row.yards} · ${row.club}`
-          : `${row.yards} yd`
-        : `${row.key} ${row.yards}`;
-    features.push({
-      type: 'Feature',
-      properties: {
-        kind: 'guide-label',
-        role: row.key,
-        label: text,
-        yards: row.yards,
-        club: row.club ?? '',
-        color: row.color,
-        major: row.key === 'M' ? 1 : 0,
+        kind: 'badge',
+        role: b.key,
+        roleLabel: b.roleLabel,
+        yardsLabel: `${b.yards}y`,
+        label: `${b.yards}y ${b.roleLabel}`,
+        yards: b.yards,
+        major: b.major,
       },
       geometry: {
         type: 'Point',
-        coordinates: [labelLon, labelLat],
+        coordinates: [b.pt.lon, b.pt.lat],
       },
     });
+  }
 
+  // Crosshair reticle on the aim point.
+  features.push({
+    type: 'Feature',
+    properties: { kind: 'crosshair', role: 'M' },
+    geometry: {
+      type: 'Point',
+      coordinates: [aim.lon, aim.lat],
+    },
+  });
+
+  const playsLike = opts?.playsLikeYd;
+  const club = opts?.midClub;
+  if (playsLike != null || club) {
+    const playsText =
+      playsLike != null && club
+        ? `Plays like ${playsLike}y ${club}`
+        : playsLike != null
+          ? `Plays like ${playsLike}y`
+          : club
+            ? String(club)
+            : '';
     features.push({
       type: 'Feature',
       properties: {
-        kind: 'pin',
-        role: row.key,
-        label: row.key,
-        color: row.color,
+        kind: 'plays-like',
+        label: playsText,
+        yards: aimYd,
+        playsLike: playsLike ?? aimYd,
+        club: club ?? '',
       },
       geometry: {
         type: 'Point',
-        coordinates: [row.pt.lon, row.pt.lat],
+        coordinates: [aim.lon, aim.lat],
       },
     });
   }

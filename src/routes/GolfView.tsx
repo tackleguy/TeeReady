@@ -62,6 +62,7 @@ import {
   greenMarks,
   haversineYards,
   metersToFeet,
+  segmentPlaysLike,
 } from '../lib/golfMeasure';
 import { playLinesGeoJSON, predictHole } from '../lib/golfPredict';
 import {
@@ -72,7 +73,13 @@ import {
 } from '../lib/golfProfile';
 import { weatherAppHref } from '../lib/golfApp';
 import { warmGolfCatalog } from '../lib/golfCatalogPrefetch';
-import { hasGreenMeshes } from '../lib/golfGreen3d';
+import {
+  hasGreenMeshes,
+  loadGreenMeshCourse,
+  greenMeshSlug,
+  type GreenMeshCourse,
+} from '../lib/golfGreen3d';
+import { Green3DViewer } from '../components/golf/Green3DViewer';
 import type { LonLat } from '../lib/golfWind';
 import {
   applyTee,
@@ -184,6 +191,8 @@ export function GolfView({ active = true }: { active?: boolean }) {
   const [courseFilter, setCourseFilter] = useState('');
   const [holeUp, setHoleUp] = useState(true);
   const [greens3d, setGreens3d] = useState(false);
+  const [greenMeshCourse, setGreenMeshCourse] =
+    useState<GreenMeshCourse | null>(null);
   const [pickerOpen, setPickerOpen] = useState(true);
   const [sheetExpanded, setSheetExpanded] = useState(false);
   const [target, setTarget] = useState<LonLat | null>(null);
@@ -414,8 +423,16 @@ export function GolfView({ active = true }: { active?: boolean }) {
       setTarget(null);
       return;
     }
-    setTarget(defaultTarget(activeHoleObj, bag[0]?.yards ?? profile.driverYards));
-  }, [activeHoleObj, profile, bag, planningMode]);
+    // GPS rangefinder aims at green mid by default; Prep uses a tee-shot landing.
+    setTarget(
+      viewMode === 'gps'
+        ? greenMarks(activeHoleObj).mid
+        : defaultTarget(
+            activeHoleObj,
+            bag[0]?.yards ?? profile.driverYards,
+          ),
+    );
+  }, [activeHoleObj, profile, bag, planningMode, viewMode]);
 
   const briefByHole = useMemo(() => {
     const m = new Map<number, HoleBrief>();
@@ -476,7 +493,8 @@ export function GolfView({ active = true }: { active?: boolean }) {
         priority: 'high',
       });
       setCourse(next);
-      setGreens3d(hasGreenMeshes(next.name));
+      setGreens3d(false);
+      setGreenMeshCourse(null);
       setActiveHole(null);
       setLoop(null);
       setTeeKind('mid');
@@ -644,6 +662,60 @@ export function GolfView({ active = true }: { active?: boolean }) {
     if (!rangefinderDistances || rangefinderDistances.mid > 700) return null;
     return bestClubForDistance(rangefinderDistances.mid, bag) ?? null;
   }, [rangefinderDistances, bag]);
+
+  /** Aim point for GPS crosshair — tap moves this; defaults to green mid. */
+  const rangefinderAim = useMemo(() => {
+    if (viewMode !== 'gps' || !activeHoleObj) return null;
+    if (target) return target;
+    const m = greenMarks(activeHoleObj);
+    return m.mid;
+  }, [viewMode, activeHoleObj, target]);
+
+  const rangefinderPlaysLikeYd = useMemo(() => {
+    if (!rangefinderFrom || !rangefinderAim || !activeHoleObj) return null;
+    const yd = Math.round(
+      haversineYards(
+        rangefinderFrom.lat,
+        rangefinderFrom.lon,
+        rangefinderAim.lat,
+        rangefinderAim.lon,
+      ),
+    );
+    if (yd > 700) return null;
+    return segmentPlaysLike(
+      yd,
+      activeHoleObj.yards,
+      activeBrief?.playsLikeYards != null
+        ? activeBrief.playsLikeYards - activeBrief.yards
+        : 0,
+      activeBrief?.slopeYards ?? 0,
+      metersToFeet(0),
+    );
+  }, [
+    rangefinderFrom,
+    rangefinderAim,
+    activeHoleObj,
+    activeBrief,
+  ]);
+
+  useEffect(() => {
+    if (!greens3d || !course) {
+      setGreenMeshCourse(null);
+      return;
+    }
+    const slug = greenMeshSlug(course.name);
+    if (!slug) {
+      setGreenMeshCourse(null);
+      return;
+    }
+    let cancelled = false;
+    loadGreenMeshCourse(slug).then((data) => {
+      if (!cancelled) setGreenMeshCourse(data);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [greens3d, course]);
 
   useEffect(() => {
     if (viewMode !== 'gps') return;
@@ -1001,11 +1073,12 @@ export function GolfView({ active = true }: { active?: boolean }) {
                   course.id,
                 )}
                 courseName={course.name}
-                greens3d={greens3d}
+                greens3d={false}
                 showRangefinder={viewMode === 'gps'}
                 rangefinderFrom={viewMode === 'gps' ? rangefinderFrom : null}
-                rangefinderMidYd={
-                  viewMode === 'gps' ? rangefinderDistances?.mid ?? null : null
+                rangefinderAim={viewMode === 'gps' ? rangefinderAim : null}
+                rangefinderPlaysLikeYd={
+                  viewMode === 'gps' ? rangefinderPlaysLikeYd : null
                 }
                 gpsMidClub={viewMode === 'gps' ? gpsMidClub : null}
                 trackedShots={activeHoleShots}
@@ -1117,16 +1190,13 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     <button
                       type="button"
                       onClick={() => {
-                        setGreens3d((v) => {
-                          const next = !v;
-                          if (next && activeHole == null && playHoles[0]) {
-                            setActiveHole(playHoles[0].number);
-                          }
-                          return next;
-                        });
+                        if (activeHole == null && playHoles[0]) {
+                          setActiveHole(playHoles[0].number);
+                        }
+                        setGreens3d(true);
                       }}
                       aria-pressed={greens3d}
-                      title="Show LiDAR green contours and 3D mesh"
+                      title="Open 3D green viewer"
                       className={[
                         'inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[10px] font-semibold transition-colors',
                         greens3d
@@ -1135,7 +1205,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                       ].join(' ')}
                     >
                       <Mountain className="h-3 w-3" />
-                      3D greens
+                      3D green
                     </button>
                   ) : null}
                   {!intelPanelOpen ? (
@@ -1720,6 +1790,13 @@ export function GolfView({ active = true }: { active?: boolean }) {
         />
       ) : null}
 
+      {greens3d && greenMeshCourse && activeHole != null ? (
+        <Green3DViewer
+          course={greenMeshCourse}
+          hole={activeHole}
+          onClose={() => setGreens3d(false)}
+        />
+      ) : null}
     </div>
   );
 }

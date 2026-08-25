@@ -79,8 +79,10 @@ interface Props {
   rangefinderFrom?: LonLat | null;
   /** Show 18Birdies-style F/M/B rangefinder overlay. */
   showRangefinder?: boolean;
-  /** Big mid-green yardage chip (GPS). */
-  rangefinderMidYd?: number | null;
+  /** Movable aim point for the rangefinder crosshair. */
+  rangefinderAim?: LonLat | null;
+  /** Wind/alt adjusted "plays like" yards for the aim. */
+  rangefinderPlaysLikeYd?: number | null;
 }
 
 const SRC = 'golf-holes';
@@ -225,7 +227,8 @@ export function GolfMap({
   gpsMidClub = null,
   rangefinderFrom = null,
   showRangefinder = false,
-  rangefinderMidYd = null,
+  rangefinderAim = null,
+  rangefinderPlaysLikeYd = null,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -613,20 +616,22 @@ export function GolfMap({
         source: SRC_GPS_GUIDE,
         filter: ['==', ['get', 'kind'], 'guide'],
         paint: {
-          'line-color': ['get', 'color'],
-          'line-width': ['match', ['get', 'role'], 'M', 3.4, 2.2],
+          'line-color': '#ffffff',
+          'line-width': 2.2,
           'line-opacity': 0.95,
         },
       });
+      // Black circular FRONT / MID / BACK yardage badges.
       map.addLayer({
         id: LYR_GPS_PIN,
         type: 'circle',
         source: SRC_GPS_GUIDE,
-        filter: ['==', ['get', 'kind'], 'pin'],
+        filter: ['==', ['get', 'kind'], 'badge'],
         paint: {
-          'circle-radius': ['match', ['get', 'role'], 'M', 7, 5.5],
-          'circle-color': ['get', 'color'],
-          'circle-stroke-width': 2,
+          'circle-radius': ['match', ['get', 'major'], 1, 28, 24],
+          'circle-color': '#0a0a0a',
+          'circle-opacity': 0.92,
+          'circle-stroke-width': 1.5,
           'circle-stroke-color': '#ffffff',
         },
       });
@@ -634,40 +639,69 @@ export function GolfMap({
         id: LYR_GPS_PIN_LABEL,
         type: 'symbol',
         source: SRC_GPS_GUIDE,
-        filter: ['==', ['get', 'kind'], 'pin'],
+        filter: ['==', ['get', 'kind'], 'badge'],
         layout: {
-          'text-field': ['get', 'label'],
-          'text-size': 10,
+          'text-field': [
+            'format',
+            ['get', 'yardsLabel'],
+            { 'font-scale': 1.05 },
+            '\n',
+            {},
+            ['get', 'roleLabel'],
+            { 'font-scale': 0.72 },
+          ],
+          'text-size': 11,
           'text-font': ['Open Sans Bold', 'Open Sans Regular'],
-          'text-offset': [0, 1.15],
-          'text-anchor': 'top',
+          'text-anchor': 'center',
           'text-allow-overlap': true,
           'text-ignore-placement': true,
+          'text-line-height': 1.05,
         },
         paint: {
           'text-color': '#ffffff',
-          'text-halo-color': '#020617',
-          'text-halo-width': 1.4,
+        },
+      });
+      // White crosshair reticle on the aim point.
+      map.addLayer({
+        id: LYR_GPS_GUIDE_LABEL,
+        type: 'circle',
+        source: SRC_GPS_GUIDE,
+        filter: ['==', ['get', 'kind'], 'crosshair'],
+        paint: {
+          'circle-radius': 14,
+          'circle-color': 'rgba(0,0,0,0)',
+          'circle-stroke-width': 2.5,
+          'circle-stroke-color': '#ffffff',
         },
       });
       map.addLayer({
-        id: LYR_GPS_GUIDE_LABEL,
+        id: 'golf-gps-crosshair-dot',
+        type: 'circle',
+        source: SRC_GPS_GUIDE,
+        filter: ['==', ['get', 'kind'], 'crosshair'],
+        paint: {
+          'circle-radius': 3,
+          'circle-color': '#ffffff',
+        },
+      });
+      map.addLayer({
+        id: 'golf-gps-plays-like',
         type: 'symbol',
         source: SRC_GPS_GUIDE,
-        filter: ['==', ['get', 'kind'], 'guide-label'],
+        filter: ['==', ['get', 'kind'], 'plays-like'],
         layout: {
           'text-field': ['get', 'label'],
-          'text-size': ['match', ['get', 'major'], 1, 16, 12],
+          'text-size': 12,
           'text-font': ['Open Sans Bold', 'Open Sans Regular'],
-          'text-offset': [0, -0.85],
-          'text-anchor': 'bottom',
+          'text-offset': [3.2, 0],
+          'text-anchor': 'left',
           'text-allow-overlap': true,
           'text-ignore-placement': true,
         },
         paint: {
-          'text-color': '#ffffff',
-          'text-halo-color': '#020617',
-          'text-halo-width': 2,
+          'text-color': '#0a0a0a',
+          'text-halo-color': '#ffffff',
+          'text-halo-width': 6,
         },
       });
 
@@ -985,7 +1019,7 @@ export function GolfMap({
       (
         map.getSource(SRC_TARGET_LINE) as maplibregl.GeoJSONSource | undefined
       )?.setData(
-        playLines && playLines.features.length
+        showRangefinder || (playLines && playLines.features.length)
           ? emptyCollection()
           : targetLineGeoJSON(tee, hole ? target : null, green, planningMode),
       );
@@ -994,11 +1028,24 @@ export function GolfMap({
       )?.setData(playLines ?? emptyCollection());
       (
         map.getSource(SRC_TARGET) as maplibregl.GeoJSONSource | undefined
-      )?.setData(targetPointGeoJSON(hole ? target : null));
+      )?.setData(
+        showRangefinder
+          ? emptyCollection()
+          : targetPointGeoJSON(hole ? target : null),
+      );
       map.getCanvas().style.cursor =
         hole && onSetTargetRef.current ? 'crosshair' : '';
     });
-  }, [holes, activeHole, target, arcClubs, playLines, planningMode, whenReady]);
+  }, [
+    holes,
+    activeHole,
+    target,
+    arcClubs,
+    playLines,
+    planningMode,
+    showRangefinder,
+    whenReady,
+  ]);
 
   // Shot tracker traces + landing points
   useEffect(() => {
@@ -1093,6 +1140,8 @@ export function GolfMap({
           ? gpsGuideGeoJSON(rangefinderFrom, hole, {
               midClub: gpsMidClub,
               maxYards: 700,
+              aim: rangefinderAim,
+              playsLikeYd: rangefinderPlaysLikeYd,
             })
           : emptyCollection(),
       );
@@ -1105,6 +1154,8 @@ export function GolfMap({
     activeHole,
     gpsMidClub,
     rangefinderFrom,
+    rangefinderAim,
+    rangefinderPlaysLikeYd,
     showRangefinder,
     whenReady,
   ]);
@@ -1130,28 +1181,6 @@ export function GolfMap({
   return (
     <div className={`relative h-full min-h-0 w-full overflow-hidden ${className}`}>
       <div ref={containerRef} className="absolute inset-0" />
-      {showRangefinder &&
-      rangefinderMidYd != null &&
-      Number.isFinite(rangefinderMidYd) ? (
-        <div className="pointer-events-none absolute inset-x-0 top-[18%] z-[5] flex justify-center">
-          <div className="rounded-2xl border border-white/25 bg-black/70 px-5 py-2 text-center shadow-xl backdrop-blur-md">
-            <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-sky-200/90">
-              Mid
-            </div>
-            <div className="text-[34px] font-bold leading-none tabular-nums text-white">
-              {Math.round(rangefinderMidYd)}
-              <span className="ml-1 text-[13px] font-semibold text-white/70">
-                yd
-              </span>
-            </div>
-            {gpsMidClub ? (
-              <div className="mt-1 text-[12px] font-semibold text-emerald-200">
-                {gpsMidClub}
-              </div>
-            ) : null}
-          </div>
-        </div>
-      ) : null}
       {showWindLegend && (windLabel || (greens3d && canGreens3d && activeHole != null)) && (
         <div
           className={`pointer-events-none absolute flex flex-col gap-1 rounded-2xl border border-white/10 bg-black/55 px-3 py-2 text-[11px] font-medium backdrop-blur-md ${legendClassName}`}
