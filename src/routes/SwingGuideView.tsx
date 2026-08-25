@@ -40,7 +40,7 @@ function Prose({
   return (
     <div>
       <p className="text-[14px] leading-relaxed text-ink">{block.text}</p>
-      <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-faint">
+      <p className="mt-1.5 font-mono text-[11px] uppercase tracking-[0.1em] text-faint">
         {block.source === 'llm' ? 'Caddie prose (local model)' : 'Authored fallback'}
       </p>
     </div>
@@ -68,7 +68,7 @@ function Section({
       >
         <div>
           {eyebrow ? (
-            <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
+            <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
               {eyebrow}
             </p>
           ) : null}
@@ -154,7 +154,7 @@ export function SwingGuideView() {
         if (!doc) {
           if (!cancelled) {
             setError(
-              'No actionable fault detected from high-confidence metrics. Re-record at the matching camera angle with 30+ fps when possible.',
+              'No clear pattern to work on from this clip. Re-record at the matching camera angle with 30+ fps when possible.',
             );
             setLoading(false);
           }
@@ -243,7 +243,7 @@ export function SwingGuideView() {
   return (
     <div className="mx-auto w-full max-w-lg px-5 pb-20 pt-6 md:px-8 print:max-w-none print:px-0">
       <header className="mb-5 print:mb-3">
-        <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-faint">
+        <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-faint">
           Improvement cycle · {plan.cycleWeeks} weeks
         </p>
         <h1 className="mt-1 font-display text-[26px] font-bold tracking-[-0.03em] text-ink">

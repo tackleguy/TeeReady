@@ -42,8 +42,8 @@ export type EnsembleConfidence = 'full' | 'low' | 'single-source';
 
 export function weatherUserAgent(): string {
   return (
-    process.env.NWS_USER_AGENT ??
-    process.env.METNO_USER_AGENT ??
+    process.env.NWS_USER_AGENT ||
+    process.env.METNO_USER_AGENT ||
     'TeeReady/1.0 (https://tee-ready.vercel.app; contact@teeready.app)'
   );
 }

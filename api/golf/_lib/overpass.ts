@@ -61,7 +61,7 @@ function buildMirrorOrder(): string[] {
 }
 
 export const UA =
-  process.env.NWS_USER_AGENT ??
+  process.env.NWS_USER_AGENT ||
   'weather-stop/1.0 (golf; contact@example.com)';
 
 /** Rotate the starting public mirror so load spreads across instances. */
@@ -160,7 +160,7 @@ export async function overpass(
       return data;
     } catch {
       throw new Error(
-        errors[0] ?? 'every OpenStreetMap mirror is busy right now',
+        errors[0] ?? 'Every course map mirror is busy right now',
       );
     }
   } finally {

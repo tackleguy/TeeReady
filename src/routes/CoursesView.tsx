@@ -66,8 +66,15 @@ function CourseCard({
   onOpen: (c: GolfCourseSummary) => void;
   onPrep: (c: GolfCourseSummary) => void;
 }) {
+  const [prepping, setPrepping] = useState(false);
+
+  const handlePrep = () => {
+    setPrepping(true);
+    onPrep(course);
+  };
+
   return (
-    <article className="group overflow-hidden rounded-2xl border border-line bg-surface shadow-card transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-lift">
+    <article className="group overflow-hidden rounded-2xl bg-surface shadow-card transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-lift">
       <button
         type="button"
         onClick={() => onOpen(course)}
@@ -113,11 +120,22 @@ function CourseCard({
         </div>
         <button
           type="button"
-          onClick={() => onPrep(course)}
-          className="inline-flex items-center gap-1 text-[13px] font-semibold text-brand"
+          onClick={handlePrep}
+          disabled={prepping}
+          aria-busy={prepping}
+          className="inline-flex items-center gap-1 text-[13px] font-semibold text-brand disabled:opacity-60"
         >
-          Prep
-          <ArrowUpRight className="h-4 w-4" />
+          {prepping ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Opening…
+            </>
+          ) : (
+            <>
+              Prep
+              <ArrowUpRight className="h-4 w-4" />
+            </>
+          )}
         </button>
       </div>
     </article>
@@ -342,9 +360,16 @@ export function CoursesView() {
             ) : null}
           </div>
         ) : loading && courses.length === 0 ? (
-          <div className="flex min-h-[200px] items-center justify-center gap-2 text-[14px] text-muted">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Finding courses…
+          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="overflow-hidden rounded-2xl bg-surface shadow-card">
+                <div className="skeleton aspect-[16/10] w-full rounded-none" />
+                <div className="flex items-center justify-between gap-3 px-4 py-3">
+                  <div className="skeleton h-4 w-24" />
+                  <div className="skeleton h-4 w-14" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : error && courses.length === 0 ? (
           <div className="rounded-2xl border border-line bg-surface px-5 py-8 text-center">

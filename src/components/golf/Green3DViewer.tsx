@@ -4,7 +4,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
-import * as THREE from 'three';
+import { loadThree } from '../../lib/loadThree';
 import type { GreenMesh, GreenMeshCourse } from '../../lib/golfGreen3d';
 
 interface Props {
@@ -91,7 +91,10 @@ function pickContourLevels(minY: number, maxY: number): number[] {
   return levels;
 }
 
-function buildTurfMesh(g: GreenMesh): THREE.Group {
+function buildTurfMesh(
+  THREE: typeof import('three'),
+  g: GreenMesh,
+): import('three').Group {
   const group = new THREE.Group();
   const pos = g.positions;
   let minY = Infinity;
@@ -195,6 +198,7 @@ function buildTurfMesh(g: GreenMesh): THREE.Group {
 export function Green3DViewer({ course, hole, onClose }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const [relief, setRelief] = useState(3);
+  const [threeReady, setThreeReady] = useState(false);
   const reliefRef = useRef(relief);
   reliefRef.current = relief;
   const green = course.greens.find((g) => g.hole === hole) ?? null;
@@ -210,7 +214,14 @@ export function Green3DViewer({ course, hole, onClose }: Props) {
     const host = hostRef.current;
     if (!host || !green) return;
 
-    const scene = new THREE.Scene();
+    let cancelled = false;
+    let teardown: (() => void) | undefined;
+
+    void loadThree().then((THREE) => {
+      if (cancelled) return;
+      setThreeReady(true);
+
+      const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x07140f);
     scene.fog = new THREE.FogExp2(0x07140f, 0.0065);
 
@@ -238,7 +249,7 @@ export function Green3DViewer({ course, hole, onClose }: Props) {
     rim.position.set(0, 20, -80);
     scene.add(rim);
 
-    const root = buildTurfMesh(green);
+    const root = buildTurfMesh(THREE, green);
     scene.add(root);
 
     let dragging = false;
@@ -325,7 +336,7 @@ export function Green3DViewer({ course, hole, onClose }: Props) {
     };
     window.addEventListener('resize', onResize);
 
-    return () => {
+    teardown = () => {
       cancelAnimationFrame(frame);
       window.removeEventListener('resize', onResize);
       host.removeEventListener('pointerdown', onDown);
@@ -338,13 +349,19 @@ export function Green3DViewer({ course, hole, onClose }: Props) {
           obj.geometry.dispose();
           const m = obj.material;
           if (Array.isArray(m)) m.forEach((x) => x.dispose());
-          else (m as THREE.Material).dispose();
+          else m.dispose();
         }
       });
       renderer.dispose();
       if (renderer.domElement.parentElement === host) {
         host.removeChild(renderer.domElement);
       }
+    };
+    });
+
+    return () => {
+      cancelled = true;
+      teardown?.();
     };
   }, [green]);
 
@@ -380,7 +397,19 @@ export function Green3DViewer({ course, hole, onClose }: Props) {
 
       <div className="relative min-h-0 flex-1">
         {green ? (
-          <div ref={hostRef} className="absolute inset-0 touch-none" />
+          <div ref={hostRef} className="absolute inset-0 touch-none">
+            {!threeReady ? (
+              <div
+                className="absolute inset-0 grid place-items-center"
+                aria-busy="true"
+                aria-label="Loading green reader"
+              >
+                <div className="h-2 w-32 overflow-hidden rounded-full bg-emerald-900/60">
+                  <div className="h-full w-1/3 animate-[shimmer_1.6s_linear_infinite] bg-emerald-400/40" />
+                </div>
+              </div>
+            ) : null}
+          </div>
         ) : (
           <div className="grid h-full place-items-center px-6 text-center text-sm text-emerald-200/60">
             No LiDAR mesh for this hole yet.

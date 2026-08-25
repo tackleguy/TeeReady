@@ -1,18 +1,9 @@
 import { useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import {
-  Map as MapIcon,
-  PersonStanding,
-  Settings,
-  UserRound,
-  Users,
-  X,
-} from 'lucide-react';
+import { Settings, UserRound, Users, X } from 'lucide-react';
 import { prefetchRoute } from '../lib/prefetchRoutes';
 
 export const SIDE_LINKS = [
-  { label: 'Course map', href: '/courses/map', icon: MapIcon },
-  { label: 'Swing', href: '/swing', icon: PersonStanding },
   { label: 'Profile', href: '/profile', icon: UserRound },
   { label: 'Social', href: '/group', icon: Users },
   { label: 'Settings', href: '/settings', icon: Settings },
@@ -61,7 +52,7 @@ export function AppSidebar({ open, onClose, showRail = true }: Props) {
     <>
       {showRail ? (
         <aside className="app-sidebar hidden md:flex" aria-label="More">
-          <p className="app-sidebar-label">More</p>
+          <p className="app-sidebar-label">Account</p>
           <SideNav />
         </aside>
       ) : null}
@@ -76,7 +67,7 @@ export function AppSidebar({ open, onClose, showRail = true }: Props) {
           />
           <aside className="app-sidebar-panel">
             <div className="flex items-center justify-between px-4 pb-3 pt-[max(1rem,env(safe-area-inset-top))]">
-              <p className="text-[13px] font-semibold text-ink">More</p>
+              <p className="text-[13px] font-semibold text-ink">Account</p>
               <button
                 type="button"
                 onClick={onClose}

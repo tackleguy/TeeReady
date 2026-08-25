@@ -82,7 +82,7 @@ function faceOnMetrics(
   return [
     metric({
       id: 'head_lateral',
-      label: 'Head lateral move (P1→P7)',
+      label: 'Head lateral move (address→impact)',
       value: round(headLateral, 3),
       unit: 'shoulder widths',
       validAtFps: t.impactMetricMinFps,
@@ -118,7 +118,7 @@ function faceOnMetrics(
     }),
     metric({
       id: 'lead_arm_p4',
-      label: 'Lead-arm angle at P4',
+      label: 'Lead-arm angle at top of backswing',
       value: round(leadArmAngle, 1),
       unit: '°',
       validAtFps: 30,
@@ -219,7 +219,7 @@ function dtlMetrics(
     }),
     metric({
       id: 'early_extension',
-      label: 'Spine change P1→P7 (early extension)',
+      label: 'Spine change address→impact (early extension)',
       value: round(earlyExt, 1),
       unit: '°',
       validAtFps: t.impactMetricMinFps,
@@ -228,7 +228,7 @@ function dtlMetrics(
     }),
     metric({
       id: 'shoulder_turn_p4',
-      label: 'Shoulder turn at P4',
+      label: 'Shoulder turn at top of backswing',
       value: round(shoulderTurn, 1),
       unit: '°',
       validAtFps: 30,
@@ -237,7 +237,7 @@ function dtlMetrics(
     }),
     metric({
       id: 'hip_turn_p4',
-      label: 'Hip turn at P4',
+      label: 'Hip turn at top of backswing',
       value: round(hipTurn, 1),
       unit: '°',
       validAtFps: 30,
@@ -246,7 +246,7 @@ function dtlMetrics(
     }),
     metric({
       id: 'x_factor',
-      label: 'X-factor at P4',
+      label: 'X-factor at top of backswing',
       value: round(xFactor, 1),
       unit: '°',
       validAtFps: 30,
@@ -255,7 +255,7 @@ function dtlMetrics(
     }),
     metric({
       id: 'head_depth',
-      label: 'Head depth change P1→P7',
+      label: 'Head depth change address→impact',
       value: round(headDepth, 3),
       unit: 'shoulder widths',
       validAtFps: t.impactMetricMinFps,

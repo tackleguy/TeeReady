@@ -34,7 +34,7 @@ export function GoalCoachPanel({ compact = false }: Props) {
 
   if (!plan) {
     return (
-      <section className="ledger-card p-4 sm:p-5">
+      <section className="surface-card p-4 sm:p-5">
         <div className="flex items-start gap-3">
           <div className="grid h-9 w-9 place-items-center rounded-full bg-brand-soft text-brand">
             <Sparkles className="h-4 w-4" strokeWidth={2} />
@@ -63,16 +63,13 @@ export function GoalCoachPanel({ compact = false }: Props) {
 
   if (compact) {
     return (
-      <section className="ledger-card p-4 sm:p-5">
+      <section className="surface-card p-4 sm:p-5">
         <div className="flex items-start gap-3">
           <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand text-white">
             <Sparkles className="h-4 w-4" strokeWidth={2} />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="section-eyebrow !text-brand">Your coach</p>
-            <h2 className="mt-0.5 text-[16px] font-semibold tracking-[-0.02em] text-ink sm:text-[17px]">
-              {plan.headline}
-            </h2>
+            <h2 className="text-title text-ink">{plan.headline}</h2>
             <p className="mt-1 text-[13px] leading-relaxed text-muted">
               {plan.summary}
             </p>

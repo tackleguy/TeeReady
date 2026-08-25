@@ -2,9 +2,9 @@ export type NavItem = { label: string; href: string };
 
 export const NAV_ITEMS: NavItem[] = [
   { label: 'Today', href: '/today' },
+  { label: 'Play', href: '/rounds/prep' },
   { label: 'Courses', href: '/courses' },
-  { label: 'Rounds', href: '/rounds/prep' },
-  { label: 'Stats', href: '/stats' },
+  { label: 'Progress', href: '/stats' },
 ];
 
 export const ROUNDS_MODES = [

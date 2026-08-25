@@ -45,6 +45,32 @@ interface HoleBrief {
   modelAgreement: number | null;
 }
 
+function forecastConfidenceLabel(agreement: number | null): string {
+  if (agreement == null) {
+    return 'Only one forecast available right now';
+  }
+  if (agreement >= 0.75) {
+    return 'Forecasts agree';
+  }
+  if (agreement >= 0.5) {
+    return 'Forecasts lean that way';
+  }
+  return 'Forecasts disagree';
+}
+
+function agreementSummary(agreement: number | null): string {
+  if (agreement == null) {
+    return ' Only one forecast available right now.';
+  }
+  if (agreement >= 0.75) {
+    return ' Forecasts mostly agree.';
+  }
+  if (agreement >= 0.5) {
+    return ' Forecasts partly agree.';
+  }
+  return ' Forecasts disagree — treat this as a rough read.';
+}
+
 function tipFor(
   hole: HoleIn,
   aspect: WindAspect,
@@ -56,14 +82,7 @@ function tipFor(
   player: PlayerIn,
   agreement: number | null,
 ): string {
-  const conf =
-    agreement == null
-      ? 'Single source'
-      : agreement >= 0.75
-        ? 'Models agree'
-        : agreement >= 0.5
-          ? 'Models lean'
-          : 'Models split';
+  const conf = forecastConfidenceLabel(agreement);
   const pushSide = cross >= 0 ? 'right' : 'left';
   const aimSide = cross >= 0 ? 'left' : 'right';
   const crossAbs = Math.abs(cross);
@@ -98,10 +117,10 @@ function tipFor(
       windTip = `${Math.round(crossAbs)} mph crosswind pushes it ${pushSide} ~${driftAbs} yd; start ${aimSide}.`;
       break;
     case 'quarter-head':
-      windTip = `quartering into you: ~${Math.round(head)} mph hold-up and ~${driftAbs} yd ${pushSide} drift.`;
+      windTip = `Wind into you and across: ~${Math.round(head)} mph hold-up and ~${driftAbs} yd ${pushSide} drift.`;
       break;
     case 'quarter-tail':
-      windTip = `quartering downwind with ~${driftAbs} yd ${pushSide} drift; start ${aimSide}.`;
+      windTip = `Wind behind you and across: ~${driftAbs} yd ${pushSide} drift; start ${aimSide}.`;
       break;
   }
   return `${conf}: ${windTip}${slope} ${missAim}`;
@@ -354,14 +373,12 @@ export default async function handler(req: Request): Promise<Response> {
 
   const summary =
     okSamples.length === 0
-      ? 'No weather providers returned wind for this location/hour.'
-      : `${uniqueSources.size} source${uniqueSources.size === 1 ? '' : 's'}: ${Math.round(windMph)} mph from ${Math.round(windFromDeg)}°` +
+      ? 'No weather forecasts returned wind for this location and hour.'
+      : `Based on ${uniqueSources.size} forecast${uniqueSources.size === 1 ? '' : 's'}: ${Math.round(windMph)} mph from ${Math.round(windFromDeg)}°` +
         (gustMph > windMph + 3 ? ` (gusts ${Math.round(gustMph)})` : '') +
-        (agreement != null
-          ? `. Agreement ${Math.round(agreement * 100)}%.`
-          : '. Single-source forecast (no cross-check).') +
+        agreementSummary(agreement) +
         (briefs.length
-          ? ` Hole-by-hole tips use each hole’s tee→green bearing vs ensemble wind.`
+          ? ` Hole tips use wind along each tee-to-green line.`
           : '') +
         ` ${turf.note}`;
 

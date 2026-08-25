@@ -144,9 +144,9 @@ async function testMobileNav(page) {
     await page.waitForTimeout(400);
   }
 
-  const roundsBtn = page.getByRole('button', { name: /Rounds/i });
-  if (await roundsBtn.isVisible()) {
-    await roundsBtn.click();
+  const playBtn = page.getByRole('button', { name: /Play/i });
+  if (await playBtn.isVisible()) {
+    await playBtn.click();
     await page.waitForTimeout(300);
     const prep = page.getByRole('menuitem', { name: 'Prep' });
     if (await prep.isVisible()) {
@@ -189,7 +189,7 @@ async function main() {
   const nav = await testMobileNav(page);
   console.log(
     nav.ok
-      ? `✓ Rounds menu → ${nav.finalPath ?? 'ok'}`
+      ? `✓ Play menu → ${nav.finalPath ?? 'ok'}`
       : `✗ nav flow failed${nav.note ? ` (${nav.note})` : ''}`,
   );
   if (!nav.ok) fail += 1;

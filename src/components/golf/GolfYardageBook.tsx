@@ -32,9 +32,9 @@ function aspectLabel(aspect: string): string {
     case 'cross-R':
       return 'Cross R';
     case 'quarter-head':
-      return '¼ Head';
+      return 'Into & across';
     case 'quarter-tail':
-      return '¼ Tail';
+      return 'Down & across';
     default:
       return aspect;
   }
@@ -203,7 +203,7 @@ export function GolfYardageBook({
 
               {notebook.holes.length === 0 ? (
                 <p className="notebook-line text-[#5c4f42]">
-                  No hole geometry yet. Wind & elevation above still apply.
+                  No hole maps yet. Wind and elevation above still apply.
                 </p>
               ) : (
                 notebook.holes.map((h) => {
@@ -282,8 +282,8 @@ export function GolfYardageBook({
               ))}
 
               <p className="notebook-line notebook-footer">
-                {notebook.attribution}. OSM hole geometry (ODbL). Prep transfer —
-                not a rangefinder.
+                {notebook.attribution}. Hole maps from community course data.
+                Prep transfer — not a rangefinder.
               </p>
             </div>
           </article>

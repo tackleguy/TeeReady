@@ -139,7 +139,7 @@ async function nominatim(q: string, limit: number): Promise<GeocodeRow[]> {
         headers: {
           Accept: 'application/json',
           'User-Agent':
-            process.env.NWS_USER_AGENT ??
+            process.env.NWS_USER_AGENT ||
             'TeeReady/1.0 (https://tee-ready.vercel.app; contact@teeready.app)',
         },
       },

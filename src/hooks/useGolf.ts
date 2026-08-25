@@ -137,7 +137,7 @@ export function useGolfHoles(
         setFromBackup(result.fromBackup);
         setError(
           result.fromBackup
-            ? 'OpenStreetMap is busy — showing saved course map.'
+            ? 'Course map server is busy — showing saved course map.'
             : null,
         );
       })
@@ -146,7 +146,7 @@ export function useGolfHoles(
         if (peeked?.holes.length) {
           setHoles(peeked.holes);
           setFromBackup(true);
-          setError('OpenStreetMap is busy — showing saved course map.');
+          setError('Course map server is busy — showing saved course map.');
           return;
         }
         setError(err instanceof Error ? err.message : 'Failed to load holes');
@@ -213,7 +213,7 @@ export function useGolfEnsemble(
       .then(setData)
       .catch((err) => {
         if (ac.signal.aborted) return;
-        setError(err instanceof Error ? err.message : 'Ensemble failed');
+        setError(err instanceof Error ? err.message : 'Wind forecast failed');
         setData(null);
       })
       .finally(() => {

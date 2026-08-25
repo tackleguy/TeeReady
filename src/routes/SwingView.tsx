@@ -546,7 +546,7 @@ export function SwingView() {
         <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 text-center">
           <Loader2 className="h-8 w-8 animate-spin text-brand" />
           <p className="text-[15px] font-semibold text-ink">
-            {progress?.stage === 'measure' ? 'Measuring geometry…' : 'Estimating pose…'}
+            {progress?.stage === 'measure' ? 'Measuring your swing…' : 'Estimating pose…'}
           </p>
           <div className="h-2 w-48 overflow-hidden rounded-full bg-brand-soft">
             <div
@@ -582,10 +582,10 @@ export function SwingView() {
           <div className="grid grid-cols-2 gap-2">
             {(
               [
-                ['p1', 'P1'],
-                ['p4', 'P4'],
-                ['p7', 'P7'],
-                ['p10', 'P10'],
+                ['p1', 'Address'],
+                ['p4', 'Top of backswing'],
+                ['p7', 'Impact'],
+                ['p10', 'Finish'],
               ] as const
             ).map(([key, label]) => (
               <div key={key} className="overflow-hidden rounded-card bg-surface shadow-card">

@@ -1,6 +1,6 @@
 // Golf: OSM courses + satellite map + multi-model hole wind briefs.
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   BookOpen,
@@ -72,14 +72,19 @@ import {
   type GolfPlayerProfile,
 } from '../lib/golfProfile';
 import { weatherAppHref } from '../lib/golfApp';
-import { warmGolfCatalog } from '../lib/golfCatalogPrefetch';
+import { warmGolfCatalog, readGolfCatalog } from '../lib/golfCatalogPrefetch';
 import {
   courseHasGreenMeshes,
   loadGreenMeshCourse,
   resolveGreenMeshSlug,
   type GreenMeshCourse,
 } from '../lib/golfGreen3d';
-import { Green3DViewer } from '../components/golf/Green3DViewer';
+
+const Green3DViewer = lazy(() =>
+  import('../components/golf/Green3DViewer').then((m) => ({
+    default: m.Green3DViewer,
+  })),
+);
 import type { LonLat } from '../lib/golfWind';
 import {
   applyTee,
@@ -126,9 +131,9 @@ function aspectLabel(aspect: string): string {
     case 'cross-R':
       return 'Cross →';
     case 'quarter-head':
-      return '¼ Head';
+      return 'Into & across';
     case 'quarter-tail':
-      return '¼ Tail';
+      return 'Down & across';
     default:
       return aspect;
   }
@@ -218,6 +223,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
 
   useEffect(() => {
     warmGolfCatalog();
+    void readGolfCatalog();
   }, []);
 
   useEffect(() => {
@@ -903,7 +909,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
       {ensLoading && (
         <p className="mt-2 flex items-center gap-1.5 text-[11px] text-[var(--ink-3)]">
           <RefreshCw className="h-3 w-3 animate-spin" />
-          Blending models…
+          Blending forecasts…
         </p>
       )}
       {ensError && (
@@ -1039,7 +1045,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
           {coursesError && !courses.length && (
             <div className="floating-subpanel px-3 py-3">
               <p className="text-xs text-red-300">
-                OpenStreetMap is busy right now.
+                Course map server is busy right now.
               </p>
               <p className="mt-0.5 text-[11px] text-[var(--ink-4)]">
                 {coursesError}
@@ -1201,26 +1207,25 @@ export function GolfView({ active = true }: { active?: boolean }) {
             </GolfMapBoundary>
 
             {!mapReady || (holesLoading && holes.length === 0) ? (
-              <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center bg-[linear-gradient(180deg,rgba(4,7,12,0.72),rgba(4,7,12,0.5))] p-6">
-                <div className="floating-panel w-full max-w-md px-5 py-5 text-center">
-                  <p className="section-eyebrow">Course map</p>
-                  <h2 className="mt-1 text-lg font-semibold text-[var(--ink-1)]">
-                    {course.name}
-                  </h2>
-                  <p className="mt-2 text-[13px] text-[var(--ink-3)]">
-                    {holesLoading && holes.length === 0
-                      ? 'Loading course map, hole geometry, and weather overlays…'
-                      : peekSatelliteTilesWarm(searchLat, searchLon, course.id)
-                        ? 'Opening saved satellite imagery…'
-                        : 'Starting the satellite course map…'}
-                  </p>
-                  <div className="mt-4 space-y-2">
-                    <div className="h-40 rounded-2xl shimmer" />
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="h-10 rounded-xl shimmer" />
-                      <div className="h-10 rounded-xl shimmer" />
-                      <div className="h-10 rounded-xl shimmer" />
-                    </div>
+              <div className="pointer-events-none absolute inset-0 z-[2] flex items-end justify-center bg-[linear-gradient(180deg,rgba(4,7,12,0.55),rgba(4,7,12,0.35))] p-4 md:items-center md:p-6">
+                <div className="w-full max-w-md space-y-3 md:rounded-2xl md:bg-[var(--hud-card)] md:p-5 md:shadow-lift">
+                  <div>
+                    <h2 className="text-title font-semibold text-[var(--ink-1)]">
+                      {course.name}
+                    </h2>
+                    <p className="mt-1 text-detail text-[var(--ink-3)]">
+                      {holesLoading && holes.length === 0
+                        ? 'Loading course map, hole layouts, and weather…'
+                        : peekSatelliteTilesWarm(searchLat, searchLon, course.id)
+                          ? 'Opening saved satellite imagery…'
+                          : 'Starting the satellite course map…'}
+                    </p>
+                  </div>
+                  <div className="skeleton h-48 w-full rounded-2xl opacity-90" />
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="skeleton h-10 rounded-xl opacity-90" />
+                    <div className="skeleton h-10 rounded-xl opacity-90" />
+                    <div className="skeleton h-10 rounded-xl opacity-90" />
                   </div>
                 </div>
               </div>
@@ -1722,16 +1727,16 @@ export function GolfView({ active = true }: { active?: boolean }) {
                       </div>
                       <div className="text-[11px] text-[var(--ink-3)]">
                         {holesLoading && !playHoles.length
-                          ? 'Loading hole geometry…'
+                          ? 'Loading hole maps…'
                           : holesFromBackup && playHoles.length
                             ? `Saved course map · ${layoutLabel}`
                             : holesError && !playHoles.length
-                              ? 'OpenStreetMap is busy — hole data unavailable'
+                              ? 'Course map server is busy — hole data unavailable'
                               : playHoles.length
                                 ? ensemble?.ensemble.windMph != null
                                   ? `${layoutLabel} · ${Math.round(ensemble.ensemble.windMph)} mph ${bearingCompass(ensemble.ensemble.windFromDeg)}`
                                   : `${layoutLabel} · yardage, bearing & elevation`
-                                : 'No hole geometry in OSM for this course yet'}
+                                : "We don't have hole maps for this course yet"}
                       </div>
                     </div>
                     {sheetExpanded ? (
@@ -1748,14 +1753,14 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     </div>
                     <div className="mt-1 text-[11px] text-[var(--ink-3)]">
                       {holesLoading && !playHoles.length
-                        ? 'Loading hole geometry…'
+                        ? 'Loading hole maps…'
                         : holesFromBackup && playHoles.length
                           ? `Saved course map · ${layoutLabel}`
                           : holesError && !playHoles.length
-                            ? 'OpenStreetMap is busy — hole data unavailable'
+                            ? 'Course map server is busy — hole data unavailable'
                             : playHoles.length
                               ? `${layoutLabel} · yardage, bearing & elevation`
-                              : 'No hole geometry in OSM for this course yet'}
+                              : "We don't have hole maps for this course yet"}
                     </div>
                     {ensemble?.ensemble.windMph != null ? (
                       <div className="mt-2 flex flex-wrap gap-2 text-[11px] uppercase tracking-wider text-[var(--ink-3)]">
@@ -1771,9 +1776,20 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     <button
                       type="button"
                       onClick={retryHoles}
-                      className="mt-1.5 rounded-md bg-white/10 px-2 py-1 text-[11px] font-medium text-[var(--ink-1)] hover:bg-white/15"
+                      disabled={holesLoading}
+                      aria-busy={holesLoading}
+                      className="mt-1.5 inline-flex items-center gap-1.5 rounded-md bg-white/10 px-2 py-1 text-[11px] font-medium text-[var(--ink-1)] hover:bg-white/15 disabled:opacity-60"
                     >
-                      {holesFromBackup ? 'Refresh from OSM' : 'Retry holes'}
+                      {holesLoading ? (
+                        <>
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          Loading…
+                        </>
+                      ) : holesFromBackup ? (
+                        'Refresh course map'
+                      ) : (
+                        'Retry holes'
+                      )}
                     </button>
                   </div>
                 )}
@@ -1952,7 +1968,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                                 </span>
                                 {brief && (
                                   <span className="mt-0.5 block truncate text-[11px] text-[var(--ink-3)]">
-                                    · {brief.recommendedClub} · {brief.aspect} ·{' '}
+                                    · {brief.recommendedClub} · {aspectLabel(brief.aspect)} ·{' '}
                                     {Math.round(brief.windMph)} mph
                                   </span>
                                 )}
@@ -1973,8 +1989,9 @@ export function GolfView({ active = true }: { active?: boolean }) {
 
                 {ensemble && (!isMobile || sheetExpanded) && (
                   <div className="border-t border-[var(--line-subtle)] px-3 py-2 text-[11px] text-[var(--ink-4)]">
-                    {ensemble.ensemble.modelsUsed.length} models · OSM +
-                    Open-Meteo elevation · Esri imagery
+                    {ensemble.ensemble.modelsUsed.length} forecast
+                    {ensemble.ensemble.modelsUsed.length === 1 ? '' : 's'} ·
+                    course map · elevation · satellite
                   </div>
                 )}
               </GlassPanel>
@@ -1985,9 +2002,8 @@ export function GolfView({ active = true }: { active?: boolean }) {
           <div className="flex h-full flex-col items-center justify-center gap-3 bg-[var(--surface-0)] px-6 text-center">
             <Flag className="h-8 w-8 text-[var(--ink-4)]" />
             <p className="max-w-sm text-sm text-[var(--ink-2)]">
-              Pick a course to open high-detail satellite imagery, hole
-              yardages &amp; bearings from OpenStreetMap, then an
-              all-model wind ensemble hole by hole.
+              Pick a course to open satellite imagery, hole yardages and
+              bearings, then a hole-by-hole wind read from multiple forecasts.
             </p>
           </div>
         )}
@@ -2008,11 +2024,13 @@ export function GolfView({ active = true }: { active?: boolean }) {
       ) : null}
 
       {greens3d && greenMeshCourse && activeHole != null ? (
-        <Green3DViewer
-          course={greenMeshCourse}
-          hole={activeHole}
-          onClose={() => setGreens3d(false)}
-        />
+        <Suspense fallback={null}>
+          <Green3DViewer
+            course={greenMeshCourse}
+            hole={activeHole}
+            onClose={() => setGreens3d(false)}
+          />
+        </Suspense>
       ) : null}
     </div>
   );

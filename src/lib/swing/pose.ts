@@ -1,10 +1,5 @@
 /** MediaPipe Pose Landmarker — on-device landmark series. */
 
-import {
-  FilesetResolver,
-  PoseLandmarker,
-  type NormalizedLandmark,
-} from '@mediapipe/tasks-vision';
 import { bodyMeanVisibility } from './geometry';
 import type { LandmarkPoint, PoseFrame } from './types';
 
@@ -12,6 +7,9 @@ const MP_VERSION = '1.0.1';
 const WASM_URL = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VERSION}/wasm`;
 const MODEL_URL =
   'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task';
+
+type PoseLandmarker = import('@mediapipe/tasks-vision').PoseLandmarker;
+type NormalizedLandmark = import('@mediapipe/tasks-vision').NormalizedLandmark;
 
 let landmarkerPromise: Promise<PoseLandmarker> | null = null;
 
@@ -27,6 +25,9 @@ function toPoints(landmarks: NormalizedLandmark[]): LandmarkPoint[] {
 export async function getPoseLandmarker(): Promise<PoseLandmarker> {
   if (!landmarkerPromise) {
     landmarkerPromise = (async () => {
+      const { FilesetResolver, PoseLandmarker } = await import(
+        '@mediapipe/tasks-vision'
+      );
       const vision = await FilesetResolver.forVisionTasks(WASM_URL);
       try {
         return await PoseLandmarker.createFromOptions(vision, {
@@ -76,7 +77,7 @@ export async function detectPoseOnFrame(
     for (let i = 0; i < landmarks.length; i++) {
       landmarks[i] = {
         ...landmarks[i],
-        z: world[i].z,
+        z: world[i]!.z,
       };
     }
   }
@@ -139,7 +140,7 @@ async function extractViaFrameCallback(
             const world = pose.worldLandmarks?.[0];
             if (world && world.length === landmarks.length) {
               for (let i = 0; i < landmarks.length; i++) {
-                landmarks[i] = { ...landmarks[i], z: world[i].z };
+                landmarks[i] = { ...landmarks[i], z: world[i]!.z };
               }
             }
             frames.push({
@@ -233,7 +234,6 @@ function waitForVideoReady(video: HTMLVideoElement): Promise<void> {
 function waitSeeked(video: HTMLVideoElement): Promise<void> {
   return new Promise((resolve) => {
     if (!video.seeking) {
-      // currentTime assignment may become seeking asynchronously.
       const t = window.setTimeout(() => {
         if (!video.seeking) resolve();
       }, 0);

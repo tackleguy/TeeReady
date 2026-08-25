@@ -158,7 +158,7 @@ export function GolfTargetHud({
               {turf.green === 'soft' ? ' holds' : ` +${turf.greenReleaseYd} yd`}
             </span>
             {turf.confidence === 'partial' ? (
-              <span className="text-[var(--ink-4)]">Firmness from precip</span>
+              <span className="text-[var(--ink-4)]">Estimated from rainfall</span>
             ) : null}
           </div>
         )}

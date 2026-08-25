@@ -16,6 +16,15 @@ export default {
         bad: 'var(--bad)',
         hero: 'var(--hero)',
       },
+      fontSize: {
+        hero: 'var(--type-hero-num)',
+        display: 'var(--type-display)',
+        stat: 'var(--type-stat)',
+        title: 'var(--type-title)',
+        body: 'var(--type-body)',
+        detail: 'var(--type-detail)',
+        micro: 'var(--type-micro)',
+      },
       borderRadius: {
         card: '14px',
         hero: '20px',

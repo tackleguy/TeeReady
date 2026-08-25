@@ -418,7 +418,7 @@ async function fetchWithRetry(
   }
   throw lastErr instanceof Error
     ? lastErr
-    : new Error('OpenStreetMap request failed');
+    : new Error('Course map request failed');
 }
 
 export async function fetchGolfCourses(
@@ -596,7 +596,7 @@ export async function loadGolfHoles(
 
   throw lastErr instanceof Error
     ? lastErr
-    : new Error('Failed to load hole geometry');
+    : new Error('Failed to load hole maps');
 }
 
 const warmInFlight = new Set<string>();

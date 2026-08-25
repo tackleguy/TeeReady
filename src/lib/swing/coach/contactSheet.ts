@@ -3,10 +3,10 @@
 import type { KeyframeImages } from '../types';
 
 const LABELS = {
-  p1: 'P1 Address',
-  p4: 'P4 Top',
-  p7: 'P7 Impact',
-  p10: 'P10 Finish',
+  p1: 'Address',
+  p4: 'Top of backswing',
+  p7: 'Impact',
+  p10: 'Finish',
 } as const;
 
 function loadImage(src: string): Promise<HTMLImageElement> {

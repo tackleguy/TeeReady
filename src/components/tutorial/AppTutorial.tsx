@@ -9,7 +9,7 @@ import {
   markTutorialDone,
 } from '../../lib/tutorial';
 
-type StepId = 'welcome' | 'today' | 'courses' | 'rounds' | 'ready';
+type StepId = 'welcome' | 'today' | 'courses' | 'play' | 'progress' | 'ready';
 
 type Step = {
   id: StepId;
@@ -43,17 +43,24 @@ const STEPS: Step[] = [
     primary: 'Next',
   },
   {
-    id: 'rounds',
-    target: 'rounds',
+    id: 'play',
+    target: 'play',
     title: 'Prep, then GPS',
-    body: 'Rounds opens Prep (miss lines, wind-adjusted yardages) and GPS (live ranging that keeps running in the background). That’s the core of TeeReady.',
+    body: 'Play opens Prep (miss lines, wind-adjusted yardages) and GPS (live ranging that keeps running in the background).',
+    primary: 'Next',
+  },
+  {
+    id: 'progress',
+    target: 'progress',
+    title: 'Look back and improve',
+    body: 'Progress holds your stats after a round and swing analysis when you want to work on mechanics.',
     primary: 'Next',
   },
   {
     id: 'ready',
     target: null,
     title: 'You’re ready to prep',
-    body: 'Open Prep for a hole plan tied to your bag and miss. Replay this tour anytime from Settings.',
+    body: 'Open Prep for a hole plan tied to your bag and miss. Profile, social, and settings live in the sidebar and avatar menu.',
     primary: 'Open Prep',
   },
 ];

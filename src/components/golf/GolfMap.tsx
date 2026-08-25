@@ -1036,7 +1036,7 @@ export function GolfMap({
       }
 
       resize();
-      attachGreen3DLayer(map, () => green3dStateRef.current);
+      void attachGreen3DLayer(map, () => green3dStateRef.current);
       readyRef.current = true;
       const signalReady = () => onReadyRef.current?.();
       // Don't wait for every peripheral tile — show the map as soon as the

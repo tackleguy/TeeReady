@@ -20,14 +20,12 @@ function StatCard({
   icon: typeof BarChart3;
 }) {
   return (
-    <div className="rounded-card bg-surface p-4 shadow-card">
+    <div className="surface-card p-4">
       <div className="flex items-start justify-between gap-2">
-        <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
-          {label}
-        </div>
+        <div className="text-detail font-medium text-muted">{label}</div>
         <Icon className="h-4 w-4 shrink-0 text-brand" strokeWidth={2} />
       </div>
-      <div className="mt-2 text-[28px] font-bold tabular tracking-[-0.03em] text-ink">
+      <div className="mt-2 text-stat tabular tracking-[-0.03em] text-ink">
         {value}
       </div>
       {hint ? <p className="mt-1 text-[12px] text-muted">{hint}</p> : null}
@@ -176,7 +174,7 @@ export function StatsView() {
             />
           </div>
 
-          <section className="overflow-hidden rounded-card bg-surface shadow-card">
+          <section className="surface-card overflow-hidden">
             <div className="border-b border-line px-4 py-3">
               <h2 className="text-[15px] font-bold text-ink">Round history</h2>
             </div>

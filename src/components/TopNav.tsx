@@ -19,7 +19,7 @@ interface Props {
   onOpenSidebar?: () => void;
 }
 
-const ROUNDS_LINKS = [
+const PLAY_LINKS = [
   {
     label: 'Prep',
     href: '/rounds/prep',
@@ -29,6 +29,19 @@ const ROUNDS_LINKS = [
     label: 'GPS',
     href: '/rounds/gps',
     hint: 'Live ranging · keeps running',
+  },
+] as const;
+
+const PROGRESS_LINKS = [
+  {
+    label: 'Stats',
+    href: '/stats',
+    hint: 'Fairways · greens · rounds',
+  },
+  {
+    label: 'Swing',
+    href: '/swing',
+    hint: 'Video analysis · drills',
   },
 ] as const;
 
@@ -121,14 +134,14 @@ function MenuPortal({
   );
 }
 
-function RoundsMenu({ mobile = false }: { mobile?: boolean }) {
+function PlayMenu({ mobile = false }: { mobile?: boolean }) {
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const [liveRound, setLiveRound] = useState(() => hasStoredRound());
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   useMenuDismiss(open, () => setOpen(false), triggerRef, menuRef);
-  const roundsActive = location.pathname.startsWith('/rounds');
+  const playActive = location.pathname.startsWith('/rounds');
 
   useEffect(() => {
     setOpen(false);
@@ -145,7 +158,7 @@ function RoundsMenu({ mobile = false }: { mobile?: boolean }) {
   }, []);
 
   return (
-    <div className="relative" data-tutorial="rounds">
+    <div className="relative" data-tutorial="play">
       <button
         ref={triggerRef}
         type="button"
@@ -155,9 +168,9 @@ function RoundsMenu({ mobile = false }: { mobile?: boolean }) {
         onMouseEnter={() => prefetchRoute('/rounds/prep')}
         onFocus={() => prefetchRoute('/rounds/prep')}
         className={`nav-link inline-flex items-center gap-1 ${mobile ? 'whitespace-nowrap' : ''}`}
-        aria-current={roundsActive ? 'page' : undefined}
+        aria-current={playActive ? 'page' : undefined}
       >
-        Rounds
+        Play
         {liveRound ? (
           <span
             className="ml-0.5 inline-block h-1.5 w-1.5 rounded-full bg-accent"
@@ -177,7 +190,90 @@ function RoundsMenu({ mobile = false }: { mobile?: boolean }) {
         menuRef={menuRef}
         align="left"
       >
-        {ROUNDS_LINKS.map((item) => (
+        {PLAY_LINKS.map((item) => (
+          <NavLink
+            key={item.href}
+            to={item.href}
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            onMouseEnter={() => prefetchRoute(item.href)}
+            onFocus={() => prefetchRoute(item.href)}
+            className={({ isActive }) =>
+              `block px-3.5 py-2.5 transition-colors ${
+                isActive
+                  ? 'bg-brand-soft'
+                  : 'hover:bg-[color-mix(in_srgb,var(--canvas)_80%,transparent)]'
+              }`
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <div
+                  className={`text-[13px] ${
+                    isActive
+                      ? 'font-semibold text-brand'
+                      : 'font-semibold text-ink'
+                  }`}
+                >
+                  {item.label}
+                </div>
+                <div className="mt-0.5 text-[11px] text-muted">{item.hint}</div>
+              </>
+            )}
+          </NavLink>
+        ))}
+      </MenuPortal>
+    </div>
+  );
+}
+
+function ProgressMenu({ mobile = false }: { mobile?: boolean }) {
+  const location = useLocation();
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  useMenuDismiss(open, () => setOpen(false), triggerRef, menuRef);
+  const progressActive =
+    location.pathname.startsWith('/stats') ||
+    location.pathname.startsWith('/swing');
+
+  useEffect(() => {
+    setOpen(false);
+  }, [location.pathname]);
+
+  return (
+    <div className="relative" data-tutorial="progress">
+      <button
+        ref={triggerRef}
+        type="button"
+        aria-expanded={open}
+        aria-haspopup="menu"
+        onClick={() => setOpen((v) => !v)}
+        onMouseEnter={() => {
+          prefetchRoute('/stats');
+          prefetchRoute('/swing');
+        }}
+        onFocus={() => {
+          prefetchRoute('/stats');
+          prefetchRoute('/swing');
+        }}
+        className={`nav-link inline-flex items-center gap-1 ${mobile ? 'whitespace-nowrap' : ''}`}
+        aria-current={progressActive ? 'page' : undefined}
+      >
+        Progress
+        <ChevronDown
+          className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`}
+          strokeWidth={2.2}
+        />
+      </button>
+
+      <MenuPortal
+        open={open}
+        triggerRef={triggerRef}
+        menuRef={menuRef}
+        align="left"
+      >
+        {PROGRESS_LINKS.map((item) => (
           <NavLink
             key={item.href}
             to={item.href}
@@ -292,14 +388,11 @@ export function TopNav({
             <NavItem to="/today" tutorialId="today">
               Today
             </NavItem>
+            <PlayMenu />
             <NavItem to="/courses" tutorialId="courses">
               Courses
             </NavItem>
-            <RoundsMenu />
-            <NavItem to="/stats" tutorialId="stats">
-              Stats
-            </NavItem>
-            <NavItem to="/swing">Swing</NavItem>
+            <ProgressMenu />
           </nav>
         </div>
 
@@ -313,9 +406,9 @@ export function TopNav({
             <span className="truncate">{locationLabel}</span>
           </button>
           <NavLink
-            to={needsQ ? '/questionnaire' : '/settings'}
-            title={user?.email ? `Account · ${user.email}` : 'Settings'}
-            aria-label={needsQ ? 'Complete questionnaire' : 'Open settings'}
+            to={needsQ ? '/questionnaire' : '/profile'}
+            title={user?.email ? `Account · ${user.email}` : 'Profile'}
+            aria-label={needsQ ? 'Complete questionnaire' : 'Open profile'}
             className={({ isActive }) =>
               `relative grid h-9 w-9 place-items-center rounded-full border font-mono text-[11px] font-semibold transition-colors ${
                 isActive
@@ -344,16 +437,11 @@ export function TopNav({
         <NavItem to="/today" mobile tutorialId="today">
           Today
         </NavItem>
+        <PlayMenu mobile />
         <NavItem to="/courses" mobile tutorialId="courses">
           Courses
         </NavItem>
-        <RoundsMenu mobile />
-        <NavItem to="/stats" mobile tutorialId="stats">
-          Stats
-        </NavItem>
-        <NavItem to="/swing" mobile>
-          Swing
-        </NavItem>
+        <ProgressMenu mobile />
       </nav>
     </header>
   );

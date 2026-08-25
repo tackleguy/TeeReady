@@ -7,7 +7,7 @@
  * relief — using absolute USGS elev here floats greens ~100m above the map.
  */
 import maplibregl from 'maplibre-gl';
-import * as THREE from 'three';
+import { loadThree } from '../../lib/loadThree';
 import type { GreenMeshCourse } from '../../lib/golfGreen3d';
 
 const LAYER_ID = 'golf-green-3d';
@@ -21,8 +21,13 @@ export interface Green3DState {
 }
 
 type Getter = () => Green3DState;
+type ThreeModule = typeof import('three');
+type ThreeScene = InstanceType<ThreeModule['Scene']>;
+type ThreeMatrix4 = InstanceType<ThreeModule['Matrix4']>;
+type ThreeWebGLRenderer = InstanceType<ThreeModule['WebGLRenderer']>;
+type ThreeCamera = InstanceType<ThreeModule['Camera']>;
 
-function clearMeshes(scene: THREE.Scene) {
+function clearMeshes(THREE: ThreeModule, scene: ThreeScene) {
   for (const child of [...scene.children]) {
     if (child instanceof THREE.Light) continue;
     scene.remove(child);
@@ -36,16 +41,15 @@ function clearMeshes(scene: THREE.Scene) {
 }
 
 function rebuildMeshes(
-  scene: THREE.Scene,
+  THREE: ThreeModule,
+  scene: ThreeScene,
   course: GreenMeshCourse | null,
   activeHole: number | null,
 ) {
-  clearMeshes(scene);
+  clearMeshes(THREE, scene);
   if (!course?.greens.length) return;
 
   for (const g of course.greens) {
-    // Only the active green — rendering every hole as a floating sheet was
-    // unreadable and blocked the fairway.
     if (activeHole != null && g.hole !== activeHole) continue;
 
     const geom = new THREE.BufferGeometry();
@@ -70,7 +74,7 @@ function rebuildMeshes(
   }
 }
 
-function asMatrix4(input: unknown): THREE.Matrix4 {
+function asMatrix4(THREE: ThreeModule, input: unknown): ThreeMatrix4 {
   const mat = new THREE.Matrix4();
   if (!input) return mat;
   if (Array.isArray(input) || ArrayBuffer.isView(input)) {
@@ -81,7 +85,6 @@ function asMatrix4(input: unknown): THREE.Matrix4 {
       modelViewProjectionMatrix?: ArrayLike<number>;
       defaultProjectionData?: { mainMatrix?: ArrayLike<number> };
     };
-    // MapLibre v5+ prefers defaultProjectionData.mainMatrix; v4 exposes MVP.
     const arr =
       obj.defaultProjectionData?.mainMatrix ??
       obj.modelViewProjectionMatrix;
@@ -90,15 +93,16 @@ function asMatrix4(input: unknown): THREE.Matrix4 {
   return mat;
 }
 
-export function attachGreen3DLayer(
+export async function attachGreen3DLayer(
   map: maplibregl.Map,
   getState: Getter,
-): void {
+): Promise<void> {
   if (map.getLayer(LAYER_ID)) return;
 
+  const THREE = await loadThree();
   const scene = new THREE.Scene();
-  let renderer: THREE.WebGLRenderer | null = null;
-  let camera: THREE.Camera | null = null;
+  let renderer: ThreeWebGLRenderer | null = null;
+  let camera: ThreeCamera | null = null;
   let lastKey = '';
 
   const layer: maplibregl.CustomLayerInterface = {
@@ -128,16 +132,14 @@ export function attachGreen3DLayer(
       const key = `${enabled ? 1 : 0}:${course?.id ?? ''}:${activeHole ?? ''}:${course?.greens.length ?? 0}`;
       if (key !== lastKey) {
         if (enabled && course?.greens.length) {
-          rebuildMeshes(scene, course, activeHole);
+          rebuildMeshes(THREE, scene, course, activeHole);
         } else {
-          clearMeshes(scene);
+          clearMeshes(THREE, scene);
         }
         lastKey = key;
       }
       if (!enabled || !course?.greens.length) return;
 
-      // Flat satellite basemap → pin to ground (0). Mesh Y is already relative
-      // to each green's base elev, so relief still shows without floating.
       const origin = maplibregl.MercatorCoordinate.fromLngLat(
         [course.lon, course.lat],
         0,
@@ -153,7 +155,9 @@ export function attachGreen3DLayer(
         .scale(new THREE.Vector3(scale, -scale, scale))
         .multiply(rotationX);
 
-      camera.projectionMatrix = asMatrix4(options).clone().multiply(local);
+      camera.projectionMatrix = asMatrix4(THREE, options)
+        .clone()
+        .multiply(local);
 
       renderer.resetState();
       renderer.render(scene, camera);

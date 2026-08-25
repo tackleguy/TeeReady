@@ -58,8 +58,14 @@ export default defineConfig(({ mode }) => {
         output: {
           manualChunks(id) {
             if (id.includes('node_modules')) {
+              if (id.includes('/three/') || id.includes('three/examples')) {
+                return 'three';
+              }
+              if (id.includes('@mediapipe')) return 'mediapipe';
               if (id.includes('maplibre-gl')) return 'maplibre';
-              if (id.includes('framer-motion')) return 'motion';
+              if (id.includes('/motion/') || id.includes('framer-motion')) {
+                return 'motion';
+              }
               if (
                 id.includes('react-router-dom') ||
                 id.includes('@remix-run/router')

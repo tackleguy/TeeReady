@@ -87,7 +87,7 @@ export function turfFromWeather(input: {
       : 'little rain in 48h';
   const partialBit =
     confidence === 'partial'
-      ? ' Firmness estimated from precipitation alone (no ET0/soil).'
+      ? ' Ground conditions estimated from rainfall only.'
       : '';
   const note = `Fairways ${label(fairway)} (${rainBit}${
     fairwayRollYd ? `, +${fairwayRollYd} yd driver roll` : ', little extra roll'

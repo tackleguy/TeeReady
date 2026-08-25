@@ -1,7 +1,8 @@
 /** Draw pose skeleton overlays for key-position frames. */
 
-import { PoseLandmarker } from '@mediapipe/tasks-vision';
 import type { LandmarkPoint, PoseFrame } from './types';
+
+type PoseConnection = { start: number; end: number };
 
 const STROKE = 'rgba(34, 197, 94, 0.95)';
 const JOINT = 'rgba(250, 250, 250, 0.95)';
@@ -11,6 +12,7 @@ export function drawPoseOverlay(
   landmarks: LandmarkPoint[],
   width: number,
   height: number,
+  connections: PoseConnection[],
 ): void {
   ctx.save();
   ctx.lineWidth = Math.max(2, Math.round(width * 0.004));
@@ -18,7 +20,6 @@ export function drawPoseOverlay(
   ctx.fillStyle = JOINT;
   ctx.lineCap = 'round';
 
-  const connections = PoseLandmarker.POSE_CONNECTIONS;
   for (const { start, end } of connections) {
     const a = landmarks[start];
     const b = landmarks[end];
@@ -44,6 +45,7 @@ export function renderKeyframeDataUrl(
   video: HTMLVideoElement,
   frame: PoseFrame,
   label: string,
+  connections: PoseConnection[],
 ): string {
   const w = video.videoWidth || 640;
   const h = video.videoHeight || 360;
@@ -56,7 +58,7 @@ export function renderKeyframeDataUrl(
   video.currentTime = frame.t;
   // Caller should await seek before calling when batching; still draw best-effort.
   ctx.drawImage(video, 0, 0, w, h);
-  drawPoseOverlay(ctx, frame.landmarks, w, h);
+  drawPoseOverlay(ctx, frame.landmarks, w, h, connections);
 
   ctx.fillStyle = 'rgba(0,0,0,0.55)';
   ctx.fillRect(8, 8, Math.min(120, w * 0.3), 28);
@@ -72,11 +74,14 @@ export async function renderKeyframes(
   frames: PoseFrame[],
   indices: { p1: number; p4: number; p7: number; p10: number },
 ): Promise<{ p1: string; p4: string; p7: string; p10: string }> {
+  const { PoseLandmarker } = await import('@mediapipe/tasks-vision');
+  const connections = PoseLandmarker.POSE_CONNECTIONS;
+
   const labels = {
-    p1: 'P1 Address',
-    p4: 'P4 Top',
-    p7: 'P7 Impact',
-    p10: 'P10 Finish',
+    p1: 'Address',
+    p4: 'Top of backswing',
+    p7: 'Impact',
+    p10: 'Finish',
   } as const;
 
   const out = { p1: '', p4: '', p7: '', p10: '' };
@@ -85,7 +90,7 @@ export async function renderKeyframes(
     if (!frame) continue;
     video.currentTime = frame.t;
     await waitSeeked(video);
-    out[key] = renderKeyframeDataUrl(video, frame, labels[key]);
+    out[key] = renderKeyframeDataUrl(video, frame, labels[key], connections);
   }
   return out;
 }

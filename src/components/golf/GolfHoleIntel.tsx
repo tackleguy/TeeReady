@@ -54,7 +54,7 @@ export function GolfHoleIntel({ forecast, turf, miss }: Props) {
       </div>
       {turf.confidence === 'partial' ? (
         <p className="mt-1.5 text-[11px] leading-snug text-[var(--ink-4)]">
-          Firmness estimated from precipitation alone (no ET0 / soil moisture).
+          Firmness estimated from rainfall only.
         </p>
       ) : null}
       {first && (

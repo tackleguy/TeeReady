@@ -1,4 +1,4 @@
-import { Component, useEffect, useState, type ReactNode } from 'react';
+import { Component, lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
 import {
   BrowserRouter,
   Navigate,
@@ -16,36 +16,51 @@ import { AuthProvider, useAuth } from './lib/auth';
 import { CURRENT_LOCATION } from './lib/mock';
 import { applyTheme, loadTheme } from './lib/theme';
 import { defaultSearchLoc, saveSearchLoc } from './lib/searchLoc';
-import { loadGreenMeshManifest } from './lib/golfGreen3d';
-import { CourseMapView } from './routes/CourseMapView';
-import { CoursesView } from './routes/CoursesView';
-import { GroupView } from './routes/GroupView';
-import { GolfView } from './routes/GolfView';
 import { HomeLanding } from './routes/HomeLanding';
-import { ProfileView } from './routes/ProfileView';
-import { QuestionnaireView } from './routes/QuestionnaireView';
-import { SettingsView } from './routes/SettingsView';
-import { StatsView } from './routes/StatsView';
-import { SwingGuideView } from './routes/SwingGuideView';
-import { SwingView } from './routes/SwingView';
-import { UiAuditPreview } from './routes/UiAuditPreview';
 import { TodayView } from './routes/TodayView';
+import { RouteFallback } from './components/ui/RouteFallback';
 
 applyTheme(loadTheme());
 
-function RouteFallback() {
-  return (
-    <div
-      className="flex min-h-[40vh] items-center justify-center"
-      aria-busy="true"
-      aria-label="Loading"
-    >
-      <div className="h-2 w-32 overflow-hidden rounded-full bg-brand-soft">
-        <div className="h-full w-1/3 animate-[shimmer_1.6s_linear_infinite] bg-[color-mix(in_srgb,var(--brand)_40%,transparent)]" />
-      </div>
-    </div>
-  );
-}
+const CourseMapView = lazy(() =>
+  import('./routes/CourseMapView').then((m) => ({ default: m.CourseMapView })),
+);
+const CoursesView = lazy(() =>
+  import('./routes/CoursesView').then((m) => ({ default: m.CoursesView })),
+);
+const GroupView = lazy(() =>
+  import('./routes/GroupView').then((m) => ({ default: m.GroupView })),
+);
+const GolfView = lazy(() =>
+  import('./routes/GolfView').then((m) => ({ default: m.GolfView })),
+);
+const ProfileView = lazy(() =>
+  import('./routes/ProfileView').then((m) => ({ default: m.ProfileView })),
+);
+const QuestionnaireView = lazy(() =>
+  import('./routes/QuestionnaireView').then((m) => ({
+    default: m.QuestionnaireView,
+  })),
+);
+const SettingsView = lazy(() =>
+  import('./routes/SettingsView').then((m) => ({ default: m.SettingsView })),
+);
+const StatsView = lazy(() =>
+  import('./routes/StatsView').then((m) => ({ default: m.StatsView })),
+);
+const SwingView = lazy(() =>
+  import('./routes/SwingView').then((m) => ({ default: m.SwingView })),
+);
+const SwingGuideView = lazy(() =>
+  import('./routes/SwingGuideView').then((m) => ({ default: m.SwingGuideView })),
+);
+const UiAuditPreview = import.meta.env.DEV
+  ? lazy(() =>
+      import('./routes/UiAuditPreview').then((m) => ({
+        default: m.UiAuditPreview,
+      })),
+    )
+  : null;
 
 class RoundsErrorBoundary extends Component<
   { children: ReactNode },
@@ -109,7 +124,9 @@ function PublicHome() {
 function RoundsPage() {
   return (
     <RoundsErrorBoundary>
-      <GolfView active />
+      <Suspense fallback={<RouteFallback />}>
+        <GolfView active />
+      </Suspense>
     </RoundsErrorBoundary>
   );
 }
@@ -126,7 +143,20 @@ function Shell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    loadGreenMeshManifest().catch(() => {});
+    const useIdle = typeof requestIdleCallback === 'function';
+    const handle = useIdle
+      ? requestIdleCallback(() => {
+          void import('./routes/CoursesView');
+          void import('./routes/GolfView');
+        })
+      : window.setTimeout(() => {
+          void import('./routes/CoursesView');
+          void import('./routes/GolfView');
+        }, 2000);
+    return () => {
+      if (useIdle) cancelIdleCallback(handle as number);
+      else clearTimeout(handle as number);
+    };
   }, []);
 
   useEffect(() => {
@@ -196,9 +226,19 @@ function Shell() {
                 : 'app-main'
           }
         >
+        <Suspense fallback={<RouteFallback />}>
         <Routes>
           <Route path="/" element={<PublicHome />} />
-          <Route path="/dev/ui-audit" element={<UiAuditPreview />} />
+          {import.meta.env.DEV && UiAuditPreview ? (
+            <Route
+              path="/dev/ui-audit"
+              element={
+                <Suspense fallback={<RouteFallback />}>
+                  <UiAuditPreview />
+                </Suspense>
+              }
+            />
+          ) : null}
           <Route
             path="/today"
             element={
@@ -305,6 +345,7 @@ function Shell() {
           />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </Suspense>
         </main>
       </div>
       {showAppChrome ? <InstallPrompt /> : null}
