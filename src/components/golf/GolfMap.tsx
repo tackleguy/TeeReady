@@ -243,19 +243,25 @@ function syncGpsCalloutMarkers(
   map: maplibregl.Map,
   guide: GeoJSON.FeatureCollection,
   store: maplibregl.Marker[],
+  opts?: { compact?: boolean },
 ) {
   clearCalloutMarkers(store);
+  const compact = opts?.compact === true;
   for (const f of guide.features) {
     const props = f.properties as {
       kind?: string;
       yardsText?: string;
       clubText?: string;
       playsText?: string;
+      role?: string;
+      major?: number;
     } | null;
     const geom = f.geometry;
     if (!props || !geom || geom.type !== 'Point') continue;
     const coords = geom.coordinates as [number, number];
     if (props.kind === 'callout-yards') {
+      // Phone: only the primary carry yardage pill.
+      if (compact && props.major !== 1) continue;
       const el = document.createElement('div');
       el.textContent = props.yardsText ?? '';
       el.style.cssText = [
@@ -280,6 +286,7 @@ function syncGpsCalloutMarkers(
           .addTo(map),
       );
     } else if (props.kind === 'callout-club') {
+      if (compact) continue;
       const el = document.createElement('div');
       el.textContent = props.clubText ?? '';
       el.style.cssText = [
@@ -304,6 +311,7 @@ function syncGpsCalloutMarkers(
           .addTo(map),
       );
     } else if (props.kind === 'callout-plays') {
+      if (compact) continue;
       const el = document.createElement('div');
       el.textContent = props.playsText ?? '';
       el.style.cssText = [
@@ -1411,7 +1419,9 @@ export function GolfMap({
       (
         map.getSource(SRC_GPS_GUIDE) as maplibregl.GeoJSONSource | undefined
       )?.setData(guide);
-      syncGpsCalloutMarkers(map, guide, calloutMarkersRef.current);
+      syncGpsCalloutMarkers(map, guide, calloutMarkersRef.current, {
+        compact: compactControls,
+      });
       // Fallback onto prep carry/remain layers (registered before GPS) so a
       // missing guide layer still shows the white path between tee and green.
       if (showRangefinder) {
@@ -1473,6 +1483,7 @@ export function GolfMap({
     rangefinderAim,
     rangefinderPlaysLikeYd,
     showRangefinder,
+    compactControls,
     whenReady,
   ]);
 

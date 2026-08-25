@@ -5,7 +5,7 @@ import {
   fetchGolfNotebook,
   loadGolfHoles,
   peekGolfCoursesCache,
-  peekGolfHolesCache,
+  peekGolfHolesDetail,
   warmNearbyCourseMaps,
   type GolfCourseSummary,
   type GolfEnsemble,
@@ -48,7 +48,7 @@ export function useGolfCourses(
             setCourses(next);
             // Warm hole-map backups for nearby courses while OSM is healthy.
             if (!nationalQuery && next.length) {
-              warmNearbyCourseMaps(next, 8);
+              warmNearbyCourseMaps(next, 12);
             }
           })
           .catch((err) => {
@@ -113,11 +113,12 @@ export function useGolfHoles(
     const courseId =
       osmType && osmId != null ? `${osmType}:${osmId}` : undefined;
     warmSatelliteTiles(lat, lon, { courseId, priority: 'high' });
-    const peeked = peekGolfHolesCache(lat, lon, opts);
-    if (peeked?.length) {
-      setHoles(peeked);
+    const peeked = peekGolfHolesDetail(lat, lon, opts);
+    if (peeked?.holes.length) {
+      setHoles(peeked.holes);
       setLoading(false);
-      setFromBackup(true);
+      // Don't warn on paint — only after OSM soft-refresh confirms failure.
+      setFromBackup(false);
       setError(null);
     } else {
       setHoles([]);
@@ -142,8 +143,8 @@ export function useGolfHoles(
       })
       .catch((err) => {
         if (ac.signal.aborted) return;
-        if (peeked?.length) {
-          setHoles(peeked);
+        if (peeked?.holes.length) {
+          setHoles(peeked.holes);
           setFromBackup(true);
           setError('OpenStreetMap is busy — showing saved course map.');
           return;

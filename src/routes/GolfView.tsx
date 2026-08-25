@@ -134,7 +134,7 @@ function aspectLabel(aspect: string): string {
   }
 }
 
-const MOBILE_FIT_PADDING = { top: 88, right: 28, bottom: 196, left: 28 };
+const MOBILE_FIT_PADDING = { top: 72, right: 16, bottom: 96, left: 16 };
 
 function ChipRow({
   label,
@@ -236,6 +236,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
   const [round, setRound] = useState<TrackedRound | null>(() => loadRound());
   const [scorecardOpen, setScorecardOpen] = useState(false);
   const [gpsHudOpen, setGpsHudOpen] = useState(true);
+  const [gpsHudExpanded, setGpsHudExpanded] = useState(false);
   const [intelPanelOpen, setIntelPanelOpen] = useState(false);
 
   // Keep player HCP in sync when Settings (or another tab) saves.
@@ -1276,11 +1277,14 @@ export function GolfView({ active = true }: { active?: boolean }) {
                   {viewMode === 'gps' && !gpsHudOpen ? (
                     <button
                       type="button"
-                      onClick={() => setGpsHudOpen(true)}
+                      onClick={() => {
+                        setGpsHudOpen(true);
+                        setGpsHudExpanded(false);
+                      }}
                       title="Show GPS panel"
                       className="rounded-md px-2 py-1 text-[10px] font-semibold text-[#3b82f6] hover:bg-white/10"
                     >
-                      Show GPS
+                      Show
                     </button>
                   ) : null}
                   <button
@@ -1290,9 +1294,9 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[10px] font-semibold text-[var(--ink-2)] hover:bg-white/10"
                   >
                     <ClipboardList className="h-3 w-3" />
-                    Card
+                    {!isMobile ? 'Card' : null}
                   </button>
-                  {course && canGreens3d ? (
+                  {course && canGreens3d && !isMobile ? (
                     <button
                       type="button"
                       onClick={() => {
@@ -1311,10 +1315,10 @@ export function GolfView({ active = true }: { active?: boolean }) {
                       ].join(' ')}
                     >
                       <Mountain className="h-3 w-3" />
-                      3D green
+                      3D
                     </button>
                   ) : null}
-                  {!intelPanelOpen ? (
+                  {!intelPanelOpen && !isMobile ? (
                     <button
                       type="button"
                       onClick={() => setIntelPanelOpen(true)}
@@ -1332,7 +1336,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                       className="inline-flex items-center gap-0.5 rounded-md px-1.5 py-1 text-[10px] font-semibold text-[var(--ink-2)] hover:bg-white/10"
                     >
                       <X className="h-3 w-3" />
-                      Prep
+                      {!isMobile ? 'Prep' : null}
                     </button>
                   ) : null}
                 </GlassPanel>
@@ -1406,7 +1410,8 @@ export function GolfView({ active = true }: { active?: boolean }) {
                       </button>
                       {activeHole != null &&
                       activeIdx >= 0 &&
-                      activeIdx < playHoles.length - 1 ? (
+                      activeIdx < playHoles.length - 1 &&
+                      !isMobile ? (
                         <button
                           type="button"
                           onClick={() => stepHole(1)}
@@ -1430,38 +1435,44 @@ export function GolfView({ active = true }: { active?: boolean }) {
                       >
                         <Compass className="h-5 w-5 md:h-4 md:w-4" />
                       </button>
-                      <span className="mx-0.5 h-6 w-px bg-[var(--line-subtle)]" />
-                      {tracking ? (
+                      {!isMobile || viewMode !== 'gps' ? (
                         <>
-                          <button
-                            type="button"
-                            onClick={dropShot}
-                            disabled={!gpsPos || !activeHoleObj}
-                            title="Drop shot at GPS position"
-                            className="rounded-lg bg-pink-500/20 px-2.5 py-1.5 text-[11px] font-semibold text-pink-300 transition-colors hover:bg-pink-500/30 disabled:opacity-40"
-                          >
-                            Drop
-                          </button>
-                          <button
-                            type="button"
-                            onClick={endRound}
-                            title="End round"
-                            className="rounded-lg px-2 py-1.5 text-[11px] text-red-300 hover:bg-red-500/20"
-                          >
-                            End
-                          </button>
+                          <span className="mx-0.5 h-6 w-px bg-[var(--line-subtle)]" />
+                          {tracking ? (
+                            <>
+                              {!isMobile ? (
+                                <button
+                                  type="button"
+                                  onClick={dropShot}
+                                  disabled={!gpsPos || !activeHoleObj}
+                                  title="Drop shot at GPS position"
+                                  className="rounded-lg bg-pink-500/20 px-2.5 py-1.5 text-[11px] font-semibold text-pink-300 transition-colors hover:bg-pink-500/30 disabled:opacity-40"
+                                >
+                                  Drop
+                                </button>
+                              ) : null}
+                              <button
+                                type="button"
+                                onClick={endRound}
+                                title="End round"
+                                className="rounded-lg px-2 py-1.5 text-[11px] text-red-300 hover:bg-red-500/20"
+                              >
+                                End
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={startRound}
+                              disabled={!course}
+                              title="Start tracking a round"
+                              className="rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-pink-300 hover:bg-pink-500/20 disabled:opacity-40"
+                            >
+                              Track
+                            </button>
+                          )}
                         </>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={startRound}
-                          disabled={!course}
-                          title="Start tracking a round"
-                          className="rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-pink-300 hover:bg-pink-500/20 disabled:opacity-40"
-                        >
-                          Track
-                        </button>
-                      )}
+                      ) : null}
                     </>
                   ) : null}
                 </GlassPanel>
@@ -1471,10 +1482,20 @@ export function GolfView({ active = true }: { active?: boolean }) {
             {/* GPS HUD — only in GPS mode */}
             {course && viewMode === 'gps' && gpsHudOpen ? (
               <DraggableBox
-                id="gps-mod"
-                defaultAnchor={{ left: 12, top: 52 }}
+                id={isMobile ? 'gps-mod-mobile' : 'gps-mod'}
+                defaultAnchor={
+                  isMobile
+                    ? { left: 12, bottom: 16 }
+                    : { left: 12, top: 52 }
+                }
                 zIndex={22}
-                style={{ width: 'min(100vw - 1.5rem, 220px)' }}
+                style={{
+                  width: isMobile
+                    ? gpsHudExpanded
+                      ? 'min(100vw - 1.5rem, 220px)'
+                      : 'auto'
+                    : 'min(100vw - 1.5rem, 220px)',
+                }}
                 showHandle={false}
                 onClose={() => setGpsHudOpen(false)}
               >
@@ -1498,70 +1519,97 @@ export function GolfView({ active = true }: { active?: boolean }) {
                   onDropShot={tracking ? dropShot : undefined}
                   canDropShot={Boolean(tracking && gpsPos && activeHoleObj)}
                   onClose={() => setGpsHudOpen(false)}
+                  compact={isMobile}
+                  expanded={!isMobile || gpsHudExpanded}
+                  onToggleExpanded={() => setGpsHudExpanded((v) => !v)}
                 />
               </DraggableBox>
             ) : null}
 
-            {/* Fixed wind + slope chips — GPS only, not draggable */}
+            {/* Wind + slope — single chip on phone, stacked on desktop */}
             {course && viewMode === 'gps' && activeHole != null ? (
-              <div
-                className="pointer-events-none absolute right-3 top-[3.25rem] z-[21] flex w-[4.75rem] flex-col gap-1.5"
-                aria-label="Hole wind and slope"
-              >
-                <div className="hud-card rounded-lg border border-[color-mix(in_srgb,var(--brand)_28%,var(--line))] px-1.5 py-1.5 text-center shadow-lg">
-                  <div className="font-mono text-[8px] font-semibold uppercase tracking-[0.1em] text-faint">
-                    {activeBrief
-                      ? activeBrief.headwindMph >= 0
-                        ? 'Into'
-                        : 'Helping'
-                      : 'Wind'}
-                  </div>
-                  <div className="mt-0.5 text-[13px] font-bold tabular-nums leading-none text-ink">
-                    {activeBrief
-                      ? Math.abs(Math.round(activeBrief.headwindMph))
-                      : ensemble?.ensemble.windMph != null
-                        ? Math.round(ensemble.ensemble.windMph)
-                        : '—'}
-                    <span className="ml-0.5 text-[9px] font-semibold text-muted">
-                      mph
-                    </span>
-                  </div>
-                  <div className="mt-0.5 truncate font-mono text-[8px] font-medium text-faint">
-                    {activeBrief
-                      ? aspectLabel(activeBrief.aspect)
-                      : ensemble?.ensemble.windFromDeg != null
-                        ? bearingCompass(ensemble.ensemble.windFromDeg)
-                        : '—'}
+              isMobile ? (
+                <div
+                  className="pointer-events-none absolute right-3 top-[3.1rem] z-[21]"
+                  aria-label="Hole wind and slope"
+                >
+                  <div className="hud-card max-w-[7.5rem] rounded-lg border border-[color-mix(in_srgb,var(--brand)_28%,var(--line))] px-2 py-1.5 text-center shadow-lg">
+                    <div className="text-[11px] font-bold tabular-nums leading-tight text-ink">
+                      {activeBrief
+                        ? `${Math.abs(Math.round(activeBrief.headwindMph))} mph ${
+                            activeBrief.headwindMph >= 0 ? 'into' : 'help'
+                          }`
+                        : ensemble?.ensemble.windMph != null
+                          ? `${Math.round(ensemble.ensemble.windMph)} mph`
+                          : '— mph'}
+                    </div>
+                    <div className="mt-0.5 text-[10px] font-semibold tabular-nums text-muted">
+                      {activeBrief
+                        ? `${activeBrief.slopeYards > 0 ? '+' : ''}${activeBrief.slopeYards} yd slope`
+                        : 'slope —'}
+                    </div>
                   </div>
                 </div>
-                <div className="hud-card rounded-lg border border-[color-mix(in_srgb,var(--brand)_28%,var(--line))] px-1.5 py-1.5 text-center shadow-lg">
-                  <div className="font-mono text-[8px] font-semibold uppercase tracking-[0.1em] text-faint">
-                    Slope
+              ) : (
+                <div
+                  className="pointer-events-none absolute right-3 top-[3.25rem] z-[21] flex w-[4.75rem] flex-col gap-1.5"
+                  aria-label="Hole wind and slope"
+                >
+                  <div className="hud-card rounded-lg border border-[color-mix(in_srgb,var(--brand)_28%,var(--line))] px-1.5 py-1.5 text-center shadow-lg">
+                    <div className="font-mono text-[8px] font-semibold uppercase tracking-[0.1em] text-faint">
+                      {activeBrief
+                        ? activeBrief.headwindMph >= 0
+                          ? 'Into'
+                          : 'Helping'
+                        : 'Wind'}
+                    </div>
+                    <div className="mt-0.5 text-[13px] font-bold tabular-nums leading-none text-ink">
+                      {activeBrief
+                        ? Math.abs(Math.round(activeBrief.headwindMph))
+                        : ensemble?.ensemble.windMph != null
+                          ? Math.round(ensemble.ensemble.windMph)
+                          : '—'}
+                      <span className="ml-0.5 text-[9px] font-semibold text-muted">
+                        mph
+                      </span>
+                    </div>
+                    <div className="mt-0.5 truncate font-mono text-[8px] font-medium text-faint">
+                      {activeBrief
+                        ? aspectLabel(activeBrief.aspect)
+                        : ensemble?.ensemble.windFromDeg != null
+                          ? bearingCompass(ensemble.ensemble.windFromDeg)
+                          : '—'}
+                    </div>
                   </div>
-                  <div className="mt-0.5 text-[13px] font-bold tabular-nums leading-none text-ink">
-                    {activeBrief ? (
-                      <>
-                        {activeBrief.slopeYards > 0 ? '+' : ''}
-                        {activeBrief.slopeYards}
-                        <span className="ml-0.5 text-[9px] font-semibold text-muted">
-                          yd
-                        </span>
-                      </>
-                    ) : (
-                      '—'
-                    )}
-                  </div>
-                  <div className="mt-0.5 font-mono text-[8px] font-medium text-faint">
-                    {activeBrief
-                      ? activeBrief.slopeYards > 0
-                        ? 'Uphill'
-                        : activeBrief.slopeYards < 0
-                          ? 'Downhill'
-                          : 'Flat'
-                      : '—'}
+                  <div className="hud-card rounded-lg border border-[color-mix(in_srgb,var(--brand)_28%,var(--line))] px-1.5 py-1.5 text-center shadow-lg">
+                    <div className="font-mono text-[8px] font-semibold uppercase tracking-[0.1em] text-faint">
+                      Slope
+                    </div>
+                    <div className="mt-0.5 text-[13px] font-bold tabular-nums leading-none text-ink">
+                      {activeBrief ? (
+                        <>
+                          {activeBrief.slopeYards > 0 ? '+' : ''}
+                          {activeBrief.slopeYards}
+                          <span className="ml-0.5 text-[9px] font-semibold text-muted">
+                            yd
+                          </span>
+                        </>
+                      ) : (
+                        '—'
+                      )}
+                    </div>
+                    <div className="mt-0.5 font-mono text-[8px] font-medium text-faint">
+                      {activeBrief
+                        ? activeBrief.slopeYards > 0
+                          ? 'Uphill'
+                          : activeBrief.slopeYards < 0
+                            ? 'Downhill'
+                            : 'Flat'
+                        : '—'}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )
             ) : null}
 
             {scorecardOpen &&

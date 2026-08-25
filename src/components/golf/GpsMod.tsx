@@ -31,6 +31,10 @@ interface Props {
   onDropShot?: () => void;
   canDropShot?: boolean;
   onClose?: () => void;
+  /** Phone: mid + actions only until expanded. */
+  compact?: boolean;
+  expanded?: boolean;
+  onToggleExpanded?: () => void;
   className?: string;
 }
 
@@ -52,6 +56,9 @@ export function GpsMod({
   onDropShot,
   canDropShot = false,
   onClose,
+  compact = false,
+  expanded = true,
+  onToggleExpanded,
   className = '',
 }: Props) {
   const qColor = gpsQualityColor(quality);
@@ -60,6 +67,78 @@ export function GpsMod({
     distances != null &&
     Number.isFinite(distances.mid) &&
     distances.mid > farThresholdYd;
+  const showFull = !compact || expanded;
+  const midYd = farAway
+    ? holeYards
+    : distances?.mid != null
+      ? distances.mid
+      : null;
+
+  if (compact && !expanded) {
+    return (
+      <div
+        className={`pointer-events-auto hud-card flex items-center gap-2 rounded-full border border-[color-mix(in_srgb,var(--brand)_40%,var(--line))] px-2.5 py-1.5 ${className}`}
+      >
+        <button
+          type="button"
+          onClick={onToggleExpanded}
+          className="flex min-w-0 items-center gap-2 text-left"
+          aria-expanded={false}
+          title="Expand GPS"
+        >
+          <span
+            className="grid h-6 w-6 shrink-0 place-items-center rounded-full"
+            style={{ background: `${qColor}22`, color: qColor }}
+          >
+            <Satellite className="h-3 w-3" strokeWidth={2} />
+          </span>
+          <span className="text-[15px] font-bold tabular-nums text-ink">
+            {midYd != null ? midYd : '—'}
+            <span className="ml-0.5 text-[10px] font-semibold text-muted">
+              yd
+            </span>
+          </span>
+          {offCourse ? (
+            <span className="truncate text-[9px] text-faint">tee</span>
+          ) : null}
+        </button>
+        <button
+          type="button"
+          onClick={onLocate}
+          disabled={locating}
+          className="rounded-full p-1.5 text-muted hover:bg-canvas hover:text-ink disabled:opacity-40"
+          aria-label="Fix GPS"
+          title="Fix"
+        >
+          <Crosshair className="h-3.5 w-3.5" />
+        </button>
+        <button
+          type="button"
+          onClick={onToggleFollow}
+          aria-pressed={follow}
+          className={
+            follow
+              ? 'rounded-full bg-[color-mix(in_srgb,#3b82f6_16%,transparent)] p-1.5 text-[#3b82f6]'
+              : 'rounded-full p-1.5 text-muted hover:bg-canvas hover:text-ink'
+          }
+          aria-label="Follow"
+          title="Follow"
+        >
+          <LocateFixed className="h-3.5 w-3.5" />
+        </button>
+        {onClose ? (
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full p-1.5 text-muted hover:bg-canvas hover:text-ink"
+            aria-label="Close GPS panel"
+          >
+            <X className="h-3.5 w-3.5" strokeWidth={2} />
+          </button>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <div
@@ -90,6 +169,16 @@ export function GpsMod({
               Hole yardage
             </span>
           ) : null}
+          {compact && onToggleExpanded ? (
+            <button
+              type="button"
+              onClick={onToggleExpanded}
+              className="rounded-md px-1.5 py-0.5 text-[10px] font-semibold text-muted hover:text-ink"
+              aria-expanded
+            >
+              Less
+            </button>
+          ) : null}
           {onClose ? (
             <button
               type="button"
@@ -104,7 +193,7 @@ export function GpsMod({
         </div>
       </div>
 
-      {enabled ? (
+      {enabled && showFull ? (
         <>
           {farAway ? (
             <div className="mt-2 rounded-lg bg-canvas px-3 py-2.5 text-center">
@@ -203,7 +292,7 @@ export function GpsMod({
             ) : null}
           </div>
         </>
-      ) : (
+      ) : enabled ? null : (
         <p className="mt-1.5 text-[11px] leading-snug text-muted">
           Live front / mid / back green yardages from your phone.
         </p>

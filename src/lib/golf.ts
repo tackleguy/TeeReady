@@ -133,12 +133,12 @@ export interface GolfEnsemble {
 
 const MEM = new Map<string, { at: number; data: unknown }>();
 const COURSES_TTL_MS = 30 * 60_000;
-const COURSES_LS_TTL_MS = 24 * 60 * 60_000;
 /** Short-lived tab cache for the exact holes request key. */
 const HOLES_TTL_MS = 6 * 60 * 60_000;
-/** Durable course-map backup — survives OSM outages across sessions. */
-const HOLES_BACKUP_TTL_MS = 30 * 24 * 60 * 60_000;
-const HOLES_BACKUP_MAX = 40;
+/** Cap durable course-map backups in localStorage. */
+const HOLES_BACKUP_MAX = 48;
+/** Soft-refresh OSM when a backup already exists — keep maps opening instantly. */
+const HOLES_SOFT_REFRESH_MS = 2_800;
 const HOLES_BACKUP_INDEX_KEY = 'golf:v1:hole-backup-index';
 const LS_PREFIX = 'teeready-golf-cache:';
 
@@ -186,31 +186,13 @@ function sessionSet(key: string, data: unknown): void {
   }
 }
 
-function localGet<T>(key: string, ttl: number): T | null {
+/** Read localStorage without deleting — expired entries stay for OSM outages. */
+function localGetAllowStale<T>(key: string): T | null {
   try {
     const raw = localStorage.getItem(`${LS_PREFIX}${key}`);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as { at: number; data: T };
-    if (Date.now() - parsed.at > ttl) {
-      localStorage.removeItem(`${LS_PREFIX}${key}`);
-      return null;
-    }
-    return parsed.data;
-  } catch {
-    return null;
-  }
-}
-
-/** Prefer fresh cache, but keep expired entries for OSM outage fallback. */
-function localGetAllowStale<T>(key: string, ttl: number): T | null {
-  try {
-    const raw = localStorage.getItem(`${LS_PREFIX}${key}`);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as { at: number; data: T };
-    if (Date.now() - parsed.at > ttl) {
-      return parsed.data ?? null;
-    }
-    return parsed.data;
+    return parsed.data ?? null;
   } catch {
     return null;
   }
@@ -330,11 +312,18 @@ export function peekGolfCoursesCache(
 ): GolfCourseSummary[] | null {
   const query = q?.trim().toLowerCase() ?? '';
   const key = coursesCacheKey(lat, lon, query, radius);
-  return (
+  const live =
     memGet<GolfCourseSummary[]>(key, COURSES_TTL_MS) ??
-    sessionGet<GolfCourseSummary[]>(key, COURSES_TTL_MS) ??
-    localGet<GolfCourseSummary[]>(key, COURSES_LS_TTL_MS)
-  );
+    sessionGet<GolfCourseSummary[]>(key, COURSES_TTL_MS);
+  if (live?.length) return live;
+  // Never wipe expired lists — stale courses still beat an empty OSM outage.
+  const local = localGetAllowStale<GolfCourseSummary[]>(key);
+  if (local?.length) {
+    memSet(key, local);
+    sessionSet(key, local);
+    return local;
+  }
+  return null;
 }
 
 type HolesFetchOpts = {
@@ -346,21 +335,47 @@ type HolesFetchOpts = {
   signal?: AbortSignal;
 };
 
+export type GolfHolesPeek = {
+  holes: GolfHole[];
+  /** True when data came from durable localStorage, not this-tab cache. */
+  fromBackup: boolean;
+};
+
 /** Instant course-map geometry from memory, session, or durable backup. */
 export function peekGolfHolesCache(
   lat: number,
   lon: number,
   opts?: Omit<HolesFetchOpts, 'signal'>,
 ): GolfHole[] | null {
+  return peekGolfHolesDetail(lat, lon, opts)?.holes ?? null;
+}
+
+/** Same as peekGolfHolesCache, with whether the hit was a durable backup. */
+export function peekGolfHolesDetail(
+  lat: number,
+  lon: number,
+  opts?: Omit<HolesFetchOpts, 'signal'>,
+): GolfHolesPeek | null {
   const { requestKey, backupKey } = holesRequestKey(lat, lon, opts);
-  const live =
-    memGet<GolfHole[]>(requestKey, HOLES_TTL_MS) ??
-    sessionGet<GolfHole[]>(requestKey, HOLES_TTL_MS);
-  if (live?.length) return live;
-  const backup =
-    localGet<GolfHole[]>(backupKey, HOLES_BACKUP_TTL_MS) ??
-    localGetAllowStale<GolfHole[]>(backupKey, HOLES_BACKUP_TTL_MS);
-  return backup?.length ? backup : null;
+  // Session = OSM-confirmed this tab — instant reopen, no soft-refresh needed.
+  const confirmed = sessionGet<GolfHole[]>(requestKey, HOLES_TTL_MS);
+  if (confirmed?.length) {
+    memSet(requestKey, confirmed);
+    return { holes: confirmed, fromBackup: false };
+  }
+  const mem = memGet<GolfHole[]>(requestKey, HOLES_TTL_MS);
+  if (mem?.length) {
+    // Mem-only hits are usually a just-painted backup; treat as backup so load
+    // still soft-refreshes OSM instead of skipping the network forever.
+    return { holes: mem, fromBackup: true };
+  }
+  // Never delete backups on read — expired maps are the OSM-outage lifeline.
+  const backup = localGetAllowStale<GolfHole[]>(backupKey);
+  if (!backup?.length) return null;
+  // Mem-only hydrate so paint is instant; session stays reserved for OSM OK.
+  memSet(requestKey, backup);
+  touchBackupIndex(backupKey);
+  return { holes: backup, fromBackup: true };
 }
 
 function saveHolesBackup(backupKey: string, requestKey: string, holes: GolfHole[]): void {
@@ -429,12 +444,12 @@ export async function fetchGolfCourses(
       2,
     );
   } catch {
-    const stale = localGetAllowStale<GolfCourseSummary[]>(key, COURSES_LS_TTL_MS);
+    const stale = localGetAllowStale<GolfCourseSummary[]>(key);
     return stale?.length ? stale : [];
   }
   if (!res.ok) {
     if (res.status >= 500) {
-      const stale = localGetAllowStale<GolfCourseSummary[]>(key, COURSES_LS_TTL_MS);
+      const stale = localGetAllowStale<GolfCourseSummary[]>(key);
       return stale?.length ? stale : [];
     }
     const detail = (await res.json().catch(() => null)) as {
@@ -471,20 +486,28 @@ export async function fetchGolfHoles(
   return result.holes;
 }
 
+function keepBackupHot(
+  backupKey: string,
+  requestKey: string,
+  holes: GolfHole[],
+): void {
+  if (!holes.length) return;
+  memSet(requestKey, holes);
+  touchBackupIndex(backupKey);
+}
+
 export async function loadGolfHoles(
   lat: number,
   lon: number,
   opts?: HolesFetchOpts,
 ): Promise<GolfHolesLoadResult> {
   const { requestKey, backupKey, bbox } = holesRequestKey(lat, lon, opts);
-  const cached = peekGolfHolesCache(lat, lon, opts);
-  const fresh =
-    memGet<GolfHole[]>(requestKey, HOLES_TTL_MS) ??
-    sessionGet<GolfHole[]>(requestKey, HOLES_TTL_MS);
-  if (fresh?.length) {
-    memSet(requestKey, fresh);
-    return { holes: fresh, fromBackup: false };
+  const peeked = peekGolfHolesDetail(lat, lon, opts);
+  // OSM-confirmed session cache — skip the network entirely.
+  if (peeked?.holes.length && !peeked.fromBackup) {
+    return { holes: peeked.holes, fromBackup: false };
   }
+  const backup = peeked?.holes?.length ? peeked.holes : null;
 
   const params = new URLSearchParams({
     lat: String(lat),
@@ -499,24 +522,44 @@ export async function loadGolfHoles(
   }
   if (opts?.courseName) params.set('courseName', opts.courseName);
 
-  const radii = opts?.bbox
-    ? [opts.radius ?? 1800]
-    : [opts?.radius ?? 1800, 2800];
+  // When a backup exists, soft-refresh OSM with a short deadline so the map
+  // never waits on a slow/overloaded Overpass mirror.
+  const softRefresh = Boolean(backup?.length);
+  const radii = softRefresh
+    ? [opts?.radius ?? 1800]
+    : opts?.bbox
+      ? [opts.radius ?? 1800]
+      : [opts?.radius ?? 1800, 2800];
+  const attempts = softRefresh ? 1 : 2;
+
   let lastErr: unknown = null;
   for (const radius of radii) {
     if (opts?.signal?.aborted) throw new DOMException('aborted', 'AbortError');
     params.set('radius', String(radius));
+
+    const softAc = softRefresh ? new AbortController() : null;
+    const softTimer = softAc
+      ? window.setTimeout(() => softAc.abort(), HOLES_SOFT_REFRESH_MS)
+      : 0;
+    const onParentAbort = () => softAc?.abort();
+    if (softAc && opts?.signal) {
+      if (opts.signal.aborted) softAc.abort();
+      else opts.signal.addEventListener('abort', onParentAbort, { once: true });
+    }
+    const signal = softAc?.signal ?? opts?.signal;
+
     try {
       const res = await fetchWithRetry(
         `/api/golf/holes?${params}`,
-        opts?.signal,
-        2,
+        signal,
+        attempts,
       );
       if (!res.ok) {
         const detail = (await res.json().catch(() => null)) as {
           error?: string;
         } | null;
         lastErr = new Error(detail?.error ?? `holes ${res.status}`);
+        if (softRefresh && backup) break;
         continue;
       }
       const data = (await res.json()) as { holes: GolfHole[] };
@@ -525,21 +568,25 @@ export async function loadGolfHoles(
         saveHolesBackup(backupKey, requestKey, holes);
         return { holes, fromBackup: false };
       }
-      if (cached?.length) {
-        saveHolesBackup(backupKey, requestKey, cached);
-        return { holes: cached, fromBackup: true };
+      if (backup?.length) {
+        keepBackupHot(backupKey, requestKey, backup);
+        return { holes: backup, fromBackup: true };
       }
       return { holes: [], fromBackup: false };
     } catch (err) {
       if (opts?.signal?.aborted) throw err;
       lastErr = err;
+      if (softRefresh && backup) break;
       await new Promise((r) => setTimeout(r, 700));
+    } finally {
+      if (softTimer) window.clearTimeout(softTimer);
+      opts?.signal?.removeEventListener('abort', onParentAbort);
     }
   }
 
-  if (cached?.length) {
-    saveHolesBackup(backupKey, requestKey, cached);
-    return { holes: cached, fromBackup: true };
+  if (backup?.length) {
+    keepBackupHot(backupKey, requestKey, backup);
+    return { holes: backup, fromBackup: true };
   }
 
   throw lastErr instanceof Error
@@ -552,7 +599,7 @@ const warmInFlight = new Set<string>();
 /** Idle-prefetch nearby course maps so OSM outages still open instantly. */
 export function warmNearbyCourseMaps(
   courses: GolfCourseSummary[],
-  limit = 8,
+  limit = 12,
 ): void {
   if (typeof window === 'undefined') return;
   const targets = courses
@@ -563,13 +610,14 @@ export function warmNearbyCourseMaps(
     for (const course of targets) {
       const id = course.id || `${course.osmType}:${course.osmId}`;
       warmSatelliteTiles(course.lat, course.lon, { courseId: id });
-      const peek = peekGolfHolesCache(course.lat, course.lon, {
+      const peek = peekGolfHolesDetail(course.lat, course.lon, {
         bbox: course.bbox,
         osmType: course.osmType,
         osmId: course.osmId,
         courseName: course.name,
       });
-      if (peek?.length) continue;
+      // Skip only OSM-confirmed session hits; still refresh durable backups.
+      if (peek?.holes.length && !peek.fromBackup) continue;
       if (warmInFlight.has(id)) continue;
       warmInFlight.add(id);
       void fetchGolfHoles(course.lat, course.lon, {
