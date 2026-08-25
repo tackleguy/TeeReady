@@ -3,12 +3,13 @@
  * Build 3D green mesh JSON from free OSM polygons + USGS 3DEP elevation.
  * Output: public/golf/greens/{slug}.json
  */
-import { mkdirSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT_DIR = join(ROOT, 'public/golf/greens');
+const CATALOG_PATH = join(ROOT, 'api/golf/_data/usCatalog.json');
 const OVERPASS_URLS = [
   'https://overpass-api.de/api/interpreter',
   'https://overpass.private.coffee/api/interpreter',
@@ -18,15 +19,14 @@ const USGS =
   'https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer/exportImage';
 const UA = 'TeeReady/1.0 (green-mesh-builder)';
 
-/** @type {Array<{ slug: string; name: string; lat: number; lon: number; radiusM: number; maxLat?: number; minLat?: number }>} */
-const COURSES = [
+/** Hand-tuned splits (shared facilities). */
+const CURATED = [
   {
     slug: 'torrey-pines-south',
     name: 'South At Torrey Pines Municipal Golf Course',
     lat: 32.90246,
     lon: -117.24627,
     radiusM: 2200,
-    /** Drop North Course / practice greens north of this latitude. */
     maxLat: 32.904,
   },
   {
@@ -35,7 +35,6 @@ const COURSES = [
     lat: 32.90467,
     lon: -117.24462,
     radiusM: 2200,
-    /** Drop South Course greens south of this latitude. */
     minLat: 32.904,
   },
   {
@@ -47,8 +46,108 @@ const COURSES = [
   },
 ];
 
-const GRID_M = 0.85;
+/** Prefer well-mapped venues when expanding from the US catalog. */
+const PRIORITY_NEEDLES = [
+  'bethpage',
+  'pinehurst',
+  'augusta national',
+  'pebble beach',
+  'torrey pines',
+  'whistling straits',
+  'tpc sawgrass',
+  'tpc scottsdale',
+  'riviera country',
+  'spyglass',
+  'kiawah',
+  'bandon',
+  'chambers bay',
+  'erin hills',
+  'oakmont',
+  'merion',
+  'shinnecock',
+  'winged foot',
+  'congressional',
+  'olympic club',
+  'pacific dunes',
+  'spanish bay',
+  'harbour town',
+  'streamsong',
+  'sand valley',
+  'pelican hill',
+  'poppy hills',
+  'pasatiempo',
+  'cypress point',
+  'monterey peninsula',
+  'griffith park',
+  'sepulveda',
+  'rancho park',
+  'harding park',
+  'tpc harding',
+  'presidio',
+  'sharp park',
+  'aviara',
+  'barona creek',
+  'maderas',
+  'la costa',
+  'coronado golf',
+  'steele canyon',
+  'rustic canyon',
+  'sandpiper',
+  'los verdes',
+  'industry hills',
+  'wilson golf',
+  'hansen dam',
+  'brookside golf club',
+  'angeles national',
+  'troon north',
+  'we-ko-pa',
+  'talking stick',
+  'grayhawk',
+  'pga west',
+  'la quinta',
+  'kapalua',
+  'waialae',
+  'bandon dunes',
+  'pacific pines',
+  'torrey',
+  'balboa at sepulveda',
+  'encino at sepulveda',
+  'crystal springs',
+  'half moon bay',
+  'cordevalle',
+  'silverado',
+  'peacock gap',
+  'meadow club',
+  'california golf club',
+  'lake merced',
+  'lincoln park golf',
+  'golden gate park',
+  'mission bay golf',
+  'admira baker',
+  'admiral baker',
+  'riverwalk golf',
+  'cottonwood golf',
+  'fairbanks ranch',
+  'the farms golf',
+  'rancho bernardo',
+  'twin oaks golf',
+  'scottsdale national',
+  'phoenix country',
+  'papago',
+  'encanto golf',
+  'cave creek',
+  'bandon trails',
+  'sheep ranch',
+  'old macdonald',
+];
+
+const SKIP_ST = new Set(['AK', 'PR', 'VI', 'GU', 'AS', 'MP']);
+/** Slightly coarser than first Torrey builds — packs more courses into deploy size. */
+const GRID_M = 1.15;
 const PAD_M = 6;
+const MIN_GREENS_OSM = 10;
+const MIN_MESH_HOLES = 9;
+const DEFAULT_RADIUS_M = 1600;
 
 function mPerDegree(lat) {
   const latRad = (lat * Math.PI) / 180;
@@ -206,9 +305,9 @@ function buildMesh(ringLocal, patch, origin) {
       const idx = positions.length / 3;
       grid[j * nx + i] = idx;
       positions.push(
-        Math.round(x * 1000) / 1000,
-        Math.round((elev - baseElev) * 1000) / 1000,
-        Math.round(y * 1000) / 1000,
+        Math.round(x * 100) / 100,
+        Math.round((elev - baseElev) * 100) / 100,
+        Math.round(y * 100) / 100,
       );
     }
   }
@@ -442,24 +541,198 @@ out tags geom;
   };
 }
 
+function slugify(name) {
+  return String(name)
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 72);
+}
+
+function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+function parseArgs(argv) {
+  const flags = new Set();
+  const only = [];
+  let limit = 120;
+  let minGreens = MIN_GREENS_OSM;
+  for (const a of argv) {
+    if (a === '--bulk') flags.add('bulk');
+    else if (a === '--skip-existing') flags.add('skip-existing');
+    else if (a === '--manifest-only') flags.add('manifest-only');
+    else if (a.startsWith('--limit=')) limit = Number(a.slice(8)) || limit;
+    else if (a.startsWith('--min-greens='))
+      minGreens = Number(a.slice(13)) || minGreens;
+    else if (!a.startsWith('-')) only.push(a);
+  }
+  return { flags, only, limit, minGreens };
+}
+
+function loadPriorityFromCatalog(limit) {
+  if (!existsSync(CATALOG_PATH)) return [];
+  const cat = JSON.parse(readFileSync(CATALOG_PATH, 'utf8'));
+  /** @type {Array<{ slug: string; name: string; lat: number; lon: number; radiusM: number }>} */
+  const out = [];
+  const seen = new Set(CURATED.map((c) => c.slug));
+  for (const c of cat) {
+    if (out.length >= limit) break;
+    if (c.la == null || c.lo == null) continue;
+    if (c.h != null && c.h < 9) continue;
+    if (c.st && SKIP_ST.has(c.st)) continue;
+    // HI has poor 3DEP coverage for many islands — skip unless curated.
+    if (c.st === 'HI') continue;
+    const n = String(c.n || '').toLowerCase();
+    if (!PRIORITY_NEEDLES.some((k) => n.includes(k))) continue;
+    const slug = slugify(c.n);
+    if (!slug || seen.has(slug)) continue;
+    seen.add(slug);
+    out.push({
+      slug,
+      name: c.n,
+      lat: c.la,
+      lon: c.lo,
+      radiusM: DEFAULT_RADIUS_M,
+    });
+  }
+  return out;
+}
+
+async function countOsmGreens(lat, lon, radiusM) {
+  const q = `
+[out:json][timeout:40];
+way["golf"="green"](around:${radiusM},${lat},${lon});
+out count;
+`.trim();
+  const body = await overpass(q);
+  const el = body.elements?.[0];
+  const n = el?.tags?.ways ?? el?.tags?.total ?? 0;
+  return Number(n) || 0;
+}
+
+function writeManifest() {
+  const files = readdirSync(OUT_DIR).filter(
+    (f) => f.endsWith('.json') && f !== 'manifest.json',
+  );
+  const entries = [];
+  for (const f of files) {
+    try {
+      const data = JSON.parse(readFileSync(join(OUT_DIR, f), 'utf8'));
+      if (!data?.greens?.length) continue;
+      entries.push({
+        slug: data.id || f.replace(/\.json$/, ''),
+        name: data.name,
+        lat: data.lat,
+        lon: data.lon,
+        holes: data.greens.length,
+        holeNumbers: data.greens.map((g) => g.hole).sort((a, b) => a - b),
+      });
+    } catch {
+      /* skip bad file */
+    }
+  }
+  entries.sort((a, b) => a.name.localeCompare(b.name));
+  const manifest = {
+    version: 1,
+    builtAt: new Date().toISOString(),
+    count: entries.length,
+    courses: entries,
+  };
+  writeFileSync(join(OUT_DIR, 'manifest.json'), JSON.stringify(manifest));
+  console.log(`Manifest: ${entries.length} courses → public/golf/greens/manifest.json`);
+  return manifest;
+}
+
+async function writeCourse(course, { skipExisting, minGreens }) {
+  const outPath = join(OUT_DIR, `${course.slug}.json`);
+  if (skipExisting && existsSync(outPath)) {
+    try {
+      const prev = JSON.parse(readFileSync(outPath, 'utf8'));
+      if ((prev.greens?.length ?? 0) >= MIN_MESH_HOLES) {
+        console.log(`skip ${course.slug} (existing ${prev.greens.length} greens)`);
+        return prev;
+      }
+    } catch {
+      /* rebuild */
+    }
+  }
+
+  // Quick OSM density check before full geom + 3DEP pull.
+  if (!course.maxLat && !course.minLat) {
+    try {
+      const n = await countOsmGreens(course.lat, course.lon, course.radiusM);
+      console.log(`${course.slug}: OSM green count ≈ ${n}`);
+      if (n < minGreens) {
+        console.log(`  skip — need ≥ ${minGreens} greens\n`);
+        return null;
+      }
+    } catch (err) {
+      console.warn(
+        `${course.slug}: count failed (${err.message}) — trying full build`,
+      );
+    }
+    await sleep(400);
+  }
+
+  const data = await buildCourse(course);
+  if (data.greens.length < MIN_MESH_HOLES) {
+    console.warn(
+      `${course.slug}: only ${data.greens.length} meshes — not writing\n`,
+    );
+    return null;
+  }
+  writeFileSync(outPath, JSON.stringify(data));
+  console.log(
+    `Wrote ${outPath} (${data.greens.length} greens · holes ${data.greens.map((g) => g.hole).join(',')})\n`,
+  );
+  await sleep(600);
+  return data;
+}
+
 mkdirSync(OUT_DIR, { recursive: true });
 
-const only = new Set(process.argv.slice(2).filter((a) => !a.startsWith('-')));
-const queue = only.size
-  ? COURSES.filter((c) => only.has(c.slug))
-  : COURSES;
+const { flags, only, limit, minGreens } = parseArgs(process.argv.slice(2));
+
+if (flags.has('manifest-only')) {
+  writeManifest();
+  process.exit(0);
+}
+
+/** @type {typeof CURATED} */
+let queue = [];
+if (only.length) {
+  const fromCurated = CURATED.filter((c) => only.includes(c.slug));
+  const fromCatalog = loadPriorityFromCatalog(500).filter((c) =>
+    only.includes(c.slug),
+  );
+  queue = [...fromCurated, ...fromCatalog];
+  if (!queue.length) {
+    // Allow ad-hoc slug rebuild of existing file coords via curated/priority only.
+    console.error('No matching course slugs in curated/priority lists:', only);
+    process.exitCode = 1;
+  }
+} else if (flags.has('bulk')) {
+  queue = [...CURATED, ...loadPriorityFromCatalog(limit)];
+} else {
+  queue = [...CURATED];
+}
+
+console.log(`Building ${queue.length} course(s)…\n`);
 
 for (const course of queue) {
   try {
-    const data = await buildCourse(course);
-    const outPath = join(OUT_DIR, `${course.slug}.json`);
-    writeFileSync(outPath, JSON.stringify(data));
-    const holes = data.greens.map((g) => g.hole).join(',');
-    console.log(
-      `Wrote ${outPath} (${data.greens.length} greens · holes ${holes})\n`,
-    );
+    await writeCourse(course, {
+      skipExisting: flags.has('skip-existing'),
+      minGreens,
+    });
   } catch (err) {
-    console.error(`${course.slug} failed:`, err);
+    console.error(`${course.slug} failed:`, err.message || err);
     process.exitCode = 1;
+    await sleep(1500);
   }
 }
+
+writeManifest();
+

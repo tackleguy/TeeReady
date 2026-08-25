@@ -21,20 +21,35 @@ export interface GreenMeshCourse {
   source?: string;
 }
 
+export interface GreenMeshManifestEntry {
+  slug: string;
+  name: string;
+  lat: number;
+  lon: number;
+  holes: number;
+  holeNumbers?: number[];
+}
+
+export interface GreenMeshManifest {
+  version: number;
+  builtAt?: string;
+  count: number;
+  courses: GreenMeshManifestEntry[];
+}
+
+/** Legacy name matchers for curated packs (before lat/lon manifest). */
 const SLUGS: Array<{ slug: string; test: (name: string) => boolean }> = [
   {
     slug: 'torrey-pines-south',
     test: (n) =>
       n.includes('south at torrey') ||
-      (n.includes('torrey pines') && n.includes('south')) ||
-      (n.includes('torrey pines municipal') && n.includes('south')),
+      (n.includes('torrey pines') && n.includes('south')),
   },
   {
     slug: 'torrey-pines-north',
     test: (n) =>
       n.includes('north at torrey') ||
-      (n.includes('torrey pines') && n.includes('north')) ||
-      (n.includes('torrey pines municipal') && n.includes('north')),
+      (n.includes('torrey pines') && n.includes('north')),
   },
   {
     slug: 'pebble-beach',
@@ -46,7 +61,74 @@ const SLUGS: Array<{ slug: string; test: (name: string) => boolean }> = [
   },
 ];
 
-export function greenMeshSlug(courseName: string | undefined | null): string | null {
+const MATCH_M = 1200;
+
+function haversineM(
+  aLat: number,
+  aLon: number,
+  bLat: number,
+  bLon: number,
+): number {
+  const R = 6_371_000;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(bLat - aLat);
+  const dLon = toRad(bLon - aLon);
+  const A =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(A));
+}
+
+let manifestPromise: Promise<GreenMeshManifest | null> | null = null;
+
+export function loadGreenMeshManifest(): Promise<GreenMeshManifest | null> {
+  if (manifestPromise) return manifestPromise;
+  manifestPromise = fetch('/golf/greens/manifest.json')
+    .then((res) => (res.ok ? (res.json() as Promise<GreenMeshManifest>) : null))
+    .catch(() => null);
+  return manifestPromise;
+}
+
+function matchSlugFromManifest(
+  manifest: GreenMeshManifest | null,
+  courseName: string | null | undefined,
+  lat?: number | null,
+  lon?: number | null,
+): string | null {
+  if (!manifest?.courses?.length) return null;
+
+  if (
+    lat != null &&
+    lon != null &&
+    Number.isFinite(lat) &&
+    Number.isFinite(lon)
+  ) {
+    let best: GreenMeshManifestEntry | null = null;
+    let bestD = Infinity;
+    for (const c of manifest.courses) {
+      const d = haversineM(lat, lon, c.lat, c.lon);
+      if (d < bestD) {
+        bestD = d;
+        best = c;
+      }
+    }
+    if (best && bestD <= MATCH_M) return best.slug;
+  }
+
+  if (courseName) {
+    const n = courseName.toLowerCase();
+    const hit = manifest.courses.find(
+      (c) =>
+        c.name.toLowerCase() === n ||
+        n.includes(c.name.toLowerCase()) ||
+        c.name.toLowerCase().includes(n),
+    );
+    if (hit) return hit.slug;
+  }
+  return null;
+}
+
+function matchSlugLegacy(courseName: string | undefined | null): string | null {
   if (!courseName) return null;
   const n = courseName.toLowerCase();
   for (const { slug, test } of SLUGS) {
@@ -55,8 +137,34 @@ export function greenMeshSlug(courseName: string | undefined | null): string | n
   return null;
 }
 
+/** Sync legacy fallback — prefer resolveGreenMeshSlug() when lat/lon available. */
+export function greenMeshSlug(courseName: string | undefined | null): string | null {
+  return matchSlugLegacy(courseName);
+}
+
+export async function resolveGreenMeshSlug(
+  courseName: string | undefined | null,
+  lat?: number | null,
+  lon?: number | null,
+): Promise<string | null> {
+  const manifest = await loadGreenMeshManifest();
+  return (
+    matchSlugFromManifest(manifest, courseName, lat, lon) ??
+    matchSlugLegacy(courseName)
+  );
+}
+
 export function hasGreenMeshes(courseName: string | undefined | null): boolean {
   return greenMeshSlug(courseName) != null;
+}
+
+/** True if this course is in the mesh pack (manifest or legacy name). */
+export async function courseHasGreenMeshes(
+  courseName: string | undefined | null,
+  lat?: number | null,
+  lon?: number | null,
+): Promise<boolean> {
+  return (await resolveGreenMeshSlug(courseName, lat, lon)) != null;
 }
 
 const cache = new Map<string, Promise<GreenMeshCourse | null>>();

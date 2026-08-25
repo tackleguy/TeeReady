@@ -356,7 +356,7 @@ export function Green3DViewer({ course, hole, onClose }: Props) {
           'radial-gradient(120% 80% at 50% 20%, #0d2a1c 0%, #07140f 55%, #040a08 100%)',
       }}
     >
-      <div className="flex items-center justify-between gap-3 px-4 pb-2 pt-4">
+      <div className="flex items-center justify-between gap-3 px-4 pb-2 pt-[max(1rem,env(safe-area-inset-top))]">
         <div>
           <div className="text-[22px] font-semibold tracking-tight text-emerald-50">
             Hole {hole}
@@ -391,7 +391,7 @@ export function Green3DViewer({ course, hole, onClose }: Props) {
         </div>
       </div>
 
-      <div className="space-y-3 px-5 pb-7 pt-3">
+      <div className="space-y-3 px-5 pb-[max(1.75rem,env(safe-area-inset-bottom))] pt-3">
         <div className="text-center text-[12px] font-medium text-emerald-100/80">
           Relief
         </div>

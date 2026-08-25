@@ -74,9 +74,9 @@ import {
 import { weatherAppHref } from '../lib/golfApp';
 import { warmGolfCatalog } from '../lib/golfCatalogPrefetch';
 import {
-  hasGreenMeshes,
+  courseHasGreenMeshes,
   loadGreenMeshCourse,
-  greenMeshSlug,
+  resolveGreenMeshSlug,
   type GreenMeshCourse,
 } from '../lib/golfGreen3d';
 import { Green3DViewer } from '../components/golf/Green3DViewer';
@@ -193,6 +193,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
   const [greens3d, setGreens3d] = useState(false);
   const [greenMeshCourse, setGreenMeshCourse] =
     useState<GreenMeshCourse | null>(null);
+  const [canGreens3d, setCanGreens3d] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(true);
   const [sheetExpanded, setSheetExpanded] = useState(false);
   const [target, setTarget] = useState<LonLat | null>(null);
@@ -699,18 +700,34 @@ export function GolfView({ active = true }: { active?: boolean }) {
   ]);
 
   useEffect(() => {
+    if (!course) {
+      setCanGreens3d(false);
+      return;
+    }
+    let cancelled = false;
+    courseHasGreenMeshes(course.name, course.lat, course.lon).then((ok) => {
+      if (!cancelled) setCanGreens3d(ok);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [course]);
+
+  useEffect(() => {
     if (!greens3d || !course) {
       setGreenMeshCourse(null);
       return;
     }
-    const slug = greenMeshSlug(course.name);
-    if (!slug) {
-      setGreenMeshCourse(null);
-      return;
-    }
     let cancelled = false;
-    loadGreenMeshCourse(slug).then((data) => {
-      if (!cancelled) setGreenMeshCourse(data);
+    resolveGreenMeshSlug(course.name, course.lat, course.lon).then((slug) => {
+      if (cancelled) return;
+      if (!slug) {
+        setGreenMeshCourse(null);
+        return;
+      }
+      loadGreenMeshCourse(slug).then((data) => {
+        if (!cancelled) setGreenMeshCourse(data);
+      });
     });
     return () => {
       cancelled = true;
@@ -1186,7 +1203,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     <ClipboardList className="h-3 w-3" />
                     Card
                   </button>
-                  {course && hasGreenMeshes(course.name) ? (
+                  {course && canGreens3d ? (
                     <button
                       type="button"
                       onClick={() => {

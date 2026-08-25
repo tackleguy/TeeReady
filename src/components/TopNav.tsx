@@ -41,16 +41,16 @@ function useMenuDismiss(open: boolean, onClose: () => void) {
   const rootRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!open) return;
-    const onDoc = (e: MouseEvent) => {
+    const onDoc = (e: PointerEvent) => {
       if (!rootRef.current?.contains(e.target as Node)) onClose();
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
-    document.addEventListener('mousedown', onDoc);
+    document.addEventListener('pointerdown', onDoc);
     document.addEventListener('keydown', onKey);
     return () => {
-      document.removeEventListener('mousedown', onDoc);
+      document.removeEventListener('pointerdown', onDoc);
       document.removeEventListener('keydown', onKey);
     };
   }, [open, onClose]);
@@ -269,7 +269,7 @@ export function TopNav({
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-[color-mix(in_srgb,var(--canvas)_94%,transparent)] backdrop-blur-md">
+    <header className="sticky top-0 z-30 border-b border-line bg-[color-mix(in_srgb,var(--canvas)_94%,transparent)] pt-[env(safe-area-inset-top)] backdrop-blur-md">
       <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between px-5 py-3 md:px-8">
         <div className="flex items-center gap-7">
           <NavLink to="/today" className="group flex items-center gap-2.5">

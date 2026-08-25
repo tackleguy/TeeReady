@@ -658,15 +658,20 @@ body {
 
 @media (max-width: 768px) {
   .app-main {
-    padding: 1rem 1.25rem 1.5rem;
+    padding: 1rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom));
   }
 
   .app-main.rounds {
-    height: calc(100dvh - 7rem);
+    height: calc(
+      100dvh - 7rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+    );
+    min-height: calc(
+      100dvh - 7rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+    );
   }
 
   .rounds-keepalive {
-    top: 7rem;
+    top: calc(7rem + env(safe-area-inset-top));
   }
 }
 

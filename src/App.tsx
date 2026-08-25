@@ -14,6 +14,7 @@ import { AuthProvider, useAuth } from './lib/auth';
 import { CURRENT_LOCATION } from './lib/mock';
 import { applyTheme, loadTheme } from './lib/theme';
 import { defaultSearchLoc, saveSearchLoc } from './lib/searchLoc';
+import { loadGreenMeshManifest } from './lib/golfGreen3d';
 import { CourseMapView } from './routes/CourseMapView';
 import { CoursesView } from './routes/CoursesView';
 import { GroupView } from './routes/GroupView';
@@ -116,6 +117,10 @@ function Shell() {
   const isCourseMap = location.pathname.startsWith('/courses/map');
   const [place, setPlace] = useState(() => defaultSearchLoc().name || CURRENT_LOCATION);
   const [pickingLocation, setPickingLocation] = useState(false);
+
+  useEffect(() => {
+    loadGreenMeshManifest().catch(() => {});
+  }, []);
 
   useEffect(() => {
     const sync = () => setPlace(defaultSearchLoc().name || CURRENT_LOCATION);

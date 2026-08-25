@@ -15,6 +15,7 @@
     "import:golf-scorecards": "node scripts/import-opengolf-scorecards.mjs",
     "build:golf-catalog": "node scripts/build-golf-catalog.mjs",
     "build:green-meshes": "node scripts/build-green-meshes.mjs",
+    "smoke": "node scripts/smoke-mobile.mjs",
     "prebuild": "node scripts/build-golf-catalog.mjs"
   },
   "dependencies": {

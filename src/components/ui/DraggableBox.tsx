@@ -350,7 +350,7 @@ export function DraggableBox({
         top: pos?.y ?? 0,
         zIndex,
         visibility: pos ? 'visible' : 'hidden',
-        touchAction: 'none',
+        touchAction: 'manipulation',
       }}
       data-draggable-id={id}
     >
@@ -361,7 +361,7 @@ export function DraggableBox({
           }`}
         >
           <div
-            className="flex min-w-0 flex-1 cursor-grab items-center gap-2 px-2.5 py-1.5 active:cursor-grabbing"
+            className="flex min-w-0 flex-1 cursor-grab touch-none items-center gap-2 px-2.5 py-1.5 active:cursor-grabbing"
             onPointerDown={onTitlePointerDown}
             onPointerMove={onDragPointerMove}
             onPointerUp={endDrag}
@@ -400,7 +400,9 @@ export function DraggableBox({
           ) : null}
         </div>
       ) : null}
-      <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
+      <div className="min-h-0 flex-1 overflow-auto overscroll-contain">
+        {children}
+      </div>
       {resizable && size ? (
         <>
           <div
