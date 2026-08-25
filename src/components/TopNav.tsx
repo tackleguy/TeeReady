@@ -151,7 +151,7 @@ function RoundsMenu({ mobile = false }: { mobile?: boolean }) {
   }, []);
 
   return (
-    <div className="relative">
+    <div className="relative" data-tutorial="rounds">
       <button
         ref={triggerRef}
         type="button"
@@ -294,14 +294,17 @@ function NavItem({
   to,
   children,
   mobile = false,
+  tutorialId,
 }: {
   to: string;
   children: React.ReactNode;
   mobile?: boolean;
+  tutorialId?: string;
 }) {
   return (
     <NavLink
       to={to}
+      data-tutorial={tutorialId}
       onMouseEnter={() => prefetchRoute(to)}
       onFocus={() => prefetchRoute(to)}
       className={`${mobile ? 'whitespace-nowrap ' : ''}nav-link`}
@@ -351,10 +354,16 @@ export function TopNav({
             </span>
           </NavLink>
           <nav className="hidden items-center gap-5 md:flex">
-            <NavItem to="/today">Today</NavItem>
-            <NavItem to="/courses">Courses</NavItem>
+            <NavItem to="/today" tutorialId="today">
+              Today
+            </NavItem>
+            <NavItem to="/courses" tutorialId="courses">
+              Courses
+            </NavItem>
             <RoundsMenu />
-            <NavItem to="/stats">Stats</NavItem>
+            <NavItem to="/stats" tutorialId="stats">
+              Stats
+            </NavItem>
             <MoreMenu />
           </nav>
         </div>
@@ -397,14 +406,14 @@ export function TopNav({
       </div>
 
       <nav className="flex items-center gap-4 overflow-x-auto border-t border-line/60 px-5 py-2 no-scrollbar md:hidden">
-        <NavItem to="/today" mobile>
+        <NavItem to="/today" mobile tutorialId="today">
           Today
         </NavItem>
-        <NavItem to="/courses" mobile>
+        <NavItem to="/courses" mobile tutorialId="courses">
           Courses
         </NavItem>
         <RoundsMenu mobile />
-        <NavItem to="/stats" mobile>
+        <NavItem to="/stats" mobile tutorialId="stats">
           Stats
         </NavItem>
         <MoreMenu mobile />

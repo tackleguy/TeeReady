@@ -10,6 +10,7 @@ import { InstallPrompt } from './components/InstallPrompt';
 import { SearchBar } from './components/radar/SearchBar';
 import { ThemeBoot } from './components/ThemeBoot';
 import { TopNav } from './components/TopNav';
+import { AppTutorial } from './components/tutorial/AppTutorial';
 import { AuthProvider, useAuth } from './lib/auth';
 import { CURRENT_LOCATION } from './lib/mock';
 import { applyTheme, loadTheme } from './lib/theme';
@@ -268,6 +269,7 @@ function Shell() {
         </Routes>
       </main>
       {showAppChrome ? <InstallPrompt /> : null}
+      {showAppChrome ? <AppTutorial active={showAppChrome} /> : null}
     </div>
   );
 }

@@ -15,6 +15,7 @@ import {
   setTheme,
   type ThemeId,
 } from '../lib/theme';
+import { requestTutorialReplay } from '../lib/tutorial';
 
 function FieldLabel({ children }: { children: ReactNode }) {
   return (
@@ -180,6 +181,23 @@ export function SettingsView() {
             Initials update from your name
           </span>
         </div>
+      </section>
+
+      <section className="rounded-card bg-surface p-5 shadow-card">
+        <h2 className="text-[15px] font-bold text-ink">Tutorial</h2>
+        <p className="mt-1 text-[13px] text-muted">
+          A short walkthrough of Today, Courses, Prep, and GPS — replay anytime.
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            requestTutorialReplay();
+            flash('Tutorial starting');
+          }}
+          className="mt-4 rounded-xl border border-line px-4 py-2.5 text-[13px] font-semibold text-ink hover:border-brand/40 hover:bg-brand-soft"
+        >
+          Replay tutorial
+        </button>
       </section>
 
       <section className="rounded-card bg-surface p-5 shadow-card">
