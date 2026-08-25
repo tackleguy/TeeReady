@@ -416,7 +416,8 @@ export function GolfView({ active = true }: { active?: boolean }) {
   }, [playHoles]);
 
   const activeHoleObj = useMemo(
-    () => playHoles.find((h) => h.number === activeHole) ?? null,
+    () =>
+      playHoles.find((h) => Number(h.number) === Number(activeHole)) ?? null,
     [playHoles, activeHole],
   );
 

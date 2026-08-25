@@ -973,49 +973,25 @@ export function GolfMap({
     whenReady(() => {
       const map = mapRef.current;
       if (!map) return;
+      // GPS rangefinder: drop static tee→green centerlines (yardageless /
+      // unmovable). Keep markers for the active hole only. Prefer emptying
+      // sources over setLayoutProperty/setFilter so a style error can't
+      // abort later effects that paint the movable yardage path.
       (map.getSource(SRC) as maplibregl.GeoJSONSource | undefined)?.setData(
-        holesGeoJSON(holes, activeHole),
+        showRangefinder
+          ? emptyCollection()
+          : holesGeoJSON(holes, activeHole),
       );
+      const markerHoles =
+        showRangefinder && activeHole != null
+          ? holes.filter((h) => Number(h.number) === Number(activeHole))
+          : holes;
       (map.getSource(SRC_TEE) as maplibregl.GeoJSONSource | undefined)?.setData(
-        pointsGeoJSON(holes, 'tee'),
+        pointsGeoJSON(markerHoles, 'tee'),
       );
       (
         map.getSource(SRC_GREEN) as maplibregl.GeoJSONSource | undefined
-      )?.setData(pointsGeoJSON(holes, 'green'));
-
-      // GPS mode: hide static hole centerlines (yardageless / unmovable white
-      // paths). The rangefinder guide is the only white path that should show.
-      const holeLinesVisible = showRangefinder ? 'none' : 'visible';
-      for (const id of [LINE, LINE_ACTIVE, LINE_HIT]) {
-        if (map.getLayer(id)) {
-          map.setLayoutProperty(id, 'visibility', holeLinesVisible);
-        }
-      }
-      // Only keep the active hole's tee/green dots while ranging.
-      const activeFilter =
-        showRangefinder && activeHole != null
-          ? ([
-              '==',
-              ['to-number', ['get', 'number']],
-              Number(activeHole),
-            ] as maplibregl.FilterSpecification)
-          : (['has', 'number'] as maplibregl.FilterSpecification);
-      if (map.getLayer(LYR_TEE)) map.setFilter(LYR_TEE, activeFilter);
-      if (map.getLayer(LYR_GREEN)) map.setFilter(LYR_GREEN, activeFilter);
-      if (map.getLayer(LYR_TEE_HIT)) map.setFilter(LYR_TEE_HIT, activeFilter);
-      if (map.getLayer(LYR_GREEN_HIT)) {
-        map.setFilter(LYR_GREEN_HIT, activeFilter);
-      }
-      // Wind streamlines also look like fixed undecorated lines in GPS — hide.
-      for (const id of [LYR_FLOW, LYR_FLOW_ARROW]) {
-        if (map.getLayer(id)) {
-          map.setLayoutProperty(
-            id,
-            'visibility',
-            showRangefinder ? 'none' : 'visible',
-          );
-        }
-      }
+      )?.setData(pointsGeoJSON(markerHoles, 'green'));
     });
   }, [holes, activeHole, showRangefinder, whenReady]);
 
@@ -1086,7 +1062,11 @@ export function GolfMap({
         holes.find((h) => Number(h.number) === Number(activeHole)) ?? null;
       (
         map.getSource(SRC_FLOW) as maplibregl.GeoJSONSource | undefined
-      )?.setData(windFlowGeoJSON(hole, windFromDeg, windMph));
+      )?.setData(
+        showRangefinder
+          ? emptyCollection()
+          : windFlowGeoJSON(hole, windFromDeg, windMph),
+      );
       (
         map.getSource(SRC_SHOT) as maplibregl.GeoJSONSource | undefined
       )?.setData(
@@ -1255,7 +1235,12 @@ export function GolfMap({
       if (!map) return;
       const hole =
         holes.find((h) => Number(h.number) === Number(activeHole)) ?? null;
-      const from = rangefinderFrom;
+      const from =
+        rangefinderFrom ??
+        (hole ? { lat: hole.tee.lat, lon: hole.tee.lon } : null);
+      const aim =
+        rangefinderAim ??
+        (hole ? { lat: hole.green.lat, lon: hole.green.lon } : null);
       const guide =
         showRangefinder && from && hole
           ? gpsGuideGeoJSON(from, hole, {
@@ -1263,13 +1248,34 @@ export function GolfMap({
               midClub: gpsClubs?.mid ?? null,
               backClub: gpsClubs?.back ?? null,
               maxYards: 900,
-              aim: rangefinderAim,
+              aim,
               playsLikeYd: rangefinderPlaysLikeYd,
             })
           : emptyCollection();
       (
         map.getSource(SRC_GPS_GUIDE) as maplibregl.GeoJSONSource | undefined
       )?.setData(guide);
+      // Keep guide layers on even if a prior style tweak hid them.
+      for (const id of [
+        'golf-gps-whisker',
+        'golf-gps-guide-casing',
+        LYR_GPS_GUIDE,
+        LYR_GPS_PIN,
+        'golf-gps-yards-badge',
+        'golf-gps-yards-text',
+        'golf-gps-club-pill',
+        LYR_GPS_GUIDE_LABEL,
+        'golf-gps-crosshair',
+        'golf-gps-crosshair-dot',
+      ]) {
+        if (map.getLayer(id)) {
+          try {
+            map.setLayoutProperty(id, 'visibility', 'visible');
+          } catch {
+            // Layer may not support layout visibility in older builds.
+          }
+        }
+      }
     });
   }, [
     holes,
