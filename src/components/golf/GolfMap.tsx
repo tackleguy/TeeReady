@@ -75,6 +75,12 @@ interface Props {
   greens3d?: boolean;
   /** Club label for mid-green GPS guide (18Birdies-style). */
   gpsMidClub?: string | null;
+  /** Ball/tee origin for F/M/B rangefinder lines (GPS mode). */
+  rangefinderFrom?: LonLat | null;
+  /** Show 18Birdies-style F/M/B rangefinder overlay. */
+  showRangefinder?: boolean;
+  /** Big mid-green yardage chip (GPS). */
+  rangefinderMidYd?: number | null;
 }
 
 const SRC = 'golf-holes';
@@ -117,6 +123,8 @@ const LYR_PLAY_TICK = 'golf-play-tick-lyr';
 const LYR_PLAY_LABEL = 'golf-play-label-lyr';
 const LYR_GPS_GUIDE = 'golf-gps-guide-lyr';
 const LYR_GPS_GUIDE_LABEL = 'golf-gps-guide-label-lyr';
+const LYR_GPS_PIN = 'golf-gps-pin-lyr';
+const LYR_GPS_PIN_LABEL = 'golf-gps-pin-label-lyr';
 const LYR_SHOT_TRACE = 'golf-shot-trace-lyr';
 const LYR_SHOT_PT = 'golf-shot-pt-lyr';
 const LYR_SHOT_LABEL = 'golf-shot-label-lyr';
@@ -215,6 +223,9 @@ export function GolfMap({
   courseName = null,
   greens3d = false,
   gpsMidClub = null,
+  rangefinderFrom = null,
+  showRangefinder = false,
+  rangefinderMidYd = null,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -583,17 +594,17 @@ export function GolfMap({
         filter: ['==', ['get', 'kind'], 'callout'],
         layout: {
           'text-field': ['get', 'callout'],
-          'text-size': 11,
-          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-          'text-offset': [0, -0.6],
+          'text-size': 12,
+          'text-font': ['Open Sans Bold', 'Open Sans Regular'],
+          'text-offset': [0, -0.7],
           'text-anchor': 'bottom',
           'text-allow-overlap': true,
           'text-ignore-placement': true,
         },
         paint: {
-          'text-color': '#f8fafc',
-          'text-halo-color': '#0f172a',
-          'text-halo-width': 1.4,
+          'text-color': '#ffffff',
+          'text-halo-color': '#020617',
+          'text-halo-width': 1.8,
         },
       });
       map.addLayer({
@@ -602,17 +613,41 @@ export function GolfMap({
         source: SRC_GPS_GUIDE,
         filter: ['==', ['get', 'kind'], 'guide'],
         paint: {
-          'line-color': [
-            'match',
-            ['get', 'role'],
-            'F',
-            '#86efac',
-            'B',
-            '#fde68a',
-            '#38bdf8',
-          ],
-          'line-width': ['match', ['get', 'role'], 'M', 2.8, 1.8],
-          'line-opacity': 0.92,
+          'line-color': ['get', 'color'],
+          'line-width': ['match', ['get', 'role'], 'M', 3.4, 2.2],
+          'line-opacity': 0.95,
+        },
+      });
+      map.addLayer({
+        id: LYR_GPS_PIN,
+        type: 'circle',
+        source: SRC_GPS_GUIDE,
+        filter: ['==', ['get', 'kind'], 'pin'],
+        paint: {
+          'circle-radius': ['match', ['get', 'role'], 'M', 7, 5.5],
+          'circle-color': ['get', 'color'],
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#ffffff',
+        },
+      });
+      map.addLayer({
+        id: LYR_GPS_PIN_LABEL,
+        type: 'symbol',
+        source: SRC_GPS_GUIDE,
+        filter: ['==', ['get', 'kind'], 'pin'],
+        layout: {
+          'text-field': ['get', 'label'],
+          'text-size': 10,
+          'text-font': ['Open Sans Bold', 'Open Sans Regular'],
+          'text-offset': [0, 1.15],
+          'text-anchor': 'top',
+          'text-allow-overlap': true,
+          'text-ignore-placement': true,
+        },
+        paint: {
+          'text-color': '#ffffff',
+          'text-halo-color': '#020617',
+          'text-halo-width': 1.4,
         },
       });
       map.addLayer({
@@ -622,17 +657,17 @@ export function GolfMap({
         filter: ['==', ['get', 'kind'], 'guide-label'],
         layout: {
           'text-field': ['get', 'label'],
-          'text-size': 12,
-          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-          'text-offset': [0, -0.55],
+          'text-size': ['match', ['get', 'major'], 1, 16, 12],
+          'text-font': ['Open Sans Bold', 'Open Sans Regular'],
+          'text-offset': [0, -0.85],
           'text-anchor': 'bottom',
           'text-allow-overlap': true,
           'text-ignore-placement': true,
         },
         paint: {
           'text-color': '#ffffff',
-          'text-halo-color': '#0f172a',
-          'text-halo-width': 1.6,
+          'text-halo-color': '#020617',
+          'text-halo-width': 2,
         },
       });
 
@@ -665,7 +700,7 @@ export function GolfMap({
         layout: {
           'text-field': ['get', 'label'],
           'text-size': 10,
-          'text-font': ['Open Sans Bold'],
+          'text-font': ['Open Sans Bold', 'Open Sans Regular'],
           'text-allow-overlap': true,
         },
         paint: {
@@ -1044,14 +1079,25 @@ export function GolfMap({
       (
         map.getSource(SRC_GPS_GUIDE) as maplibregl.GeoJSONSource | undefined
       )?.setData(
-        gpsGuideGeoJSON(
-          gpsPosition ? { lat: gpsPosition.lat, lon: gpsPosition.lon } : null,
-          hole,
-          { midClub: gpsMidClub, maxYards: 700 },
-        ),
+        showRangefinder
+          ? gpsGuideGeoJSON(rangefinderFrom, hole, {
+              midClub: gpsMidClub,
+              maxYards: 700,
+            })
+          : emptyCollection(),
       );
     });
-  }, [gpsPosition, gpsAccuracyM, gpsHeadingDeg, holes, activeHole, gpsMidClub, whenReady]);
+  }, [
+    gpsPosition,
+    gpsAccuracyM,
+    gpsHeadingDeg,
+    holes,
+    activeHole,
+    gpsMidClub,
+    rangefinderFrom,
+    showRangefinder,
+    whenReady,
+  ]);
 
   // Follow GPS — ease camera when the fix moves
   useEffect(() => {
@@ -1074,6 +1120,28 @@ export function GolfMap({
   return (
     <div className={`relative h-full min-h-0 w-full overflow-hidden ${className}`}>
       <div ref={containerRef} className="absolute inset-0" />
+      {showRangefinder &&
+      rangefinderMidYd != null &&
+      Number.isFinite(rangefinderMidYd) ? (
+        <div className="pointer-events-none absolute inset-x-0 top-[18%] z-[5] flex justify-center">
+          <div className="rounded-2xl border border-white/25 bg-black/70 px-5 py-2 text-center shadow-xl backdrop-blur-md">
+            <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-sky-200/90">
+              Mid
+            </div>
+            <div className="text-[34px] font-bold leading-none tabular-nums text-white">
+              {Math.round(rangefinderMidYd)}
+              <span className="ml-1 text-[13px] font-semibold text-white/70">
+                yd
+              </span>
+            </div>
+            {gpsMidClub ? (
+              <div className="mt-1 text-[12px] font-semibold text-emerald-200">
+                {gpsMidClub}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
       {showWindLegend && (windLabel || (greens3d && canGreens3d && activeHole != null)) && (
         <div
           className={`pointer-events-none absolute flex flex-col gap-1 rounded-2xl border border-white/10 bg-black/55 px-3 py-2 text-[11px] font-medium backdrop-blur-md ${legendClassName}`}

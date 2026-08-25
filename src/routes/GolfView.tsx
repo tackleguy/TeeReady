@@ -615,17 +615,44 @@ export function GolfView({ active = true }: { active?: boolean }) {
   }, [gpsPos, activeHoleObj]);
 
   const gpsGreenDistances = useMemo(() => {
-    if (!gpsPos || !activeHoleObj) return null;
-    return distancesToGreen(
-      { lat: gpsPos.lat, lon: gpsPos.lon },
-      greenMarks(activeHoleObj),
-    );
-  }, [gpsPos, activeHoleObj]);
+    if (!activeHoleObj) return null;
+    const from =
+      gpsPos && viewMode === 'gps'
+        ? { lat: gpsPos.lat, lon: gpsPos.lon }
+        : null;
+    if (!from) return null;
+    return distancesToGreen(from, greenMarks(activeHoleObj));
+  }, [gpsPos, activeHoleObj, viewMode]);
+
+  /** Ball for F/M/B lines: live GPS when close, otherwise the tee (so lines always show). */
+  const rangefinderFrom = useMemo(() => {
+    if (viewMode !== 'gps' || !activeHoleObj) return null;
+    if (
+      gpsPos &&
+      gpsGreenDistances != null &&
+      gpsGreenDistances.mid <= 700
+    ) {
+      return { lat: gpsPos.lat, lon: gpsPos.lon };
+    }
+    return { lat: activeHoleObj.tee.lat, lon: activeHoleObj.tee.lon };
+  }, [viewMode, activeHoleObj, gpsPos, gpsGreenDistances]);
+
+  const rangefinderDistances = useMemo(() => {
+    if (!rangefinderFrom || !activeHoleObj) return null;
+    return distancesToGreen(rangefinderFrom, greenMarks(activeHoleObj));
+  }, [rangefinderFrom, activeHoleObj]);
 
   const gpsMidClub = useMemo(() => {
-    if (!gpsGreenDistances || gpsGreenDistances.mid > 700) return null;
-    return bestClubForDistance(gpsGreenDistances.mid, bag) ?? null;
-  }, [gpsGreenDistances, bag]);
+    if (!rangefinderDistances || rangefinderDistances.mid > 700) return null;
+    return bestClubForDistance(rangefinderDistances.mid, bag) ?? null;
+  }, [rangefinderDistances, bag]);
+
+  useEffect(() => {
+    if (viewMode !== 'gps') return;
+    if (activeHole != null) return;
+    if (!playHoles.length) return;
+    setActiveHole(playHoles[0]!.number);
+  }, [viewMode, activeHole, playHoles]);
 
   useEffect(() => {
     if (!course) setMapReady(false);
@@ -985,6 +1012,11 @@ export function GolfView({ active = true }: { active?: boolean }) {
                 )}
                 courseName={course.name}
                 greens3d={greens3d}
+                showRangefinder={viewMode === 'gps'}
+                rangefinderFrom={viewMode === 'gps' ? rangefinderFrom : null}
+                rangefinderMidYd={
+                  viewMode === 'gps' ? rangefinderDistances?.mid ?? null : null
+                }
                 gpsMidClub={viewMode === 'gps' ? gpsMidClub : null}
                 trackedShots={activeHoleShots}
                 gpsPosition={
@@ -1286,7 +1318,9 @@ export function GolfView({ active = true }: { active?: boolean }) {
                   quality={gpsQuality}
                   error={gpsError}
                   locating={gpsLocating}
-                  distances={gpsGreenDistances}
+                  distances={
+                    gpsPos ? gpsGreenDistances : rangefinderDistances
+                  }
                   holeYards={activeHoleObj?.yards ?? null}
                   holeNumber={activeHoleObj?.number ?? null}
                   bearingToPin={gpsBearingToPin}

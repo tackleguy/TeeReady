@@ -254,7 +254,9 @@ export function distancesToGreen(
   };
 }
 
-/** GPS → front / mid / back guide lines with yardage (+ optional club) labels. */
+/** GPS → front / mid / back guide lines with yardage (+ optional club) labels.
+ *  18Birdies-style: lines from ball (or tee) to F/M/B, pin markers, callouts.
+ */
 export function gpsGuideGeoJSON(
   from: LonLat | null,
   hole: GolfHole | null,
@@ -264,18 +266,27 @@ export function gpsGuideGeoJSON(
   const marks = greenMarks(hole);
   const dist = distancesToGreen(from, marks);
   const maxYd = opts?.maxYards ?? 700;
-  if (dist.mid > maxYd) return { type: 'FeatureCollection', features: [] };
+  if (!Number.isFinite(dist.mid) || dist.mid > maxYd) {
+    return { type: 'FeatureCollection', features: [] };
+  }
 
   const features: GeoJSON.Feature[] = [];
-  const rows: Array<{ key: string; pt: LonLat; yards: number; club?: string }> = [
-    { key: 'F', pt: marks.front, yards: dist.front },
+  const rows: Array<{
+    key: string;
+    pt: LonLat;
+    yards: number;
+    club?: string;
+    color: string;
+  }> = [
+    { key: 'F', pt: marks.front, yards: dist.front, color: '#4ade80' },
     {
       key: 'M',
       pt: marks.mid,
       yards: dist.mid,
-      club: opts?.midClub ?? undefined,
+      club: opts?.midClub || undefined,
+      color: '#38bdf8',
     },
-    { key: 'B', pt: marks.back, yards: dist.back },
+    { key: 'B', pt: marks.back, yards: dist.back, color: '#fbbf24' },
   ];
 
   for (const row of rows) {
@@ -284,7 +295,8 @@ export function gpsGuideGeoJSON(
       properties: {
         kind: 'guide',
         role: row.key,
-        label: row.key,
+        color: row.color,
+        yards: row.yards,
       },
       geometry: {
         type: 'LineString',
@@ -294,11 +306,15 @@ export function gpsGuideGeoJSON(
         ],
       },
     });
-    const midLon = (from.lon + row.pt.lon) / 2;
-    const midLat = (from.lat + row.pt.lat) / 2;
+
+    const t = 0.62;
+    const labelLon = from.lon + (row.pt.lon - from.lon) * t;
+    const labelLat = from.lat + (row.pt.lat - from.lat) * t;
     const text =
-      row.key === 'M' && row.club
-        ? `${row.club} · ${row.yards} yd`
+      row.key === 'M'
+        ? row.club
+          ? `${row.yards} · ${row.club}`
+          : `${row.yards} yd`
         : `${row.key} ${row.yards}`;
     features.push({
       type: 'Feature',
@@ -306,10 +322,28 @@ export function gpsGuideGeoJSON(
         kind: 'guide-label',
         role: row.key,
         label: text,
+        yards: row.yards,
+        club: row.club ?? '',
+        color: row.color,
+        major: row.key === 'M' ? 1 : 0,
       },
       geometry: {
         type: 'Point',
-        coordinates: [midLon, midLat],
+        coordinates: [labelLon, labelLat],
+      },
+    });
+
+    features.push({
+      type: 'Feature',
+      properties: {
+        kind: 'pin',
+        role: row.key,
+        label: row.key,
+        color: row.color,
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: [row.pt.lon, row.pt.lat],
       },
     });
   }
