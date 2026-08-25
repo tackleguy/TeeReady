@@ -1,4 +1,4 @@
-/** Swing capture + on-device measurement (Phase 1 — no AI). */
+/** Swing capture, on-device measurement, and optional local vision coaching. */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -11,12 +11,15 @@ import {
 } from 'lucide-react';
 import {
   analyzeSwingVideo,
+  coachSwingAnalysis,
   isSwingAnalysis,
   loadSwingHistory,
+  saveSwingAnalysis,
   type AnalyzeProgress,
   type CameraAngle,
   type Handedness,
   type SwingAnalysis,
+  type SwingCoachResult,
   type SwingMetric,
   type SwingReject,
   SWING_THRESHOLDS,
@@ -99,6 +102,9 @@ export function SwingView() {
   const [reject, setReject] = useState<SwingReject | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<SwingAnalysis[]>(() => loadSwingHistory());
+  const [coach, setCoach] = useState<SwingCoachResult | null>(null);
+  const [coachLoading, setCoachLoading] = useState(false);
+  const coachAbortRef = useRef<AbortController | null>(null);
 
   const stopStream = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -115,6 +121,7 @@ export function SwingView() {
   useEffect(() => {
     return () => {
       stopStream();
+      coachAbortRef.current?.abort();
     };
   }, [stopStream]);
 
@@ -208,12 +215,45 @@ export function SwingView() {
     setStep('preview');
   }, [stopStream]);
 
+  const runCoach = useCallback(async (analysis: SwingAnalysis) => {
+    coachAbortRef.current?.abort();
+    const ac = new AbortController();
+    coachAbortRef.current = ac;
+    setCoachLoading(true);
+    setCoach(null);
+    try {
+      const out = await coachSwingAnalysis(analysis, { signal: ac.signal });
+      if (ac.signal.aborted) return;
+      setCoach(out);
+      if (out.source === 'llm') {
+        const updated: SwingAnalysis = {
+          ...analysis,
+          coach: {
+            text: out.text,
+            source: 'llm',
+            elapsedMs: out.elapsedMs,
+            model: out.model,
+          },
+        };
+        setResult(updated);
+        saveSwingAnalysis(updated);
+      }
+    } catch {
+      if (!ac.signal.aborted) {
+        setCoach({ text: analysis.summary, source: 'rules' });
+      }
+    } finally {
+      if (!ac.signal.aborted) setCoachLoading(false);
+    }
+  }, []);
+
   const runAnalyze = useCallback(async () => {
     if (!blob) return;
     setStep('analyzing');
     setProgress({ stage: 'pose', pct: 0 });
     setResult(null);
     setReject(null);
+    setCoach(null);
     setError(null);
     try {
       const out = await analyzeSwingVideo({
@@ -226,6 +266,7 @@ export function SwingView() {
       if (isSwingAnalysis(out)) {
         setResult(out);
         setStep('results');
+        void runCoach(out);
       } else {
         setReject(out);
         setStep('rejected');
@@ -234,15 +275,18 @@ export function SwingView() {
       setError(e instanceof Error ? e.message : 'Analysis failed');
       setStep('preview');
     }
-  }, [blob, angle, handedness, fps]);
+  }, [blob, angle, handedness, fps, runCoach]);
 
   const reset = useCallback(() => {
+    coachAbortRef.current?.abort();
     stopStream();
     setBlob(null);
     setResult(null);
     setReject(null);
     setProgress(null);
     setError(null);
+    setCoach(null);
+    setCoachLoading(false);
     setRecording(false);
     setPreviewUrl((prev) => {
       if (prev) URL.revokeObjectURL(prev);
@@ -369,6 +413,17 @@ export function SwingView() {
                         setResult(h);
                         setFps(h.fps);
                         setAngle(h.angle);
+                        setCoach(
+                          h.coach
+                            ? {
+                                text: h.coach.text,
+                                source: h.coach.source,
+                                elapsedMs: h.coach.elapsedMs,
+                                model: h.coach.model,
+                              }
+                            : { text: h.summary, source: 'rules' },
+                        );
+                        setCoachLoading(false);
                         setStep('results');
                       }}
                     >
@@ -550,12 +605,30 @@ export function SwingView() {
 
           <div className="rounded-card bg-surface p-4 shadow-card">
             <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
-              Summary
+              {coach?.source === 'llm' ? 'Caddie notes' : 'Summary'}
             </p>
-            <p className="mt-2 text-[14px] leading-relaxed text-ink">{result.summary}</p>
+            {coachLoading ? (
+              <p className="mt-2 flex items-center gap-2 text-[13px] text-muted">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Asking local caddie…
+              </p>
+            ) : null}
+            <p className="mt-2 whitespace-pre-line text-[14px] leading-relaxed text-ink">
+              {coach?.text ?? result.coach?.text ?? result.summary}
+            </p>
+            {coach?.notice ? (
+              <p className="mt-3 rounded-xl border border-amber-500/40 bg-[color-mix(in_srgb,#f59e0b_12%,transparent)] px-3 py-2 text-[12px] text-ink">
+                {coach.notice}
+              </p>
+            ) : null}
             <p className="mt-3 text-[11px] text-muted">
-              ~{Math.round(result.fps)} fps · {result.angle === 'dtl' ? 'down-the-line' : 'face-on'} ·
-              saved on this device
+              ~{Math.round(result.fps)} fps ·{' '}
+              {result.angle === 'dtl' ? 'down-the-line' : 'face-on'} · saved on this device
+              {coach?.source === 'llm' && coach.elapsedMs != null
+                ? ` · local model ${coach.elapsedMs}ms`
+                : coach && !coachLoading
+                  ? ' · rule-based (local model offline or rejected)'
+                  : ''}
             </p>
           </div>
 

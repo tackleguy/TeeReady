@@ -75,6 +75,13 @@ export type SwingAnalysis = {
   frames: PoseFrame[];
   /** Pose skeleton overlays for the four key positions. */
   keyframes: KeyframeImages;
+  /** Optional Phase 2 local-LLM coaching (falls back to summary). */
+  coach?: {
+    text: string;
+    source: 'llm' | 'rules';
+    elapsedMs?: number;
+    model?: string;
+  };
 };
 
 export type SwingReject = {

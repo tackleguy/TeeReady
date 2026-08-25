@@ -16,3 +16,12 @@ export {
   saveSwingAnalysis,
 } from './storage';
 export { SWING_THRESHOLDS } from './thresholds';
+export {
+  coachSwingAnalysis,
+  validateCoachResponse,
+  loadCoachRejections,
+  probeSwingLlm,
+  swingLlmBaseUrl,
+  swingLlmModel,
+} from './coach';
+export type { SwingCoachResult, CoachSource } from './coach';

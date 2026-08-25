@@ -9,6 +9,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",
+    "verify:swing-coach": "tsx scripts/verify-swing-coach-validator.ts",
     "audit:golf-scorecards": "tsx src/dev/golfScorecardAudit.ts",
     "audit:golf-coverage": "tsx src/dev/golfScorecardCoverage.ts",
     "audit:golf-catalog": "tsx src/dev/golfCatalogAudit.ts",
