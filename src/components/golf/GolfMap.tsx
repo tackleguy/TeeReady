@@ -749,17 +749,27 @@ export function GolfMap({
       });
 
       const clickMap = (e: maplibregl.MapMouseEvent) => {
-        const hits = map.queryRenderedFeatures(e.point, { layers: CLICK_LAYERS });
-        if (hits.length > 0) {
-          const n = holeNumberFromFeature(hits[0]?.properties?.number);
-          const active = activeHoleRef.current;
-          if (n != null && (active == null || n !== active || !onSetTargetRef.current)) {
+        const markerHits = map.queryRenderedFeatures(e.point, {
+          layers: [LYR_TEE_HIT, LYR_GREEN_HIT, LYR_TEE, LYR_GREEN],
+        });
+        if (markerHits.length > 0) {
+          const n = holeNumberFromFeature(markerHits[0]?.properties?.number);
+          if (n != null) {
             onSelectRef.current?.(n);
             return;
           }
         }
-        if (activeHoleRef.current == null) return;
-        onSetTargetRef.current?.({ lat: e.lngLat.lat, lon: e.lngLat.lng });
+        // With a hole selected, map taps move the target — don't let the fat
+        // centerline hit area steal the click to re-select the same hole.
+        if (activeHoleRef.current != null && onSetTargetRef.current) {
+          onSetTargetRef.current({ lat: e.lngLat.lat, lon: e.lngLat.lng });
+          return;
+        }
+        const hits = map.queryRenderedFeatures(e.point, { layers: CLICK_LAYERS });
+        if (hits.length > 0) {
+          const n = holeNumberFromFeature(hits[0]?.properties?.number);
+          if (n != null) onSelectRef.current?.(n);
+        }
       };
       map.on('click', clickMap);
       for (const id of CLICK_LAYERS) {

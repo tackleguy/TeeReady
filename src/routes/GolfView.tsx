@@ -566,10 +566,8 @@ export function GolfView({ active = true }: { active?: boolean }) {
 
   const dropShotAtTap = useCallback(
     (pt: LonLat) => {
-      if (!round || !activeHoleObj) {
-        setTarget(pt);
-        return;
-      }
+      setTarget(pt);
+      if (!round || !activeHoleObj) return;
       const holeShots = shotsForHole(round, activeHoleObj.number);
       const from =
         holeShots.length > 0
@@ -984,15 +982,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                 onSelectHole={setActiveHole}
                 target={target}
                 arcClubs={viewMode === 'prep' ? arcClubs : []}
-                onSetTarget={
-                  viewMode === 'gps'
-                    ? tracking
-                      ? dropShotAtTap
-                      : undefined
-                    : tracking
-                      ? dropShotAtTap
-                      : setTarget
-                }
+                onSetTarget={tracking ? dropShotAtTap : setTarget}
                 playLines={playLines}
                 planningMode={planningMode}
                 windFromDeg={ensemble?.ensemble.windFromDeg ?? null}

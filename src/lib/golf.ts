@@ -723,6 +723,7 @@ export async function fetchGolfEnsemble(
 export const GOLF_SATELLITE_STYLE = {
   version: 8 as const,
   name: 'Golf Satellite',
+  glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
   sources: {
     esri: {
       type: 'raster' as const,
