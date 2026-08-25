@@ -273,6 +273,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
     if (viewMode === 'gps' && active) {
       locateOnce();
       setGpsHudOpen(true);
+      setGpsHudExpanded(false);
     } else if (!tracking) {
       setGpsFollow(false);
     }
