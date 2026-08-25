@@ -17,15 +17,24 @@ import {
 } from '../../api/golf/_lib/syntheticScorecard';
 import { findScorecard, type CourseScorecard } from '../../api/golf/_data/scorecards';
 import type { UsCatalogEntry } from '../../api/golf/_data/usCatalog';
+import { classifyCourseType } from '../../api/golf/_lib/courseType';
+import { formatCatalogRegion } from '../../api/golf/_lib/catalogRegion';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { isInUnitedStates, stateAtPoint, isValidUsStateCode } =
-  require('../../scripts/lib/usStateLookup.mjs') as {
+const { isInUnitedStates, stateAtPoint, regionFromCoords } =
+  require('../../scripts/lib/regionLookup.mjs') as {
     isInUnitedStates: (lat: number, lon: number) => boolean;
     stateAtPoint: (lat: number, lon: number) => string | null;
-    isValidUsStateCode: (st: string) => boolean;
+    regionFromCoords: (lat: number, lon: number) => {
+      co: string | null;
+      st?: string;
+      pr?: string;
+    };
   };
+const { isValidUsStateCode } = require('../../scripts/lib/usStateLookup.mjs') as {
+  isValidUsStateCode: (st: string) => boolean;
+};
 
 type Severity = 'error' | 'warn' | 'info';
 
@@ -45,8 +54,10 @@ type PublicRow = {
   la: number;
   lo: number;
   r?: string;
+  co?: string;
   h?: number;
   p?: number;
+  typ?: string;
   q?: 1;
 };
 
@@ -65,7 +76,7 @@ function haversineKm(
 
 function regionOf(entry: UsCatalogEntry, pub?: PublicRow): string {
   if (pub?.r) return pub.r;
-  return [entry.ci, entry.st].filter(Boolean).join(', ');
+  return formatCatalogRegion(entry) ?? '';
 }
 
 function addFinding(
@@ -89,25 +100,7 @@ function addFinding(
   });
 }
 
-export function classifyCourseType(
-  holes?: number,
-  par?: number,
-): CourseType {
-  if (holes !== 9 && holes !== 18) return 'unknown';
-  if (par == null) return 'unknown';
-
-  if (holes === 18) {
-    if (par >= 69 && par <= 74) return 'regulation';
-    if (par >= 60 && par <= 68) return 'executive';
-    if (par <= 59) return 'par3';
-    return 'unknown';
-  }
-
-  if (par >= 34 && par <= 37) return 'regulation';
-  if (par >= 30 && par <= 33) return 'executive';
-  if (par <= 29) return 'par3';
-  return 'unknown';
-}
+export { classifyCourseType };
 
 function isMangledName(name: string): string | null {
   if (/^\d/.test(name.trim())) return 'name-starts-with-digit';
@@ -247,24 +240,35 @@ async function main(): Promise<void> {
       continue;
     }
 
-    if (!isInUnitedStates(entry.la, entry.lo)) {
+    if (entry.co === 'US' && !isInUnitedStates(entry.la, entry.lo)) {
       addFinding(
         findings,
         'A1-outside-us',
         'error',
         entry,
         pub,
-        `coordinates (${entry.la}, ${entry.lo}) fall outside US state boundaries`,
+        `catalog country US but coordinates (${entry.la}, ${entry.lo}) fall outside US state boundaries`,
         { lat: entry.la, lon: entry.lo, catalogState: entry.st ?? null },
+      );
+    } else if (!entry.co && !isInUnitedStates(entry.la, entry.lo)) {
+      addFinding(
+        findings,
+        'A1-missing-country',
+        'warn',
+        entry,
+        pub,
+        `coordinates outside US with no country set`,
+        { lat: entry.la, lon: entry.lo },
       );
     }
 
-    const geoState = stateAtPoint(entry.la, entry.lo);
+    const geoRegion = regionFromCoords(entry.la, entry.lo);
     if (
-      geoState &&
+      entry.co === 'US' &&
+      geoRegion.co === 'US' &&
       entry.st &&
-      isValidUsStateCode(entry.st) &&
-      geoState !== entry.st.toUpperCase()
+      geoRegion.st &&
+      entry.st.toUpperCase() !== geoRegion.st
     ) {
       addFinding(
         findings,
@@ -272,12 +276,58 @@ async function main(): Promise<void> {
         'error',
         entry,
         pub,
-        `catalog state ${entry.st} disagrees with coordinate state ${geoState}`,
-        { catalogState: entry.st, geoState, region: regionOf(entry, pub) },
+        `catalog state ${entry.st} disagrees with coordinate state ${geoRegion.st}`,
+        { catalogState: entry.st, geoState: geoRegion.st, region: regionOf(entry, pub) },
       );
     }
 
-    if (entry.st && !isValidUsStateCode(entry.st)) {
+    if (
+      entry.co &&
+      entry.co !== 'US' &&
+      geoRegion.co &&
+      geoRegion.co !== entry.co
+    ) {
+      addFinding(
+        findings,
+        'A1-country-mismatch',
+        'error',
+        entry,
+        pub,
+        `catalog country ${entry.co} disagrees with coordinate country ${geoRegion.co}`,
+        { catalogCountry: entry.co, geoCountry: geoRegion.co },
+      );
+    }
+
+    if (
+      entry.co &&
+      entry.co !== 'US' &&
+      entry.pr &&
+      geoRegion.pr &&
+      geoRegion.pr !== entry.pr
+    ) {
+      addFinding(
+        findings,
+        'A1-province-mismatch',
+        'warn',
+        entry,
+        pub,
+        `catalog province ${entry.pr} disagrees with coordinate province ${geoRegion.pr}`,
+        { catalogProvince: entry.pr, geoProvince: geoRegion.pr },
+      );
+    }
+
+    if (entry.st && entry.co !== 'US') {
+      addFinding(
+        findings,
+        'A1-us-state-on-intl',
+        'warn',
+        entry,
+        pub,
+        `US state code "${entry.st}" set on international entry (co=${entry.co ?? '?'})`,
+      );
+    }
+
+    if (entry.st && entry.co === 'US' && !isValidUsStateCode(entry.st)) {
       addFinding(
         findings,
         'A1-invalid-state-code',

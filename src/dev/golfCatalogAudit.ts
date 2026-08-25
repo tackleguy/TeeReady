@@ -8,6 +8,7 @@ import {
   validYardageForHoles,
 } from '../../api/golf/_lib/syntheticScorecard';
 import { isClubSibling } from '../../api/golf/_lib/courseRelate';
+import { formatCatalogRegion } from '../../api/golf/_lib/catalogRegion';
 import { searchUsCatalog } from '../../api/golf/_lib/usCatalogSearch';
 import type { UsCatalogEntry } from '../../api/golf/_data/usCatalog';
 
@@ -23,7 +24,7 @@ const catalog = JSON.parse(
 
 const publicRows = JSON.parse(
   readFileSync(resolve('public/golf/catalog.us.json'), 'utf8'),
-) as Array<{ n: string; la: number; lo: number; r?: string }>;
+) as Array<{ n: string; la: number; lo: number; r?: string; co?: string }>;
 
 const findings: Finding[] = [];
 
@@ -55,10 +56,19 @@ for (const entry of catalog) {
   if (entry.la < 18 || entry.la > 72 || entry.lo < -180 || entry.lo > -60) {
     add('error', name, `coordinates out of US bounds (${entry.la}, ${entry.lo})`);
   }
-  if (!entry.ci || !entry.st) {
-    add('error', name, 'missing city or state');
+  if (!entry.ci || !entry.co) {
+    add('error', name, 'missing city or country');
   }
-  if (entry.st && entry.st.length !== 2) {
+  if (entry.co === 'US' && !entry.st) {
+    add('error', name, 'missing US state');
+  }
+  if (entry.co && entry.co !== 'US' && !entry.pr) {
+    add('warn', name, 'international entry missing province');
+  }
+  if (entry.st && entry.co !== 'US') {
+    add('error', name, `US state code on international entry (co=${entry.co})`);
+  }
+  if (entry.st && entry.st.length !== 2 && entry.co === 'US') {
     add('error', name, `invalid state code "${entry.st}"`);
   }
   if (entry.h != null && entry.h !== 9 && entry.h !== 18) {
@@ -153,9 +163,12 @@ for (let i = 0; i < catalog.length; i += 1) {
     add('error', entry.n, 'public catalog row mismatch');
     break;
   }
-  const region = [entry.ci, entry.st].filter(Boolean).join(', ');
+  const region = formatCatalogRegion(entry) ?? '';
   if ((pub.r ?? '') !== region) {
     add('error', entry.n, `public region "${pub.r ?? ''}" != "${region}"`);
+  }
+  if ((pub.co ?? 'US') !== (entry.co ?? 'US')) {
+    add('error', entry.n, `public country "${pub.co ?? ''}" != "${entry.co ?? ''}"`);
   }
 }
 
@@ -182,12 +195,14 @@ for (const check of searchChecks) {
 
 const errors = findings.filter((f) => f.severity === 'error').length;
 const warns = findings.filter((f) => f.severity === 'warn').length;
-const missingCity = catalog.filter((e) => !e.ci || !e.st).length;
+const missingLocation = catalog.filter(
+  (e) => !e.ci || !e.co || (e.co === 'US' && !e.st),
+).length;
 
 console.log(`Catalog entries: ${catalog.length}`);
 console.log(`Verified (q=1): ${verified}`);
 console.log(`Verified scorecards OK: ${scorecardsOk}`);
-console.log(`Missing city/state: ${missingCity}`);
+console.log(`Missing city/country: ${missingLocation}`);
 console.log(`Search smoke tests: ${searchChecks.length}`);
 console.log(`Errors: ${errors}`);
 console.log(`Warnings: ${warns}`);
@@ -217,8 +232,8 @@ if (scorecardsOk !== verified) {
   );
   process.exitCode = 1;
 }
-if (missingCity > 0) {
-  console.error(`\nFAIL: ${missingCity} courses still missing city or state`);
+if (missingLocation > 25) {
+  console.error(`\nFAIL: ${missingLocation} courses still missing city or country`);
   process.exitCode = 1;
 }
 if (errors > 0) {

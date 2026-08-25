@@ -20,7 +20,31 @@ import {
   applyCatalogPatch,
 } from './lib/catalogFixes.mjs';
 import { fillMissingCities } from './lib/geocodeCity.mjs';
-import { disambiguateSharedCoords } from './lib/resolveCoords.mjs';
+import { disambiguateSharedCoords, isClubSibling } from './lib/resolveCoords.mjs';
+import {
+  fixCatalogRegions,
+  formatCatalogRegion,
+  US_STATES,
+} from './lib/regionLookup.mjs';
+import {
+  collapseDuplicateArtifacts,
+  dedupeByPlaceKey,
+} from './lib/catalogDedupe.mjs';
+
+function classifyCourseType(holes, par) {
+  if (holes !== 9 && holes !== 18) return 'unknown';
+  if (par == null) return 'unknown';
+  if (holes === 18) {
+    if (par >= 69 && par <= 74) return 'regulation';
+    if (par >= 60 && par <= 68) return 'executive';
+    if (par <= 59) return 'par3';
+    return 'unknown';
+  }
+  if (par >= 34 && par <= 37) return 'regulation';
+  if (par >= 30 && par <= 33) return 'executive';
+  if (par <= 29) return 'par3';
+  return 'unknown';
+}
 
 const BULK_CACHE = resolve('scripts/.cache/opengolfapi-us.ndjson.gz');
 const OUT_CATALOG_JSON = resolve('api/golf/_data/usCatalog.json');
@@ -29,13 +53,6 @@ const OUT_PUBLIC = resolve('public/golf/catalog.us.json');
 
 const SKIP_NAME =
   /simulator|driving range|miniature golf|mini golf|pitch and putt|footgolf|disc golf|virtual golf|indoor golf|par-?3 course only/i;
-
-const US_STATES = new Set([
-  'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL',
-  'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT',
-  'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI',
-  'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY', 'DC',
-]);
 
 function normalizeName(name) {
   return String(name ?? '')
@@ -222,12 +239,19 @@ function classifyAccess(name, type) {
 }
 
 function isVerifiedEntry(entry) {
-  if (!entry.ci || !entry.st || !US_STATES.has(entry.st)) return false;
+  if (!entry.ci || !entry.co) return false;
+  if (entry.co === 'US' && (!entry.st || !US_STATES.has(entry.st))) return false;
+  if (entry.co !== 'US' && !entry.pr) return false;
   if (entry.h !== 9 && entry.h !== 18) return false;
   if (!entry.p || !validParForHoles(entry.h, entry.p)) return false;
   if (!validYardageForHoles(entry.h, entry.y)) return false;
   const templateSum = parTemplate(entry.h, entry.p).reduce((sum, par) => sum + par, 0);
   return templateSum === entry.p;
+}
+
+function catalogPlaceKey(entry) {
+  const region = entry.co === 'US' ? entry.st ?? '' : entry.pr ?? '';
+  return `${normalizeName(entry.n)}|${entry.co ?? ''}|${region}|${entry.ci ?? ''}`;
 }
 
 function catalogKey(entry) {
@@ -289,7 +313,10 @@ function buildEntry(feature) {
   const city = String(props.city ?? '').trim();
   const state = String(manualCoords?.st ?? props.state ?? '').trim().toUpperCase();
   if (city) entry.ci = city;
-  if (state && US_STATES.has(state)) entry.st = state;
+  if (state && US_STATES.has(state)) {
+    entry.st = state;
+    entry.co = 'US';
+  }
   if (!manualCoords && Number.isFinite(osmId) && osmId > 0) entry.o = osmId;
   if (holes === 9 || holes === 18) entry.h = holes;
   if (Number.isFinite(par) && validParForHoles(holes, par)) entry.p = par;
@@ -366,20 +393,23 @@ async function main() {
     normalizeName(a.n).localeCompare(normalizeName(b.n)),
   );
 
-  // Drop near-duplicate names in the same city (keep highest-ranked record).
-  const byPlace = new Map();
-  for (const entry of mergedCatalog) {
-    const key = `${normalizeName(entry.n)}|${entry.st ?? ''}|${entry.ci ?? ''}`;
-    const prev = byPlace.get(key);
-    if (!prev || entryRank(entry) > entryRank(prev)) {
-      byPlace.set(key, entry);
-    }
-  }
-  const deduped = [...byPlace.values()].sort((a, b) =>
+  const artifactCollapse = collapseDuplicateArtifacts(mergedCatalog, {
+    normalizeName,
+    entryRank,
+    isClubSiblingFn: isClubSibling,
+  });
+  let deduped = artifactCollapse.entries.sort((a, b) =>
     normalizeName(a.n).localeCompare(normalizeName(b.n)),
   );
 
+  deduped = dedupeByPlaceKey(deduped, normalizeName, entryRank, catalogPlaceKey);
+  deduped.sort((a, b) => normalizeName(a.n).localeCompare(normalizeName(b.n)));
+
   const geo = await fillMissingCities(deduped, bulkById, {
+    skipNetwork: skipGeocode,
+  });
+
+  const regions = await fixCatalogRegions(deduped, {
     skipNetwork: skipGeocode,
   });
 
@@ -394,6 +424,9 @@ async function main() {
     delete entry.q;
     const patched = applyCatalogPatch(entry);
     Object.assign(entry, patched);
+    if (entry.h != null && entry.p != null) {
+      entry.typ = classifyCourseType(entry.h, entry.p);
+    }
     if (isVerifiedEntry(entry)) entry.q = 1;
   }
 
@@ -409,7 +442,11 @@ async function main() {
     '  la: number;\n' +
     '  lo: number;\n' +
     '  ci?: string;\n' +
+    '  /** ISO country — US, CA, MX, … */\n' +
+    '  co?: string;\n' +
     '  st?: string;\n' +
+    '  /** Province / state when co !== US (BC, ON, QC, …) */\n' +
+    '  pr?: string;\n' +
     '  o?: number;\n' +
     '  g?: string;\n' +
     '  h?: number;\n' +
@@ -422,6 +459,8 @@ async function main() {
     '  q?: 1;\n' +
     '  /** Shared facility id for sibling layouts at one address */\n' +
     '  fac?: string;\n' +
+    '  /** regulation | executive | par3 | unknown */\n' +
+    '  typ?: "regulation" | "executive" | "par3" | "unknown";\n' +
     '}\n\n' +
     "import catalogJson from './usCatalog.json';\n\n" +
     'export const US_CATALOG = catalogJson as UsCatalogEntry[];\n' +
@@ -434,10 +473,12 @@ async function main() {
     n: e.n,
     la: e.la,
     lo: e.lo,
-    r: [e.ci, e.st].filter(Boolean).join(', ') || undefined,
+    r: formatCatalogRegion(e),
+    co: e.co,
     o: e.o,
     h: e.h,
     p: e.p,
+    typ: e.typ,
     q: e.q,
   }));
 
@@ -446,6 +487,12 @@ async function main() {
 
   console.log(`Bulk records read: ${records.length}`);
   console.log(`Catalog entries: ${catalog.length}`);
+  console.log(
+    `Duplicate collapse: ${artifactCollapse.removedSameCoord} same-pin, ${artifactCollapse.removedNearby} nearby-name`,
+  );
+  console.log(
+    `Region fix: ${regions.fixed} (${regions.us} US, ${regions.ca} CA, ${regions.mx} MX, ${regions.photon} photon)`,
+  );
   console.log(
     `City backfill: ${geo.filled} filled (${geo.fromName} name, ${geo.fromZip} zip, ${geo.fromGeo} geo)`,
   );

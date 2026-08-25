@@ -5,7 +5,11 @@ export interface UsCatalogEntry {
   la: number;
   lo: number;
   ci?: string;
+  /** ISO country — US, CA, MX, … */
+  co?: string;
   st?: string;
+  /** Province / state when co !== US (BC, ON, QC, …) */
+  pr?: string;
   o?: number;
   g?: string;
   h?: number;
@@ -18,6 +22,8 @@ export interface UsCatalogEntry {
   q?: 1;
   /** Shared facility id for sibling layouts at one address */
   fac?: string;
+  /** regulation | executive | par3 | unknown */
+  typ?: "regulation" | "executive" | "par3" | "unknown";
 }
 
 import catalogJson from './usCatalog.json';

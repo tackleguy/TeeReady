@@ -1,5 +1,6 @@
 import type { GolfCourseSummary } from '../courses';
 import { classifyVenueKind } from './venueKind';
+import { formatCatalogRegion } from './catalogRegion';
 import { US_CATALOG, type UsCatalogEntry } from '../_data/usCatalog';
 
 const MI_PER_KM = 0.621371;
@@ -135,7 +136,7 @@ function entryToSummary(
   const osmId = entry.o ?? 0;
   const id =
     osmId > 0 ? `way/${osmId}` : entry.g ? `opengolf/${entry.g}` : `catalog/${entry.la},${entry.lo}`;
-  const region = [entry.ci, entry.st].filter(Boolean).join(', ') || undefined;
+  const region = formatCatalogRegion(entry);
   const name = entry.n;
   return {
     id,
@@ -148,6 +149,8 @@ function entryToSummary(
     par: entry.p,
     website: entry.w,
     region,
+    country: entry.co,
+    courseType: entry.typ,
     access: entry.a ?? 'unknown',
     kind: classifyVenueKind(name),
     distanceMi: haversineMi(originLat, originLon, entry.la, entry.lo),

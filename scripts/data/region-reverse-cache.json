@@ -1,0 +1,200 @@
+{
+  "43.4462,-70.3495": {
+    "country": "US",
+    "city": "Biddeford",
+    "regionCode": "ME",
+    "source": "photon"
+  },
+  "36.5802,-121.9741": {
+    "country": "US",
+    "city": "Monterey",
+    "regionCode": "CA",
+    "source": "photon"
+  },
+  "36.6090,-121.9586": {
+    "country": "US",
+    "city": "Del Monte Forest",
+    "regionCode": "CA",
+    "source": "photon"
+  },
+  "48.9995,-102.5450": {
+    "country": "CA",
+    "city": "North Portal",
+    "regionCode": "SK",
+    "source": "photon"
+  },
+  "48.0114,-122.3186": {
+    "country": "US",
+    "city": "Snohomish",
+    "regionCode": "WA",
+    "source": "photon"
+  },
+  "44.8772,-66.9279": {
+    "country": "CA",
+    "city": "Campobello Parish",
+    "regionCode": "NB",
+    "source": "photon"
+  },
+  "42.0387,-70.0640": {
+    "country": "US",
+    "city": "Truro",
+    "regionCode": "MA",
+    "source": "photon"
+  },
+  "48.0279,-122.5389": {
+    "country": "US",
+    "city": "Island",
+    "regionCode": "WA",
+    "source": "photon"
+  },
+  "41.6312,-70.3079": {
+    "country": "US",
+    "city": "Barnstable",
+    "regionCode": "MA",
+    "source": "photon"
+  },
+  "27.3021,-80.2184": {
+    "country": "US",
+    "city": "Saint Lucie",
+    "regionCode": "FL",
+    "source": "photon"
+  },
+  "42.4216,-70.9293": {
+    "country": "US",
+    "city": "Nahant",
+    "regionCode": "MA",
+    "source": "photon"
+  },
+  "34.9721,-76.8169": {
+    "country": "US",
+    "city": "Minnesott Beach",
+    "regionCode": "NC",
+    "source": "photon"
+  },
+  "41.4622,-71.3469": {
+    "country": "US",
+    "city": "Newport",
+    "regionCode": "RI",
+    "source": "photon"
+  },
+  "41.6866,-70.7222": {
+    "country": "US",
+    "city": "Marion",
+    "regionCode": "MA",
+    "source": "photon"
+  },
+  "27.8362,-82.4715": {
+    "country": "US",
+    "city": "Tampa",
+    "regionCode": "FL",
+    "source": "photon"
+  },
+  "32.3234,-80.4550": {
+    "country": "US",
+    "city": "Beaufort",
+    "regionCode": "SC",
+    "source": "photon"
+  },
+  "36.4959,-73.8683": {
+    "country": null,
+    "city": null,
+    "regionCode": null,
+    "source": "photon"
+  },
+  "37.5862,-122.3253": {
+    "country": "US",
+    "city": "San Mateo",
+    "regionCode": "CA",
+    "source": "photon"
+  },
+  "43.5355,-70.3170": {
+    "country": "US",
+    "city": "Scarborough",
+    "regionCode": "ME",
+    "source": "photon"
+  },
+  "32.2299,-80.6776": {
+    "country": "US",
+    "city": "Hilton Head Island",
+    "regionCode": "SC",
+    "source": "photon"
+  },
+  "40.6223,-73.2860": {
+    "country": "US",
+    "city": "Babylon",
+    "regionCode": "NY",
+    "source": "photon"
+  },
+  "29.1275,-87.6589": {
+    "country": null,
+    "city": null,
+    "regionCode": null,
+    "source": "photon"
+  },
+  "44.1181,-69.0832": {
+    "country": "US",
+    "city": "Rockport",
+    "regionCode": "ME",
+    "source": "photon"
+  },
+  "40.0254,-124.0695": {
+    "country": "US",
+    "city": "Shelter Cove",
+    "regionCode": "CA",
+    "source": "photon"
+  },
+  "36.6038,-121.9584": {
+    "country": "US",
+    "city": "Del Monte Forest",
+    "regionCode": "CA",
+    "source": "photon"
+  },
+  "41.5597,-70.4807": {
+    "country": "US",
+    "city": "Mashpee",
+    "regionCode": "MA",
+    "source": "photon"
+  },
+  "32.3062,-80.6788": {
+    "country": "US",
+    "city": "Port Royal",
+    "regionCode": "SC",
+    "source": "photon"
+  },
+  "34.7693,-73.2102": {
+    "country": null,
+    "city": null,
+    "regionCode": null,
+    "source": "photon"
+  },
+  "33.7296,-118.3495": {
+    "country": "US",
+    "city": "Rancho Palos Verdes",
+    "regionCode": "CA",
+    "source": "photon"
+  },
+  "37.2478,-76.8697": {
+    "country": "US",
+    "city": "James City",
+    "regionCode": "VA",
+    "source": "photon"
+  },
+  "20.9303,-156.5020": {
+    "country": "US",
+    "city": "Maui",
+    "regionCode": "HI",
+    "source": "photon"
+  },
+  "41.6738,-71.3884": {
+    "country": "US",
+    "city": "Warwick",
+    "regionCode": "RI",
+    "source": "photon"
+  },
+  "41.6160,-70.3706": {
+    "country": "US",
+    "city": "Barnstable",
+    "regionCode": "MA",
+    "source": "photon"
+  }
+}

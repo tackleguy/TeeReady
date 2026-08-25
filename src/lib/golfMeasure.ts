@@ -93,11 +93,21 @@ export function pointAlongHole(hole: GolfHole, yards: number): LonLat {
 }
 
 /** Par 3s aim at the green; longer holes open on a typical tee-shot landing. */
-export function defaultTarget(hole: GolfHole, driverYards: number): LonLat {
-  if ((hole.par ?? 4) <= 3 || hole.yards <= driverYards * 0.85) {
+export function defaultTarget(
+  hole: GolfHole,
+  driverYards: number,
+  courseType?: 'regulation' | 'executive' | 'par3' | 'unknown',
+): LonLat {
+  const maxTee =
+    courseType === 'par3'
+      ? Math.min(driverYards, 200)
+      : courseType === 'executive'
+        ? Math.min(driverYards, 260)
+        : driverYards;
+  if ((hole.par ?? 4) <= 3 || hole.yards <= maxTee * 0.85) {
     return { lon: hole.green.lon, lat: hole.green.lat };
   }
-  return pointAlongHole(hole, Math.min(driverYards, hole.yards * 0.62));
+  return pointAlongHole(hole, Math.min(maxTee, hole.yards * 0.62));
 }
 
 export function nearestBagClub(yards: number, bag: BagClub[]): BagClub | null {

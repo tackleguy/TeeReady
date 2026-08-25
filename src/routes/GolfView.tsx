@@ -438,6 +438,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
     const landing = defaultTarget(
       activeHoleObj,
       bag[0]?.yards ?? profile.driverYards,
+      course?.courseType,
     );
     setTarget(landing);
     // GPS path: layup on longer holes so carry + approach both get callouts.
@@ -1252,6 +1253,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                       defaultTarget(
                         activeHoleObj,
                         bag[0]?.yards ?? profile.driverYards,
+                        course?.courseType,
                       ),
                     )
                   }

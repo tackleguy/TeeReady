@@ -5,6 +5,13 @@
 import type { CourseScorecard, ScorecardHole } from '../_data/scorecards';
 import { US_CATALOG, type UsCatalogEntry } from '../_data/usCatalog';
 
+const US_STATES = new Set([
+  'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL',
+  'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT',
+  'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI',
+  'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY', 'DC',
+]);
+
 const PAR3_SLOTS_18 = [2, 7, 11, 16];
 const PAR5_SLOTS_18 = [4, 13, 17];
 const PAR3_SLOTS_9 = [2, 7];
@@ -23,7 +30,9 @@ export function validYardageForHoles(holes: number, yards?: number): boolean {
 }
 
 export function isVerifiedCatalogEntry(entry: UsCatalogEntry): boolean {
-  if (!entry.ci || !entry.st) return false;
+  if (!entry.ci || !entry.co) return false;
+  if (entry.co === 'US' && (!entry.st || !US_STATES.has(entry.st))) return false;
+  if (entry.co !== 'US' && !entry.pr) return false;
   if (entry.h !== 9 && entry.h !== 18) return false;
   if (!entry.p || !validParForHoles(entry.h, entry.p)) return false;
   if (!validYardageForHoles(entry.h, entry.y)) return false;

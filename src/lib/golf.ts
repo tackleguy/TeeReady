@@ -25,6 +25,10 @@ export interface GolfCourseSummary {
   access?: 'public' | 'private' | 'resort' | 'unknown';
   /** Outdoor course vs indoor sim bay vs practice range. */
   kind?: VenueKind;
+  /** ISO country when known (US, CA, MX, …). */
+  country?: string;
+  /** regulation | executive | par3 | unknown */
+  courseType?: 'regulation' | 'executive' | 'par3' | 'unknown';
   /** Stable hero photo URL for cards and lists. */
   photo?: string;
   distanceMi?: number;

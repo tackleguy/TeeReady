@@ -45,6 +45,10 @@ export interface GolfCourseSummary {
   access?: CourseAccess;
   /** Outdoor course vs indoor sim bay vs practice range. */
   kind?: VenueKind;
+  /** ISO country when known (US, CA, MX, …). */
+  country?: string;
+  /** regulation | executive | par3 | unknown */
+  courseType?: 'regulation' | 'executive' | 'par3' | 'unknown';
   distanceMi?: number;
 }
 
