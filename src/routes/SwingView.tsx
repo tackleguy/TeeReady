@@ -17,7 +17,6 @@ import {
   loadSwingHistory,
   saveSwingAnalysis,
   type AnalyzeProgress,
-  type CameraAngle,
   type Handedness,
   type SwingAnalysis,
   type SwingCoachResult,
@@ -59,27 +58,16 @@ function MetricRow({ m, fps }: { m: SwingMetric; fps: number }) {
   );
 }
 
-function AlignmentGuide({ angle }: { angle: CameraAngle }) {
+function AlignmentGuide() {
   return (
     <div className="pointer-events-none absolute inset-0 z-10">
       <div className="absolute inset-4 rounded-xl border border-dashed border-white/50" />
-      {angle === 'face-on' ? (
-        <>
-          <div className="absolute left-1/2 top-6 bottom-6 w-px -translate-x-1/2 bg-white/40" />
-          <div className="absolute left-[18%] right-[18%] top-[12%] h-px bg-white/30" />
-          <p className="absolute bottom-6 left-0 right-0 text-center text-[11px] font-medium text-white/90 drop-shadow">
-            Face-on — chest to camera · full body in frame
-          </p>
-        </>
-      ) : (
-        <>
-          <div className="absolute left-[42%] top-8 bottom-10 w-px bg-accent/80" />
-          <div className="absolute left-[42%] bottom-10 h-px w-[28%] bg-accent/80" />
-          <p className="absolute bottom-6 left-0 right-0 text-center text-[11px] font-medium text-white/90 drop-shadow">
-            Down-the-line — camera behind ball on target line
-          </p>
-        </>
-      )}
+      <div className="absolute left-1/2 top-6 bottom-6 w-px -translate-x-1/2 bg-white/30" />
+      <div className="absolute left-[15%] right-[15%] top-[10%] h-px bg-white/25" />
+      <div className="absolute left-[15%] right-[15%] bottom-[12%] h-px bg-white/25" />
+      <p className="absolute bottom-6 left-0 right-0 px-4 text-center text-[11px] font-medium leading-snug text-white/90 drop-shadow">
+        Any angle works — face-on or down-the-line. Keep your full body in frame for the whole swing.
+      </p>
     </div>
   );
 }
@@ -92,7 +80,6 @@ export function SwingView() {
   const streamRef = useRef<MediaStream | null>(null);
 
   const [step, setStep] = useState<Step>('setup');
-  const [angle, setAngle] = useState<CameraAngle>('face-on');
   const [handedness, setHandedness] = useState<Handedness>('right');
   const [fps, setFps] = useState<number | null>(null);
   const [recording, setRecording] = useState(false);
@@ -259,7 +246,6 @@ export function SwingView() {
     try {
       const out = await analyzeSwingVideo({
         blob,
-        angle,
         handedness,
         fps: fps ?? 30,
         onProgress: setProgress,
@@ -276,7 +262,7 @@ export function SwingView() {
       setError(e instanceof Error ? e.message : 'Analysis failed');
       setStep('preview');
     }
-  }, [blob, angle, handedness, fps, runCoach]);
+  }, [blob, handedness, fps, runCoach]);
 
   const reset = useCallback(() => {
     coachAbortRef.current?.abort();
@@ -308,7 +294,7 @@ export function SwingView() {
           Swing analysis
         </h1>
         <p className="mt-2 text-[14px] text-muted">
-          Record on your phone. Pose is measured on-device — video never leaves this device.
+          Record on your phone from any angle. Pose is measured on-device — camera angle and zoom are detected automatically.
         </p>
       </header>
 
@@ -320,34 +306,6 @@ export function SwingView() {
 
       {step === 'setup' ? (
         <div className="space-y-5">
-          <section className="rounded-card bg-surface p-4 shadow-card">
-            <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
-              Camera angle
-            </p>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              {(
-                [
-                  ['face-on', 'Face-on', 'Perpendicular to chest'],
-                  ['dtl', 'Down-the-line', 'Behind ball on target line'],
-                ] as const
-              ).map(([id, label, hint]) => (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setAngle(id)}
-                  className={`rounded-xl border px-3 py-3 text-left transition-colors ${
-                    angle === id
-                      ? 'border-brand bg-brand-soft'
-                      : 'border-line hover:border-brand/40'
-                  }`}
-                >
-                  <div className="text-[13px] font-semibold text-ink">{label}</div>
-                  <div className="mt-0.5 text-[11px] text-muted">{hint}</div>
-                </button>
-              ))}
-            </div>
-          </section>
-
           <section className="rounded-card bg-surface p-4 shadow-card">
             <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
               Handedness
@@ -413,7 +371,6 @@ export function SwingView() {
                       onClick={() => {
                         setResult(h);
                         setFps(h.fps);
-                        setAngle(h.angle);
                         setCoach(
                           h.coach
                             ? {
@@ -456,7 +413,7 @@ export function SwingView() {
               muted
               className="h-full w-full object-cover"
             />
-            <AlignmentGuide angle={angle} />
+            <AlignmentGuide />
             <div className="absolute left-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-semibold text-white">
               {fps != null ? `${Math.round(fps)} fps` : 'fps…'}
             </div>
@@ -511,7 +468,7 @@ export function SwingView() {
             className="w-full rounded-card bg-black shadow-card"
           />
           <p className="text-[12px] text-muted">
-            Angle: {angle === 'dtl' ? 'down-the-line' : 'face-on'}
+            Camera angle is detected during analysis.
             {fps != null ? ` · ~${Math.round(fps)} fps` : ''}
           </p>
           {lowFps ? (

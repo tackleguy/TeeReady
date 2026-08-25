@@ -8,6 +8,7 @@ export type {
 } from './types';
 export { isSwingAnalysis } from './types';
 export { analyzeSwingVideo } from './analyze';
+export { inferCameraAngle, angleLabel } from './inferAngle';
 export type { AnalyzeProgress } from './analyze';
 export {
   deleteSwingAnalysis,

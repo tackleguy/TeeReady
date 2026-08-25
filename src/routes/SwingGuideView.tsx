@@ -154,7 +154,7 @@ export function SwingGuideView() {
         if (!doc) {
           if (!cancelled) {
             setError(
-              'No clear pattern to work on from this clip. Re-record at the matching camera angle with 30+ fps when possible.',
+              'No clear pattern to work on from this clip. Re-record with 30+ fps when possible.',
             );
             setLoading(false);
           }

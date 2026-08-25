@@ -7,6 +7,7 @@ import assert from 'node:assert/strict';
 import { DEFAULT_PROFILE } from '../src/lib/golfProfile';
 import { computeMetrics } from '../src/lib/swing/metrics';
 import { assessCaptureQuality } from '../src/lib/swing/quality';
+import { inferCameraAngle } from '../src/lib/swing/inferAngle';
 import { SWING_THRESHOLDS } from '../src/lib/swing/thresholds';
 import { buildSwingGuide } from '../src/lib/swing/guide/assemble';
 import { buildSwingPlan } from '../src/lib/swingPlan';
@@ -82,7 +83,7 @@ for (const m of metrics29.filter((x) => x.validAtFps === 30)) {
 }
 console.log('PASS: impact metrics low-confidence at 29 fps');
 
-// --- quality reject (far / low vis) ---
+// --- quality: frame coverage only (zoom/angle no longer reject) ---
 const badFrames = Array.from({ length: 25 }, (_, i) =>
   frameAt(i / 30, {
     11: { x: 0.49, y: 0.5, visibility: 0.2 },
@@ -97,6 +98,26 @@ const badFrames = Array.from({ length: 25 }, (_, i) =>
 const quality = assessCaptureQuality(badFrames);
 assert.equal(quality.ok, false);
 console.log('PASS: bad capture rejected —', !quality.ok && quality.reason);
+
+const farVisible = Array.from({ length: 25 }, (_, i) =>
+  frameAt(i / 30, {
+    11: { x: 0.49, y: 0.5, visibility: 0.9 },
+    12: { x: 0.51, y: 0.5, visibility: 0.9 },
+  }),
+);
+assert.equal(assessCaptureQuality(farVisible).ok, true);
+console.log('PASS: small/zoomed subject passes when pose frames are tracked');
+
+const faceOnFrames = Array.from({ length: 25 }, (_, i) => frameAt(i / 30, {}));
+assert.equal(inferCameraAngle(faceOnFrames), 'face-on');
+const dtlFrames = Array.from({ length: 25 }, (_, i) =>
+  frameAt(i / 30, {
+    11: { x: 0.48, y: 0.35, z: -0.25, visibility: 0.95 },
+    12: { x: 0.52, y: 0.35, z: 0.25, visibility: 0.95 },
+  }),
+);
+assert.equal(inferCameraAngle(dtlFrames), 'dtl');
+console.log('PASS: camera angle inferred from pose geometry');
 
 // --- plan + guide at 30fps analysis ---
 const analysis: SwingAnalysis = {

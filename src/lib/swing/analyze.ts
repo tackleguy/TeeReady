@@ -1,6 +1,7 @@
 /** Orchestrate Phase 1 swing analysis: pose → quality → segment → metrics. */
 
 import { renderKeyframes } from './draw';
+import { inferCameraAngle } from './inferAngle';
 import { computeMetrics } from './metrics';
 import { extractPoseSeries } from './pose';
 import { assessCaptureQuality } from './quality';
@@ -22,7 +23,8 @@ export type AnalyzeProgress = {
 
 export async function analyzeSwingVideo(opts: {
   blob: Blob;
-  angle: CameraAngle;
+  /** Optional hint — auto-detected from pose when omitted. */
+  angle?: CameraAngle;
   handedness: Handedness;
   /** Capture fps from getSettings(), or estimate for uploads. */
   fps: number;
@@ -52,12 +54,13 @@ export async function analyzeSwingVideo(opts: {
           : 30;
 
     const quality = assessCaptureQuality(frames);
+    const angle = inferCameraAngle(frames) ?? opts.angle ?? 'face-on';
     if (!quality.ok) {
       const reject: SwingReject = {
         rejected: true,
         quality,
         fps,
-        angle: opts.angle,
+        angle,
       };
       return reject;
     }
@@ -71,21 +74,21 @@ export async function analyzeSwingVideo(opts: {
           ok: false,
           reason: 'too-short',
           message:
-            'Couldn’t find address → top → impact → finish in this clip. Take a fuller swing and keep the whole body in frame.',
+            'Couldn’t find address → top → impact → finish in this clip. Record a fuller swing with enough frames.',
         },
         fps,
-        angle: opts.angle,
+        angle,
       };
     }
 
     const metrics = computeMetrics(
       frames,
       positions,
-      opts.angle,
+      angle,
       opts.handedness,
       fps,
     );
-    const summary = buildRuleSummary(metrics, opts.angle, fps);
+    const summary = buildRuleSummary(metrics, angle, fps);
     opts.onProgress?.({ stage: 'measure', pct: 80 });
 
     const keyframes = await renderKeyframes(video, frames, positions);
@@ -93,7 +96,7 @@ export async function analyzeSwingVideo(opts: {
     const analysis: SwingAnalysis = {
       id: `swing-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
       createdAt: Date.now(),
-      angle: opts.angle,
+      angle,
       handedness: opts.handedness,
       fps,
       positions,
