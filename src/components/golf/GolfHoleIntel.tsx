@@ -52,6 +52,11 @@ export function GolfHoleIntel({ forecast, turf, miss }: Props) {
           </div>
         </div>
       </div>
+      {turf.confidence === 'partial' ? (
+        <p className="mt-1.5 text-[10px] leading-snug text-[var(--ink-4)]">
+          Firmness estimated from precipitation alone (no ET0 / soil moisture).
+        </p>
+      ) : null}
       {first && (
         <div className="mt-1.5 flex flex-wrap gap-1.5">
           {first.lines.map((line) => (

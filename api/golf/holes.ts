@@ -32,6 +32,7 @@ import {
   quantizeCoord,
   type OsmElement,
 } from './_lib/overpass';
+import { elevationMeters } from '../_lib/weather/elevation';
 
 export const config = { runtime: 'edge' };
 
@@ -70,7 +71,7 @@ export interface GolfHole {
 const HOLE_MEM = new Map<string, { at: number; holes: GolfHole[] }>();
 const HOLE_MEM_TTL_MS = 6 * 60 * 60_000;
 
-/** Mid tee + green only — extra boxes inherit the hole tee height. */
+/** Mid tee + green only — extra boxes inherit the hole tee height. USGS EPQS. */
 async function addElevations(holes: GolfHole[]): Promise<GolfHole[]> {
   if (!holes.length) return holes;
   const points: Array<{ lat: number; lon: number }> = [];
@@ -78,20 +79,8 @@ async function addElevations(holes: GolfHole[]): Promise<GolfHole[]> {
     points.push(hole.tee);
     points.push(hole.green);
   });
-  const params = new URLSearchParams({
-    latitude: points.map((p) => p.lat.toFixed(6)).join(','),
-    longitude: points.map((p) => p.lon.toFixed(6)).join(','),
-  });
-  const ac = new AbortController();
-  const timer = setTimeout(() => ac.abort(), 2500);
   try {
-    const res = await fetch(
-      `https://api.open-meteo.com/v1/elevation?${params}`,
-      { signal: ac.signal },
-    );
-    if (!res.ok) return holes;
-    const body = (await res.json()) as { elevation?: Array<number | null> };
-    const elevations = body.elevation ?? [];
+    const elevations = await elevationMeters(points, 4);
     return holes.map((hole, index) => {
       const tee = elevations[index * 2];
       const green = elevations[index * 2 + 1];
@@ -108,8 +97,6 @@ async function addElevations(holes: GolfHole[]): Promise<GolfHole[]> {
     });
   } catch {
     return holes;
-  } finally {
-    clearTimeout(timer);
   }
 }
 

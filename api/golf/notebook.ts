@@ -1,6 +1,14 @@
-// 7-day afternoon wind ensemble + yardage-book numbers (slope, altitude).
-// Smaller model set than /api/golf/ensemble so a week of hours stays cheap.
+// 7-day afternoon wind from configured providers + yardage-book numbers.
 
+import {
+  attributionFor,
+  elevationMeter,
+  openMeteoWeekAfternoons,
+  providersFor,
+  type EnsembleConfidence,
+  type WindSample,
+} from '../_lib/weather';
+import { configuredProviderIds } from '../_lib/weather/registry';
 import {
   aggregateWinds,
   altitudeBonusPct,
@@ -16,16 +24,6 @@ import {
 
 export const config = { runtime: 'edge' };
 
-const FORECAST_URL = 'https://api.open-meteo.com/v1/forecast';
-const ELEVATION_URL = 'https://api.open-meteo.com/v1/elevation';
-
-const NOTEBOOK_MODELS = [
-  'gfs_seamless',
-  'ecmwf_ifs025',
-  'icon_seamless',
-  'gfs_hrrr',
-];
-
 const AFTERNOON_HOUR = 14;
 
 interface DayWind {
@@ -33,7 +31,8 @@ interface DayWind {
   windFromDeg: number;
   windMph: number;
   gustMph: number;
-  agreement: number;
+  agreement: number | null;
+  confidence: EnsembleConfidence;
   modelsUsed: string[];
 }
 
@@ -58,122 +57,105 @@ interface HoleNotebook {
   }>;
 }
 
-function parseHourlyJson(text: string): {
-  error?: boolean;
-  reason?: string;
-  latitude?: number | null;
-  hourly?: {
-    time?: string[];
-    wind_speed_10m?: (number | null)[];
-    wind_direction_10m?: (number | null)[];
-    wind_gusts_10m?: (number | null)[];
-  };
-} {
-  const repaired = text
-    .replace(/([:,[]\s*)-?nan\b/gi, '$1null')
-    .replace(/([:,[]\s*)-?inf(inity)?\b/gi, '$1null');
-  return JSON.parse(repaired) as ReturnType<typeof parseHourlyJson>;
-}
-
-/** Index of the hour nearest 14:00 local for each calendar date. */
-function afternoonIndexes(times: string[]): Map<string, number> {
-  const best = new Map<string, { idx: number; dist: number }>();
-  for (let i = 0; i < times.length; i += 1) {
-    const iso = times[i];
-    if (!iso) continue;
-    const date = iso.slice(0, 10);
-    const hour = Number(iso.slice(11, 13));
-    if (!Number.isFinite(hour)) continue;
-    const dist = Math.abs(hour - AFTERNOON_HOUR);
-    const prev = best.get(date);
-    if (!prev || dist < prev.dist) best.set(date, { idx: i, dist });
+function honesty(
+  sourceCount: number,
+  rawAgreement: number,
+): { agreement: number | null; confidence: EnsembleConfidence } {
+  if (sourceCount <= 1) {
+    return { agreement: null, confidence: 'single-source' };
   }
-  const out = new Map<string, number>();
-  for (const [date, v] of best) out.set(date, v.idx);
-  return out;
-}
-
-async function fetchModelWeek(
-  lat: number,
-  lon: number,
-  model: string,
-): Promise<{
-  model: string;
-  ok: boolean;
-  days: Map<string, { speed: number; dir: number; gust: number }>;
-  reason?: string;
-}> {
-  const params = new URLSearchParams({
-    latitude: String(lat),
-    longitude: String(lon),
-    hourly: 'wind_speed_10m,wind_direction_10m,wind_gusts_10m',
-    models: model,
-    timezone: 'auto',
-    wind_speed_unit: 'mph',
-    forecast_days: '7',
-    timeformat: 'iso8601',
-  });
-  try {
-    const res = await fetch(`${FORECAST_URL}?${params}`);
-    const data = parseHourlyJson(await res.text());
-    if (!res.ok || data.error || data.latitude == null) {
-      return {
-        model,
-        ok: false,
-        days: new Map(),
-        reason: data.reason ?? `HTTP ${res.status}`,
-      };
-    }
-    const times = data.hourly?.time ?? [];
-    const speeds = data.hourly?.wind_speed_10m ?? [];
-    const dirs = data.hourly?.wind_direction_10m ?? [];
-    const gusts = data.hourly?.wind_gusts_10m ?? [];
-    const idxByDate = afternoonIndexes(times);
-    const days = new Map<string, { speed: number; dir: number; gust: number }>();
-    for (const [date, idx] of idxByDate) {
-      const speed = speeds[idx];
-      const dir = dirs[idx];
-      if (
-        typeof speed !== 'number' ||
-        !Number.isFinite(speed) ||
-        typeof dir !== 'number' ||
-        !Number.isFinite(dir)
-      ) {
-        continue;
-      }
-      const gust = gusts[idx];
-      days.set(date, {
-        speed,
-        dir,
-        gust: typeof gust === 'number' && Number.isFinite(gust) ? gust : speed,
-      });
-    }
-    if (!days.size) {
-      return { model, ok: false, days, reason: 'no afternoon wind' };
-    }
-    return { model, ok: true, days };
-  } catch (err) {
+  if (sourceCount === 2) {
     return {
-      model,
-      ok: false,
-      days: new Map(),
-      reason: err instanceof Error ? err.message : 'fetch failed',
+      agreement: Math.round(rawAgreement * 100) / 100,
+      confidence: 'low',
     };
   }
+  return {
+    agreement: Math.round(rawAgreement * 100) / 100,
+    confidence: 'full',
+  };
 }
 
-async function fetchPointElevation(lat: number, lon: number): Promise<number | null> {
-  try {
-    const res = await fetch(
-      `${ELEVATION_URL}?latitude=${encodeURIComponent(String(lat))}&longitude=${encodeURIComponent(String(lon))}`,
-    );
-    if (!res.ok) return null;
-    const data = (await res.json()) as { elevation?: number[] };
-    const m = data.elevation?.[0];
-    return typeof m === 'number' && Number.isFinite(m) ? m : null;
-  } catch {
-    return null;
+async function providerWeekAfternoons(
+  lat: number,
+  lon: number,
+): Promise<
+  Array<{
+    source: string;
+    ok: boolean;
+    days: Map<string, { speed: number; dir: number; gust: number }>;
+    reason?: string;
+  }>
+> {
+  const providers = providersFor(lat, lon).filter((p) => p.id !== 'open-meteo');
+  const results = await Promise.all(
+    providers.map(async (p) => {
+      try {
+        // One provider fetch covers the whole week; ask for every hour so we
+        // can pick the afternoon sample per calendar date.
+        const offsets = Array.from({ length: 7 * 24 }, (_, i) => i);
+        const samples = await p.hourlyWind(lat, lon, offsets);
+        const days = new Map<
+          string,
+          { speed: number; dir: number; gust: number }
+        >();
+        // Prefer local-afternoon-ish: pick sample closest to 14:00 UTC offset
+        // per calendar date from the returned times.
+        const byDate = new Map<string, WindSample[]>();
+        for (const s of samples) {
+          if (!s.time) continue;
+          const date = s.time.slice(0, 10);
+          const list = byDate.get(date) ?? [];
+          list.push(s);
+          byDate.set(date, list);
+        }
+        for (const [date, list] of byDate) {
+          let best = list[0]!;
+          let bestDist = Infinity;
+          for (const s of list) {
+            const hour = Number((s.time ?? '').slice(11, 13));
+            const dist = Number.isFinite(hour)
+              ? Math.abs(hour - AFTERNOON_HOUR)
+              : 99;
+            if (dist < bestDist) {
+              bestDist = dist;
+              best = s;
+            }
+          }
+          days.set(date, {
+            speed: best.speed,
+            dir: best.dir,
+            gust: best.gust,
+          });
+        }
+        if (!days.size) {
+          return {
+            source: p.id,
+            ok: false,
+            days,
+            reason: 'no afternoon wind',
+          };
+        }
+        return { source: p.id, ok: true, days };
+      } catch (err) {
+        return {
+          source: p.id,
+          ok: false,
+          days: new Map(),
+          reason: err instanceof Error ? err.message : 'fetch failed',
+        };
+      }
+    }),
+  );
+
+  const openMeteoOn =
+    configuredProviderIds().includes('open-meteo') ||
+    configuredProviderIds().includes('openmeteo');
+  if (openMeteoOn) {
+    const om = await openMeteoWeekAfternoons(lat, lon);
+    results.push(...om);
   }
+  return results;
 }
 
 export default async function handler(req: Request): Promise<Response> {
@@ -229,8 +211,8 @@ export default async function handler(req: Request): Promise<Response> {
   }
 
   const [modelWeeks, pointElevM] = await Promise.all([
-    Promise.all(NOTEBOOK_MODELS.map((m) => fetchModelWeek(lat, lon, m))),
-    fetchPointElevation(lat, lon),
+    providerWeekAfternoons(lat, lon),
+    elevationMeter(lat, lon),
   ]);
 
   const okModels = modelWeeks.filter((m) => m.ok);
@@ -241,20 +223,27 @@ export default async function handler(req: Request): Promise<Response> {
   const sortedDates = Array.from(dates).sort().slice(0, 7);
 
   const days: DayWind[] = sortedDates.map((date) => {
-    const samples: Array<{ speed: number; dir: number; gust: number; model: string }> =
-      [];
+    const samples: Array<{
+      speed: number;
+      dir: number;
+      gust: number;
+      model: string;
+    }> = [];
     for (const m of okModels) {
       const sample = m.days.get(date);
       if (!sample) continue;
-      samples.push({ ...sample, model: m.model });
+      samples.push({ ...sample, model: m.source });
     }
     const agg = aggregateWinds(samples);
+    const unique = new Set(samples.map((s) => s.model.split(':')[0]!));
+    const { agreement, confidence } = honesty(unique.size, agg.agreement);
     return {
       date,
       windFromDeg: Math.round(agg.windFromDeg),
       windMph: Math.round(agg.windMph * 10) / 10,
       gustMph: Math.round(agg.gustMph * 10) / 10,
-      agreement: Math.round(agg.agreement * 100) / 100,
+      agreement,
+      confidence,
       modelsUsed: samples.map((s) => s.model),
     };
   });
@@ -318,6 +307,8 @@ export default async function handler(req: Request): Promise<Response> {
     };
   });
 
+  const usedSources = days.flatMap((d) => d.modelsUsed);
+
   return new Response(
     JSON.stringify({
       lat,
@@ -329,8 +320,8 @@ export default async function handler(req: Request): Promise<Response> {
       holes: holeRows,
       modelsFailed: modelWeeks
         .filter((m) => !m.ok)
-        .map((m) => ({ model: m.model, reason: m.reason })),
-      attribution: 'Open-Meteo multi-model ensemble (CC BY 4.0)',
+        .map((m) => ({ model: m.source, reason: m.reason })),
+      attribution: attributionFor(usedSources),
     }),
     {
       headers: {

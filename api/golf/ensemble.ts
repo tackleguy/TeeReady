@@ -1,7 +1,14 @@
-// Multi-model wind ensemble + hole-by-hole golf brief.
-// Median wind speed (vector mean cancels when models disagree) vs each
+// Multi-provider wind ensemble + hole-by-hole golf brief.
+// Median wind speed (vector mean cancels when sources disagree) vs each
 // hole’s tee→green bearing. Plays-like includes wind, slope, and altitude.
 
+import {
+  attributionFor,
+  providersFor,
+  type EnsembleConfidence,
+  type TurfInputs,
+  type WindSample,
+} from '../_lib/weather';
 import {
   aggregateWinds,
   clubPlan,
@@ -16,37 +23,6 @@ import {
 import { DEFAULT_TURF, turfFromWeather, type TurfReport } from './_lib/turf';
 
 export const config = { runtime: 'edge' };
-
-const FORECAST_URL = 'https://api.open-meteo.com/v1/forecast';
-
-/** Prefer high-skill globals + strong limited-area models from the app catalog. */
-const ENSEMBLE_MODELS = [
-  'gfs_seamless',
-  'gfs_global',
-  'gfs_hrrr',
-  'gfs_graphcast025',
-  'ecmwf_ifs025',
-  'ecmwf_ifs',
-  'ecmwf_aifs025_single',
-  'icon_seamless',
-  'icon_global',
-  'icon_eu',
-  'icon_d2',
-  'gem_seamless',
-  'gem_global',
-  'gem_hrdps_continental',
-  'meteofrance_seamless',
-  'meteofrance_arpege_world',
-  'ukmo_seamless',
-  'ukmo_global_deterministic_10km',
-  'jma_seamless',
-  'jma_gsm',
-  'cma_grapes_global',
-  'bom_access_global',
-  'kma_seamless',
-  'knmi_seamless',
-  'dmi_seamless',
-];
 
 interface HoleBrief {
   number: number;
@@ -66,7 +42,7 @@ interface HoleBrief {
   tip: string;
   clubHint: string;
   recommendedClub: string;
-  modelAgreement: number;
+  modelAgreement: number | null;
 }
 
 function tipFor(
@@ -78,14 +54,16 @@ function tipFor(
   driftYards: number,
   slopeYards: number,
   player: PlayerIn,
-  agreement: number,
+  agreement: number | null,
 ): string {
   const conf =
-    agreement >= 0.75
-      ? 'Models agree'
-      : agreement >= 0.5
-        ? 'Models lean'
-        : 'Models split';
+    agreement == null
+      ? 'Single source'
+      : agreement >= 0.75
+        ? 'Models agree'
+        : agreement >= 0.5
+          ? 'Models lean'
+          : 'Models split';
   const pushSide = cross >= 0 ? 'right' : 'left';
   const aimSide = cross >= 0 ? 'left' : 'right';
   const crossAbs = Math.abs(cross);
@@ -129,141 +107,86 @@ function tipFor(
   return `${conf}: ${windTip}${slope} ${missAim}`;
 }
 
-async function fetchTurf(lat: number, lon: number, windMph: number): Promise<TurfReport> {
-  const tryFetch = async (hourly: string) => {
-    const params = new URLSearchParams({
-      latitude: String(lat),
-      longitude: String(lon),
-      hourly,
-      past_days: '2',
-      forecast_days: '1',
-      precipitation_unit: 'inch',
-      timezone: 'auto',
-    });
-    const res = await fetch(`${FORECAST_URL}?${params}`);
-    if (!res.ok) return null;
-    return (await res.json()) as {
-      hourly?: {
-        precipitation?: Array<number | null>;
-        et0_fao_evapotranspiration?: Array<number | null>;
-        relative_humidity_2m?: Array<number | null>;
-        soil_moisture_0_to_7cm?: Array<number | null>;
-      };
-    };
-  };
-  try {
-    const data =
-      (await tryFetch(
-        'precipitation,et0_fao_evapotranspiration,relative_humidity_2m,soil_moisture_0_to_7cm',
-      )) ??
-      (await tryFetch(
-        'precipitation,et0_fao_evapotranspiration,relative_humidity_2m',
-      ));
-    if (!data) return DEFAULT_TURF;
-    const precip = data.hourly?.precipitation ?? [];
-    const et0 = data.hourly?.et0_fao_evapotranspiration ?? [];
-    const rh = data.hourly?.relative_humidity_2m ?? [];
-    const soil = data.hourly?.soil_moisture_0_to_7cm ?? [];
-    const last48 = Math.min(48, Math.max(precip.length, et0.length));
-    const slice = <T,>(arr: T[], n: number) =>
-      arr.slice(Math.max(0, arr.length - n));
-    const sum = (arr: Array<number | null>) =>
-      arr.reduce(
-        (s, n) => s + (typeof n === 'number' && Number.isFinite(n) ? n : 0),
-        0,
-      );
-    const lastNum = (arr: Array<number | null>) => {
-      for (let i = arr.length - 1; i >= 0; i -= 1) {
-        const v = arr[i];
-        if (typeof v === 'number' && Number.isFinite(v)) return v;
-      }
-      return null;
-    };
-    return turfFromWeather({
-      precipIn48h: sum(slice(precip, last48)),
-      et0Mm48h: sum(slice(et0, last48)),
-      humidityPct: lastNum(rh) ?? 55,
-      soilMoisture: lastNum(soil),
-      windMph,
-    });
-  } catch {
-    return DEFAULT_TURF;
+function honesty(
+  sourceCount: number,
+  rawAgreement: number,
+): { agreement: number | null; confidence: EnsembleConfidence } {
+  if (sourceCount <= 0) {
+    return { agreement: null, confidence: 'single-source' };
   }
+  if (sourceCount === 1) {
+    return { agreement: null, confidence: 'single-source' };
+  }
+  if (sourceCount === 2) {
+    return {
+      agreement: Math.round(rawAgreement * 100) / 100,
+      confidence: 'low',
+    };
+  }
+  return {
+    agreement: Math.round(rawAgreement * 100) / 100,
+    confidence: 'full',
+  };
 }
 
-async function fetchModelHour(
+async function gatherTurf(
   lat: number,
   lon: number,
-  model: string,
-  hourIdx: number,
-): Promise<{
-  model: string;
-  ok: boolean;
-  speed?: number;
-  dir?: number;
-  gust?: number;
-  time?: string;
-  reason?: string;
-}> {
-  const params = new URLSearchParams({
-    latitude: String(lat),
-    longitude: String(lon),
-    hourly: 'wind_speed_10m,wind_direction_10m,wind_gusts_10m',
-    models: model,
-    timezone: 'auto',
-    wind_speed_unit: 'mph',
-    forecast_days: '2',
-    timeformat: 'iso8601',
-  });
-  try {
-    const res = await fetch(`${FORECAST_URL}?${params}`);
-    const text = await res.text();
-    const repaired = text
-      .replace(/([:,[]\s*)-?nan\b/gi, '$1null')
-      .replace(/([:,[]\s*)-?inf(inity)?\b/gi, '$1null');
-    const data = JSON.parse(repaired) as {
-      error?: boolean;
-      reason?: string;
-      latitude?: number | null;
-      longitude?: number | null;
-      hourly?: {
-        time?: string[];
-        wind_speed_10m?: (number | null)[];
-        wind_direction_10m?: (number | null)[];
-        wind_gusts_10m?: (number | null)[];
-      };
-    };
-    if (!res.ok || data.error || data.latitude == null) {
-      return { model, ok: false, reason: data.reason ?? `HTTP ${res.status}` };
+  windMph: number,
+): Promise<TurfReport> {
+  const providers = providersFor(lat, lon);
+  const parts = await Promise.all(
+    providers.map(async (p) => {
+      if (!p.turfInputs) return {} as Partial<TurfInputs>;
+      try {
+        return await p.turfInputs(lat, lon);
+      } catch {
+        return {} as Partial<TurfInputs>;
+      }
+    }),
+  );
+  let precipIn48h = 0;
+  let precipFound = false;
+  let et0Mm48h: number | undefined;
+  let humidityPct: number | undefined;
+  let soilMoisture: number | null | undefined;
+  for (const part of parts) {
+    if (typeof part.precipIn48h === 'number' && Number.isFinite(part.precipIn48h)) {
+      precipIn48h = Math.max(precipIn48h, part.precipIn48h);
+      precipFound = true;
     }
-    const times = data.hourly?.time ?? [];
-    const idx = Math.min(Math.max(hourIdx, 0), Math.max(0, times.length - 1));
-    const speed = data.hourly?.wind_speed_10m?.[idx];
-    const dir = data.hourly?.wind_direction_10m?.[idx];
-    const gust = data.hourly?.wind_gusts_10m?.[idx];
     if (
-      typeof speed !== 'number' ||
-      !Number.isFinite(speed) ||
-      typeof dir !== 'number' ||
-      !Number.isFinite(dir)
+      typeof part.et0Mm48h === 'number' &&
+      Number.isFinite(part.et0Mm48h) &&
+      et0Mm48h == null
     ) {
-      return { model, ok: false, reason: 'no wind at hour' };
+      et0Mm48h = part.et0Mm48h;
     }
-    return {
-      model,
-      ok: true,
-      speed,
-      dir,
-      gust: typeof gust === 'number' && Number.isFinite(gust) ? gust : speed,
-      time: times[idx],
-    };
-  } catch (err) {
-    return {
-      model,
-      ok: false,
-      reason: err instanceof Error ? err.message : 'fetch failed',
-    };
+    if (
+      typeof part.humidityPct === 'number' &&
+      Number.isFinite(part.humidityPct) &&
+      humidityPct == null
+    ) {
+      humidityPct = part.humidityPct;
+    }
+    if (
+      part.soilMoisture != null &&
+      Number.isFinite(part.soilMoisture) &&
+      soilMoisture == null
+    ) {
+      soilMoisture = part.soilMoisture;
+    }
   }
+  if (!precipFound && humidityPct == null && et0Mm48h == null) {
+    return DEFAULT_TURF;
+  }
+  return turfFromWeather({
+    precipIn48h,
+    et0Mm48h,
+    humidityPct,
+    soilMoisture: soilMoisture ?? null,
+    windMph,
+  });
 }
 
 export default async function handler(req: Request): Promise<Response> {
@@ -318,17 +241,58 @@ export default async function handler(req: Request): Promise<Response> {
     });
   }
 
-  const [results, turfEarly] = await Promise.all([
-    Promise.all(ENSEMBLE_MODELS.map((m) => fetchModelHour(lat, lon, m, hour))),
-    fetchTurf(lat, lon, 8),
+  const providers = providersFor(lat, lon);
+  const hourOffsets = [hour];
+
+  const [sampleGroups, turfEarly] = await Promise.all([
+    Promise.all(
+      providers.map(async (p) => {
+        try {
+          const samples = await p.hourlyWind(lat, lon, hourOffsets);
+          return { id: p.id, samples, error: null as string | null };
+        } catch (err) {
+          return {
+            id: p.id,
+            samples: [] as WindSample[],
+            error: err instanceof Error ? err.message : 'fetch failed',
+          };
+        }
+      }),
+    ),
+    gatherTurf(lat, lon, 8),
   ]);
-  const ok = results.filter((r) => r.ok && r.speed != null && r.dir != null);
-  const { windFromDeg, windMph, gustMph, agreement } = aggregateWinds(
-    ok.map((r) => ({ speed: r.speed!, dir: r.dir!, gust: r.gust })),
+
+  const okSamples: WindSample[] = [];
+  const modelsUsed: string[] = [];
+  const modelsFailed: Array<{ model: string; reason?: string }> = [];
+  for (const group of sampleGroups) {
+    if (group.error) {
+      modelsFailed.push({ model: group.id, reason: group.error });
+      continue;
+    }
+    if (!group.samples.length) {
+      modelsFailed.push({ model: group.id, reason: 'no wind at hour' });
+      continue;
+    }
+    for (const s of group.samples) {
+      okSamples.push(s);
+      modelsUsed.push(s.source);
+    }
+  }
+
+  const agg = aggregateWinds(
+    okSamples.map((r) => ({ speed: r.speed, dir: r.dir, gust: r.gust })),
   );
+  const uniqueSources = new Set(okSamples.map((s) => s.source.split(':')[0]!));
+  const { agreement, confidence } = honesty(uniqueSources.size, agg.agreement);
+  const windFromDeg = agg.windFromDeg;
+  const windMph = agg.windMph;
+  const gustMph = agg.gustMph;
+
   const turf = turfFromWeather({
     precipIn48h: turfEarly.precipIn48h,
-    et0Mm48h: turfEarly.et0Mm48h,
+    et0Mm48h:
+      turfEarly.confidence === 'full' ? turfEarly.et0Mm48h : undefined,
     humidityPct: turfEarly.humidityPct,
     soilMoisture: turfEarly.soilMoisture,
     windMph,
@@ -384,16 +348,18 @@ export default async function handler(req: Request): Promise<Response> {
       ),
       clubHint: plan.hint,
       recommendedClub: plan.recommended,
-      modelAgreement: Math.round(agreement * 100) / 100,
+      modelAgreement: agreement,
     };
   });
 
   const summary =
-    ok.length === 0
-      ? 'No models returned wind for this location/hour.'
-      : `Ensemble of ${ok.length} models: ${Math.round(windMph)} mph from ${Math.round(windFromDeg)}°` +
+    okSamples.length === 0
+      ? 'No weather providers returned wind for this location/hour.'
+      : `${uniqueSources.size} source${uniqueSources.size === 1 ? '' : 's'}: ${Math.round(windMph)} mph from ${Math.round(windFromDeg)}°` +
         (gustMph > windMph + 3 ? ` (gusts ${Math.round(gustMph)})` : '') +
-        `. Agreement ${Math.round(agreement * 100)}%.` +
+        (agreement != null
+          ? `. Agreement ${Math.round(agreement * 100)}%.`
+          : '. Single-source forecast (no cross-check).') +
         (briefs.length
           ? ` Hole-by-hole tips use each hole’s tee→green bearing vs ensemble wind.`
           : '') +
@@ -404,22 +370,20 @@ export default async function handler(req: Request): Promise<Response> {
       lat,
       lon,
       hour,
-      time: ok[0]?.time ?? null,
+      time: okSamples[0]?.time ?? null,
       turf,
       ensemble: {
         windFromDeg: Math.round(windFromDeg),
         windMph: Math.round(windMph * 10) / 10,
         gustMph: Math.round(gustMph * 10) / 10,
-        agreement: Math.round(agreement * 100) / 100,
-        modelsUsed: ok.map((r) => r.model),
-        modelsFailed: results.filter((r) => !r.ok).map((r) => ({
-          model: r.model,
-          reason: r.reason,
-        })),
+        agreement,
+        confidence,
+        modelsUsed,
+        modelsFailed,
       },
       summary,
       holes: briefs,
-      attribution: 'Open-Meteo multi-model ensemble (CC BY 4.0)',
+      attribution: attributionFor(modelsUsed),
     }),
     {
       headers: {

@@ -73,6 +73,8 @@ export interface TurfReport {
   fairwayRollYd: number;
   greenReleaseYd: number;
   note: string;
+  /** Present when firmness lacks ET0/soil — estimated from precip/humidity. */
+  confidence?: 'full' | 'partial';
 }
 
 export const DEFAULT_TURF: TurfReport = {
@@ -84,7 +86,8 @@ export const DEFAULT_TURF: TurfReport = {
   soilMoisture: null,
   fairwayRollYd: 5,
   greenReleaseYd: 6,
-  note: 'Checking rain, soil, and drying for turf firmness…',
+  note: 'Checking rain and humidity for turf firmness…',
+  confidence: 'partial',
 };
 
 export interface HoleBrief {
@@ -109,7 +112,7 @@ export interface HoleBrief {
   tip: string;
   clubHint: string;
   recommendedClub: string;
-  modelAgreement: number;
+  modelAgreement: number | null;
 }
 
 export interface GolfEnsemble {
@@ -121,7 +124,9 @@ export interface GolfEnsemble {
     windFromDeg: number;
     windMph: number;
     gustMph: number;
-    agreement: number;
+    /** Null when only one provider responded — never invent consensus. */
+    agreement: number | null;
+    confidence?: 'full' | 'low' | 'single-source';
     modelsUsed: string[];
     modelsFailed: Array<{ model: string; reason?: string }>;
   };
@@ -652,7 +657,8 @@ export interface GolfNotebookDay {
   windFromDeg: number;
   windMph: number;
   gustMph: number;
-  agreement: number;
+  agreement: number | null;
+  confidence?: 'full' | 'low' | 'single-source';
   modelsUsed: string[];
 }
 

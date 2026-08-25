@@ -1,5 +1,5 @@
 // Worldwide city geocoder for map and Golf location search.
-// Open-Meteo is primary; Photon provides an independent OSM fallback.
+// Photon (primary) + Nominatim (fallback). Open-Meteo geocoding removed.
 
 export const config = { runtime: 'edge' };
 
@@ -8,15 +8,6 @@ interface GeocodeRow {
   lat: string;
   lon: string;
   boundingbox?: string[];
-}
-
-interface OpenMeteoResult {
-  name?: string;
-  latitude?: number;
-  longitude?: number;
-  admin1?: string;
-  admin2?: string;
-  country?: string;
 }
 
 interface PhotonFeature {
@@ -29,6 +20,13 @@ interface PhotonFeature {
     extent?: number[];
   };
   geometry?: { coordinates?: number[] };
+}
+
+interface NominatimHit {
+  display_name?: string;
+  lat?: string;
+  lon?: string;
+  boundingbox?: string[];
 }
 
 function json(rows: GeocodeRow[], maxAge = 86_400): Response {
@@ -63,37 +61,22 @@ function label(parts: Array<string | undefined>): string {
     .join(', ');
 }
 
-async function openMeteo(q: string, limit: number): Promise<GeocodeRow[]> {
-  const params = new URLSearchParams({
-    name: q,
-    count: String(limit),
-    language: 'en',
-    format: 'json',
+/** Nominatim usage policy: max 1 request/second. */
+let nominatimGate = Promise.resolve();
+let lastNominatimAt = 0;
+
+async function throttleNominatim<T>(fn: () => Promise<T>): Promise<T> {
+  const run = nominatimGate.then(async () => {
+    const wait = Math.max(0, 1100 - (Date.now() - lastNominatimAt));
+    if (wait) await new Promise((r) => setTimeout(r, wait));
+    lastNominatimAt = Date.now();
+    return fn();
   });
-  const res = await fetch(
-    `https://geocoding-api.open-meteo.com/v1/search?${params}`,
-    { headers: { Accept: 'application/json' } },
+  nominatimGate = run.then(
+    () => undefined,
+    () => undefined,
   );
-  if (!res.ok) throw new Error(`Open-Meteo ${res.status}`);
-  const body = (await res.json()) as { results?: OpenMeteoResult[] };
-  return (body.results ?? []).flatMap((item) => {
-    if (
-      !Number.isFinite(item.latitude) ||
-      !Number.isFinite(item.longitude)
-    ) {
-      return [];
-    }
-    return [{
-      display_name: label([
-        item.name,
-        item.admin2,
-        item.admin1,
-        item.country,
-      ]),
-      lat: String(item.latitude),
-      lon: String(item.longitude),
-    }];
-  });
+  return run;
 }
 
 async function photon(q: string, limit: number): Promise<GeocodeRow[]> {
@@ -142,6 +125,41 @@ async function photon(q: string, limit: number): Promise<GeocodeRow[]> {
   });
 }
 
+async function nominatim(q: string, limit: number): Promise<GeocodeRow[]> {
+  return throttleNominatim(async () => {
+    const params = new URLSearchParams({
+      q,
+      format: 'jsonv2',
+      limit: String(limit),
+      addressdetails: '0',
+    });
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?${params}`,
+      {
+        headers: {
+          Accept: 'application/json',
+          'User-Agent':
+            process.env.NWS_USER_AGENT ??
+            'TeeReady/1.0 (https://tee-ready.vercel.app; contact@teeready.app)',
+        },
+      },
+    );
+    if (!res.ok) throw new Error(`Nominatim ${res.status}`);
+    const rows = (await res.json()) as NominatimHit[];
+    return rows.flatMap((hit) => {
+      if (!hit.lat || !hit.lon || !hit.display_name) return [];
+      return [
+        {
+          display_name: hit.display_name,
+          lat: hit.lat,
+          lon: hit.lon,
+          boundingbox: hit.boundingbox,
+        },
+      ];
+    });
+  });
+}
+
 export default async function handler(req: Request): Promise<Response> {
   const { searchParams } = new URL(req.url);
   const q = searchParams.get('q')?.trim();
@@ -156,20 +174,20 @@ export default async function handler(req: Request): Promise<Response> {
 
   const errors: string[] = [];
   try {
-    const rows = await openMeteo(q, limit);
-    if (rows.length) return json(rows);
-  } catch (error) {
-    errors.push(error instanceof Error ? error.message : 'Open-Meteo failed');
-  }
-
-  try {
     const rows = await photon(q, limit);
-    return json(rows);
+    if (rows.length) return json(rows);
   } catch (error) {
     errors.push(error instanceof Error ? error.message : 'Photon failed');
   }
 
-  return new Response(JSON.stringify({ error: errors.join(' · ') }), {
+  try {
+    const rows = await nominatim(q, limit);
+    if (rows.length) return json(rows);
+  } catch (error) {
+    errors.push(error instanceof Error ? error.message : 'Nominatim failed');
+  }
+
+  return new Response(JSON.stringify({ error: errors.join(' · ') || 'no results' }), {
     status: 502,
     headers: {
       'Content-Type': 'application/json',
