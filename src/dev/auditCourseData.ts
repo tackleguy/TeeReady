@@ -1,9 +1,13 @@
 /**
  * Phase A — course data quality audit (read-only).
- * Run: npm run audit:course-data
  *
- * Emits NDJSON under reports/ (gitignored) plus a committed summary at
- * src/dev/course-data-audit-report.md and src/dev/course-data-audit-summary.json.
+ * Run: `node scripts/audit-course-data.mjs`
+ * Hand-off: add `"audit:course-data": "node scripts/audit-course-data.mjs"` to package.json
+ *   (this agent must not edit package.json when shared).
+ *
+ * Emits NDJSON under reports/ (gitignored) plus committed summaries at
+ * scripts/course-data-audit-report.md and scripts/course-data-audit-summary.json
+ * (mirrored under src/dev/ for convenience).
  */
 
 import { createWriteStream, readdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -15,7 +19,6 @@ import {
   isVerifiedCatalogEntry,
   normalizeCourseName,
   parTemplate,
-  scorecardFromCatalogEntry,
   validParForHoles,
   validYardageForHoles,
 } from '../../api/golf/_lib/syntheticScorecard';
@@ -431,11 +434,16 @@ ${checkRows}
 
 ## Unverified / open items
 
-- Full tee→green geometry for ~14k courses is not in-repo; live Overpass for the whole catalog is intentionally skipped (rate limits / runtime).
-- Imported OpenGolf scorecards carry par/handicap only — no per-hole yardages — so A4 card invariants apply only to curated cards + catalog synthetic yardages when present.
+- Full tee→green geometry for ~14k courses is not in-repo; live Overpass for the whole catalog is intentionally skipped (rate limits / runtime). Invariant (straight-line ≤ card × 1.05) not evaluated at catalog scale.
+- Imported OpenGolf scorecards carry par/handicap only — no per-hole yardages — so A4 card invariants apply only to curated official-yardage cards.
 - Coastal courses just outside the 10m state polygons (e.g. peninsula clubs) may flag \`A1-outside-us\` / region-string mismatch even when \`st\` is correct.
+
+## Hand-off
+
+If \`package.json\` is shared/locked: add \`"audit:course-data": "node scripts/audit-course-data.mjs"\`.
 `;
 
+  writeFileSync(resolve('scripts/course-data-audit-report.md'), md, 'utf8');
   writeFileSync(resolve('src/dev/course-data-audit-report.md'), md, 'utf8');
 }
 
@@ -701,18 +709,19 @@ async function main(): Promise<void> {
       });
     }
 
-    // A4 — yardage (scorecard-level; no live OSM tee→green)
-    const curated = findScorecard({
-      courseName: entry.n,
-      osmId: entry.o,
-    });
-    if (curated && curated.holes.some(holeHasCardYardage)) {
-      auditScorecardYardages(findings, entry, pub, curated, 'A4-curated');
-    }
-
-    const synthesized = scorecardFromCatalogEntry(entry);
-    if (synthesized && !curated) {
-      auditScorecardYardages(findings, entry, pub, synthesized, 'A4-catalog');
+    // A4 — official curated cards only (avoid fuzzy findScorecard on 14k rows)
+    if (
+      /pebble\s*beach|torrey\s*pines|bethpage.*black|augusta\s*national|pinehurst.*(?:no\.?\s*2|#\s*2)|tpc\s*sawgrass|sawgrass.*stadium|whistling\s*straits|kiawah.*ocean|pacific\s*dunes|spyglass\s*hill|tpc\s*scottsdale|scottsdale.*stadium/i.test(
+        entry.n,
+      )
+    ) {
+      const curated = findScorecard({
+        courseName: entry.n,
+        osmId: entry.o,
+      });
+      if (curated && curated.holes.some(holeHasCardYardage)) {
+        auditScorecardYardages(findings, entry, pub, curated, 'A4-curated');
+      }
     }
   }
 
@@ -882,7 +891,7 @@ async function main(): Promise<void> {
     greensFar,
     teeGreenStatus: `SKIPPED for full catalog — no in-repo tee→green geometry; live OSM Overpass for ${catalog.length} courses is too heavy. Invariant (straight-line ≤ card × ${1 + TEE_GREEN_OVERAGE}) not evaluated at scale.`,
     scorecardYardageStatus:
-      'Local: curated + catalog synthetic scorecards checked for par/yardage band and total-yardage drift.',
+      'Strict curated official-yardage cards only (no fuzzy imported / synthetic matches).',
   };
 
   writeMarkdownReport({
@@ -909,50 +918,48 @@ async function main(): Promise<void> {
     outNdjson: outPath,
   });
 
-  writeFileSync(
-    resolve('src/dev/course-data-audit-summary.json'),
-    `${JSON.stringify(
-      {
-        generatedAt: new Date().toISOString(),
-        catalogEntries: catalog.length,
-        publicEntries: publicRows.length,
-        verifiedEntries: verifiedCount,
-        findings: findings.length,
-        errors,
-        warns,
-        infos,
-        baseline: {
-          missingBothHp,
-          missingEitherHp,
-          exactDupGroups: exactDupGroups.length,
-          exactDupExtras,
-          sharedCoordClusters,
-          sharedCoordCourses,
-          worstCluster,
-          badPar18Band,
-        },
-        courseTypes: Object.fromEntries(courseTypes),
-        byCheck: Object.fromEntries(byCheck),
-        geometry: {
-          greenPacks: greenPacks.length,
-          greensChecked,
-          greensFarFromCentroid: greensFar,
-          teeGreenVsCard: 'skipped-no-local-tee-geometry',
-        },
+  const summaryJson = `${JSON.stringify(
+    {
+      generatedAt: new Date().toISOString(),
+      catalogEntries: catalog.length,
+      publicEntries: publicRows.length,
+      verifiedEntries: verifiedCount,
+      findings: findings.length,
+      errors,
+      warns,
+      infos,
+      baseline: {
+        missingBothHp,
+        missingEitherHp,
+        exactDupGroups: exactDupGroups.length,
+        exactDupExtras,
+        sharedCoordClusters,
+        sharedCoordCourses,
+        worstCluster,
+        badPar18Band,
       },
-      null,
-      2,
-    )}\n`,
-    'utf8',
-  );
+      courseTypes: Object.fromEntries(courseTypes),
+      byCheck: Object.fromEntries(byCheck),
+      geometry: {
+        greenPacks: greenPacks.length,
+        greensChecked,
+        greensFarFromCentroid: greensFar,
+        teeGreenVsCard: 'skipped-no-local-tee-geometry',
+      },
+    },
+    null,
+    2,
+  )}\n`;
+  writeFileSync(resolve('scripts/course-data-audit-summary.json'), summaryJson, 'utf8');
+  writeFileSync(resolve('src/dev/course-data-audit-summary.json'), summaryJson, 'utf8');
 
   console.log('=== Course Data Audit (Phase A — read-only) ===\n');
   console.log(`Catalog entries: ${catalog.length}`);
   console.log(`Public catalog entries: ${publicRows.length}`);
   console.log(`Verified (isVerifiedCatalogEntry): ${verifiedCount}`);
   console.log(`Report NDJSON: ${outPath}`);
-  console.log(`Report markdown: src/dev/course-data-audit-report.md`);
-  console.log(`Report summary JSON: src/dev/course-data-audit-summary.json`);
+  console.log(`Report markdown: scripts/course-data-audit-report.md`);
+  console.log(`Report summary JSON: scripts/course-data-audit-summary.json`);
   console.log('');
   console.log('--- Baseline reproduction ---');
   console.log(
