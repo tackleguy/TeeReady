@@ -2,6 +2,9 @@
 
 export type GpsQuality = 'excellent' | 'good' | 'fair' | 'poor' | 'none';
 
+/** @deprecated Prefer GPS_ACCEPT_ACCURACY_M from gpsReliability — kept for callers. */
+export { GPS_ACCEPT_ACCURACY_M } from './gpsReliability';
+
 export function gpsQuality(accuracyM: number | null | undefined): GpsQuality {
   if (accuracyM == null || !Number.isFinite(accuracyM)) return 'none';
   if (accuracyM <= 5) return 'excellent';
