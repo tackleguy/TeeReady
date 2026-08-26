@@ -3,14 +3,14 @@
 export type VenueKind = 'course' | 'sim' | 'range';
 
 const SIM_NAME =
-  /\b(topgolf|x-?\s*golf|five\s+iron|golfzon|trackman|swing\s+suite|big\s*shots|golftec|sims\s+golf|golf\s+sim(?:ulator)?s?|sim(?:ulator)?\s+bays?|indoor\s+golf|virtual\s+golf)\b/i;
+  /\b(topgolf|x-?\s*golf|five\s+iron|golfzon|trackman|swing\s+suite|big\s*shots|golftec|sims\s+golf|golf\s+sim(?:ulator)?s?|sim(?:ulator)?\s+bays?|indoor\s+golf|virtual\s+golf|in\s*-?\s*home\s+golf|inhome\s+golf)\b/i;
 
 /** Course names where "sim" is part of a place or person's name, not a simulator. */
 const SIM_NAME_FALSE_POSITIVE =
   /\b(simi(?:\s+hills|\s+valley)?|simpson|simsbury|arthur\s+b\.?\s*sim|(?:^|\s)b\.?\s*sim\s+golf)\b/i;
 
 const RANGE_NAME =
-  /\b(driving\s+range|practice\s+range|practice\s+facility|golf\s+range|learning\s+center)\b/i;
+  /\b(driving\s+range|practice\s+range|practice\s+facility|golf\s+range|learning\s+center|golf\s+academy|golf\s+studio)\b/i;
 
 export function classifyVenueKind(
   name: string,

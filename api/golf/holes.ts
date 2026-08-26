@@ -36,6 +36,7 @@ import {
 } from './_lib/overpass';
 import { elevationMeters } from '../_lib/weather/elevation';
 import { rateLimit, RATE } from '../_lib/rateLimit';
+import { standardizeLayouts } from './_lib/standardizeHoles';
 
 export const config = { runtime: 'edge' };
 
@@ -947,16 +948,18 @@ function finalizeHoles(
 
   next = autoLoops(next);
   next = normalizeOnePerNumber(next);
+  next = standardizeLayouts(next);
   pruneOutlierTees(next);
   const applied = applyScorecards(next, polys, selectedName, selectedId);
   next = applied.holes;
+  next = standardizeLayouts(next);
   next.sort((a, b) => {
     const loop = (a.loop ?? '').localeCompare(b.loop ?? '');
     if (loop) return loop;
     return a.number - b.number;
   });
   return {
-    holes: next.slice(0, MAX_HOLES),
+    holes: next.slice(0, 36),
     provenance: applied.provenance,
   };
 }
@@ -1278,7 +1281,7 @@ export default async function handler(req: Request): Promise<Response> {
     Number.isFinite(osmId) ? String(osmId) : '',
     courseName.trim().toLowerCase(),
   ].join(':');
-  const cacheKey = `h9:${lat}:${lon}:${bbox ?? ''}:${radiusM}:${courseKey}`;
+  const cacheKey = `h10:${lat}:${lon}:${bbox ?? ''}:${radiusM}:${courseKey}`;
   const cached = HOLE_MEM.get(cacheKey);
   if (cached && Date.now() - cached.at < HOLE_MEM_TTL_MS && cached.holes.length) {
     return jsonResponse(

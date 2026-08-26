@@ -6,6 +6,7 @@ import { isPlayableCourse, venueKindFromName } from './venueKind';
 import { courseHeroImage } from './courseImages';
 import { warmSatelliteTiles } from './golfSatelliteCache';
 import { resolveAndWarmGreenMesh } from './golfGreen3d';
+import { standardizeLayouts } from './golfHolesNormalize';
 
 export type VenueKind = 'course' | 'sim' | 'range';
 
@@ -301,12 +302,12 @@ function holesRequestKey(
     opts?.courseName?.trim().toLowerCase() ?? '',
   ].join(':');
   const requestKey =
-    `golf:v12:holes:${q4(lat)}:${q4(lon)}:${bboxKey}:` +
+    `golf:v13:holes:${q4(lat)}:${q4(lon)}:${bboxKey}:` +
     `${opts?.radius ?? ''}:${courseKey}`;
   const backupKey =
     opts?.osmType && opts?.osmId
-      ? `golf:v1:hole-backup:${opts.osmType}:${opts.osmId}`
-      : `golf:v1:hole-backup:geo:${q3(lat)}:${q3(lon)}:${opts?.courseName?.trim().toLowerCase() ?? ''}`;
+      ? `golf:v2:hole-backup:${opts.osmType}:${opts.osmId}`
+      : `golf:v2:hole-backup:geo:${q3(lat)}:${q3(lon)}:${opts?.courseName?.trim().toLowerCase() ?? ''}`;
   return { requestKey, backupKey, bbox };
 }
 
@@ -316,7 +317,7 @@ function coursesCacheKey(
   q: string,
   radius?: number,
 ): string {
-  return `golf:v8:courses:${q3(lat)}:${q3(lon)}:${q}:${radius ?? ''}`;
+  return `golf:v9:courses:${q3(lat)}:${q3(lon)}:${q}:${radius ?? ''}`;
 }
 
 /** Sync cache read — instant course list without a loading spinner. */
@@ -331,13 +332,14 @@ export function peekGolfCoursesCache(
   const live =
     memGet<GolfCourseSummary[]>(key, COURSES_TTL_MS) ??
     sessionGet<GolfCourseSummary[]>(key, COURSES_TTL_MS);
-  if (live?.length) return live;
+  if (live?.length) return cleanCourseList(live);
   // Never wipe expired lists — stale courses still beat an empty OSM outage.
   const local = localGetAllowStale<GolfCourseSummary[]>(key);
   if (local?.length) {
-    memSet(key, local);
-    sessionSet(key, local);
-    return local;
+    const cleaned = cleanCourseList(local);
+    memSet(key, cleaned);
+    sessionSet(key, cleaned);
+    return cleaned;
   }
   return null;
 }
@@ -376,30 +378,38 @@ export function peekGolfHolesDetail(
   // Session = OSM-confirmed this tab — instant reopen, no soft-refresh needed.
   const confirmed = sessionGet<GolfHole[]>(requestKey, HOLES_TTL_MS);
   if (confirmed?.length) {
-    memSet(requestKey, confirmed);
-    return { holes: confirmed, fromBackup: false };
+    const holes = cleanHoles(confirmed);
+    memSet(requestKey, holes);
+    return { holes, fromBackup: false };
   }
   const mem = memGet<GolfHole[]>(requestKey, HOLES_TTL_MS);
   if (mem?.length) {
     // Mem-only hits are usually a just-painted backup; treat as backup so load
     // still soft-refreshes OSM instead of skipping the network forever.
-    return { holes: mem, fromBackup: true };
+    return { holes: cleanHoles(mem), fromBackup: true };
   }
   // Never delete backups on read — expired maps are the OSM-outage lifeline.
   const backup = localGetAllowStale<GolfHole[]>(backupKey);
   if (!backup?.length) return null;
+  const holes = cleanHoles(backup);
   // Mem-only hydrate so paint is instant; session stays reserved for OSM OK.
-  memSet(requestKey, backup);
+  memSet(requestKey, holes);
   touchBackupIndex(backupKey);
-  return { holes: backup, fromBackup: true };
+  return { holes, fromBackup: true };
 }
 
 function saveHolesBackup(backupKey: string, requestKey: string, holes: GolfHole[]): void {
   if (!holes.length) return;
-  memSet(requestKey, holes);
-  sessionSet(requestKey, holes);
-  localSet(backupKey, holes);
+  const cleaned = standardizeLayouts(holes);
+  if (!cleaned.length) return;
+  memSet(requestKey, cleaned);
+  sessionSet(requestKey, cleaned);
+  localSet(backupKey, cleaned);
   touchBackupIndex(backupKey);
+}
+
+function cleanHoles(holes: GolfHole[]): GolfHole[] {
+  return standardizeLayouts(holes);
 }
 
 /**
@@ -448,7 +458,7 @@ export async function fetchGolfCourses(
   const params = new URLSearchParams({
     lat: String(lat),
     lon: String(lon),
-    v: '4',
+    v: '5',
   });
   if (q) params.set('q', q);
   if (opts?.radius) params.set('radius', String(opts.radius));
@@ -461,12 +471,12 @@ export async function fetchGolfCourses(
     );
   } catch {
     const stale = localGetAllowStale<GolfCourseSummary[]>(key);
-    return stale?.length ? stale : [];
+    return stale?.length ? cleanCourseList(stale) : [];
   }
   if (!res.ok) {
     if (res.status >= 500 || res.status === 429) {
       const stale = localGetAllowStale<GolfCourseSummary[]>(key);
-      return stale?.length ? stale : [];
+      return stale?.length ? cleanCourseList(stale) : [];
     }
     const detail = (await res.json().catch(() => null)) as {
       error?: string;
@@ -474,17 +484,73 @@ export async function fetchGolfCourses(
     throw new Error(detail?.error ?? `courses ${res.status}`);
   }
   const data = (await res.json()) as { courses: GolfCourseSummary[] };
-  const courses = (data.courses ?? [])
-    .map((c) => ({
+  const courses = cleanCourseList(
+    (data.courses ?? []).map((c) => ({
       ...c,
       kind: c.kind ?? venueKindFromName(c.name),
       photo: c.photo ?? courseHeroImage(c.id || c.name),
-    }))
-    .filter((c) => isPlayableCourse(c.kind));
+    })),
+  );
   memSet(key, courses);
   sessionSet(key, courses);
   localSet(key, courses);
   return courses;
+}
+
+function cleanCourseList(courses: GolfCourseSummary[]): GolfCourseSummary[] {
+  const playable = courses.filter((c) => {
+    const kind = c.kind ?? venueKindFromName(c.name);
+    if (!isPlayableCourse(kind)) return false;
+    if (c.holes != null && c.holes !== 9 && c.holes !== 18) return false;
+    return true;
+  });
+  const out: GolfCourseSummary[] = [];
+  const norm = (name: string) =>
+    name
+      .toLowerCase()
+      .replace(/\b(golf|course|club|country|the|and)\b/g, ' ')
+      .replace(/[^a-z0-9]+/g, ' ')
+      .trim()
+      .replace(/\s+/g, ' ');
+  const distMi = (
+    a: GolfCourseSummary,
+    b: GolfCourseSummary,
+  ): number => {
+    const toRad = (d: number) => (d * Math.PI) / 180;
+    const R = 3958.8;
+    const dLat = toRad(b.lat - a.lat);
+    const dLon = toRad(b.lon - a.lon);
+    const A =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(toRad(a.lat)) *
+        Math.cos(toRad(b.lat)) *
+        Math.sin(dLon / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(A));
+  };
+  for (const course of playable) {
+    const key = norm(course.name);
+    const idx = out.findIndex(
+      (other) =>
+        norm(other.name) === key && distMi(course, other) < 1.2,
+    );
+    if (idx < 0) {
+      out.push({ ...course, kind: course.kind ?? venueKindFromName(course.name) });
+      continue;
+    }
+    const prev = out[idx]!;
+    const score = (c: GolfCourseSummary) =>
+      (c.holes === 9 || c.holes === 18 ? 8 : 0) +
+      (c.par != null ? 4 : 0) +
+      (c.region && !/united states/i.test(c.region) ? 2 : 0) +
+      (c.access && c.access !== 'unknown' ? 1 : 0);
+    if (score(course) > score(prev)) {
+      out[idx] = {
+        ...course,
+        kind: course.kind ?? venueKindFromName(course.name),
+      };
+    }
+  }
+  return out;
 }
 
 export type GolfHolesLoadResult = {
@@ -579,14 +645,15 @@ export async function loadGolfHoles(
         continue;
       }
       const data = (await res.json()) as { holes: GolfHole[] };
-      const holes = data.holes ?? [];
+      const holes = cleanHoles(data.holes ?? []);
       if (holes.length) {
         saveHolesBackup(backupKey, requestKey, holes);
         return { holes, fromBackup: false };
       }
       if (backup?.length) {
-        keepBackupHot(backupKey, requestKey, backup);
-        return { holes: backup, fromBackup: true };
+        const cleaned = cleanHoles(backup);
+        keepBackupHot(backupKey, requestKey, cleaned);
+        return { holes: cleaned, fromBackup: true };
       }
       return { holes: [], fromBackup: false };
     } catch (err) {
@@ -601,8 +668,9 @@ export async function loadGolfHoles(
   }
 
   if (backup?.length) {
-    keepBackupHot(backupKey, requestKey, backup);
-    return { holes: backup, fromBackup: true };
+    const cleaned = cleanHoles(backup);
+    keepBackupHot(backupKey, requestKey, cleaned);
+    return { holes: cleaned, fromBackup: true };
   }
 
   throw lastErr instanceof Error

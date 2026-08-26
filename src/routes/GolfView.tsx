@@ -101,6 +101,11 @@ import {
   teeKindLabel,
   teesOnHole,
 } from '../lib/golfTees';
+import {
+  bestLoopName,
+  standardizeHoleSet,
+  standardizeLayouts,
+} from '../lib/golfHolesNormalize';
 import { finishAndArchiveRound } from '../lib/roundHistory';
 import {
   type TrackedRound,
@@ -333,15 +338,28 @@ export function GolfView({ active = true }: { active?: boolean }) {
       : null,
   );
 
-  const loops = useMemo(() => loopNames(holes), [holes]);
+  const expectedHoles =
+    course?.holes === 9 || course?.holes === 18 ? course.holes : null;
+  const normalizedHoles = useMemo(
+    () => standardizeLayouts(holes, expectedHoles),
+    [holes, expectedHoles],
+  );
+  const loops = useMemo(() => loopNames(normalizedHoles), [normalizedHoles]);
   const resolvedLoop =
     loop ??
+    bestLoopName(normalizedHoles, course?.name) ??
     pickLoopForCourse(course?.name ?? '', loops) ??
     (loops.length ? loops[0]! : null);
-  const loopHoles = useMemo(
-    () => holesOnLoop(holes, resolvedLoop),
-    [holes, resolvedLoop],
-  );
+  const loopHoles = useMemo(() => {
+    const scoped = holesOnLoop(normalizedHoles, resolvedLoop);
+    let std = standardizeHoleSet(scoped, expectedHoles);
+    // Wrong auto-loop (e.g. "North" with 5 scraps) — fall back to best full set.
+    if (std.length < 7 && normalizedHoles.length > std.length) {
+      const all = standardizeHoleSet(normalizedHoles, expectedHoles);
+      if (all.length > std.length) std = all;
+    }
+    return std;
+  }, [normalizedHoles, resolvedLoop, expectedHoles]);
   const playHoles = useMemo(
     () => loopHoles.map((h) => applyTee(h, teeKind)),
     [loopHoles, teeKind],
@@ -349,14 +367,17 @@ export function GolfView({ active = true }: { active?: boolean }) {
   const teeKinds = useMemo(() => availableTeeKinds(loopHoles), [loopHoles]);
 
   useEffect(() => {
-    const names = loopNames(holes);
+    const names = loopNames(normalizedHoles);
     const next =
-      pickLoopForCourse(course?.name ?? '', names) ?? names[0] ?? null;
+      bestLoopName(normalizedHoles, course?.name) ??
+      pickLoopForCourse(course?.name ?? '', names) ??
+      names[0] ??
+      null;
     setLoop(next);
     setTeeKind('mid');
     setActiveHole(null);
     setPlanningMode('tee');
-  }, [holes, course?.id, course?.name]);
+  }, [normalizedHoles, course?.id, course?.name]);
 
   // One character filters the nearby list; two or more searches the
   // bundled 14,000+ U.S. course catalog (11,000+ verified with par/yardage).

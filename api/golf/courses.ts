@@ -721,12 +721,48 @@ async function mapCourses(
 }
 
 function playableCourses(courses: GolfCourseSummary[]): GolfCourseSummary[] {
-  return courses.filter((c) => {
-    if (!isPlayableCourse(c.kind)) return false;
-    // Drop known non-standard layouts (27-hole complexes, 19-hole oddities, etc.).
-    if (c.holes != null && c.holes !== 9 && c.holes !== 18) return false;
-    return true;
-  });
+  return dedupeCourses(
+    courses.filter((c) => {
+      if (!isPlayableCourse(c.kind)) return false;
+      // Drop known non-standard layouts (27-hole complexes, 19-hole oddities, etc.).
+      if (c.holes != null && c.holes !== 9 && c.holes !== 18) return false;
+      return true;
+    }),
+  );
+}
+
+function normCourseName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/\b(golf|course|club|country|the|and)\b/g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .replace(/\s+/g, ' ');
+}
+
+/** Collapse Photon+catalog duplicates (same club, different id/region string). */
+function dedupeCourses(courses: GolfCourseSummary[]): GolfCourseSummary[] {
+  const out: GolfCourseSummary[] = [];
+  for (const course of courses) {
+    const key = normCourseName(course.name);
+    const idx = out.findIndex((other) => {
+      if (normCourseName(other.name) !== key) return false;
+      return haversineMi(course.lat, course.lon, other.lat, other.lon) < 1.2;
+    });
+    if (idx < 0) {
+      out.push(course);
+      continue;
+    }
+    const prev = out[idx]!;
+    const score = (c: GolfCourseSummary) =>
+      (c.holes === 9 || c.holes === 18 ? 8 : 0) +
+      (c.par != null ? 4 : 0) +
+      (c.region?.includes(',') && c.region.length < 24 ? 2 : 0) +
+      (c.access && c.access !== 'unknown' ? 1 : 0) +
+      (c.osmId > 0 ? 1 : 0);
+    if (score(course) > score(prev)) out[idx] = course;
+  }
+  return out;
 }
 
 function mergeCourses(
