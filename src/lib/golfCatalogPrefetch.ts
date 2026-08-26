@@ -1,6 +1,13 @@
 /** Prefetch the public course catalog for faster first search. */
 
-const CATALOG_URL = '/golf/catalog.us.json';
+/** Full catalog URL — override with VITE_CATALOG_URL for CDN offload. */
+function catalogUrl(): string {
+  const raw = (import.meta.env as Record<string, string | undefined>)
+    .VITE_CATALOG_URL;
+  const trimmed = raw?.trim();
+  return trimmed || '/golf/catalog.us.json';
+}
+
 const DB_NAME = 'teeready';
 const STORE = 'catalog';
 const STAMP_KEY = 'teeready-golf-catalog-at:v2';
@@ -73,7 +80,7 @@ export function warmGolfCatalog(): void {
     /* ignore */
   }
 
-  inflight = fetch(CATALOG_URL)
+  inflight = fetch(catalogUrl())
     .then((res) => (res.ok ? res.json() : null))
     .then(async (data) => {
       if (!data) return;

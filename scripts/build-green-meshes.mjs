@@ -8,7 +8,9 @@ import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const OUT_DIR = join(ROOT, 'public/golf/greens');
+const DEFAULT_OUT_DIR = join(ROOT, 'public/golf/greens');
+/** Resolved after parseArgs — defaults to public/golf/greens. */
+let OUT_DIR = DEFAULT_OUT_DIR;
 const CATALOG_PATH = join(ROOT, 'api/golf/_data/usCatalog.json');
 const OVERPASS_URLS = [
   'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
@@ -715,6 +717,13 @@ function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
+function resolveOutDir(raw) {
+  if (!raw) return DEFAULT_OUT_DIR;
+  // Absolute path or repo-relative (e.g. .greens-out)
+  if (raw.startsWith('/') || /^[A-Za-z]:[\\/]/.test(raw)) return raw;
+  return join(ROOT, raw);
+}
+
 function parseArgs(argv) {
   const flags = new Set();
   const only = [];
@@ -722,6 +731,7 @@ function parseArgs(argv) {
   let minGreens = MIN_GREENS_OSM;
   let shard = null;
   let deadlineMs = 0;
+  let outDir = null;
   for (const a of argv) {
     if (a === '--bulk') flags.add('bulk');
     else if (a === '--skip-existing') flags.add('skip-existing');
@@ -737,9 +747,10 @@ function parseArgs(argv) {
       if (m) shard = { index: Number(m[1]), total: Number(m[2]) };
     } else if (a.startsWith('--deadline-ms='))
       deadlineMs = Number(a.slice(14)) || 0;
+    else if (a.startsWith('--out-dir=')) outDir = a.slice(10);
     else if (!a.startsWith('-')) only.push(a);
   }
-  return { flags, only, limit, minGreens, shard, deadlineMs };
+  return { flags, only, limit, minGreens, shard, deadlineMs, outDir };
 }
 
 /** Stable shard key for parallel workers. */
@@ -899,7 +910,7 @@ function writeManifest() {
     courses: entries,
   };
   writeFileSync(join(OUT_DIR, 'manifest.json'), JSON.stringify(manifest));
-  console.log(`Manifest: ${entries.length} courses → public/golf/greens/manifest.json`);
+  console.log(`Manifest: ${entries.length} courses → ${join(OUT_DIR, 'manifest.json')}`);
   return manifest;
 }
 
@@ -1060,11 +1071,11 @@ async function writeCourse(course, { skipExisting, minGreens, force }) {
   return complete ? 'written' : 'written-incomplete';
 }
 
-mkdirSync(OUT_DIR, { recursive: true });
-
-const { flags, only, limit, minGreens, shard, deadlineMs } = parseArgs(
+const { flags, only, limit, minGreens, shard, deadlineMs, outDir } = parseArgs(
   process.argv.slice(2),
 );
+OUT_DIR = resolveOutDir(outDir);
+mkdirSync(OUT_DIR, { recursive: true });
 
 if (flags.has('manifest-only')) {
   writeManifest();

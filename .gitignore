@@ -26,6 +26,9 @@ reports/
 # Local golf data backups (tar + unpacked)
 backups/
 
+# Offloaded green mesh build output (not shipped in-repo)
+.greens-out/
+
 # Env / logs
 .env
 .env.*
