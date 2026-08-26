@@ -30,6 +30,7 @@ import { GolfSetup } from '../components/golf/GolfSetup';
 import { GolfScorecard } from '../components/golf/GolfScorecard';
 import { GolfTargetHud } from '../components/golf/GolfTargetHud';
 import { GolfYardageBook } from '../components/golf/GolfYardageBook';
+import { DataProvenanceNote } from '../components/golf/DataProvenanceNote';
 import { GpsMod } from '../components/golf/GpsMod';
 import { GlassPanel } from '../components/ui/GlassPanel';
 import { DraggableBox } from '../components/ui/DraggableBox';
@@ -1258,6 +1259,14 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     )
                   }
                 />
+                {activeHoleObj.provenance ? (
+                  <GlassPanel className="mt-1.5 px-2.5 py-1.5 shadow-lg">
+                    <DataProvenanceNote
+                      provenance={activeHoleObj.provenance}
+                      compact
+                    />
+                  </GlassPanel>
+                ) : null}
               </DraggableBox>
             ) : null}
 
@@ -1766,6 +1775,12 @@ export function GolfView({ active = true }: { active?: boolean }) {
                               ? `${layoutLabel} · yardage, bearing & elevation`
                               : "We don't have hole maps for this course yet"}
                     </div>
+                    {playHoles[0]?.provenance ? (
+                      <DataProvenanceNote
+                        provenance={playHoles[0].provenance}
+                        className="mt-2"
+                      />
+                    ) : null}
                     {ensemble?.ensemble.windMph != null ? (
                       <div className="mt-2 flex flex-wrap gap-2 text-[11px] uppercase tracking-wider text-[var(--ink-3)]">
                         <span className="chip-button" data-active="true">
@@ -2023,6 +2038,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
             teeKinds.length > 1 ? teeKindLabel(teeKind) : undefined
           }
           transferredFromPrep={yardageFromPrep || viewMode === 'gps'}
+          provenance={playHoles[0]?.provenance ?? holes[0]?.provenance}
           onClose={() => setBookOpen(false)}
         />
       ) : null}

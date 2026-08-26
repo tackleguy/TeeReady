@@ -18,6 +18,7 @@ import {
   type HoleStatExtras,
   type TrackedRound,
 } from '../../lib/golfTracker';
+import { DataProvenanceNote } from './DataProvenanceNote';
 
 interface Props {
   holes: GolfHole[];
@@ -223,6 +224,12 @@ export function GolfScorecard({
           <p className="mt-0.5 truncate text-[13px] text-muted">
             {round.courseName} · HCP {formatHandicap(handicap)}
           </p>
+          {holes[0]?.provenance ? (
+            <DataProvenanceNote
+              provenance={holes[0].provenance}
+              className="mt-1.5"
+            />
+          ) : null}
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
           <div className="flex rounded-lg border border-line p-0.5">
@@ -320,6 +327,13 @@ export function GolfScorecard({
                   <span className="mx-1.5 text-faint">·</span>
                   {hole.yards} yd
                 </p>
+                {hole.provenance && hole.provenance !== 'official' ? (
+                  <p className="mt-0.5 text-[11px] text-muted">
+                    {hole.provenance === 'template'
+                      ? 'Estimated — not official'
+                      : 'Map-measured — not official scorecard'}
+                  </p>
+                ) : null}
                 <p className="mt-0.5 text-[13px] text-muted">
                   SI {si}
                   {recv !== 0

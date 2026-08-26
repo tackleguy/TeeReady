@@ -10,6 +10,8 @@ import {
 import { formatHandicap } from '../../lib/golfHandicap';
 import { teeHeightForClub } from '../../lib/yardageNotes';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { DataProvenanceNote } from './DataProvenanceNote';
+import type { ScorecardProvenance } from '../../lib/scorecardProvenance';
 
 interface Props {
   course: GolfCourseSummary;
@@ -19,6 +21,8 @@ interface Props {
   error: string | null;
   teeKindLabel?: string;
   transferredFromPrep?: boolean;
+  /** Hole-data provenance when known from the course map load. */
+  provenance?: ScorecardProvenance;
   onClose: () => void;
 }
 
@@ -76,6 +80,7 @@ export function GolfYardageBook({
   error,
   teeKindLabel,
   transferredFromPrep = false,
+  provenance,
   onClose,
 }: Props) {
   const [dayIdx, setDayIdx] = useState(0);
@@ -118,6 +123,12 @@ export function GolfYardageBook({
             {course.name}
             {teeKindLabel ? ` · ${teeKindLabel} tees` : ''}
           </p>
+          {provenance ? (
+            <DataProvenanceNote
+              provenance={provenance}
+              className="mt-1 text-[#5c4f42]"
+            />
+          ) : null}
         </div>
         <button
           type="button"

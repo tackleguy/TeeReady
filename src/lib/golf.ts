@@ -48,6 +48,10 @@ export interface GolfTeeBox {
   teeElevationM?: number;
 }
 
+import type { ScorecardProvenance } from './scorecardProvenance';
+
+export type { ScorecardProvenance };
+
 export interface GolfHole {
   number: number;
   name?: string;
@@ -65,6 +69,8 @@ export interface GolfHole {
   tees?: GolfTeeBox[];
   /** Stroke index 1–18 when a scorecard provides it. */
   strokeIndex?: number;
+  /** Where pars/yardages for this course came from. */
+  provenance?: ScorecardProvenance;
 }
 
 export interface TurfReport {
@@ -294,7 +300,7 @@ function holesRequestKey(
     opts?.courseName?.trim().toLowerCase() ?? '',
   ].join(':');
   const requestKey =
-    `golf:v11:holes:${q4(lat)}:${q4(lon)}:${bboxKey}:` +
+    `golf:v12:holes:${q4(lat)}:${q4(lon)}:${bboxKey}:` +
     `${opts?.radius ?? ''}:${courseKey}`;
   const backupKey =
     opts?.osmType && opts?.osmId

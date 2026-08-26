@@ -1,5 +1,7 @@
 import { IMPORTED_SCORECARDS } from './importedScorecards';
 import { findCatalogScorecard } from '../_lib/syntheticScorecard';
+import type { ScorecardProvenance } from '../_lib/scorecardProvenance';
+import { holeHasCardYardage } from '../_lib/scorecardProvenance';
 
 /**
  * Official scorecard par + yardage overrides for popular courses.
@@ -29,7 +31,11 @@ export interface CourseScorecard {
   /** Known alternate names seen in OSM / search results. */
   aliases?: string[];
   holes: ScorecardHole[];
+  /** Where pars/yardages came from — set by lookup helpers. */
+  provenance?: ScorecardProvenance;
 }
+
+export type { ScorecardProvenance };
 
 // OSM IDs → scorecards
 const SCORECARDS: Record<string, CourseScorecard[]> = {
@@ -424,9 +430,19 @@ function isUsableImportedScorecard(card: CourseScorecard): boolean {
   return card.holes.every((hole) => hasOrderedTees(hole));
 }
 
-const ALL_MANUAL_SCORECARDS = Object.values(SCORECARDS).flat();
-const VALID_IMPORTED_SCORECARDS = IMPORTED_SCORECARDS.filter(isUsableImportedScorecard);
+const ALL_MANUAL_SCORECARDS = Object.values(SCORECARDS)
+  .flat()
+  .map((card) => ({ ...card, provenance: 'official' as const }));
+const VALID_IMPORTED_SCORECARDS = IMPORTED_SCORECARDS.filter(
+  isUsableImportedScorecard,
+).map((card) => ({ ...card, provenance: 'imported-par' as const }));
 const ALL_SCORECARDS = [...ALL_MANUAL_SCORECARDS, ...VALID_IMPORTED_SCORECARDS];
+
+export function inferCardProvenance(card: CourseScorecard): ScorecardProvenance {
+  if (card.provenance) return card.provenance;
+  if (card.holes.some(holeHasCardYardage)) return 'official';
+  return 'imported-par';
+}
 
 // ─── Name-based lookup table ───
 // We cannot always predict the exact OSM ID, so match by course name tokens.

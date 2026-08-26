@@ -14,7 +14,9 @@ import {
   titleCaseName,
 } from './_lib/courseRelate';
 import { bearingDeg, haversineYards, pathLengthYards } from './_lib/geo';
-import { findScorecard, type CourseScorecard } from './_data/scorecards';
+import { findScorecard, inferCardProvenance, type CourseScorecard } from './_data/scorecards';
+import type { ScorecardProvenance } from './_lib/scorecardProvenance';
+import { holeHasCardYardage } from './_lib/scorecardProvenance';
 import {
   bboxArea,
   bboxFromLatLon,
@@ -65,6 +67,10 @@ export interface GolfHole {
   source: 'hole-way' | 'tee-green';
   loop?: string;
   tees?: GolfTeeBox[];
+  /** Stroke index 1–18 when a scorecard provides it. */
+  strokeIndex?: number;
+  /** Course-level data provenance stamped onto each hole. */
+  provenance?: ScorecardProvenance;
 }
 
 /** Process-local cache — hole geometry almost never changes. */
@@ -827,13 +833,13 @@ function autoLoops(holes: GolfHole[]): GolfHole[] {
   });
 }
 
-/** Apply official scorecard pars and yardages when we have them. */
+/** Apply scorecard pars/yardages and stamp course provenance on every hole. */
 function applyScorecards(
   holes: GolfHole[],
   polys: CoursePoly[],
   selectedName?: string,
   selectedId?: number,
-): GolfHole[] {
+): { holes: GolfHole[]; provenance: ScorecardProvenance } {
   const loops = [
     ...new Set(holes.map((h) => h.loop).filter((l): l is string => Boolean(l))),
   ];
@@ -865,19 +871,34 @@ function applyScorecards(
     const card = findScorecard({ osmId: selectedId });
     if (card) cards.set('', card);
   }
-  if (!cards.size) return holes;
+  if (!cards.size) {
+    const stamped = holes.map((hole) => ({
+      ...hole,
+      provenance: 'geometric' as const,
+    }));
+    return { holes: stamped, provenance: 'geometric' };
+  }
 
-  return holes.map((hole) => {
+  let provenance: ScorecardProvenance | null = null;
+  for (const card of cards.values()) {
+    const p = inferCardProvenance(card);
+    const rank = { official: 0, 'imported-par': 1, geometric: 2, template: 3 };
+    if (!provenance || rank[p] < rank[provenance]) provenance = p;
+  }
+  provenance = provenance ?? 'geometric';
+
+  const next = holes.map((hole) => {
     const card = cards.get(hole.loop ?? '') ?? cards.get('');
-    if (!card) return hole;
+    if (!card) return { ...hole, provenance };
     const sc = card.holes.find((h) => h.hole === hole.number);
-    if (!sc) return hole;
-    const updated = { ...hole, par: sc.par };
+    if (!sc) return { ...hole, provenance };
+    const updated: GolfHole = { ...hole, par: sc.par, provenance };
     if (sc.name && !hole.name) updated.name = sc.name;
     if (sc.hcp != null && Number.isFinite(sc.hcp)) {
       updated.strokeIndex = sc.hcp;
     }
-    if (hole.tees?.length) {
+    const cardYards = holeHasCardYardage(sc);
+    if (cardYards && hole.tees?.length) {
       updated.tees = hole.tees.map((t) => {
         const yds =
           t.kind === 'back'
@@ -890,13 +911,15 @@ function applyScorecards(
       const mid =
         updated.tees.find((t) => t.kind === 'mid') ?? updated.tees[0];
       if (mid) updated.yards = mid.yards;
-    } else if (sc.mid) {
+    } else if (cardYards && sc.mid) {
       updated.yards = sc.mid;
-    } else if (sc.back) {
+    } else if (cardYards && sc.back) {
       updated.yards = sc.back;
     }
     return updated;
   });
+
+  return { holes: next, provenance };
 }
 
 function finalizeHoles(
@@ -904,18 +927,22 @@ function finalizeHoles(
   polys: CoursePoly[] = [],
   selectedName?: string,
   selectedId?: number,
-): GolfHole[] {
+): { holes: GolfHole[]; provenance: ScorecardProvenance } {
   let next = assignLoopsFromPolygons(holes, polys, selectedName, selectedId);
   next = autoLoops(next);
   next = normalizeOnePerNumber(next);
   pruneOutlierTees(next);
-  next = applyScorecards(next, polys, selectedName, selectedId);
+  const applied = applyScorecards(next, polys, selectedName, selectedId);
+  next = applied.holes;
   next.sort((a, b) => {
     const loop = (a.loop ?? '').localeCompare(b.loop ?? '');
     if (loop) return loop;
     return a.number - b.number;
   });
-  return next.slice(0, MAX_HOLES);
+  return {
+    holes: next.slice(0, MAX_HOLES),
+    provenance: applied.provenance,
+  };
 }
 
 function holesFromWays(els: OsmElement[], polys: CoursePoly[] = []): GolfHole[] {
@@ -1095,7 +1122,7 @@ async function holesInScope(
   const els = await queryGolfBundle(scope);
   const polys = extractCoursePolygons(els);
   const holes = holesFromTeeGreen(els, holesFromWays(els, polys));
-  return finalizeHoles(holes, polys, selectedName, selectedId);
+  return finalizeHoles(holes, polys, selectedName, selectedId).holes;
 }
 
 function fetchLooksComplete(holes: GolfHole[]): boolean {
@@ -1131,12 +1158,13 @@ async function holesFromOsmMap(
   const polys = extractCoursePolygons(elements);
   let holes = holesFromWays(elements, polys);
   holes = holesFromTeeGreen(elements, holes);
-  const labeled = finalizeHoles(
+  const labeledResult = finalizeHoles(
     holes,
     polys,
     courseName,
     Number.isFinite(osmId) ? osmId : undefined,
   );
+  const labeled = labeledResult.holes;
 
   // Widen when bbox clipped a sibling 18 or duplicate centerlines sit outside.
   const holeWays = elements.filter((e) => e.tags?.golf === 'hole');
@@ -1226,7 +1254,7 @@ export default async function handler(req: Request): Promise<Response> {
     Number.isFinite(osmId) ? String(osmId) : '',
     courseName.trim().toLowerCase(),
   ].join(':');
-  const cacheKey = `h8:${lat}:${lon}:${bbox ?? ''}:${radiusM}:${courseKey}`;
+  const cacheKey = `h9:${lat}:${lon}:${bbox ?? ''}:${radiusM}:${courseKey}`;
   const cached = HOLE_MEM.get(cacheKey);
   if (cached && Date.now() - cached.at < HOLE_MEM_TTL_MS && cached.holes.length) {
     return jsonResponse(
@@ -1234,6 +1262,7 @@ export default async function handler(req: Request): Promise<Response> {
         holes: cached.holes,
         count: cached.holes.length,
         scope: 'cache',
+        provenance: cached.holes[0]?.provenance ?? 'geometric',
         attribution: '© OpenStreetMap contributors (ODbL)',
       },
       3600,
@@ -1301,6 +1330,7 @@ export default async function handler(req: Request): Promise<Response> {
         holes: holesWithElevation,
         count: holesWithElevation.length,
         scope: best.scope,
+        provenance: holesWithElevation[0]?.provenance ?? 'geometric',
         attribution: '© OpenStreetMap contributors (ODbL)',
       },
       3600,
@@ -1339,7 +1369,7 @@ out geom;
           extractCoursePolygons(els),
           courseName || undefined,
           Number.isFinite(osmId) ? osmId : undefined,
-        );
+        ).holes;
       } else {
         holes = await holesInScope(
           scope.queryScope,
@@ -1373,6 +1403,7 @@ out geom;
         holes: [],
         count: 0,
         scope: 'none',
+        provenance: 'geometric',
         attribution: '© OpenStreetMap contributors (ODbL)',
       },
       600,
@@ -1388,6 +1419,7 @@ out geom;
       holes: holesWithElevation,
       count: holesWithElevation.length,
       scope: best.scope,
+      provenance: holesWithElevation[0]?.provenance ?? 'geometric',
       attribution: '© OpenStreetMap contributors (ODbL)',
     },
     3600,

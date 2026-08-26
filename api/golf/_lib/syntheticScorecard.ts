@@ -4,6 +4,8 @@
 
 import type { CourseScorecard, ScorecardHole } from '../_data/scorecards';
 import { US_CATALOG, type UsCatalogEntry } from '../_data/usCatalog';
+import type { ScorecardProvenance } from './scorecardProvenance';
+import { holeHasCardYardage } from './scorecardProvenance';
 
 const US_STATES = new Set([
   'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL',
@@ -163,13 +165,27 @@ export function scorecardFromCatalogEntry(
   const totalPar = holes.reduce((sum, hole) => sum + hole.par, 0);
   if (totalPar !== entry.p) return null;
 
+  let provenance: ScorecardProvenance;
+  if (complete) {
+    provenance = 'imported-par';
+  } else if (entry.y) {
+    provenance = 'template';
+  } else {
+    provenance = 'geometric';
+  }
+
   const card: CourseScorecard = {
     name: entry.n,
     totalPar,
     osmIds: entry.o ? [entry.o] : undefined,
     holes,
+    provenance,
   };
   if (entry.y) distributeYardages(holes, entry.y);
+  // Distributed totals are estimates — never claim official yardages.
+  if (entry.y && holes.some(holeHasCardYardage) && provenance === 'template') {
+    /* already template */
+  }
   return card;
 }
 
