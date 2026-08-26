@@ -1,7 +1,7 @@
 // Worldwide city geocoder for map and Golf location search.
 // Photon (primary) + Nominatim (fallback). Open-Meteo geocoding removed.
 
-import { rateLimit, RATE } from '../_lib/rateLimit';
+import { rateLimit, RATE } from './_lib/rateLimit';
 
 export const config = { runtime: 'edge' };
 
