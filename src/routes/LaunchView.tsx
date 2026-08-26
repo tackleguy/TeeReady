@@ -1,6 +1,7 @@
 /** Launch monitor — upload slow-mo, shot tracer, rough yardage. */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   AlertTriangle,
   Camera,
@@ -28,6 +29,7 @@ import {
   type LaunchMetric,
   type LaunchReject,
 } from '../lib/launch';
+import { addShotToActiveSession, getActiveSession } from '../lib/range';
 
 type Step = 'setup' | 'record' | 'preview' | 'analyzing' | 'results' | 'rejected';
 
@@ -95,6 +97,11 @@ export function LaunchView() {
   const [recording, setRecording] = useState(false);
   const [liveFps, setLiveFps] = useState<number | null>(null);
   const [history, setHistory] = useState<LaunchAnalysis[]>(() => loadLaunchHistory());
+  const [rangeSession, setRangeSession] = useState(() => getActiveSession());
+
+  const refreshRangeSession = useCallback(() => {
+    setRangeSession(getActiveSession());
+  }, []);
 
   const stopStream = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -111,6 +118,12 @@ export function LaunchView() {
     window.addEventListener('teeready-launch-history-changed', refresh);
     return () => window.removeEventListener('teeready-launch-history-changed', refresh);
   }, []);
+
+  useEffect(() => {
+    window.addEventListener('teeready-range-history-changed', refreshRangeSession);
+    return () =>
+      window.removeEventListener('teeready-range-history-changed', refreshRangeSession);
+  }, [refreshRangeSession]);
 
   useEffect(() => {
     return () => {
@@ -217,6 +230,8 @@ export function LaunchView() {
       if (isLaunchAnalysis(out)) {
         setResult(out);
         saveLaunchAnalysis(out);
+        addShotToActiveSession(out.id);
+        refreshRangeSession();
         setStep('results');
       } else {
         setReject(out);
@@ -226,7 +241,7 @@ export function LaunchView() {
       setError(e instanceof Error ? e.message : 'Analysis failed');
       setStep('preview');
     }
-  }, [blob, angle, club]);
+  }, [blob, angle, club, refreshRangeSession]);
 
   const reset = useCallback(() => {
     stopStream();
@@ -266,6 +281,22 @@ export function LaunchView() {
 
       {step === 'setup' ? (
         <div className="space-y-5">
+          {rangeSession ? (
+            <Link
+              to="/range"
+              className="flex items-center justify-between gap-3 rounded-card border border-brand/25 bg-brand-soft px-4 py-3"
+            >
+              <div>
+                <p className="text-[12px] font-semibold text-brand">Range session active</p>
+                <p className="text-[11px] capitalize text-muted">
+                  {rangeSession.club} · {rangeSession.shotIds.length} shot
+                  {rangeSession.shotIds.length === 1 ? '' : 's'} logged
+                </p>
+              </div>
+              <Target className="h-4 w-4 shrink-0 text-brand" aria-hidden="true" />
+            </Link>
+          ) : null}
+
           <section className="rounded-card bg-surface p-4 shadow-card">
             <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
               Before you record
@@ -569,6 +600,16 @@ export function LaunchView() {
           <p className="text-center text-[11px] text-muted">
             ~{Math.round(result.fps)} fps · {angleLabel(result.angle)} · uncalibrated
           </p>
+
+          {rangeSession ? (
+            <Link
+              to="/range"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-brand/30 bg-brand-soft px-4 py-3 text-[14px] font-semibold text-brand"
+            >
+              <Target className="h-4 w-4" strokeWidth={2.2} aria-hidden="true" />
+              View range session
+            </Link>
+          ) : null}
 
           <button
             type="button"

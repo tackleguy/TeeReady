@@ -55,6 +55,9 @@ const SwingGuideView = lazy(() =>
 const LaunchView = lazy(() =>
   import('./routes/LaunchView').then((m) => ({ default: m.LaunchView })),
 );
+const RangeView = lazy(() =>
+  import('./routes/RangeView').then((m) => ({ default: m.RangeView })),
+);
 const CameraProbe = import.meta.env.DEV
   ? lazy(() =>
       import('./routes/CameraProbe').then((m) => ({
@@ -370,6 +373,14 @@ function Shell() {
             element={
               <RequireAuth>
                 <LaunchView />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/range"
+            element={
+              <RequireAuth>
+                <RangeView />
               </RequireAuth>
             }
           />

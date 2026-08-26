@@ -48,6 +48,11 @@ const PROGRESS_LINKS = [
     href: '/launch',
     hint: 'Shot tracer · yardage',
   },
+  {
+    label: 'Range',
+    href: '/range',
+    hint: 'Session dispersion',
+  },
 ] as const;
 
 function useMenuDismiss(
@@ -247,7 +252,9 @@ function ProgressMenu({ mobile = false }: { mobile?: boolean }) {
   useMenuDismiss(open, () => setOpen(false), triggerRef, menuRef);
   const progressActive =
     location.pathname.startsWith('/stats') ||
-    location.pathname.startsWith('/swing');
+    location.pathname.startsWith('/swing') ||
+    location.pathname.startsWith('/launch') ||
+    location.pathname.startsWith('/range');
 
   useEffect(() => {
     setOpen(false);
@@ -264,10 +271,14 @@ function ProgressMenu({ mobile = false }: { mobile?: boolean }) {
         onMouseEnter={() => {
           prefetchRoute('/stats');
           prefetchRoute('/swing');
+          prefetchRoute('/launch');
+          prefetchRoute('/range');
         }}
         onFocus={() => {
           prefetchRoute('/stats');
           prefetchRoute('/swing');
+          prefetchRoute('/launch');
+          prefetchRoute('/range');
         }}
         className={`nav-link inline-flex items-center gap-1 ${mobile ? 'whitespace-nowrap' : ''}`}
         aria-current={progressActive ? 'page' : undefined}

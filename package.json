@@ -15,6 +15,7 @@
     "verify:swing-guide-fallback": "tsx scripts/verify-swing-guide-fallback.ts",
     "verify:launch-physics": "tsx scripts/verify-launch-physics.ts",
     "test:launch-simulation": "tsx scripts/test-launch-simulation.ts",
+    "test:range": "tsx scripts/test-range.ts",
     "audit:golf-scorecards": "tsx src/dev/golfScorecardAudit.ts",
     "audit:golf-coverage": "tsx src/dev/golfScorecardCoverage.ts",
     "audit:golf-catalog": "tsx src/dev/golfCatalogAudit.ts",
