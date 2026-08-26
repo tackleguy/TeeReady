@@ -463,7 +463,7 @@ export async function fetchGolfCourses(
     return stale?.length ? stale : [];
   }
   if (!res.ok) {
-    if (res.status >= 500) {
+    if (res.status >= 500 || res.status === 429) {
       const stale = localGetAllowStale<GolfCourseSummary[]>(key);
       return stale?.length ? stale : [];
     }

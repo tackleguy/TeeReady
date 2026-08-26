@@ -27,13 +27,17 @@ export function defaultTargetHandicap(hcp: number): number {
   return clampHandicap(Math.max(0, n - 3));
 }
 
-/** Hardest hole → stroke index 1. */
+/** Hardest hole → stroke index 1. Uses yards only when par is unknown. */
 export function assignStrokeIndexes(
   holes: Array<{ number: number; par?: number; yards: number }>,
 ): Record<number, number> {
   const ranked = [...holes].sort((a, b) => {
-    const da = a.yards + ((a.par ?? 4) === 3 ? 35 : (a.par ?? 4) === 5 ? -15 : 0);
-    const db = b.yards + ((b.par ?? 4) === 3 ? 35 : (b.par ?? 4) === 5 ? -15 : 0);
+    const pa =
+      typeof a.par === 'number' && Number.isFinite(a.par) ? a.par : null;
+    const pb =
+      typeof b.par === 'number' && Number.isFinite(b.par) ? b.par : null;
+    const da = a.yards + (pa === 3 ? 35 : pa === 5 ? -15 : 0);
+    const db = b.yards + (pb === 3 ? 35 : pb === 5 ? -15 : 0);
     if (db !== da) return db - da;
     return a.number - b.number;
   });

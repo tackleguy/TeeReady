@@ -84,6 +84,7 @@ export function GpsMod({
           onClick={onToggleExpanded}
           className="flex min-h-[44px] min-w-0 flex-1 items-center gap-2 px-2 text-left"
           aria-expanded={false}
+          aria-label="Expand GPS yardages"
           title="Expand GPS"
         >
           <span
@@ -253,6 +254,12 @@ export function GpsMod({
               {formatHeading(position?.headingDeg ?? bearingToPin)}
             </span>
           </div>
+
+          {quality === 'poor' || quality === 'fair' ? (
+            <p className="mt-1.5 text-[13px] leading-snug text-[var(--warn)]" role="status">
+              Fix rough — use the F/M/B window, not a single number.
+            </p>
+          ) : null}
 
           {error ? (
             <p className="mt-1.5 text-[13px] text-bad">{error}</p>

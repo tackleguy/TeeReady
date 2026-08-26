@@ -1,23 +1,26 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowUpRight,
   Box,
   Loader2,
   MapPin,
+  Navigation,
   Search,
 } from 'lucide-react';
 import { CourseHeroImage } from '../components/golf/CourseHeroImage';
+import { CourseSignals } from '../components/golf/CourseSignals';
 import { useGolfCourses } from '../hooks/useGolf';
 import type { GolfCourseSummary } from '../lib/golf';
 import {
   loadGreenMeshManifest,
   type GreenMeshManifestEntry,
 } from '../lib/golfGreen3d';
+import { loadGolfProfile } from '../lib/golfProfile';
 import { stashPendingCourse } from '../lib/pendingCourse';
 import { defaultSearchLoc } from '../lib/searchLoc';
 
-type FilterMode = 'nearby' | '3d';
+type FilterMode = 'nearby' | 'mine' | '3d';
 
 function haversineMi(
   aLat: number,
@@ -55,23 +58,29 @@ function manifestToSummary(
   };
 }
 
+function nameMatchesHome(courseName: string, homes: string[]): boolean {
+  const n = courseName.toLowerCase();
+  return homes.some((h) => {
+    const home = h.toLowerCase().trim();
+    if (!home) return false;
+    return n.includes(home) || home.includes(n);
+  });
+}
+
 function CourseCard({
   course,
   has3d,
   onOpen,
   onPrep,
+  onGps,
 }: {
   course: GolfCourseSummary;
   has3d?: boolean;
   onOpen: (c: GolfCourseSummary) => void;
   onPrep: (c: GolfCourseSummary) => void;
+  onGps: (c: GolfCourseSummary) => void;
 }) {
-  const [prepping, setPrepping] = useState(false);
-
-  const handlePrep = () => {
-    setPrepping(true);
-    onPrep(course);
-  };
+  const [busy, setBusy] = useState<'prep' | 'gps' | null>(null);
 
   return (
     <article className="group overflow-hidden rounded-2xl bg-surface shadow-card transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-lift">
@@ -87,6 +96,9 @@ function CourseCard({
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+          <div className="absolute left-3 top-3">
+            <CourseSignals course={course} />
+          </div>
           <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between gap-3 p-4">
             <div className="min-w-0">
               <h2 className="truncate text-[17px] font-semibold tracking-[-0.02em] text-white">
@@ -99,7 +111,7 @@ function CourseCard({
               ) : null}
             </div>
             {has3d ? (
-              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-brand/90 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm">
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-brand/90 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm">
                 <Box className="h-3 w-3" strokeWidth={2.5} />
                 3D
               </span>
@@ -109,7 +121,7 @@ function CourseCard({
       </button>
 
       <div className="flex items-center justify-between gap-3 px-4 py-3">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted">
           {course.distanceMi != null ? (
             <span className="inline-flex items-center gap-1">
               <MapPin className="h-3.5 w-3.5" strokeWidth={2} />
@@ -117,26 +129,51 @@ function CourseCard({
             </span>
           ) : null}
           {course.holes != null ? <span>{course.holes} holes</span> : null}
+          {course.par != null ? <span>Par {course.par}</span> : null}
         </div>
-        <button
-          type="button"
-          onClick={handlePrep}
-          disabled={prepping}
-          aria-busy={prepping}
-          className="inline-flex items-center gap-1 text-[13px] font-semibold text-brand disabled:opacity-60"
-        >
-          {prepping ? (
-            <>
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            type="button"
+            onClick={() => {
+              setBusy('gps');
+              onGps(course);
+            }}
+            disabled={busy != null}
+            aria-busy={busy === 'gps'}
+            className="inline-flex min-h-[44px] items-center gap-1 px-2 text-[13px] font-semibold text-muted hover:text-ink disabled:opacity-60"
+          >
+            {busy === 'gps' ? (
               <Loader2 className="h-4 w-4 animate-spin" />
-              Opening…
-            </>
-          ) : (
-            <>
-              Prep
-              <ArrowUpRight className="h-4 w-4" />
-            </>
-          )}
-        </button>
+            ) : (
+              <>
+                <Navigation className="h-3.5 w-3.5" strokeWidth={2.2} />
+                GPS
+              </>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setBusy('prep');
+              onPrep(course);
+            }}
+            disabled={busy != null}
+            aria-busy={busy === 'prep'}
+            className="inline-flex min-h-[44px] items-center gap-1 px-2 text-[13px] font-semibold text-brand disabled:opacity-60"
+          >
+            {busy === 'prep' ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Opening…
+              </>
+            ) : (
+              <>
+                Prep
+                <ArrowUpRight className="h-4 w-4" />
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </article>
   );
@@ -147,12 +184,33 @@ export function CoursesView() {
   const loc = defaultSearchLoc();
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<FilterMode>('nearby');
+  const [homeCourses, setHomeCourses] = useState<string[]>(() => {
+    const p = loadGolfProfile();
+    return p?.commonCourses?.filter(Boolean) ?? [];
+  });
   const [green3dCourses, setGreen3dCourses] = useState<
     GreenMeshManifestEntry[]
   >([]);
   const [green3dLoading, setGreen3dLoading] = useState(true);
 
-  const { courses, loading, error } = useGolfCourses(loc.lat, loc.lon, '');
+  const { courses, loading, error, retry } = useGolfCourses(
+    loc.lat,
+    loc.lon,
+    '',
+  );
+
+  useEffect(() => {
+    const sync = () => {
+      const p = loadGolfProfile();
+      setHomeCourses(p?.commonCourses?.filter(Boolean) ?? []);
+    };
+    window.addEventListener('teeready-profile-changed', sync);
+    window.addEventListener('focus', sync);
+    return () => {
+      window.removeEventListener('teeready-profile-changed', sync);
+      window.removeEventListener('focus', sync);
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -178,6 +236,8 @@ export function CoursesView() {
     let list = courses;
     if (filter === '3d') {
       list = list.filter(courseHas3d);
+    } else if (filter === 'mine') {
+      list = list.filter((c) => nameMatchesHome(c.name, homeCourses));
     }
     if (!q) return list;
     return list.filter(
@@ -185,7 +245,7 @@ export function CoursesView() {
         c.name.toLowerCase().includes(q) ||
         (c.region?.toLowerCase().includes(q) ?? false),
     );
-  }, [courses, query, filter, green3dCourses]);
+  }, [courses, query, filter, green3dCourses, homeCourses]);
 
   const filteredGreen3d = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -208,8 +268,31 @@ export function CoursesView() {
     navigate('/rounds/prep');
   };
 
+  const openGps = (course: GolfCourseSummary) => {
+    stashPendingCourse(course);
+    navigate('/rounds/gps');
+  };
+
   const mainTitle =
-    filter === '3d' ? '3D greens nearby' : `Near ${loc.name}`;
+    filter === '3d'
+      ? '3D greens nearby'
+      : filter === 'mine'
+        ? 'Your courses nearby'
+        : `Near ${loc.name}`;
+
+  const filterBtn = (mode: FilterMode, label: ReactNode) => (
+    <button
+      type="button"
+      onClick={() => setFilter(mode)}
+      className={`rounded-lg px-3 py-2 text-[12px] font-semibold transition-colors ${
+        filter === mode
+          ? 'bg-brand text-white'
+          : 'bg-canvas text-muted hover:text-ink'
+      }`}
+    >
+      {label}
+    </button>
+  );
 
   return (
     <div className="relative flex h-full min-h-[inherit] flex-col bg-canvas md:flex-row">
@@ -221,7 +304,7 @@ export function CoursesView() {
                 Courses
               </h1>
               <p className="mt-1 text-[13px] leading-relaxed text-muted">
-                Find a track, then prep or open the map.
+                Find a track, then prep or start GPS.
               </p>
             </div>
             <Link
@@ -245,33 +328,21 @@ export function CoursesView() {
             />
           </div>
 
-          <div className="mt-3 flex gap-1.5">
-            <button
-              type="button"
-              onClick={() => setFilter('nearby')}
-              className={`rounded-full px-3 py-1.5 text-[12px] font-semibold transition-colors ${
-                filter === 'nearby'
-                  ? 'bg-brand text-white'
-                  : 'bg-canvas text-muted hover:text-ink'
-              }`}
-            >
-              Nearby
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilter('3d')}
-              className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-colors ${
-                filter === '3d'
-                  ? 'bg-brand text-white'
-                  : 'bg-canvas text-muted hover:text-ink'
-              }`}
-            >
-              <Box className="h-3 w-3" strokeWidth={2.5} />
-              3D greens
-              {!green3dLoading ? (
-                <span className="opacity-70">{green3dCourses.length}</span>
-              ) : null}
-            </button>
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {filterBtn('nearby', 'Nearby')}
+            {homeCourses.length > 0
+              ? filterBtn('mine', `Mine (${homeCourses.length})`)
+              : null}
+            {filterBtn(
+              '3d',
+              <span className="inline-flex items-center gap-1">
+                <Box className="h-3 w-3" strokeWidth={2.5} />
+                3D
+                {!green3dLoading ? (
+                  <span className="opacity-70">{green3dCourses.length}</span>
+                ) : null}
+              </span>,
+            )}
           </div>
         </div>
 
@@ -317,18 +388,30 @@ export function CoursesView() {
                 })}
               </ul>
             )
+          ) : filter === 'mine' ? (
+            <div className="px-4 py-5 text-[13px] leading-relaxed text-muted">
+              <p className="font-medium text-ink">Home courses</p>
+              <ul className="mt-2 space-y-1.5">
+                {homeCourses.map((name) => (
+                  <li key={name} className="text-muted">
+                    {name}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-3">
+                Matching nearby results appear in the main view. Edit the list in{' '}
+                <Link to="/profile" className="font-semibold text-brand">
+                  Golfer info
+                </Link>
+                .
+              </p>
+            </div>
           ) : (
             <div className="px-4 py-5 text-[13px] leading-relaxed text-muted">
               <p>
-                Browse nearby courses in the main view. Switch to{' '}
-                <button
-                  type="button"
-                  onClick={() => setFilter('3d')}
-                  className="font-semibold text-brand"
-                >
-                  3D greens
-                </button>{' '}
-                for the full mesh catalog.
+                Browse nearby courses in the main view. Cards show layout type
+                (par 3 / executive) and public vs private when known. Prep is the
+                default path; GPS starts a live round.
               </p>
             </div>
           )}
@@ -351,6 +434,7 @@ export function CoursesView() {
                 has3d
                 onOpen={openMap}
                 onPrep={openPrep}
+                onGps={openGps}
               />
             ))}
             {!loading && filteredNearby.length === 0 ? (
@@ -362,7 +446,10 @@ export function CoursesView() {
         ) : loading && courses.length === 0 ? (
           <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {[0, 1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="overflow-hidden rounded-2xl bg-surface shadow-card">
+              <div
+                key={i}
+                className="overflow-hidden rounded-2xl bg-surface shadow-card"
+              >
                 <div className="skeleton aspect-[16/10] w-full rounded-none" />
                 <div className="flex items-center justify-between gap-3 px-4 py-3">
                   <div className="skeleton h-4 w-24" />
@@ -377,12 +464,32 @@ export function CoursesView() {
               Couldn&apos;t load courses
             </p>
             <p className="mt-1 text-[13px] text-muted">{error}</p>
+            <button
+              type="button"
+              onClick={retry}
+              className="btn-primary mt-4 inline-flex"
+            >
+              Retry
+            </button>
           </div>
         ) : filteredNearby.length === 0 ? (
           <div className="rounded-2xl border border-line bg-surface px-5 py-8 text-center">
             <p className="text-[15px] font-medium text-ink">
-              {query.trim() ? 'No courses match' : 'No courses nearby'}
+              {query.trim()
+                ? 'No courses match'
+                : filter === 'mine'
+                  ? 'No home courses nearby'
+                  : 'No courses nearby'}
             </p>
+            {filter === 'mine' ? (
+              <p className="mt-2 text-[13px] text-muted">
+                Names come from your profile. Try Nearby, or update{' '}
+                <Link to="/profile" className="font-semibold text-brand">
+                  Golfer info
+                </Link>
+                .
+              </p>
+            ) : null}
           </div>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
@@ -393,6 +500,7 @@ export function CoursesView() {
                 has3d={courseHas3d(course)}
                 onOpen={openMap}
                 onPrep={openPrep}
+                onGps={openGps}
               />
             ))}
           </div>

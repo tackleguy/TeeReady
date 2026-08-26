@@ -243,11 +243,19 @@ export function shotPointsGeoJSON(
 
 // ─── Persistence ───
 
-export function saveRound(round: TrackedRound): void {
+export function saveRound(round: TrackedRound): boolean {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(round));
   } catch {
     // Storage full or unavailable — round still works in memory.
+    try {
+      window.dispatchEvent(
+        new CustomEvent('teeready-round-changed', { detail: round }),
+      );
+    } catch {
+      // ignore
+    }
+    return false;
   }
   try {
     window.dispatchEvent(
@@ -256,6 +264,7 @@ export function saveRound(round: TrackedRound): void {
   } catch {
     // ignore
   }
+  return true;
 }
 
 export function loadRound(): TrackedRound | null {

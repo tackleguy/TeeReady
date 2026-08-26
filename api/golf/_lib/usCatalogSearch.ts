@@ -214,6 +214,15 @@ export function searchUsCatalog(
 
   ranked.sort((a, b) => {
     if (a.score !== b.score) return a.score - b.score;
+    const aOsm = a.course.osmId > 0 ? 1 : 0;
+    const bOsm = b.course.osmId > 0 ? 1 : 0;
+    if (bOsm !== aOsm) return bOsm - aOsm;
+    const aHoles = a.course.holes ?? 0;
+    const bHoles = b.course.holes ?? 0;
+    if (bHoles !== aHoles) return bHoles - aHoles;
+    const aReg = a.course.courseType === 'regulation' ? 1 : 0;
+    const bReg = b.course.courseType === 'regulation' ? 1 : 0;
+    if (bReg !== aReg) return bReg - aReg;
     return (a.course.distanceMi ?? 9_999) - (b.course.distanceMi ?? 9_999);
   });
 

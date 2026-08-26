@@ -694,7 +694,8 @@ export function GroupView() {
               if (e.key === 'Enter') send();
             }}
             placeholder="Message the group…"
-            className="min-w-0 flex-1 rounded-xl border border-line bg-canvas px-3 py-2.5 text-base text-ink outline-none placeholder:text-faint focus:border-brand"
+            aria-label="Message the group"
+            className="min-w-0 flex-1 rounded-xl border border-line bg-canvas px-3 py-2.5 text-base text-ink outline-none placeholder:text-faint focus:border-brand focus-visible:ring-2 focus-visible:ring-brand"
           />
           <button
             type="button"

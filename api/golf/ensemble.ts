@@ -21,6 +21,7 @@ import {
   type WindAspect,
 } from './_lib/playsLike';
 import { DEFAULT_TURF, turfFromWeather, type TurfReport } from './_lib/turf';
+import { MAX_POST_HOLES, rateLimit, RATE } from '../_lib/rateLimit';
 
 export const config = { runtime: 'edge' };
 
@@ -117,7 +118,7 @@ function tipFor(
       windTip = `${Math.round(crossAbs)} mph crosswind pushes it ${pushSide} ~${driftAbs} yd; start ${aimSide}.`;
       break;
     case 'quarter-head':
-      windTip = `Wind into you and across: ~${Math.round(head)} mph hold-up and ~${driftAbs} yd ${pushSide} drift.`;
+      windTip = `Wind into you and across: ~${Math.round(head)} mph into you and ~${driftAbs} yd ${pushSide} drift.`;
       break;
     case 'quarter-tail':
       windTip = `Wind behind you and across: ~${driftAbs} yd ${pushSide} drift; start ${aimSide}.`;
@@ -209,6 +210,9 @@ async function gatherTurf(
 }
 
 export default async function handler(req: Request): Promise<Response> {
+  const limited = rateLimit(req, RATE.ensemble);
+  if (limited) return limited;
+
   let lat: number;
   let lon: number;
   let hour = 0;
@@ -238,6 +242,18 @@ export default async function handler(req: Request): Promise<Response> {
     lon = Number(body.lon);
     hour = Number(body.hour ?? 0);
     holes = Array.isArray(body.holes) ? body.holes : [];
+    if (holes.length > MAX_POST_HOLES) {
+      return new Response(
+        JSON.stringify({
+          error: `holes capped at ${MAX_POST_HOLES}`,
+          max: MAX_POST_HOLES,
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+        },
+      );
+    }
     if (
       body.player &&
       Number.isFinite(body.player.handicap) &&

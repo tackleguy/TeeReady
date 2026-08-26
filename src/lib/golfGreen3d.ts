@@ -40,6 +40,11 @@ export interface GreenMeshManifest {
 /** Legacy name matchers for curated packs (before lat/lon manifest). */
 const SLUGS: Array<{ slug: string; test: (name: string) => boolean }> = [
   {
+    slug: 'augusta-national-golf-club',
+    test: (n) =>
+      n.includes('augusta national') && !n.includes('par 3') && !n.includes('par-3'),
+  },
+  {
     slug: 'torrey-pines-south',
     test: (n) =>
       n.includes('south at torrey') ||
@@ -59,6 +64,38 @@ const SLUGS: Array<{ slug: string; test: (name: string) => boolean }> = [
       (n.includes('pebble beach') &&
         !n.includes('creek') &&
         !n.includes('cimarron')),
+  },
+  {
+    slug: 'spyglass-hill-golf-course',
+    test: (n) => n.includes('spyglass hill'),
+  },
+  {
+    slug: 'black-at-bethpage-state-park-golf-course',
+    test: (n) => n.includes('bethpage') && n.includes('black'),
+  },
+  {
+    slug: 'red-at-bethpage-state-park-golf-course',
+    test: (n) => n.includes('bethpage') && n.includes('red'),
+  },
+  {
+    slug: 'pinehurst-resort-country-club-no-2',
+    test: (n) =>
+      n.includes('pinehurst') &&
+      (n.includes('no 2') || n.includes('no. 2') || n.includes('#2') || n.includes(' number 2')),
+  },
+  {
+    slug: 'the-olympic-club-lake-course',
+    test: (n) => n.includes('olympic') && n.includes('lake'),
+  },
+  {
+    slug: 'shinnecock-hills-golf-course',
+    test: (n) => n.includes('shinnecock'),
+  },
+  {
+    slug: 'tpc-sawgrass-the-players-stadium-course',
+    test: (n) =>
+      (n.includes('sawgrass') && n.includes('stadium')) ||
+      (n.includes('tpc sawgrass') && n.includes('players')),
   },
 ];
 

@@ -23,6 +23,7 @@ import {
   type VenueKind,
 } from './_lib/venueKind';
 import { nearbyUsCatalog, searchUsCatalog } from './_lib/usCatalogSearch';
+import { rateLimit, RATE } from '../_lib/rateLimit';
 
 export const config = { runtime: 'edge' };
 
@@ -760,6 +761,9 @@ function expandWithOsmSiblings(
 }
 
 export default async function handler(req: Request): Promise<Response> {
+  const limited = rateLimit(req, RATE.courses);
+  if (limited) return limited;
+
   const { searchParams } = new URL(req.url);
   const rawLat = Number(searchParams.get('lat'));
   const rawLon = Number(searchParams.get('lon'));

@@ -71,13 +71,18 @@ function facilityStem(name: string): string | null {
 function stemsMatch(a: string, b: string): boolean {
   if (!a || !b) return false;
   if (a === b) return true;
-  if (a.includes(b) || b.includes(a)) return true;
-  const ta = a.split(' ');
-  const tb = b.split(' ');
+  const ta = a.split(' ').filter(Boolean);
+  const tb = b.split(' ').filter(Boolean);
+  // One-token stems must not match via substring ("augusta" ⊆ "augusta national").
+  // Multi-token inclusion still allows "torrey pines" ⊆ "torrey pines golf".
+  if (a.includes(b) || b.includes(a)) {
+    const shorter = a.length <= b.length ? ta : tb;
+    if (shorter.length >= 2) return true;
+  }
   const shared = ta.filter((t) => tb.includes(t) && t.length >= 4);
   return (
     shared.length >= 2 ||
-    (shared.length >= 1 && Math.min(ta.length, tb.length) === 1)
+    (shared.length >= 1 && Math.min(ta.length, tb.length) === 1 && ta.length === tb.length)
   );
 }
 

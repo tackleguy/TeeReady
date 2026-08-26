@@ -32,18 +32,18 @@ export function HomeLanding() {
             {[
               {
                 k: '01',
+                t: 'Today',
+                v: 'Golf-specific playability — wind, rain, and a best window before you drive.',
+              },
+              {
+                k: '02',
                 t: 'Prep',
                 v: 'Miss lines, wind, and front / mid / back yardages for every hole.',
               },
               {
-                k: '02',
-                t: 'GPS',
-                v: 'Live ranging that keeps running while you switch tabs.',
-              },
-              {
                 k: '03',
-                t: 'Card',
-                v: 'Net scoring with your handicap, FIR/GIR stats, synced to your account.',
+                t: 'GPS + card',
+                v: 'Live ranging that keeps running while you switch tabs, with net scoring.',
               },
             ].map((item) => (
               <article key={item.k} className="ledger-card p-6">

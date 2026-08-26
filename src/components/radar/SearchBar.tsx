@@ -9,7 +9,7 @@ interface Props {
 export function SearchBar({ onPick }: Props) {
   const [q, setQ] = useState('');
   const [open, setOpen] = useState(false);
-  const { results, loading } = useGeocode(q);
+  const { results, loading, error } = useGeocode(q);
   const blurTimer = useRef<number | undefined>(undefined);
 
   // Cancel any pending blur-close timer when the component unmounts so we
@@ -49,7 +49,8 @@ export function SearchBar({ onPick }: Props) {
             blurTimer.current = window.setTimeout(() => setOpen(false), 150);
           }}
           placeholder="Search city, county, or coordinates"
-          className="flex-1 bg-transparent text-base text-[var(--ink-1)] placeholder-[var(--ink-4)] outline-none"
+          aria-label="Search city, county, or coordinates"
+          className="flex-1 bg-transparent text-base text-[var(--ink-1)] placeholder-[var(--ink-4)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]"
         />
         {q ? (
           <button
@@ -67,6 +68,10 @@ export function SearchBar({ onPick }: Props) {
           {loading && results.length === 0 ? (
             <div className="px-3 py-2 text-[12px] text-[var(--ink-3)]">
               Searching…
+            </div>
+          ) : error ? (
+            <div className="px-3 py-2 text-[12px] text-bad" role="alert">
+              {error}
             </div>
           ) : results.length === 0 ? (
             <div className="px-3 py-2 text-[12px] text-[var(--ink-3)]">

@@ -36,7 +36,10 @@ import { GlassPanel } from '../components/ui/GlassPanel';
 import { DraggableBox } from '../components/ui/DraggableBox';
 import { SearchBar } from '../components/radar/SearchBar';
 import { defaultSearchLoc } from '../lib/searchLoc';
-import { takePendingCourse } from '../lib/pendingCourse';
+import {
+  takeCourseFilter,
+  takePendingCourse,
+} from '../lib/pendingCourse';
 import {
   peekSatelliteTilesWarm,
   warmSatelliteTiles,
@@ -444,7 +447,9 @@ export function GolfView({ active = true }: { active?: boolean }) {
     setTarget(landing);
     // GPS path: layup on longer holes so carry + approach both get callouts.
     setGpsAim(
-      (activeHoleObj.par ?? 4) >= 4 && activeHoleObj.yards > 280
+      (activeHoleObj.par != null
+        ? activeHoleObj.par >= 4
+        : activeHoleObj.yards > 280) && activeHoleObj.yards > 280
         ? landing
         : greenMarks(activeHoleObj).mid,
     );
@@ -505,6 +510,17 @@ export function GolfView({ active = true }: { active?: boolean }) {
 
   const pickCourse = useCallback(
     (next: GolfCourseSummary) => {
+      const existing = loadRound();
+      if (
+        existing &&
+        existing.courseId !== next.id &&
+        (existing.scores.length > 0 || existing.shots.length > 0)
+      ) {
+        const ok = window.confirm(
+          `You have an open round at ${existing.courseName}. Switch courses and discard that round?`,
+        );
+        if (!ok) return;
+      }
       warmSatelliteTiles(next.lat, next.lon, {
         courseId: next.id,
         priority: 'high',
@@ -533,16 +549,21 @@ export function GolfView({ active = true }: { active?: boolean }) {
     [],
   );
 
-  // Social → GPS: apply course stashed when a multiplayer group was created.
+  // Apply a course stashed from Courses / Map / Group, then stay on the
+  // route the caller already navigated to (prep or gps).
   useEffect(() => {
     if (!active) return;
     const pending = takePendingCourse();
     if (!pending) return;
     pickCourse(pending);
-    if (!location.pathname.includes('/rounds/gps')) {
-      navigate('/rounds/gps', { replace: true });
-    }
-  }, [active, pickCourse, navigate, location.pathname]);
+  }, [active, pickCourse]);
+
+  // Prefill search from Today home-course chips.
+  useEffect(() => {
+    if (!active) return;
+    const filter = takeCourseFilter();
+    if (filter) setCourseFilter(filter);
+  }, [active]);
 
   const openScorecard = useCallback(() => {
     if (!course) return;
@@ -563,12 +584,30 @@ export function GolfView({ active = true }: { active?: boolean }) {
 
   const startRound = useCallback(() => {
     if (!course) return;
+    if (round && (round.scores.length > 0 || round.shots.length > 0)) {
+      const ok = window.confirm(
+        `Replace the open round at ${round.courseName}? Current scores will be lost unless you End first.`,
+      );
+      if (!ok) return;
+    }
     const r = newRound(course.id, course.name, resolvedLoop ?? undefined);
     setRound(r);
-    saveRound(r);
-  }, [course, resolvedLoop]);
+    if (!saveRound(r)) {
+      window.alert(
+        'Could not save this round on device. Scores may be lost if you close the app — free some storage and try again.',
+      );
+    }
+  }, [course, resolvedLoop, round]);
 
   const endRound = useCallback(() => {
+    if (round?.scores.length || round?.shots.length) {
+      const ok = window.confirm(
+        round.scores.length
+          ? 'End this round and save the scorecard?'
+          : 'End this round? No hole scores have been entered yet.',
+      );
+      if (!ok) return;
+    }
     if (round?.scores.length) {
       finishAndArchiveRound(round);
     } else {
@@ -577,6 +616,24 @@ export function GolfView({ active = true }: { active?: boolean }) {
     setRound(null);
     setScorecardOpen(false);
   }, [round]);
+
+  const resumeStoredRound = useCallback(() => {
+    if (!round) return;
+    const holeFromScores =
+      round.scores.length > 0
+        ? Math.max(...round.scores.map((s) => s.holeNumber))
+        : null;
+    const holeFromShots =
+      round.shots.length > 0
+        ? round.shots[round.shots.length - 1]!.holeNumber
+        : null;
+    const hole = holeFromScores ?? holeFromShots ?? playHoles[0]?.number ?? 1;
+    setActiveHole(hole);
+    setScorecardOpen(false);
+    if (viewMode !== 'gps') {
+      navigate('/rounds/gps', { replace: true });
+    }
+  }, [round, playHoles, viewMode, navigate]);
 
   const dropShot = useCallback(() => {
     if (!round || !activeHoleObj || !gpsPos) return;
@@ -915,7 +972,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
         </p>
       )}
       {ensError && (
-        <p className="mt-2 text-[11px] text-red-300">{ensError}</p>
+        <p className="mt-2 text-[11px] text-bad">{ensError}</p>
       )}
     </div>
   ) : null;
@@ -1016,7 +1073,8 @@ export function GolfView({ active = true }: { active?: boolean }) {
             value={courseFilter}
             onChange={(e) => setCourseFilter(e.target.value)}
             placeholder="City courses & private clubs…"
-            className={`w-full rounded-2xl border border-[var(--line-default)] ${isMobile ? 'bg-canvas' : 'bg-black/20'} px-3 py-2.5 text-base text-[var(--ink-1)] placeholder:text-[var(--ink-4)] outline-none focus:border-[var(--accent)] md:py-2`}
+            aria-label="Search city courses and private clubs"
+            className={`w-full rounded-2xl border border-[var(--line-default)] ${isMobile ? 'bg-canvas' : 'bg-black/20'} px-3 py-2.5 text-base text-[var(--ink-1)] placeholder:text-[var(--ink-4)] outline-none focus:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] md:py-2`}
           />
         </div>
 
@@ -1046,7 +1104,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
           )}
           {coursesError && !courses.length && (
             <div className="floating-subpanel px-3 py-3">
-              <p className="text-xs text-red-300">
+              <p className="text-xs text-bad">
                 Course map server is busy right now.
               </p>
               <p className="mt-0.5 text-[11px] text-[var(--ink-4)]">
@@ -1149,6 +1207,29 @@ export function GolfView({ active = true }: { active?: boolean }) {
       >
         {course ? (
           <>
+            {round &&
+            tracking &&
+            viewMode === 'prep' &&
+            (round.scores.length > 0 || round.shots.length > 0) ? (
+              <div className="absolute left-3 right-3 top-3 z-30 flex flex-wrap items-center gap-2 rounded-xl border border-line bg-surface/95 px-3 py-2 shadow-lift backdrop-blur-sm md:left-auto md:right-3 md:max-w-sm">
+                <p className="min-w-0 flex-1 text-[13px] leading-snug text-ink">
+                  Resume round at{' '}
+                  <span className="font-semibold">{round.courseName}</span>
+                  {round.scores.length
+                    ? ` — Hole ${Math.max(
+                        ...round.scores.map((s) => s.holeNumber),
+                      )}`
+                    : ''}
+                </p>
+                <button
+                  type="button"
+                  onClick={resumeStoredRound}
+                  className="btn-primary shrink-0 px-3 py-1.5 text-[13px]"
+                >
+                  Resume GPS
+                </button>
+              </div>
+            ) : null}
             <GolfMapBoundary
               fallback={
                 <div className="flex h-full items-center justify-center bg-[var(--surface-0)] px-6 text-center text-sm text-[var(--ink-3)]">
@@ -1474,7 +1555,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                                 type="button"
                                 onClick={endRound}
                                 title="End round"
-                                className="rounded-lg px-2 py-1.5 text-[11px] text-red-300 hover:bg-red-500/20"
+                                className="rounded-lg px-2 py-1.5 text-[11px] text-bad hover:bg-bad/10"
                               >
                                 End
                               </button>

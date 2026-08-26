@@ -13,9 +13,9 @@ export const ROUNDS_MODES = [
 ] as const;
 
 export const CURRENT_USER = {
-  name: 'Jordan Doyle',
-  initials: 'JD',
-  handicap: 12,
+  name: 'Golfer',
+  initials: 'G',
+  handicap: 18,
   miss: 'right' as const,
 };
 
@@ -78,98 +78,6 @@ export function saveDisplayProfile(input: {
   }
   return next;
 }
-
-export type Hour = {
-  label: string;
-  short: string;
-  score: number;
-  temp: number;
-  wind: string;
-  summary: string;
-};
-
-export const HOURS: Hour[] = [
-  {
-    label: '6 AM',
-    short: '6a',
-    score: 71,
-    temp: 58,
-    wind: '5 mph SW',
-    summary: 'Cool, calm, dew on greens',
-  },
-  {
-    label: '7 AM',
-    short: '7a',
-    score: 82,
-    temp: 61,
-    wind: '6 mph SW',
-    summary: 'Light breeze, ideal tee-off',
-  },
-  {
-    label: '8 AM',
-    short: '8a',
-    score: 86,
-    temp: 64,
-    wind: '7 mph SW',
-    summary: 'Best hour of the day',
-  },
-  {
-    label: '9 AM',
-    short: '9a',
-    score: 84,
-    temp: 67,
-    wind: '8 mph SW',
-    summary: 'Steady, sun breaking through',
-  },
-  {
-    label: '10 AM',
-    short: '10a',
-    score: 80,
-    temp: 70,
-    wind: '9 mph SW',
-    summary: 'Warming, breeze building',
-  },
-  {
-    label: '11 AM',
-    short: '11a',
-    score: 74,
-    temp: 72,
-    wind: '11 mph W',
-    summary: 'Firm greens, crosswind on 4-7',
-  },
-  {
-    label: '12 PM',
-    short: '12p',
-    score: 66,
-    temp: 74,
-    wind: '13 mph W',
-    summary: 'Gusty stretch begins',
-  },
-  {
-    label: '1 PM',
-    short: '1p',
-    score: 58,
-    temp: 75,
-    wind: '15 mph W',
-    summary: 'Wind shift west',
-  },
-  {
-    label: '2 PM',
-    short: '2p',
-    score: 49,
-    temp: 74,
-    wind: '18 mph W',
-    summary: 'Gusts to 22, one extra club',
-  },
-  {
-    label: '3 PM',
-    short: '3p',
-    score: 54,
-    temp: 72,
-    wind: '16 mph W',
-    summary: 'Easing slightly',
-  },
-];
 
 export type Course = {
   slug: string;
@@ -361,59 +269,4 @@ export const GROUP: {
   ],
 };
 
-/** Play-score colour ramp shared by bars, rings and badges. */
-export function scoreColor(score: number): string {
-  if (score >= 78) return '#14713f';
-  if (score >= 60) return '#d9a83a';
-  return '#d9714f';
-}
-
-export type HourGateStatus = 'open' | 'best' | 'closed';
-
-export type HourGateRow = {
-  id: string;
-  time: string;
-  label: string;
-  score: number;
-  summary: string;
-  status?: HourGateStatus;
-};
-
-export function buildHourGateRows(
-  hours: Hour[],
-  bestShort: string,
-): HourGateRow[] {
-  return hours.map((h) => ({
-    id: h.short,
-    time: h.short.toUpperCase(),
-    label: h.label,
-    score: h.score,
-    summary: `${h.summary} · ${h.wind}`,
-    status:
-      h.short === bestShort
-        ? 'best'
-        : h.score < 60
-          ? 'closed'
-          : undefined,
-  }));
-}
-
-export function bestWindowLabel(hours: Hour[]): string {
-  if (!hours.length) return '';
-  let bestStart = 0;
-  let bestSum = -Infinity;
-  for (let i = 0; i <= hours.length - 4; i++) {
-    const sum =
-      hours[i].score +
-      hours[i + 1].score +
-      hours[i + 2].score +
-      hours[i + 3].score;
-    if (sum > bestSum) {
-      bestSum = sum;
-      bestStart = i;
-    }
-  }
-  const start = hours[bestStart];
-  const end = hours[Math.min(bestStart + 3, hours.length - 1)];
-  return `BEST ${start.short.toUpperCase()}–${end.short.toUpperCase()}`;
-}
+// Playability helpers live in ./playability (live weather only).

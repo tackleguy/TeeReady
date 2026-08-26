@@ -10,7 +10,7 @@ type Props = {
 export function CitySearchField({ value, onChange }: Props) {
   const [q, setQ] = useState('');
   const [open, setOpen] = useState(false);
-  const { results, loading } = useGeocode(q);
+  const { results, loading, error } = useGeocode(q);
   const blurTimer = useRef<number | undefined>(undefined);
 
   useEffect(
@@ -40,6 +40,7 @@ export function CitySearchField({ value, onChange }: Props) {
           type="search"
           value={open ? q : display}
           placeholder="Search your city…"
+          aria-label="Search your city"
           onChange={(e) => {
             setQ(e.target.value);
             if (value) onChange(null);
@@ -58,7 +59,7 @@ export function CitySearchField({ value, onChange }: Props) {
           onBlur={() => {
             blurTimer.current = window.setTimeout(() => setOpen(false), 150);
           }}
-          className="min-w-0 flex-1 bg-transparent text-base text-ink outline-none placeholder:text-faint"
+          className="min-w-0 flex-1 bg-transparent text-base text-ink outline-none placeholder:text-faint focus-visible:ring-2 focus-visible:ring-brand"
         />
         {value || q ? (
           <button
@@ -81,6 +82,10 @@ export function CitySearchField({ value, onChange }: Props) {
         <div className="absolute left-0 right-0 top-full z-30 mt-1 overflow-hidden rounded-xl border border-line bg-surface shadow-lift">
           {loading && results.length === 0 ? (
             <div className="px-3 py-2.5 text-[13px] text-muted">Searching…</div>
+          ) : error ? (
+            <div className="px-3 py-2.5 text-[13px] text-bad" role="alert">
+              {error}
+            </div>
           ) : results.length === 0 ? (
             <div className="px-3 py-2.5 text-[13px] text-muted">No cities found</div>
           ) : (

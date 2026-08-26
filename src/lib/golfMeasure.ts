@@ -104,7 +104,9 @@ export function defaultTarget(
       : courseType === 'executive'
         ? Math.min(driverYards, 260)
         : driverYards;
-  if ((hole.par ?? 4) <= 3 || hole.yards <= maxTee * 0.85) {
+  const par =
+    typeof hole.par === 'number' && Number.isFinite(hole.par) ? hole.par : null;
+  if ((par != null && par <= 3) || hole.yards <= maxTee * 0.85) {
     return { lon: hole.green.lon, lat: hole.green.lat };
   }
   return pointAlongHole(hole, Math.min(maxTee, hole.yards * 0.62));

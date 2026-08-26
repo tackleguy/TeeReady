@@ -216,9 +216,15 @@ function PlayMenu({ mobile = false }: { mobile?: boolean }) {
                       : 'font-semibold text-ink'
                   }`}
                 >
-                  {item.label}
+                  {liveRound && item.href === '/rounds/gps'
+                    ? 'Resume GPS'
+                    : item.label}
                 </div>
-                <div className="mt-0.5 text-[11px] text-muted">{item.hint}</div>
+                <div className="mt-0.5 text-[11px] text-muted">
+                  {liveRound && item.href === '/rounds/gps'
+                    ? 'Round running in background'
+                    : item.hint}
+                </div>
               </>
             )}
           </NavLink>

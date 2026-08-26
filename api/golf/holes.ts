@@ -35,6 +35,7 @@ import {
   type OsmElement,
 } from './_lib/overpass';
 import { elevationMeters } from '../_lib/weather/elevation';
+import { rateLimit, RATE } from '../_lib/rateLimit';
 
 export const config = { runtime: 'edge' };
 
@@ -929,6 +930,21 @@ function finalizeHoles(
   selectedId?: number,
 ): { holes: GolfHole[]; provenance: ScorecardProvenance } {
   let next = assignLoopsFromPolygons(holes, polys, selectedName, selectedId);
+
+  // When the client asked for a specific OSM course, drop holes that sit
+  // only inside a neighboring club's polygon (Augusta National vs ACC).
+  if (selectedId != null && Number.isFinite(selectedId) && polys.length) {
+    const selected = polys.find((p) => p.id === selectedId);
+    if (selected) {
+      const scoped = next.filter(
+        (h) =>
+          pointInPolygon(h.green, selected.ring) ||
+          pointInPolygon(h.tee, selected.ring),
+      );
+      if (scoped.length >= 7) next = scoped;
+    }
+  }
+
   next = autoLoops(next);
   next = normalizeOnePerNumber(next);
   pruneOutlierTees(next);
@@ -1165,19 +1181,24 @@ async function holesFromOsmMap(
     Number.isFinite(osmId) ? osmId : undefined,
   );
   const labeled = labeledResult.holes;
+  const hasSelectedOsm =
+    Number.isFinite(osmId) && (osmId as number) > 0;
 
   // Widen when bbox clipped a sibling 18 or duplicate centerlines sit outside.
+  // Never widen when a specific course OSM id is requested — neighbors
+  // (e.g. Augusta Country Club next to Augusta National) pollute the map.
   const holeWays = elements.filter((e) => e.tags?.golf === 'hole');
   const rawRefs = holeWays
     .map((e) => parseRef(e.tags))
     .filter((n): n is number => n != null);
   const dupRefs = rawRefs.length - new Set(rawRefs).size;
   const needsWiden =
-    (!expanded && dupRefs > 0 && labeled.length <= 18) ||
-    (!expanded &&
-      polys.length >= 2 &&
-      labeled.length > 0 &&
-      labeled.length < polys.length * 14);
+    !hasSelectedOsm &&
+    ((!expanded && dupRefs > 0 && labeled.length <= 18) ||
+      (!expanded &&
+        polys.length >= 2 &&
+        labeled.length > 0 &&
+        labeled.length < polys.length * 14));
   if (!needsWiden) return labeled;
 
   let next = padBbox(bbox, dupRefs > 0 ? 0.4 : 0.2);
@@ -1231,6 +1252,9 @@ function aroundScope(lat: number, lon: number, radiusM: number): string {
 }
 
 export default async function handler(req: Request): Promise<Response> {
+  const limited = rateLimit(req, RATE.holes);
+  if (limited) return limited;
+
   const { searchParams } = new URL(req.url);
   const rawLat = Number(searchParams.get('lat'));
   const rawLon = Number(searchParams.get('lon'));

@@ -202,6 +202,14 @@ export function SignupQuestionnaire({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
+                aria-invalid={Boolean(localError || error)}
+                aria-describedby={
+                  localError
+                    ? 'signup-step-error'
+                    : error
+                      ? 'signup-form-error'
+                      : undefined
+                }
                 className={inputClassName()}
               />
             </label>
@@ -213,6 +221,14 @@ export function SignupQuestionnaire({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="new-password"
+                aria-invalid={Boolean(localError || error)}
+                aria-describedby={
+                  localError
+                    ? 'signup-step-error'
+                    : error
+                      ? 'signup-form-error'
+                      : undefined
+                }
                 className={inputClassName()}
               />
             </label>

@@ -55,16 +55,21 @@ function HoleChip({
 }: {
   hole: number;
   strokes?: number;
-  par: number;
+  par: number | null;
   selected: boolean;
   onClick: () => void;
 }) {
   const scored = strokes != null && strokes >= 1;
-  const diff = scored ? strokes - par : null;
+  const diff = scored && par != null ? strokes - par : null;
   const style = diff != null ? scoreVsParStyle(diff) : null;
-  const label = scored
-    ? `Hole ${hole}, ${strokes} strokes, par ${par}`
-    : `Hole ${hole}, not scored, par ${par}`;
+  const label =
+    scored && par != null
+      ? `Hole ${hole}, ${strokes} strokes, par ${par}`
+      : scored
+        ? `Hole ${hole}, ${strokes} strokes, par unknown`
+        : par != null
+          ? `Hole ${hole}, not scored, par ${par}`
+          : `Hole ${hole}, not scored, par unknown`;
   return (
     <button
       type="button"
@@ -199,19 +204,20 @@ export function GolfScorecard({
     );
   }
 
-  const par = hole.par ?? 4;
+  const par =
+    typeof hole.par === 'number' && Number.isFinite(hole.par) ? hole.par : null;
   const si = strokeIndex[hole.number] ?? hole.number;
   const recv = strokesReceived(handicap, si, holeCount);
   const scored = getHoleScore(round, hole.number);
   const strokes = scored?.strokes;
   const putts = scored?.putts ?? 2;
   const net = strokes != null ? netStrokes(strokes, recv) : null;
-  const vsPar = strokes != null ? strokes - par : null;
+  const vsPar = strokes != null && par != null ? strokes - par : null;
   const vsStyle = vsPar != null ? scoreVsParStyle(vsPar) : null;
-  const firEligible = par >= 4;
+  const firEligible = par == null ? hole.yards > 280 : par >= 4;
 
   const pickStrokes = (n: number) => {
-    onSet(hole.number, par, n, putts);
+    onSet(hole.number, par ?? 0, n, putts);
   };
 
   const scorePicks = Array.from({ length: 8 }, (_, i) => i + 1);
@@ -272,7 +278,11 @@ export function GolfScorecard({
                 key={h.number}
                 hole={h.number}
                 strokes={hs?.strokes}
-                par={h.par ?? 4}
+                par={
+                  typeof h.par === 'number' && Number.isFinite(h.par)
+                    ? h.par
+                    : null
+                }
                 selected={h.number === focusHole}
                 onClick={() => goHole(h.number)}
               />
@@ -323,11 +333,15 @@ export function GolfScorecard({
               <div className="text-center">
                 <p className="section-eyebrow">Hole {hole.number}</p>
                 <p className="mt-0.5 text-[20px] font-bold tabular text-ink">
-                  Par {par}
+                  {par != null ? `Par ${par}` : 'Par —'}
                   <span className="mx-1.5 text-faint">·</span>
                   {hole.yards} yd
                 </p>
-                {hole.provenance && hole.provenance !== 'official' ? (
+                {par == null ? (
+                  <p className="mt-0.5 text-[11px] text-muted">
+                    Par unknown for this hole
+                  </p>
+                ) : hole.provenance && hole.provenance !== 'official' ? (
                   <p className="mt-0.5 text-[11px] text-muted">
                     {hole.provenance === 'template'
                       ? 'Estimated — not official'
@@ -360,33 +374,35 @@ export function GolfScorecard({
               </p>
               <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
                 {scorePicks.map((n) => {
-                  const d = n - par;
+                  const d = par != null ? n - par : null;
                   const on = strokes === n;
-                  const s = scoreVsParStyle(d);
+                  const s = d != null ? scoreVsParStyle(d) : null;
                   return (
                     <button
                       key={n}
                       type="button"
                       onClick={() => pickStrokes(n)}
                       className={`flex flex-col items-center rounded-xl border px-1 py-2.5 transition-colors ${
-                        on
+                        on && s
                           ? `${s.bg} ${s.ring} ring-2 border-transparent`
-                          : 'border-line bg-canvas hover:border-brand/35'
+                          : on
+                            ? 'border-brand bg-brand-soft ring-2 ring-brand/30'
+                            : 'border-line bg-canvas hover:border-brand/35'
                       }`}
                     >
                       <span
                         className={`text-[18px] font-bold tabular ${
-                          on ? s.text : 'text-ink'
+                          on && s ? s.text : on ? 'text-ink' : 'text-ink'
                         }`}
                       >
                         {n}
                       </span>
                       <span
                         className={`mt-0.5 text-[11px] font-semibold uppercase ${
-                          on ? s.text : 'text-faint'
+                          on && s ? s.text : 'text-faint'
                         }`}
                       >
-                        {scoreName(d) || toParLabel(d)}
+                        {d != null ? scoreName(d) || toParLabel(d) : '—'}
                       </span>
                     </button>
                   );
@@ -417,7 +433,9 @@ export function GolfScorecard({
                         <button
                           key={n}
                           type="button"
-                          onClick={() => onSet(hole.number, par, strokes, n)}
+                          onClick={() =>
+                            onSet(hole.number, par ?? 0, strokes, n)
+                          }
                           className={
                             on
                               ? 'min-w-[2.75rem] rounded-xl bg-brand px-3 py-2 text-[14px] font-bold text-white'
@@ -538,14 +556,17 @@ export function GolfScorecard({
               </thead>
               <tbody>
                 {holes.map((h) => {
-                  const p = h.par ?? 4;
+                  const p =
+                    typeof h.par === 'number' && Number.isFinite(h.par)
+                      ? h.par
+                      : null;
                   const idx = strokeIndex[h.number] ?? h.number;
                   const r = strokesReceived(handicap, idx, holeCount);
                   const hs = getHoleScore(round, h.number);
                   const g = hs?.strokes;
                   const n =
                     g != null ? netStrokes(g, r) : null;
-                  const d = g != null ? g - p : null;
+                  const d = g != null && p != null ? g - p : null;
                   const st = d != null ? scoreVsParStyle(d) : null;
                   const on = h.number === focusHole;
                   return (
@@ -563,7 +584,7 @@ export function GolfScorecard({
                         {h.number}
                       </td>
                       <td className="px-2 py-2.5 text-right tabular text-muted">
-                        {p}
+                        {p ?? '—'}
                       </td>
                       <td className="px-2 py-2.5 text-right tabular text-muted">
                         {h.yards}

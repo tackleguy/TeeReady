@@ -1,4 +1,4 @@
-import { scoreColor } from '../../lib/mock';
+import { scoreColor } from '../../lib/playability';
 
 export type GateRow = {
   id: string;
@@ -62,9 +62,9 @@ export function GateBoard({ rows, highlightId, compact = false }: Props) {
                     Go
                   </span>
                 ) : row.status === 'closed' ? (
-                  <span className="text-faint">—</span>
+                  <span className="text-faint">Skip</span>
                 ) : (
-                  <span className="text-faint">Wait</span>
+                  <span className="text-faint">OK</span>
                 )}
               </span>
             </li>

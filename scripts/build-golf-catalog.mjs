@@ -80,7 +80,7 @@ function parTemplate(holeCount, totalPar) {
     return [4, 4, 3, 4, 5, 4, 4, 3, 5, 4, 4, 3, 4, 5, 4, 4, 3, 5];
   }
   if (holeCount === 9 && totalPar === 36) {
-    return [4, 4, 3, 4, 5, 4, 4, 3, 4];
+    return [4, 4, 3, 4, 5, 4, 4, 3, 5];
   }
   if (holeCount === 9 && totalPar === 27) {
     return [3, 3, 3, 3, 3, 3, 3, 3, 3];
@@ -489,7 +489,7 @@ async function main() {
   console.log(`Bulk records read: ${records.length}`);
   console.log(`Catalog entries: ${catalog.length}`);
   console.log(
-    `Duplicate collapse: ${artifactCollapse.removedSameCoord} same-pin, ${artifactCollapse.removedNearby} nearby-name`,
+    `Duplicate collapse: ${artifactCollapse.removedSameCoord} same-pin, ${artifactCollapse.removedNearby} nearby-name, ${artifactCollapse.removedFarApart ?? 0} far-apart, ${artifactCollapse.removedNonUs ?? 0} non-US`,
   );
   console.log(
     `Region fix: ${regions.fixed} (${regions.us} US, ${regions.ca} CA, ${regions.mx} MX, ${regions.photon} photon)`,

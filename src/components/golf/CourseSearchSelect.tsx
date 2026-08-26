@@ -65,6 +65,7 @@ export function CourseSearchSelect({
           required={required && !value}
           value={open ? query : display}
           placeholder="Search 14,000+ courses (11,000+ verified)…"
+          aria-label="Search golf courses"
           onChange={(e) => {
             setQuery(e.target.value);
             if (value) onChange(null);
@@ -83,7 +84,7 @@ export function CourseSearchSelect({
           onBlur={() => {
             blurTimer.current = window.setTimeout(() => setOpen(false), 150);
           }}
-          className="min-w-0 flex-1 bg-transparent text-base text-ink outline-none placeholder:text-faint"
+          className="min-w-0 flex-1 bg-transparent text-base text-ink outline-none placeholder:text-faint focus-visible:ring-2 focus-visible:ring-brand"
         />
         {loading ? (
           <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted" />

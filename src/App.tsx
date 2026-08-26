@@ -60,6 +60,40 @@ const UiAuditPreview = import.meta.env.DEV
     )
   : null;
 
+class AppErrorBoundary extends Component<
+  { children: ReactNode },
+  { error: Error | null }
+> {
+  state: { error: Error | null } = { error: null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3 px-6 text-center">
+          <p className="text-[15px] font-semibold text-ink">
+            Something went wrong
+          </p>
+          <p className="max-w-md text-[13px] text-muted">
+            {this.state.error.message}
+          </p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="rounded-xl bg-brand px-4 py-2 text-[13px] font-bold text-white"
+          >
+            Reload
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 class RoundsErrorBoundary extends Component<
   { children: ReactNode },
   { error: Error | null }
@@ -226,6 +260,7 @@ function Shell() {
           }
         >
         <Suspense fallback={<RouteFallback />}>
+        <AppErrorBoundary>
         <Routes>
           <Route path="/" element={<PublicHome />} />
           {import.meta.env.DEV && UiAuditPreview ? (
@@ -344,6 +379,7 @@ function Shell() {
           />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </AppErrorBoundary>
         </Suspense>
         </main>
       </div>
@@ -357,7 +393,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Shell />
+        <AppErrorBoundary>
+          <Shell />
+        </AppErrorBoundary>
       </AuthProvider>
     </BrowserRouter>
   );

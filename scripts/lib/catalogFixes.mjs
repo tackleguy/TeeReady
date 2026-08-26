@@ -109,6 +109,38 @@ export const CATALOG_PATCH_BY_GID = {
     h: 9,
     p: 36,
   },
+  // Streamsong Resort — published 18-hole layouts (public scorecards)
+  'bf3cfb6e-ec06-4d5c-856f-35df9c045c4e': { h: 18, p: 72 }, // Red
+  'fe4adccc-d0ff-4c44-8b63-367a959e47d4': { h: 18, p: 72 }, // Blue
+  '9953ab5b-3b5f-4410-b0b4-711eeb265961': { h: 18, p: 73 }, // Black
+  // Sand Valley (main course) — 18 / par 72
+  '3c268b3e-e99b-4828-aae1-81d4bb5a8814': {
+    n: 'Sand Valley Golf Resort Sand Valley Course',
+    h: 18,
+    p: 72,
+  },
+  // TPC Sawgrass
+  'e643ab84-5a52-4bea-b692-a6c884bb536b': { h: 18, p: 72 }, // Stadium
+  '8a0c713e-0aee-40e9-a57f-ac384df48b7b': { h: 18, p: 72 }, // Dye's Valley
+  // TPC Harding Park
+  '21922834-62d3-4603-b624-b44867b60eb4': { h: 18, p: 72 },
+  '61fb03c8-74fc-4fc8-87d0-0491190e2d54': { h: 18, p: 70 }, // Fleming (par-70)
+  // Griffith Park Wilson
+  '3caa3e09-cf57-4bd2-a379-be262b2a7f49': { h: 18, p: 72 },
+  // Bethpage Yellow
+  '9b08f119-c36f-4f8e-a350-244aa9b31e89': { h: 18, p: 71 },
+  // Spyglass Hill — strip trademark junk from OpenGolf name
+  '315fb576-129c-4508-abfa-561d8fbf2904': {
+    n: 'Spyglass Hill Golf Course',
+  },
+  // Oakmont East (municipal near Oakmont CC) — 18 / 72
+  'f6cef077-3f4e-4ae7-9906-c525a0cbd72e': { h: 18, p: 72 },
+  // Seminole Golf Club (Juno Beach) — 18 / 70
+  '800da22d-defb-43b9-81da-704693ecc4a5': { h: 18, p: 70 },
+  // Winged Foot West — 18 / 72
+  'c56587f3-8e6d-4c85-b67a-49cec1ed428a': { h: 18, p: 72 },
+  // Streamsong The Chain — 19-hole / par 72 short-course loop (public)
+  'fa73f575-254e-4fbb-a8fa-3d4e8bda0be2': { h: 19, p: 72 },
 };
 
 /** When two rows share name|city|state, prefer these gids. */

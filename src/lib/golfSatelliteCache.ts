@@ -9,8 +9,12 @@ const ESRI_PATH =
   '/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 
 /** Must match public/sw.js SATELLITE_CACHE so MapLibre hits warm tiles. */
-export const SATELLITE_CACHE_NAME = 'weatherstop-v23-satellite';
-const LEGACY_CACHE_NAMES = ['teeready-satellite-v1', 'weatherstop-v22-satellite'];
+export const SATELLITE_CACHE_NAME = 'teeready-v24-satellite';
+const LEGACY_CACHE_NAMES = [
+  'teeready-satellite-v1',
+  'weatherstop-v22-satellite',
+  'weatherstop-v23-satellite',
+];
 
 const SATELLITE_WARM_TTL_MS = 30 * 24 * 60 * 60_000;
 const SATELLITE_WARM_MAX = 48;

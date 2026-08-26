@@ -97,11 +97,13 @@ const PRIORITY_NEEDLES = [
   'los verdes',
   'industry hills',
   'wilson golf',
+  'wilson at griffith',
   'hansen dam',
   'brookside golf club',
   'angeles national',
   'troon north',
   'we-ko-pa',
+  'we ko pa',
   'talking stick',
   'grayhawk',
   'pga west',
@@ -140,6 +142,62 @@ const PRIORITY_NEEDLES = [
   'bandon trails',
   'sheep ranch',
   'old macdonald',
+  // Expanded coverage — high-OSM / well-known public & championship venues
+  'east lake golf',
+  'muirfield village',
+  'inverness club',
+  'medinah',
+  'liberty national',
+  'hazeltine',
+  'oak hill country',
+  'baltusrol',
+  'firestone',
+  'bay hill',
+  'quail hollow',
+  'valhalla',
+  'scioto',
+  'prairie dunes',
+  'crystal downs',
+  'fishers island',
+  'san francisco golf club',
+  'poppy hills',
+  'oak point at kiawah',
+  'turtle point at kiawah',
+  'eisenhower',
+  'raptor at grayhawk',
+  'talon at grayhawk',
+  'cholla course at we ko pa',
+  'saguaro course at we ko pa',
+  'the olympic club',
+  'the riviera country club',
+  'the links at spanish bay',
+  'ocean north at pelican',
+  'ocean south at pelican',
+  'tpc sawgrass the players',
+  'tpc sawgrass dyes',
+  'tpc harding park harding',
+  'tpc harding park fleming',
+  'tpc scottsdale the stadium',
+  'pinehurst resort country club no 2',
+  'pinehurst resort country club no 4',
+  'pinehurst resort country club no 8',
+  'black at bethpage',
+  'red at bethpage',
+  'yellow at bethpage',
+  'spyglass hill',
+  'whistling straits',
+  'streamsong resort red',
+  'streamsong resort blue',
+  'streamsong resort black',
+  'sand valley golf resort',
+  'half moon bay golf links ocean',
+  'silverado resort',
+  'presidio golf course',
+  'sharp park golf',
+  'rancho park golf',
+  'rustic canyon',
+  'steele canyon',
+  'coronado golf course',
 ];
 
 const SKIP_ST = new Set(['AK', 'PR', 'VI', 'GU', 'AS', 'MP']);
@@ -707,12 +765,32 @@ function catalogEligible(c) {
   return true;
 }
 
+/** Catalog slugify names that already have a curated pack under another slug. */
+const SKIP_CATALOG_SLUGS = new Set([
+  'north-at-torrey-pines-municipal-golf-course', // → torrey-pines-north
+  'south-at-torrey-pines-municipal-golf-course', // → torrey-pines-south
+  'pebble-beach-golf-links', // curated
+]);
+
+function existingGreenSlugs() {
+  if (!existsSync(OUT_DIR)) return new Set();
+  return new Set(
+    readdirSync(OUT_DIR)
+      .filter((f) => f.endsWith('.json') && f !== 'manifest.json')
+      .map((f) => f.replace(/\.json$/, '')),
+  );
+}
+
 function loadFromCatalog({ limit, allCatalog, shard }) {
   if (!existsSync(CATALOG_PATH)) return [];
   const cat = JSON.parse(readFileSync(CATALOG_PATH, 'utf8'));
   /** @type {Array<{ slug: string; name: string; lat: number; lon: number; radiusM: number }>} */
   const out = [];
-  const seen = new Set(CURATED.map((c) => c.slug));
+  const seen = new Set([
+    ...CURATED.map((c) => c.slug),
+    ...existingGreenSlugs(),
+    ...SKIP_CATALOG_SLUGS,
+  ]);
   for (const c of cat) {
     if (out.length >= limit) break;
     if (!catalogEligible(c)) continue;
@@ -731,6 +809,36 @@ function loadFromCatalog({ limit, allCatalog, shard }) {
     });
   }
   return out;
+}
+
+function loadCourseFromCatalogBySlug(slug) {
+  if (!existsSync(CATALOG_PATH) || !slug) return null;
+  const cat = JSON.parse(readFileSync(CATALOG_PATH, 'utf8'));
+  /** @type {Array<{ slug: string; name: string; lat: number; lon: number; radiusM: number; h: number | null }>} */
+  const hits = [];
+  for (const c of cat) {
+    if (!catalogEligible(c)) continue;
+    if (slugify(c.n) !== slug) continue;
+    hits.push({
+      slug,
+      name: c.n,
+      lat: c.la,
+      lon: c.lo,
+      radiusM: DEFAULT_RADIUS_M,
+      h: c.h ?? null,
+    });
+  }
+  if (!hits.length) return null;
+  // Prefer full 18-hole layouts when duplicate names share a slug.
+  hits.sort((a, b) => (b.h ?? 0) - (a.h ?? 0));
+  const best = hits[0];
+  return {
+    slug: best.slug,
+    name: best.name,
+    lat: best.lat,
+    lon: best.lon,
+    radiusM: best.radiusM,
+  };
 }
 
 function loadPriorityFromCatalog(limit, shard = null) {
@@ -948,9 +1056,9 @@ if (flags.has('complete-incomplete')) {
   }
 } else if (only.length) {
   const fromCurated = CURATED.filter((c) => only.includes(c.slug));
-  const fromCatalog = loadPriorityFromCatalog(500, shard).filter((c) =>
-    only.includes(c.slug),
-  );
+  const fromCatalog = only
+    .map((slug) => loadCourseFromCatalogBySlug(slug))
+    .filter(Boolean);
   const fromDisk = only
     .map((slug) => loadCourseFromDisk(slug))
     .filter(Boolean);

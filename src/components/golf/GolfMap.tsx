@@ -1,7 +1,7 @@
 // Satellite hole view: hole paths, drawn wind streamlines, and the predicted
 // wind-bent shot path for the selected hole.
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { GOLF_SATELLITE_STYLE, type GolfHole } from '../../lib/golf';
@@ -28,6 +28,7 @@ import { accuracyCircleGeoJSON } from '../../lib/gps';
 import {
   greenMeshSlug,
   loadGreenMeshCourse,
+  resolveGreenMeshSlug,
   type GreenMeshCourse,
 } from '../../lib/golfGreen3d';
 import { attachGreen3DLayer } from './GolfGreen3DLayer';
@@ -560,8 +561,20 @@ export function GolfMap({
     activeHole,
     enabled: greens3d,
   };
-  const green3dSlug = greenMeshSlug(courseName);
+  const [green3dSlug, setGreen3dSlug] = useState<string | null>(() =>
+    greenMeshSlug(courseName),
+  );
   const canGreens3d = green3dSlug != null;
+
+  useEffect(() => {
+    let cancelled = false;
+    resolveGreenMeshSlug(courseName, lat, lon).then((slug) => {
+      if (!cancelled) setGreen3dSlug(slug);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [courseName, lat, lon]);
 
   // Layers only exist after `load`, so defer any data/camera work until then.
   const whenReady = useCallback((fn: () => void) => {

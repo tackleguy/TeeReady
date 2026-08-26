@@ -8,11 +8,11 @@
 // This is intentionally simple — no Workbox dependency, no precache
 // manifest. Vite's hashed asset filenames give us cache-busting for free.
 
-const VERSION = 'weatherstop-v23';
+const VERSION = 'teeready-v24';
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 const SATELLITE_CACHE = `${VERSION}-satellite`;
-const APP_SHELL = ['/manifest.webmanifest', '/icon.svg', '/golf/catalog.us.json'];
+const APP_SHELL = ['/manifest.webmanifest', '/icon.svg'];
 
 // How long a cached /api response may be served before we wait for the
 // network instead. Previously there was no age check at all, so a cached
@@ -144,7 +144,12 @@ async function cacheFirstSatellite(request) {
   try {
     const fresh = await fetch(request);
     if (fresh && (fresh.ok || fresh.type === 'opaque')) {
-      cache.put(request, fresh.clone());
+      await cache.put(request, fresh.clone());
+      // Bound satellite cache growth (ArcGIS tiles are large).
+      const keys = await cache.keys();
+      if (keys.length > 400) {
+        await Promise.all(keys.slice(0, keys.length - 300).map((k) => cache.delete(k)));
+      }
     }
     return fresh;
   } catch (err) {

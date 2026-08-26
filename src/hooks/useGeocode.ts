@@ -23,9 +23,11 @@ const DEBOUNCE_MS = 350;
 export function useGeocode(query: string): {
   results: GeocodeResult[];
   loading: boolean;
+  error: string | null;
 } {
   const [results, setResults] = useState<GeocodeResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const ctrlRef = useRef<AbortController | null>(null);
   const timer = useRef<number | undefined>(undefined);
 
@@ -35,9 +37,11 @@ export function useGeocode(query: string): {
     if (!query.trim()) {
       setResults([]);
       setLoading(false);
+      setError(null);
       return;
     }
     setLoading(true);
+    setError(null);
     timer.current = window.setTimeout(() => {
       const ctrl = new AbortController();
       ctrlRef.current = ctrl;
@@ -45,8 +49,21 @@ export function useGeocode(query: string): {
         signal: ctrl.signal,
         headers: { Accept: 'application/json' },
       })
-        .then((r) => r.json())
-        .then((rows: NominatimItem[]) => {
+        .then(async (r) => {
+          const body = await r.json();
+          if (!r.ok) {
+            const msg =
+              body && typeof body === 'object' && 'error' in body
+                ? String((body as { error: unknown }).error)
+                : `Search failed (${r.status})`;
+            throw new Error(msg);
+          }
+          if (!Array.isArray(body)) {
+            throw new Error('Unexpected geocode response');
+          }
+          return body as NominatimItem[];
+        })
+        .then((rows) => {
           if (ctrl.signal.aborted) return;
           setResults(
             rows.map((r) => ({
@@ -63,13 +80,19 @@ export function useGeocode(query: string): {
                 : undefined,
             })),
           );
+          setError(null);
           setLoading(false);
         })
         .catch((err) => {
-          if ((err as Error).name !== 'AbortError') setLoading(false);
+          if ((err as Error).name === 'AbortError') return;
+          setResults([]);
+          setError(
+            err instanceof Error ? err.message : 'Location search failed',
+          );
+          setLoading(false);
         });
     }, DEBOUNCE_MS);
   }, [query]);
 
-  return { results, loading };
+  return { results, loading, error };
 }

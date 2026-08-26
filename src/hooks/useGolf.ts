@@ -48,7 +48,7 @@ export function useGolfCourses(
             setCourses(next);
             // Warm hole-map backups for nearby courses while OSM is healthy.
             if (!nationalQuery && next.length) {
-              warmNearbyCourseMaps(next, 12);
+              warmNearbyCourseMaps(next, 4);
             }
           })
           .catch((err) => {

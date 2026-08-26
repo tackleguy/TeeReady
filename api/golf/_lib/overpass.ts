@@ -10,6 +10,8 @@
 //   OVERPASS_URLS=http://127.0.0.1:12345/api/interpreter,http://127.0.0.1:8080/api/interpreter
 //   OVERPASS_PREFER_LOCAL=1  → try local endpoints before public mirrors
 
+import { weatherUserAgent } from '../../_lib/weather';
+
 // Planet-wide instances only. Regional extracts (overpass.osm.ch,
 // overpass.osm.jp) answer 200 with zero elements outside their country, which
 // looks exactly like "no golf here" — never add them.
@@ -44,6 +46,9 @@ function localOverpassUrls(): string[] {
   return out;
 }
 
+/** Rotate the starting public mirror so load spreads across instances. */
+let cursor = 0;
+
 function buildMirrorOrder(): string[] {
   const local = localOverpassUrls();
   const preferLocal =
@@ -60,12 +65,7 @@ function buildMirrorOrder(): string[] {
     : [...rotatedPublic, ...local];
 }
 
-export const UA =
-  process.env.NWS_USER_AGENT ||
-  'weather-stop/1.0 (golf; contact@example.com)';
-
-/** Rotate the starting public mirror so load spreads across instances. */
-let cursor = 0;
+export const UA = weatherUserAgent();
 
 interface OverpassOpts {
   /** Overall deadline for the whole hedged attempt. */
@@ -117,7 +117,7 @@ export async function overpass(
   const start = Date.now();
   const attempts: Array<Promise<unknown>> = [];
   const errors: string[] = [];
-  const order = buildMirrorOrder();
+  const order = buildMirrorOrder().slice(0, 3);
 
   try {
     for (let i = 0; i < order.length; i += 1) {

@@ -111,6 +111,10 @@ export function StatsView() {
         <p className="mt-1 text-[14px] text-muted">
           Fairways, greens, short game, and penalties across finished rounds.
         </p>
+        <p className="mt-2 text-[13px] text-muted">
+          Rounds and swing history stay on this device until you clear site
+          data.
+        </p>
       </div>
 
       {rounds.length === 0 ? (

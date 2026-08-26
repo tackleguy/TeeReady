@@ -98,6 +98,10 @@ export function SettingsView() {
             Account, appearance, and device data. Golfer info and stats live on
             their own pages.
           </p>
+          <p className="mt-2 text-[13px] text-muted">
+            Rounds and swing history stay on this device until you clear site
+            data.
+          </p>
         </div>
         {savedFlash ? (
           <span className="shrink-0 rounded-full bg-brand-soft px-3 py-1.5 text-[12px] font-semibold text-brand">

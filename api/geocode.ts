@@ -1,6 +1,8 @@
 // Worldwide city geocoder for map and Golf location search.
 // Photon (primary) + Nominatim (fallback). Open-Meteo geocoding removed.
 
+import { rateLimit, RATE } from '../_lib/rateLimit';
+
 export const config = { runtime: 'edge' };
 
 interface GeocodeRow {
@@ -161,6 +163,9 @@ async function nominatim(q: string, limit: number): Promise<GeocodeRow[]> {
 }
 
 export default async function handler(req: Request): Promise<Response> {
+  const limited = rateLimit(req, RATE.geocode);
+  if (limited) return limited;
+
   const { searchParams } = new URL(req.url);
   const q = searchParams.get('q')?.trim();
   const limit = Math.min(

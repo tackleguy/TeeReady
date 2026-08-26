@@ -160,12 +160,12 @@ export const openMeteoProvider: WeatherProvider = {
     const last48 = Math.min(48, Math.max(precip.length, et0.length));
     const slice = <T,>(arr: T[], n: number) =>
       arr.slice(Math.max(0, arr.length - n));
-    const sum = (arr: Array<number | null>) =>
-      arr.reduce(
+    const sum = (arr: Array<number | null | undefined>): number =>
+      arr.reduce<number>(
         (s, n) => s + (typeof n === 'number' && Number.isFinite(n) ? n : 0),
         0,
       );
-    const lastNum = (arr: Array<number | null>) => {
+    const lastNum = (arr: Array<number | null | undefined>): number | null => {
       for (let i = arr.length - 1; i >= 0; i -= 1) {
         const v = arr[i];
         if (typeof v === 'number' && Number.isFinite(v)) return v;

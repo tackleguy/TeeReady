@@ -89,6 +89,7 @@ export function CourseSearchMultiSelect({
                 ? `${max} courses selected`
                 : 'Search and add courses…'
             }
+            aria-label="Search and add golf courses"
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => {
               if (atMax) return;
@@ -101,7 +102,7 @@ export function CourseSearchMultiSelect({
             onBlur={() => {
               blurTimer.current = window.setTimeout(() => setOpen(false), 150);
             }}
-            className="min-w-0 flex-1 bg-transparent text-base text-ink outline-none placeholder:text-faint disabled:cursor-not-allowed"
+            className="min-w-0 flex-1 bg-transparent text-base text-ink outline-none placeholder:text-faint focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed"
           />
           {loading ? (
             <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted" />

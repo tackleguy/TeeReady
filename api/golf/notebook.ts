@@ -21,6 +21,7 @@ import {
   type HoleIn,
   type PlayerIn,
 } from './_lib/playsLike';
+import { MAX_POST_HOLES, rateLimit, RATE } from '../_lib/rateLimit';
 
 export const config = { runtime: 'edge' };
 
@@ -163,6 +164,9 @@ export default async function handler(req: Request): Promise<Response> {
     return new Response('method not allowed', { status: 405 });
   }
 
+  const limited = rateLimit(req, RATE.notebook);
+  if (limited) return limited;
+
   let lat: number;
   let lon: number;
   let holes: HoleIn[] = [];
@@ -189,6 +193,18 @@ export default async function handler(req: Request): Promise<Response> {
     lat = Number(body.lat);
     lon = Number(body.lon);
     holes = Array.isArray(body.holes) ? body.holes : [];
+    if (holes.length > MAX_POST_HOLES) {
+      return new Response(
+        JSON.stringify({
+          error: `holes capped at ${MAX_POST_HOLES}`,
+          max: MAX_POST_HOLES,
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+        },
+      );
+    }
     if (
       body.player &&
       Number.isFinite(body.player.handicap) &&

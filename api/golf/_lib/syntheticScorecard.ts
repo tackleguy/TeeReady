@@ -46,7 +46,8 @@ export function parTemplate(holeCount: number, totalPar: number): number[] {
     return [4, 4, 3, 4, 5, 4, 4, 3, 5, 4, 4, 3, 4, 5, 4, 4, 3, 5];
   }
   if (holeCount === 9 && totalPar === 36) {
-    return [4, 4, 3, 4, 5, 4, 4, 3, 4];
+    // Sum must equal 36 (prior template summed to 35 and failed A3).
+    return [4, 4, 3, 4, 5, 4, 4, 3, 5];
   }
   if (holeCount === 9 && totalPar === 27) {
     return [3, 3, 3, 3, 3, 3, 3, 3, 3];

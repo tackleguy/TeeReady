@@ -169,6 +169,8 @@ export function AuthForm({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? 'auth-form-error' : undefined}
             className={inputClassName()}
           />
         </label>
@@ -181,6 +183,8 @@ export function AuthForm({
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? 'auth-form-error' : undefined}
             className={inputClassName()}
           />
         </label>
