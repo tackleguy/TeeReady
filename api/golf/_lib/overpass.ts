@@ -10,7 +10,7 @@
 //   OVERPASS_URLS=http://127.0.0.1:12345/api/interpreter,http://127.0.0.1:8080/api/interpreter
 //   OVERPASS_PREFER_LOCAL=1  → try local endpoints before public mirrors
 
-import { weatherUserAgent } from '../../_lib/weather';
+import { weatherUserAgent } from '../../_lib/weather/types';
 
 // Planet-wide instances only. Regional extracts (overpass.osm.ch,
 // overpass.osm.jp) answer 200 with zero elements outside their country, which
