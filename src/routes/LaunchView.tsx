@@ -12,6 +12,7 @@ import {
   Video,
 } from 'lucide-react';
 import { TracerOverlay } from '../components/launch/TracerOverlay';
+import { FeatureGuide } from '../components/tutorial/FeatureGuide';
 import {
   analyzeLaunchVideo,
   angleLabel,
@@ -30,6 +31,8 @@ import {
   type LaunchReject,
 } from '../lib/launch';
 import { addShotToActiveSession, getActiveSession } from '../lib/range';
+import { LAUNCH_HOWTO_STEPS } from '../lib/range/howto';
+import { LAUNCH_GUIDE_KEY } from '../lib/featureGuide';
 
 type Step = 'setup' | 'record' | 'preview' | 'analyzing' | 'results' | 'rejected';
 
@@ -273,8 +276,15 @@ export function LaunchView() {
         </p>
       </header>
 
+      <FeatureGuide
+        storageKey={LAUNCH_GUIDE_KEY}
+        title="Launch monitor"
+        steps={LAUNCH_HOWTO_STEPS}
+        className="mt-5"
+      />
+
       {error ? (
-        <div className="mb-4 rounded-card border border-bad/30 bg-[color-mix(in_srgb,var(--bad)_10%,transparent)] px-4 py-3 text-[13px] text-ink">
+        <div className="mt-5 rounded-card border border-bad/30 bg-[color-mix(in_srgb,var(--bad)_10%,transparent)] px-4 py-3 text-[13px] text-ink">
           {error}
         </div>
       ) : null}

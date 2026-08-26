@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AlertTriangle, Flag, Plus, Target, Upload, X } from 'lucide-react';
 import { RangeDispersionCanvas } from '../components/range/RangeDispersionCanvas';
+import { FeatureGuide } from '../components/tutorial/FeatureGuide';
 import { formatDirection } from '../lib/launch';
 import { loadLaunchHistory } from '../lib/launch';
 import {
@@ -17,6 +18,8 @@ import {
   type RangeLanding,
   type RangeSession,
 } from '../lib/range';
+import { RANGE_HOWTO_STEPS } from '../lib/range/howto';
+import { RANGE_GUIDE_KEY } from '../lib/featureGuide';
 
 const CLUBS = ['driver', '3-wood', '5-wood', 'hybrid', '4-iron', '7-iron', 'wedge'] as const;
 
@@ -95,7 +98,14 @@ export function RangeView() {
         </p>
       </header>
 
-      <div className="rounded-card border border-amber-500/40 bg-[color-mix(in_srgb,#f59e0b_8%,transparent)] px-4 py-3">
+      <FeatureGuide
+        storageKey={RANGE_GUIDE_KEY}
+        title="Driving range"
+        steps={RANGE_HOWTO_STEPS}
+        className="mt-5"
+      />
+
+      <div className="mt-5 rounded-card border border-amber-500/40 bg-[color-mix(in_srgb,#f59e0b_8%,transparent)] px-4 py-3">
         <div className="flex gap-2">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" aria-hidden="true" />
           <p className="text-[12px] text-ink">
