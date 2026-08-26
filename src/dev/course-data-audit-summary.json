@@ -1,0 +1,42 @@
+{
+  "generatedAt": "2026-08-26T16:41:41.689Z",
+  "catalogEntries": 14253,
+  "publicEntries": 14253,
+  "verifiedEntries": 12770,
+  "findings": 4977,
+  "errors": 1783,
+  "warns": 1441,
+  "infos": 1753,
+  "baseline": {
+    "missingBothHp": 0,
+    "missingEitherHp": 1483,
+    "exactDupGroups": 695,
+    "exactDupExtras": 1064,
+    "sharedCoordClusters": 480,
+    "sharedCoordCourses": 1144,
+    "worstCluster": 5,
+    "badPar18Band": 362
+  },
+  "courseTypes": {
+    "regulation": 11360,
+    "unknown": 1484,
+    "par3": 729,
+    "executive": 680
+  },
+  "byCheck": {
+    "A2-mangled-name": 118,
+    "A3-missing-holes-or-par": 1483,
+    "A1-outside-us": 28,
+    "A1-region-string-mismatch": 28,
+    "A4-curated-par-yardage": 740,
+    "A2-exact-duplicate-name": 695,
+    "A1-same-name-far-apart": 1727,
+    "A1-coord-cluster": 158
+  },
+  "geometry": {
+    "greenPacks": 148,
+    "greensChecked": 2619,
+    "greensFarFromCentroid": 0,
+    "teeGreenVsCard": "skipped-no-local-tee-geometry"
+  }
+}
