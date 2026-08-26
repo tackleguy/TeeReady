@@ -621,7 +621,7 @@ nwr["leisure"="golf_course"](around:${radiusM},${lat},${lon});
 out center tags bb;
 `.trim();
 
-  const raw = (await overpass(query, { timeoutMs: 16_000 })) as {
+  const raw = (await overpass(query, { timeoutMs: 3_500, hedgeMs: 900 })) as {
     elements?: Array<
       OsmElement & {
         bounds?: {
@@ -672,8 +672,8 @@ async function mapCourses(
 ): Promise<GolfCourseSummary[]> {
   const box = padBbox(bboxFromLatLon(lat, lon, Math.min(radiusM, 3500)), 0.15);
   const elements = await fetchOsmMapElements(box, {
-    timeoutMs: 7_000,
-    attempts: 2,
+    timeoutMs: 2_500,
+    attempts: 1,
   });
   if (!elements) return [];
 
@@ -853,12 +853,13 @@ export default async function handler(req: Request): Promise<Response> {
     );
 
   if (q.length >= 2) {
-    const catalogAc = new AbortController();
-    const catalogStop = setTimeout(() => catalogAc.abort(), 8_000);
-    try {
-      let courses = staticCatalog(q, rawLat, rawLon, limit);
-      let source: 'catalog' | 'photon' | 'nominatim' | 'opengolf' = 'catalog';
-      if (!courses.length) {
+    // Name search: static catalog is instant. Never block on Overpass.
+    let courses = staticCatalog(q, rawLat, rawLon, limit);
+    let source: 'catalog' | 'photon' | 'nominatim' | 'opengolf' = 'catalog';
+    if (!courses.length) {
+      const catalogAc = new AbortController();
+      const catalogStop = setTimeout(() => catalogAc.abort(), 2_500);
+      try {
         courses = await photonCatalog(
           q,
           rawLat,
@@ -867,99 +868,93 @@ export default async function handler(req: Request): Promise<Response> {
           catalogAc.signal,
         );
         source = 'photon';
-      }
-      if (!courses.length) {
-        const backupAc = new AbortController();
-        const backupStop = setTimeout(() => backupAc.abort(), 8_000);
-        try {
+        if (!courses.length) {
           courses = await nominatimCatalog(
             q,
             rawLat,
             rawLon,
             limit,
-            backupAc.signal,
+            catalogAc.signal,
           );
           source = 'nominatim';
-          if (!courses.length) {
-            courses = await opengolfCatalog(
-              q,
-              rawLat,
-              rawLon,
-              limit,
-              backupAc.signal,
-            );
-            source = 'opengolf';
-          }
-        } finally {
-          clearTimeout(backupStop);
         }
-      }
-      const seed = courses[0];
-      if (seed) {
-        try {
-          const osm = await overpassCourses(
-            seed.lat,
-            seed.lon,
+        if (!courses.length) {
+          courses = await opengolfCatalog(
+            q,
             rawLat,
             rawLon,
-            8_000,
+            limit,
+            catalogAc.signal,
           );
-          courses = expandWithOsmSiblings(courses, osm, 3);
-        } catch {
-          // Name search still works without sibling polygons.
+          source = 'opengolf';
         }
+      } catch {
+        courses = [];
+      } finally {
+        clearTimeout(catalogStop);
       }
-      return finish(courses, source, { preserveOrder: true });
-    } catch {
-      return finish([], 'photon', { preserveOrder: true });
-    } finally {
-      clearTimeout(catalogStop);
     }
+    return finish(courses, source, { preserveOrder: true });
   }
 
-  const photonAc = new AbortController();
-  const photonStop = setTimeout(() => photonAc.abort(), 6_000);
-  const [photonSettled, osmSettled, mapSettled] = await Promise.allSettled([
-    photonCourses(rawLat, rawLon, radiusM, limit, photonAc.signal),
-    overpassCourses(
-      lat,
-      lon,
+  // Nearby: catalog is the fast path (14k US courses). Live OSM is optional
+  // enrichment with a hard budget — never wait 16s+ on Overpass for a list.
+  const staticNearby = nearbyUsCatalog(rawLat, rawLon, radiusM, limit);
+
+  // Instant path when the bundled catalog already covers the area.
+  if (staticNearby.length >= 8) {
+    return finish(staticNearby, 'catalog');
+  }
+
+  const enrichMs = 2_800;
+  const enrichAc = new AbortController();
+  const enrichStop = setTimeout(() => enrichAc.abort(), enrichMs);
+  const deadline = new Promise<GolfCourseSummary[]>((resolve) => {
+    setTimeout(() => resolve([]), enrichMs);
+  });
+  try {
+    const photonP = photonCourses(
       rawLat,
       rawLon,
-      Math.min(radiusM, 20_000),
-    ),
-    mapCourses(
+      radiusM,
+      limit,
+      enrichAc.signal,
+    ).catch(() => [] as GolfCourseSummary[]);
+    const mapP = mapCourses(
       lat,
       lon,
       rawLat,
       rawLon,
       Math.min(radiusM, 4_000),
-    ),
-  ]);
-  clearTimeout(photonStop);
+    ).catch(() => [] as GolfCourseSummary[]);
+    const overpassP = overpassCourses(
+      lat,
+      lon,
+      rawLat,
+      rawLon,
+      Math.min(radiusM, 12_000),
+    ).catch(() => [] as GolfCourseSummary[]);
 
-  const photon =
-    photonSettled.status === 'fulfilled' ? photonSettled.value : [];
-  const osm = osmSettled.status === 'fulfilled' ? osmSettled.value : [];
-  const local = mapSettled.status === 'fulfilled' ? mapSettled.value : [];
-
-  const staticNearby = nearbyUsCatalog(rawLat, rawLon, radiusM, limit);
-  if (photon.length) {
-    return finish(
-      expandWithOsmSiblings(
-        mergeCourses(photon, staticNearby),
-        mergeCourses(osm, local),
-      ),
-      staticNearby.length && !photon.length ? 'catalog' : 'photon',
+    const [photon, map, osm] = await Promise.all([
+      Promise.race([photonP, deadline]),
+      Promise.race([mapP, deadline]),
+      Promise.race([overpassP, deadline]),
+    ]);
+    const merged = expandWithOsmSiblings(
+      mergeCourses(staticNearby.length ? staticNearby : photon, photon),
+      mergeCourses(osm, map),
     );
+    const source = staticNearby.length
+      ? 'catalog'
+      : photon.length
+        ? 'photon'
+        : osm.length
+          ? 'overpass'
+          : map.length
+            ? 'osm-map'
+            : 'catalog';
+    return finish(merged.length ? merged : staticNearby, source);
+  } finally {
+    clearTimeout(enrichStop);
   }
-  if (staticNearby.length) {
-    return finish(expandWithOsmSiblings(staticNearby, mergeCourses(osm, local)), 'catalog');
-  }
-  if (osm.length) return finish(osm, 'overpass');
-  if (local.length) return finish(local, 'osm-map');
-
-  // Never 502 for an empty discovery result — the UI treats that as a hard
-  // failure and hides the course list even when name search would work.
-  return finish([], 'photon');
 }

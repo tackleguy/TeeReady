@@ -29,7 +29,7 @@ async function fetchOne(lat: number, lon: number): Promise<number | null> {
       `https://epqs.nationalmap.gov/v1/json?x=${encodeURIComponent(String(lon))}` +
       `&y=${encodeURIComponent(String(lat))}&wkid=4326&units=Meters`;
     const ac = new AbortController();
-    const timer = setTimeout(() => ac.abort(), 4_000);
+    const timer = setTimeout(() => ac.abort(), 1_500);
     try {
       const res = await fetch(url, { signal: ac.signal });
       if (!res.ok) {

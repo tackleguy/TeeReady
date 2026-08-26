@@ -88,7 +88,14 @@ async function addElevations(holes: GolfHole[]): Promise<GolfHole[]> {
     points.push(hole.green);
   });
   try {
-    const elevations = await elevationMeters(points, 4);
+    // Never block map open on USGS — return bare geometry if elevation is slow.
+    const elevations = await Promise.race([
+      elevationMeters(points, 8),
+      new Promise<null>((resolve) => {
+        setTimeout(() => resolve(null), 1_200);
+      }),
+    ]);
+    if (!elevations) return holes;
     return holes.map((hole, index) => {
       const tee = elevations[index * 2];
       const green = elevations[index * 2 + 1];
@@ -1114,7 +1121,7 @@ function holesFromTeeGreen(
 
 async function queryGolfBundle(scope: string): Promise<OsmElement[]> {
   const query = `
-[out:json][timeout:18];
+[out:json][timeout:8];
 way["golf"="hole"](${scope});
 out geom;
 (
@@ -1127,8 +1134,8 @@ way["leisure"="golf_course"](${scope});
 out geom;
 `.trim();
   const raw = (await overpass(query, {
-    timeoutMs: 10_000,
-    hedgeMs: 1_400,
+    timeoutMs: 4_000,
+    hedgeMs: 900,
   })) as { elements?: OsmElement[] };
   return raw.elements ?? [];
 }
@@ -1169,8 +1176,8 @@ async function holesFromOsmMap(
   if (!bbox) return null;
 
   const elements = await fetchOsmMapElements(bbox, {
-    timeoutMs: 8_000,
-    attempts: 2,
+    timeoutMs: 3_000,
+    attempts: 1,
   });
   if (!elements) return null;
 
@@ -1322,6 +1329,8 @@ export default async function handler(req: Request): Promise<Response> {
 
   let lastError: string | null = null;
   let best: { holes: GolfHole[]; scope: string } = { holes: [], scope: 'none' };
+  const startedAt = Date.now();
+  const HARD_BUDGET_MS = 5_500;
 
   // Prefer OSM's main map API for a course bbox. Public Overpass mirrors are
   // often busy; map.json is local-to-the-bbox and keeps Golf working offline
@@ -1365,14 +1374,32 @@ export default async function handler(req: Request): Promise<Response> {
     );
   }
 
+  // Prefer returning a partial map hit over waiting on Overpass.
+  if (best.holes.length >= 7 && Date.now() - startedAt > 2_000) {
+    const holesWithElevation = await addElevations(best.holes);
+    HOLE_MEM.set(cacheKey, { at: Date.now(), holes: holesWithElevation });
+    return jsonResponse(
+      {
+        holes: holesWithElevation,
+        count: holesWithElevation.length,
+        scope: best.scope,
+        provenance: holesWithElevation[0]?.provenance ?? 'geometric',
+        attribution: '© OpenStreetMap contributors (ODbL)',
+      },
+      3600,
+      604_800,
+    );
+  }
+
   for (const scope of scopes) {
+    if (Date.now() - startedAt > HARD_BUDGET_MS) break;
     if (fetchLooksComplete(best.holes)) break;
     try {
       let holes: GolfHole[];
       if (scope.queryScope.startsWith('area:')) {
         const [, type, id] = scope.queryScope.split(':');
         const areaQuery = `
-[out:json][timeout:18];
+[out:json][timeout:8];
 ${type === 'way' ? 'way' : 'rel'}(id:${id});
 map_to_area->.course;
 way["golf"="hole"](area.course);
@@ -1387,8 +1414,8 @@ way["leisure"="golf_course"](area.course);
 out geom;
 `.trim();
         const bundle = (await overpass(areaQuery, {
-          timeoutMs: 10_000,
-          hedgeMs: 1_400,
+          timeoutMs: 4_000,
+          hedgeMs: 900,
         })) as { elements?: OsmElement[] };
         const els = bundle.elements ?? [];
         holes = finalizeHoles(
@@ -1409,13 +1436,18 @@ out geom;
         best = { holes, scope: scope.name };
       }
       if (fetchLooksComplete(holes)) break;
+      // Good enough to paint — don't burn the rest of the budget.
+      if (holes.length >= 9) break;
     } catch (err) {
       lastError = err instanceof Error ? err.message : 'overpass failed';
     }
   }
 
   // Overpass busy / empty → one more direct OSM map attempt with a wider box.
-  if (!fetchLooksComplete(best.holes)) {
+  if (
+    !fetchLooksComplete(best.holes) &&
+    Date.now() - startedAt < HARD_BUDGET_MS
+  ) {
     const wider = padBbox(mapBbox, 0.5);
     if (bboxArea(wider) <= 0.1) {
       await tryMap(wider, 'osm-map-retry');

@@ -458,20 +458,33 @@ export async function fetchGolfCourses(
   const params = new URLSearchParams({
     lat: String(lat),
     lon: String(lon),
-    v: '5',
+    v: '6',
   });
   if (q) params.set('q', q);
   if (opts?.radius) params.set('radius', String(opts.radius));
+
+  // Hard client deadline — never spin 30–60s on a stuck Edge/Overpass path.
+  const deadlineAc = new AbortController();
+  const deadlineTimer = window.setTimeout(() => deadlineAc.abort(), 4_000);
+  const onParentAbort = () => deadlineAc.abort();
+  if (opts?.signal) {
+    if (opts.signal.aborted) deadlineAc.abort();
+    else opts.signal.addEventListener('abort', onParentAbort, { once: true });
+  }
+
   let res: Response;
   try {
     res = await fetchWithRetry(
       `/api/golf/courses?${params}`,
-      opts?.signal,
-      2,
+      deadlineAc.signal,
+      1,
     );
   } catch {
     const stale = localGetAllowStale<GolfCourseSummary[]>(key);
     return stale?.length ? cleanCourseList(stale) : [];
+  } finally {
+    window.clearTimeout(deadlineTimer);
+    opts?.signal?.removeEventListener('abort', onParentAbort);
   }
   if (!res.ok) {
     if (res.status >= 500 || res.status === 429) {
@@ -594,7 +607,7 @@ export async function loadGolfHoles(
   const params = new URLSearchParams({
     lat: String(lat),
     lon: String(lon),
-    v: '10',
+    v: '11',
   });
   if (opts?.radius) params.set('radius', String(opts.radius));
   params.set('bbox', bbox.map((n) => q4(n)).join(','));
@@ -607,33 +620,31 @@ export async function loadGolfHoles(
   // When a backup exists, soft-refresh OSM with a short deadline so the map
   // never waits on a slow/overloaded Overpass mirror.
   const softRefresh = Boolean(backup?.length);
-  const radii = softRefresh
-    ? [opts?.radius ?? 1800]
-    : opts?.bbox
-      ? [opts.radius ?? 1800]
-      : [opts?.radius ?? 1800, 2800];
-  const attempts = softRefresh ? 1 : 2;
+  const radii = [opts?.radius ?? 1800];
+  const attempts = 1;
+  // First open without backup: still cap wait so UI isn't stuck 30–60s.
+  const hardDeadlineMs = softRefresh ? HOLES_SOFT_REFRESH_MS : 6_500;
 
   let lastErr: unknown = null;
   for (const radius of radii) {
     if (opts?.signal?.aborted) throw new DOMException('aborted', 'AbortError');
     params.set('radius', String(radius));
 
-    const softAc = softRefresh ? new AbortController() : null;
-    const softTimer = softAc
-      ? window.setTimeout(() => softAc.abort(), HOLES_SOFT_REFRESH_MS)
-      : 0;
-    const onParentAbort = () => softAc?.abort();
-    if (softAc && opts?.signal) {
-      if (opts.signal.aborted) softAc.abort();
+    const deadlineAc = new AbortController();
+    const deadlineTimer = window.setTimeout(
+      () => deadlineAc.abort(),
+      hardDeadlineMs,
+    );
+    const onParentAbort = () => deadlineAc.abort();
+    if (opts?.signal) {
+      if (opts.signal.aborted) deadlineAc.abort();
       else opts.signal.addEventListener('abort', onParentAbort, { once: true });
     }
-    const signal = softAc?.signal ?? opts?.signal;
 
     try {
       const res = await fetchWithRetry(
         `/api/golf/holes?${params}`,
-        signal,
+        deadlineAc.signal,
         attempts,
       );
       if (!res.ok) {
@@ -641,7 +652,7 @@ export async function loadGolfHoles(
           error?: string;
         } | null;
         lastErr = new Error(detail?.error ?? `holes ${res.status}`);
-        if (softRefresh && backup) break;
+        if (backup?.length) break;
         continue;
       }
       const data = (await res.json()) as { holes: GolfHole[] };
@@ -659,10 +670,9 @@ export async function loadGolfHoles(
     } catch (err) {
       if (opts?.signal?.aborted) throw err;
       lastErr = err;
-      if (softRefresh && backup) break;
-      await new Promise((r) => setTimeout(r, 700));
+      if (backup?.length) break;
     } finally {
-      if (softTimer) window.clearTimeout(softTimer);
+      window.clearTimeout(deadlineTimer);
       opts?.signal?.removeEventListener('abort', onParentAbort);
     }
   }
