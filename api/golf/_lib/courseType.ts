@@ -2,8 +2,13 @@
 
 export type CourseType = 'regulation' | 'executive' | 'par3' | 'unknown';
 
+/** TeeReady only supports standard 9- and 18-hole layouts. */
+export function isStandardHoleCount(holes?: number | null): boolean {
+  return holes === 9 || holes === 18;
+}
+
 export function classifyCourseType(holes?: number, par?: number): CourseType {
-  if (holes !== 9 && holes !== 18) return 'unknown';
+  if (!isStandardHoleCount(holes)) return 'unknown';
   if (par == null) return 'unknown';
 
   if (holes === 18) {

@@ -233,7 +233,9 @@ export function CoursesView() {
 
   const filteredNearby = useMemo(() => {
     const q = query.trim().toLowerCase();
-    let list = courses;
+    let list = courses.filter(
+      (c) => c.holes == null || c.holes === 9 || c.holes === 18,
+    );
     if (filter === '3d') {
       list = list.filter(courseHas3d);
     } else if (filter === 'mine') {
@@ -249,11 +251,13 @@ export function CoursesView() {
 
   const filteredGreen3d = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const list = [...green3dCourses].sort((a, b) => {
-      const da = haversineMi(loc.lat, loc.lon, a.lat, a.lon);
-      const db = haversineMi(loc.lat, loc.lon, b.lat, b.lon);
-      return da - db;
-    });
+    const list = [...green3dCourses]
+      .filter((c) => c.holes === 9 || c.holes === 18)
+      .sort((a, b) => {
+        const da = haversineMi(loc.lat, loc.lon, a.lat, a.lon);
+        const db = haversineMi(loc.lat, loc.lon, b.lat, b.lon);
+        return da - db;
+      });
     if (!q) return list;
     return list.filter((c) => c.name.toLowerCase().includes(q));
   }, [green3dCourses, query, loc.lat, loc.lon]);

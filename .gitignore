@@ -23,6 +23,9 @@ scripts/.cache
 tmp/
 reports/
 
+# Local golf data backups (tar + unpacked)
+backups/
+
 # Env / logs
 .env
 .env.*

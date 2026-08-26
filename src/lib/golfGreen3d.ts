@@ -243,6 +243,22 @@ export function loadGreenMeshCourse(slug: string): Promise<GreenMeshCourse | nul
   return pending;
 }
 
+/** Resolve + fetch a green pack so 3D toggle / map open is instant. */
+export async function resolveAndWarmGreenMesh(
+  courseName: string | undefined | null,
+  lat?: number | null,
+  lon?: number | null,
+): Promise<void> {
+  const slug = await resolveGreenMeshSlug(courseName, lat, lon);
+  if (!slug) return;
+  await loadGreenMeshCourse(slug);
+}
+
+/** Kick manifest fetch early (Courses map, prep, GPS). */
+export function prefetchGreenMeshManifest(): void {
+  void loadGreenMeshManifest();
+}
+
 function mPerDegree(lat: number) {
   const latRad = (lat * Math.PI) / 180;
   return { mLat: 111_320, mLon: Math.max(1e-6, 111_320 * Math.cos(latRad)) };

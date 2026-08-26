@@ -5,6 +5,7 @@ import type { GolfPlayerProfile } from './golfProfile';
 import { isPlayableCourse, venueKindFromName } from './venueKind';
 import { courseHeroImage } from './courseImages';
 import { warmSatelliteTiles } from './golfSatelliteCache';
+import { resolveAndWarmGreenMesh } from './golfGreen3d';
 
 export type VenueKind = 'course' | 'sim' | 'range';
 
@@ -151,7 +152,7 @@ const COURSES_TTL_MS = 30 * 60_000;
 /** Short-lived tab cache for the exact holes request key. */
 const HOLES_TTL_MS = 6 * 60 * 60_000;
 /** Cap durable course-map backups in localStorage. */
-const HOLES_BACKUP_MAX = 48;
+const HOLES_BACKUP_MAX = 64;
 /** Soft-refresh OSM when a backup already exists — keep maps opening instantly. */
 const HOLES_SOFT_REFRESH_MS = 2_800;
 const HOLES_BACKUP_INDEX_KEY = 'golf:v1:hole-backup-index';
@@ -619,12 +620,15 @@ export function warmNearbyCourseMaps(
   if (typeof window === 'undefined') return;
   const targets = courses
     .filter((c) => Number.isFinite(c.lat) && Number.isFinite(c.lon))
+    .filter((c) => c.holes == null || c.holes === 9 || c.holes === 18)
     .slice(0, limit);
 
   const run = () => {
     for (const course of targets) {
       const id = course.id || `${course.osmType}:${course.osmId}`;
       warmSatelliteTiles(course.lat, course.lon, { courseId: id });
+      // Prefetch 3D green packs when available so toggle feels instant.
+      void resolveAndWarmGreenMesh(course.name, course.lat, course.lon);
       const peek = peekGolfHolesDetail(course.lat, course.lon, {
         bbox: course.bbox,
         osmType: course.osmType,

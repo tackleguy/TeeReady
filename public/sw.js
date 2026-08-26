@@ -98,6 +98,15 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Course catalog + 3D green packs — cache-first (static public data).
+  if (
+    url.pathname === '/golf/catalog.us.json' ||
+    url.pathname.startsWith('/golf/greens/')
+  ) {
+    event.respondWith(cacheFirst(req));
+    return;
+  }
+
   // API or weather data — stale-while-revalidate.
   if (BYPASS_CACHE.test(url.pathname)) return;
   if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/data/')) {

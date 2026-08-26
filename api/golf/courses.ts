@@ -721,7 +721,12 @@ async function mapCourses(
 }
 
 function playableCourses(courses: GolfCourseSummary[]): GolfCourseSummary[] {
-  return courses.filter((c) => isPlayableCourse(c.kind));
+  return courses.filter((c) => {
+    if (!isPlayableCourse(c.kind)) return false;
+    // Drop known non-standard layouts (27-hole complexes, 19-hole oddities, etc.).
+    if (c.holes != null && c.holes !== 9 && c.holes !== 18) return false;
+    return true;
+  });
 }
 
 function mergeCourses(

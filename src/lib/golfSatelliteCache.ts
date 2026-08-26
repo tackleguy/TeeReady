@@ -17,7 +17,7 @@ const LEGACY_CACHE_NAMES = [
 ];
 
 const SATELLITE_WARM_TTL_MS = 30 * 24 * 60 * 60_000;
-const SATELLITE_WARM_MAX = 48;
+const SATELLITE_WARM_MAX = 64;
 const LS_PREFIX = 'teeready-golf-cache:';
 const WARM_INDEX_KEY = 'golf:v1:satellite-warm-index';
 
@@ -241,15 +241,15 @@ export function warmSatelliteTiles(
   // High priority: overview + mid first so the first map paint fills faster.
   const ordered = high
     ? [
-        ...satelliteTilesForCourse(lat, lon, [15, 16]),
-        ...urls.filter((u) => !/\/tile\/1[56]\//.test(u)),
+        ...satelliteTilesForCourse(lat, lon, [14, 15, 16]),
+        ...urls.filter((u) => !/\/tile\/1[456]\//.test(u)),
       ]
     : urls;
   const unique = [...new Set(ordered)];
 
   const run = async () => {
     try {
-      await runPool(unique, high ? 10 : 4);
+      await runPool(unique, high ? 16 : 6);
       markSatelliteWarm(key);
     } finally {
       warmInFlight.delete(key);

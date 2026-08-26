@@ -1,7 +1,13 @@
 import type { GolfCourseSummary } from '../courses';
 import { classifyVenueKind } from './venueKind';
 import { formatCatalogRegion } from './catalogRegion';
+import { isStandardHoleCount } from './courseType';
 import { US_CATALOG, type UsCatalogEntry } from '../_data/usCatalog';
+
+/** Catalog rows with a known non-9/18 layout are excluded from search. */
+function catalogLayoutOk(entry: UsCatalogEntry): boolean {
+  return entry.h == null || isStandardHoleCount(entry.h);
+}
 
 const MI_PER_KM = 0.621371;
 
@@ -204,6 +210,7 @@ export function searchUsCatalog(
   const ranked: Array<{ course: GolfCourseSummary; score: number }> = [];
 
   for (const entry of US_CATALOG) {
+    if (!catalogLayoutOk(entry)) continue;
     const score = catalogMatchScore(entry, needle, tokens);
     if (score >= 9) continue;
     ranked.push({
@@ -243,6 +250,7 @@ export function nearbyUsCatalog(
   const out: GolfCourseSummary[] = [];
 
   for (const entry of US_CATALOG) {
+    if (!catalogLayoutOk(entry)) continue;
     const d = haversineMi(lat, lon, entry.la, entry.lo);
     if (d > radiusMi) continue;
     out.push(entryToSummary(entry, lat, lon));

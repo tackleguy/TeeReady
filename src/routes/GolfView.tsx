@@ -80,6 +80,7 @@ import { warmGolfCatalog, readGolfCatalog } from '../lib/golfCatalogPrefetch';
 import {
   courseHasGreenMeshes,
   loadGreenMeshCourse,
+  resolveAndWarmGreenMesh,
   resolveGreenMeshSlug,
   type GreenMeshCourse,
 } from '../lib/golfGreen3d';
@@ -360,10 +361,13 @@ export function GolfView({ active = true }: { active?: boolean }) {
   // One character filters the nearby list; two or more searches the
   // bundled 14,000+ U.S. course catalog (11,000+ verified with par/yardage).
   const filteredCourses = useMemo(() => {
+    const standard = courses.filter(
+      (c) => c.holes == null || c.holes === 9 || c.holes === 18,
+    );
     const q = courseFilter.trim().toLowerCase();
-    if (!q) return courses;
-    if (q.length >= 2) return courses;
-    return courses.filter((c) => c.name.toLowerCase().includes(q));
+    if (!q) return standard;
+    if (q.length >= 2) return standard;
+    return standard.filter((c) => c.name.toLowerCase().includes(q));
   }, [courses, courseFilter]);
   const {
     data: ensemble,
@@ -525,6 +529,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
         courseId: next.id,
         priority: 'high',
       });
+      void resolveAndWarmGreenMesh(next.name, next.lat, next.lon);
       setCourse(next);
       setGreens3d(false);
       setGreenMeshCourse(null);
@@ -1139,6 +1144,14 @@ export function GolfView({ active = true }: { active?: boolean }) {
                   <button
                     type="button"
                     onClick={() => pickCourse(c)}
+                    onMouseEnter={() => {
+                      warmSatelliteTiles(c.lat, c.lon, { courseId: c.id });
+                      void resolveAndWarmGreenMesh(c.name, c.lat, c.lon);
+                    }}
+                    onFocus={() => {
+                      warmSatelliteTiles(c.lat, c.lon, { courseId: c.id });
+                      void resolveAndWarmGreenMesh(c.name, c.lat, c.lon);
+                    }}
                     className={[
                       'floating-subpanel w-full px-3 py-3 text-left transition-colors',
                       active

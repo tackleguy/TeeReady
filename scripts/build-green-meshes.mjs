@@ -758,7 +758,7 @@ function inShard(slug, shard) {
 
 function catalogEligible(c) {
   if (c.la == null || c.lo == null) return false;
-  if (c.h != null && c.h < 9) return false;
+  if (c.h != null && c.h !== 9 && c.h !== 18) return false;
   if (c.st && SKIP_ST.has(c.st)) return false;
   // HI has poor 3DEP coverage for many islands — skip unless curated.
   if (c.st === 'HI') return false;
@@ -865,14 +865,27 @@ function writeManifest() {
   for (const f of files) {
     try {
       const data = JSON.parse(readFileSync(join(OUT_DIR, f), 'utf8'));
-      if (!data?.greens?.length) continue;
+      const greens = data?.greens ?? [];
+      if (!greens.length) continue;
+      const holes = greens.map((g) => g.hole).filter((h) => Number.isFinite(h));
+      // Only ship complete 9- or 18-hole packs.
+      if (holes.length !== 9 && holes.length !== 18) continue;
+      const target = holes.length;
+      let complete = true;
+      for (let n = 1; n <= target; n++) {
+        if (!holes.includes(n)) {
+          complete = false;
+          break;
+        }
+      }
+      if (!complete) continue;
       entries.push({
         slug: data.id || f.replace(/\.json$/, ''),
         name: data.name,
         lat: data.lat,
         lon: data.lon,
-        holes: data.greens.length,
-        holeNumbers: data.greens.map((g) => g.hole).sort((a, b) => a - b),
+        holes: greens.length,
+        holeNumbers: [...holes].sort((a, b) => a - b),
       });
     } catch {
       /* skip bad file */
@@ -921,18 +934,27 @@ function loadIncompleteFromDisk() {
       const holes = (data.greens ?? []).map((g) => g.hole);
       if (!holes.length) continue;
       const catalogH = catalogHoleCount(data.name, data.lat, data.lon);
-      // Genuine 9-hole (or ≤10) courses are complete if they cover 1..N.
+      // Only 9 or 18 — never treat 10-hole packs as complete targets.
       const target =
-        catalogH != null && catalogH <= 10
+        catalogH === 9 || catalogH === 18
           ? catalogH
-          : holes.length <= 10 && catalogH == null
-            ? Math.max(...holes)
+          : holes.length === 9 &&
+              [...Array(9)].every((_, i) => holes.includes(i + 1))
+            ? 9
             : 18;
       const missing = [];
       for (let n = 1; n <= target; n++) {
         if (!holes.includes(n)) missing.push(n);
       }
-      if (!missing.length) continue;
+      if (!missing.length && (holes.length === 9 || holes.length === 18)) {
+        continue;
+      }
+      // Incomplete or non-standard packs need a rebuild pass.
+      if (!missing.length && holes.length !== 9 && holes.length !== 18) {
+        for (let n = 1; n <= 18; n++) {
+          if (!holes.includes(n)) missing.push(n);
+        }
+      }
       out.push({
         slug: data.id || f.replace(/\.json$/, ''),
         name: data.name,
@@ -963,7 +985,7 @@ function loadCourseFromDisk(slug) {
       lat: data.lat,
       lon: data.lon,
       radiusM: Math.max(DEFAULT_RADIUS_M, 2400),
-      targetHoles: catalogH != null && catalogH <= 10 ? catalogH : 18,
+      targetHoles: catalogH === 9 || catalogH === 18 ? catalogH : 18,
     };
   } catch {
     return null;
@@ -1002,7 +1024,7 @@ async function writeCourse(course, { skipExisting, minGreens, force }) {
   }
 
   const data = await buildCourse(course);
-  const target = course.targetHoles ?? 18;
+  const target = course.targetHoles === 9 ? 9 : 18;
   if (data.greens.length < Math.min(MIN_MESH_HOLES, target)) {
     console.warn(
       `${course.slug}: only ${data.greens.length} meshes — not writing\n`,
@@ -1027,11 +1049,15 @@ async function writeCourse(course, { skipExisting, minGreens, force }) {
   }
 
   writeFileSync(outPath, JSON.stringify(data));
+  const holeNums = data.greens.map((g) => g.hole);
+  const complete =
+    (holeNums.length === 9 || holeNums.length === 18) &&
+    [...Array(holeNums.length)].every((_, i) => holeNums.includes(i + 1));
   console.log(
-    `Wrote ${outPath} (${data.greens.length} greens · holes ${data.greens.map((g) => g.hole).join(',')})\n`,
+    `Wrote ${outPath} (${data.greens.length} greens · holes ${holeNums.join(',')})${complete ? '' : ' · incomplete (excluded from manifest)'}\n`,
   );
   await sleep(600);
-  return 'written';
+  return complete ? 'written' : 'written-incomplete';
 }
 
 mkdirSync(OUT_DIR, { recursive: true });
