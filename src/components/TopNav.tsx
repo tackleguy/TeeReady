@@ -43,6 +43,11 @@ const PROGRESS_LINKS = [
     href: '/swing',
     hint: 'Video analysis · drills',
   },
+  {
+    label: 'Launch',
+    href: '/launch',
+    hint: 'Shot tracer · yardage',
+  },
 ] as const;
 
 function useMenuDismiss(

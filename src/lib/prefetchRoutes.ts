@@ -41,6 +41,9 @@ export function prefetchRoute(path: string): void {
     case '/swing/guide':
       warm('swing-guide', () => import('../routes/SwingGuideView'));
       break;
+    case '/launch':
+      warm('launch', () => import('../routes/LaunchView'));
+      break;
     case '/settings':
       warm('settings', () => import('../routes/SettingsView'));
       break;
