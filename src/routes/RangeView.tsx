@@ -2,16 +2,18 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertTriangle, Flag, Plus, Target, Upload, X } from 'lucide-react';
+import { AlertTriangle, Flag, Plus, Upload, X } from 'lucide-react';
 import { RangeDispersionCanvas } from '../components/range/RangeDispersionCanvas';
+import { ShotHistoryList } from '../components/range/ShotHistoryList';
 import { FeatureGuide } from '../components/tutorial/FeatureGuide';
-import { formatDirection } from '../lib/launch';
-import { loadLaunchHistory } from '../lib/launch';
+import { formatLaunchClubLabel, LAUNCH_CLUBS, loadLaunchHistory } from '../lib/launch';
 import {
+  computeDispersionBand,
   computeSessionStats,
   endRangeSession,
   getActiveSession,
   landingsForSession,
+  landingsFromHistory,
   loadRangeSessions,
   RANGE_HISTORY_EVENT,
   startRangeSession,
@@ -21,7 +23,7 @@ import {
 import { RANGE_HOWTO_STEPS } from '../lib/range/howto';
 import { RANGE_GUIDE_KEY } from '../lib/featureGuide';
 
-const CLUBS = ['driver', '3-wood', '5-wood', 'hybrid', '4-iron', '7-iron', 'wedge'] as const;
+type HistoryFilter = 'active' | 'all' | string;
 
 function StatPill({ label, value }: { label: string; value: string }) {
   return (
@@ -34,9 +36,16 @@ function StatPill({ label, value }: { label: string; value: string }) {
   );
 }
 
-function formatLateral(yd: number): string {
-  if (Math.abs(yd) < 1) return 'On line';
-  return yd > 0 ? `${Math.round(yd)} yd R` : `${Math.round(Math.abs(yd))} yd L`;
+function filterLabel(
+  filter: HistoryFilter,
+  active: RangeSession | null,
+  sessions: RangeSession[],
+): string {
+  if (filter === 'active') return active ? `${active.club} (live)` : 'Active';
+  if (filter === 'all') return 'All shots';
+  const s = sessions.find((x) => x.id === filter);
+  if (!s) return 'Session';
+  return `${s.club} · ${new Date(s.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}`;
 }
 
 export function RangeView() {
@@ -44,6 +53,10 @@ export function RangeView() {
   const [active, setActive] = useState<RangeSession | null>(() => getActiveSession());
   const [club, setClub] = useState(() => getActiveSession()?.club ?? 'driver');
   const [historyVersion, setHistoryVersion] = useState(0);
+  const [historyFilter, setHistoryFilter] = useState<HistoryFilter>(() =>
+    getActiveSession() ? 'active' : 'all',
+  );
+  const [highlightId, setHighlightId] = useState<string | null>(null);
 
   const refresh = useCallback(() => {
     setSessions(loadRangeSessions());
@@ -61,20 +74,30 @@ export function RangeView() {
   }, [refresh]);
 
   const launchHistory = useMemo(() => loadLaunchHistory(), [historyVersion]);
+  const allLandings = useMemo(() => landingsFromHistory(launchHistory), [launchHistory]);
 
-  const landings: RangeLanding[] = useMemo(() => {
-    if (!active) return [];
-    return landingsForSession(active.shotIds, launchHistory);
-  }, [active, launchHistory]);
+  const displayedLandings: RangeLanding[] = useMemo(() => {
+    if (historyFilter === 'all') return allLandings;
+    if (historyFilter === 'active') {
+      if (!active) return allLandings;
+      return landingsForSession(active.shotIds, launchHistory);
+    }
+    const session = sessions.find((s) => s.id === historyFilter);
+    if (!session) return allLandings;
+    return landingsForSession(session.shotIds, launchHistory);
+  }, [historyFilter, active, allLandings, sessions, launchHistory]);
 
-  const stats = useMemo(() => computeSessionStats(landings), [landings]);
+  const stats = useMemo(() => computeSessionStats(displayedLandings), [displayedLandings]);
+  const band = useMemo(() => computeDispersionBand(displayedLandings), [displayedLandings]);
 
-  const pastSessions = sessions.filter((s) => s.endedAt || s.id !== active?.id);
+  const endedSessions = sessions.filter((s) => s.endedAt || (active && s.id !== active.id));
 
   const onStartSession = () => {
     const session = startRangeSession(club);
     setActive(session);
     setSessions(loadRangeSessions());
+    setHistoryFilter('active');
+    setHighlightId(null);
   };
 
   const onEndSession = () => {
@@ -82,6 +105,7 @@ export function RangeView() {
     endRangeSession(active.id);
     setActive(null);
     setSessions(loadRangeSessions());
+    setHistoryFilter('all');
   };
 
   return (
@@ -94,7 +118,7 @@ export function RangeView() {
           Driving range
         </h1>
         <p className="mt-2 text-[14px] text-muted">
-          Start a session, analyze shots in Launch, and see your dispersion pattern build on-device.
+          Shot history and dispersion from Launch — compare sessions and track your pattern on-device.
         </p>
       </header>
 
@@ -112,175 +136,189 @@ export function RangeView() {
             <span className="font-semibold">Uncalibrated yardage</span>
             <span className="text-muted">
               {' '}
-              — compare shot-to-shot and session-to-session, not vs a launch monitor.
+              — dashed ellipse is typical spread; compare relative to your own history.
             </span>
           </p>
         </div>
       </div>
 
-      {!active ? (
-        <div className="mt-5 space-y-4">
-          <section className="rounded-card bg-surface p-4 shadow-card">
+      {active ? (
+        <div className="mt-5 flex items-center justify-between gap-3 rounded-card bg-surface px-4 py-3 shadow-card">
+          <div>
             <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
-              New session
+              Live session
             </p>
-            <select
-              value={club}
-              onChange={(e) => setClub(e.target.value)}
-              className="mt-3 w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-[13px] text-ink"
+            <p className="mt-0.5 text-[15px] font-semibold capitalize text-ink">{active.club}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/launch"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-brand px-3 py-2 text-[12px] font-bold text-white"
             >
-              {CLUBS.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-            <button
-              type="button"
-              onClick={onStartSession}
-              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-[14px] font-bold text-white"
-            >
-              <Flag className="h-4 w-4" strokeWidth={2.2} aria-hidden="true" />
-              Start range session
-            </button>
-          </section>
-
-          {pastSessions.length > 0 ? (
-            <section>
-              <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
-                Past sessions
-              </p>
-              <ul className="mt-2 divide-y divide-line overflow-hidden rounded-card bg-surface shadow-card">
-                {pastSessions.slice(0, 8).map((s) => {
-                  const shots = landingsForSession(s.shotIds, launchHistory);
-                  const st = computeSessionStats(shots);
-                  return (
-                    <li key={s.id} className="px-4 py-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-[13px] font-semibold capitalize text-ink">{s.club}</p>
-                          <p className="text-[11px] text-muted">
-                            {new Date(s.createdAt).toLocaleString()} · {st.shotCount} shot
-                            {st.shotCount === 1 ? '' : 's'}
-                          </p>
-                        </div>
-                        <p className="shrink-0 text-[13px] font-bold tabular text-brand">
-                          {st.avgCarryYd != null ? `${st.avgCarryYd} yd avg` : '—'}
-                        </p>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
-          ) : null}
-        </div>
-      ) : (
-        <div className="mt-5 space-y-5">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
-                Active session
-              </p>
-              <p className="mt-0.5 text-[15px] font-semibold capitalize text-ink">{active.club}</p>
-            </div>
+              <Upload className="h-3.5 w-3.5" aria-hidden="true" />
+              Add shot
+            </Link>
             <button
               type="button"
               onClick={onEndSession}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-surface px-3 py-2 text-[12px] font-semibold text-muted shadow-card"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-canvas px-3 py-2 text-[12px] font-semibold text-muted"
             >
               <X className="h-3.5 w-3.5" aria-hidden="true" />
               End
             </button>
           </div>
-
-          <div className="overflow-hidden rounded-card bg-surface p-3 shadow-card">
-            <RangeDispersionCanvas
-              landings={landings}
-              highlightId={landings.at(-1)?.launchId}
-            />
-            {landings.length === 0 ? (
-              <p className="mt-2 text-center text-[12px] text-muted">
-                No shots yet — analyze a clip in Launch to plot your first ball.
-              </p>
-            ) : null}
-          </div>
-
-          <div className="grid grid-cols-3 gap-2">
-            <StatPill label="Shots" value={String(stats.shotCount)} />
-            <StatPill
-              label="Avg carry"
-              value={stats.avgCarryYd != null ? `${stats.avgCarryYd} yd` : '—'}
-            />
-            <StatPill
-              label="Spread"
-              value={
-                stats.lateralSpreadYd != null && stats.carrySpreadYd != null
-                  ? `${stats.lateralSpreadYd} / ${stats.carrySpreadYd}`
-                  : '—'
-              }
-            />
-          </div>
-          <p className="-mt-3 text-center text-[10px] text-faint">Lateral / carry spread (yd)</p>
-
-          <Link
-            to="/launch"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-[14px] font-bold text-white"
+        </div>
+      ) : (
+        <section className="mt-5 rounded-card bg-surface p-4 shadow-card">
+          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
+            New session
+          </p>
+          <select
+            value={club}
+            onChange={(e) => setClub(e.target.value)}
+            className="mt-3 w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-[13px] text-ink"
           >
-            <Upload className="h-4 w-4" strokeWidth={2.2} aria-hidden="true" />
-            Analyze shot in Launch
-          </Link>
-
-          {landings.length > 0 ? (
-            <section>
-              <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
-                Session shots
-              </p>
-              <ul className="mt-2 divide-y divide-line overflow-hidden rounded-card bg-surface shadow-card">
-                {[...landings].reverse().map((l) => (
-                  <li key={l.launchId} className="flex items-center justify-between gap-3 px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <Target className="h-3.5 w-3.5 text-faint" aria-hidden="true" />
-                      <div>
-                        <p className="text-[13px] font-semibold tabular text-ink">{l.carryYd} yd</p>
-                        <p className="text-[11px] text-muted">
-                          {l.directionDeg != null
-                            ? formatDirection({
-                                id: 'launch_direction',
-                                label: 'Direction',
-                                value: l.directionDeg,
-                                unit: '°',
-                                confidence: 'uncalibrated',
-                                validForAngle: 'corner',
-                                assumptions: [],
-                              })
-                            : 'Straight'}{' '}
-                          · {formatLateral(l.lateralYd)}
-                        </p>
-                      </div>
-                    </div>
-                    <p className="text-[11px] text-faint">
-                      {new Date(l.createdAt).toLocaleTimeString([], {
-                        hour: 'numeric',
-                        minute: '2-digit',
-                      })}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
-
+            {LAUNCH_CLUBS.map((c) => (
+              <option key={c} value={c}>
+                {formatLaunchClubLabel(c)}
+              </option>
+            ))}
+          </select>
           <button
             type="button"
             onClick={onStartSession}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-line bg-surface px-4 py-3 text-[14px] font-semibold text-ink shadow-card"
+            className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-[14px] font-bold text-white"
           >
-            <Plus className="h-4 w-4" strokeWidth={2.2} aria-hidden="true" />
-            New session ({club})
+            <Flag className="h-4 w-4" strokeWidth={2.2} aria-hidden="true" />
+            Start range session
           </button>
-        </div>
+        </section>
       )}
+
+      <section className="mt-5 space-y-4">
+        <div>
+          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
+            Dispersion
+          </p>
+          <p className="mt-0.5 text-[12px] text-muted">
+            Viewing: {filterLabel(historyFilter, active, sessions)}
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {active ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setHistoryFilter('active');
+                  setHighlightId(null);
+                }}
+                className={`rounded-full border px-3 py-1.5 text-[12px] font-semibold capitalize ${
+                  historyFilter === 'active'
+                    ? 'border-brand bg-brand-soft text-brand'
+                    : 'border-line text-muted'
+                }`}
+              >
+                Live session
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => {
+                setHistoryFilter('all');
+                setHighlightId(null);
+              }}
+              className={`rounded-full border px-3 py-1.5 text-[12px] font-semibold ${
+                historyFilter === 'all'
+                  ? 'border-brand bg-brand-soft text-brand'
+                  : 'border-line text-muted'
+              }`}
+            >
+              All shots ({allLandings.length})
+            </button>
+            {endedSessions.slice(0, 6).map((s) => {
+              const count = landingsForSession(s.shotIds, launchHistory).length;
+              if (count === 0) return null;
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => {
+                    setHistoryFilter(s.id);
+                    setHighlightId(null);
+                  }}
+                  className={`rounded-full border px-3 py-1.5 text-[12px] font-semibold capitalize ${
+                    historyFilter === s.id
+                      ? 'border-brand bg-brand-soft text-brand'
+                      : 'border-line text-muted'
+                  }`}
+                >
+                  {s.club} ({count})
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="overflow-hidden rounded-card bg-surface p-3 shadow-card">
+          <RangeDispersionCanvas
+            landings={[...displayedLandings].reverse()}
+            highlightId={highlightId ?? displayedLandings[0]?.launchId}
+            band={band}
+          />
+          {displayedLandings.length === 0 ? (
+            <p className="mt-2 text-center text-[12px] text-muted">
+              No shots yet — start a session and analyze clips in Launch.
+            </p>
+          ) : band ? (
+            <p className="mt-2 text-center text-[10px] text-faint">
+              Dashed ellipse ≈ typical spread (3+ shots)
+            </p>
+          ) : null}
+        </div>
+
+        {displayedLandings.length > 0 ? (
+          <>
+            <div className="grid grid-cols-3 gap-2">
+              <StatPill label="Shots" value={String(stats.shotCount)} />
+              <StatPill
+                label="Avg carry"
+                value={stats.avgCarryYd != null ? `${stats.avgCarryYd} yd` : '—'}
+              />
+              <StatPill
+                label="Spread"
+                value={
+                  stats.lateralSpreadYd != null && stats.carrySpreadYd != null
+                    ? `${stats.lateralSpreadYd} / ${stats.carrySpreadYd}`
+                    : '—'
+                }
+              />
+            </div>
+            <p className="-mt-2 text-center text-[10px] text-faint">Lateral / carry spread (yd)</p>
+          </>
+        ) : null}
+
+        <div className="overflow-hidden rounded-card bg-surface shadow-card">
+          <p className="border-b border-line px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
+            Shot history
+          </p>
+          <ShotHistoryList
+            landings={displayedLandings}
+            highlightId={highlightId ?? displayedLandings[0]?.launchId}
+            onSelect={setHighlightId}
+            emptyMessage="Analyze a slow-mo clip in Launch to build your history."
+          />
+        </div>
+      </section>
+
+      {active ? (
+        <button
+          type="button"
+          onClick={onStartSession}
+          className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-line bg-surface px-4 py-3 text-[14px] font-semibold text-ink shadow-card"
+        >
+          <Plus className="h-4 w-4" strokeWidth={2.2} aria-hidden="true" />
+          New session ({club})
+        </button>
+      ) : null}
     </div>
   );
 }

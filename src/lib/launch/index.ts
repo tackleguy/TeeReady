@@ -3,15 +3,18 @@ export { analyzeLaunchVideo } from './analyze';
 export {
   CLUB_SPIN_RPM,
   CORNER_AZIMUTH_DEG,
+  formatLaunchClubLabel,
   GOLF_BALL_DIAMETER_MM,
   HIGH_PRECISION_MIN_FPS,
   IDEAL_CAMERA_DISTANCE_FT_MAX,
   IDEAL_CAMERA_DISTANCE_FT_MIN,
   IDEAL_SETUP_SUMMARY,
+  LAUNCH_CLUBS,
   LM_NUMBERS_MIN_FPS,
   LM_TIER_MIN_FPS,
   MIN_TRACK_POINTS,
 } from './constants';
+export type { LaunchClub } from './constants';
 export { angleLabel } from './validate';
 export {
   filterDisplayMetrics,

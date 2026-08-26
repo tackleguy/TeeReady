@@ -1,12 +1,14 @@
 /** Top-down fairway dispersion plot for driving range sessions. */
 
 import { useEffect, useRef } from 'react';
-import type { RangeLanding } from '../../lib/range';
+import type { DispersionBand, RangeLanding } from '../../lib/range';
 
 type Props = {
   landings: RangeLanding[];
   /** Highlight the most recent shot. */
   highlightId?: string | null;
+  /** Optional dispersion ellipse overlay. */
+  band?: DispersionBand | null;
   className?: string;
 };
 
@@ -18,6 +20,7 @@ function drawScene(
   h: number,
   landings: RangeLanding[],
   highlightId: string | null | undefined,
+  band: DispersionBand | null | undefined,
 ): void {
   const pad = { top: 28, right: 16, bottom: 36, left: 44 };
   const plotW = w - pad.left - pad.right;
@@ -88,6 +91,23 @@ function drawScene(
   const teeY = pad.top + plotH - 4;
   ctx.fillRect(toX(-8), teeY, toX(8) - toX(-8), 6);
 
+  // Dispersion ellipse
+  if (band && landings.length >= 3) {
+    const cx = toX(band.centerLateralYd);
+    const cy = toY(band.centerCarryYd);
+    const rx = Math.abs(toX(band.semiAxisLatYd) - toX(0));
+    const ry = Math.abs(toY(0) - toY(band.semiAxisCarryYd));
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, Math.max(rx, 4), Math.max(ry, 4), 0, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
   // Shots
   landings.forEach((l, i) => {
     const x = toX(l.lateralYd);
@@ -116,7 +136,7 @@ function drawScene(
   ctx.fillText('Tee', pad.left, h - 8);
 }
 
-export function RangeDispersionCanvas({ landings, highlightId, className }: Props) {
+export function RangeDispersionCanvas({ landings, highlightId, band, className }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
@@ -137,12 +157,12 @@ export function RangeDispersionCanvas({ landings, highlightId, className }: Prop
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      drawScene(ctx, w, h, landings, highlightId);
+      drawScene(ctx, w, h, landings, highlightId, band);
     });
 
     ro.observe(wrap);
     return () => ro.disconnect();
-  }, [landings, highlightId]);
+  }, [landings, highlightId, band]);
 
   return (
     <div ref={wrapRef} className={className}>

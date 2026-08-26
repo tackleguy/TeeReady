@@ -1,7 +1,9 @@
 export {
+  computeDispersionBand,
   computeSessionStats,
   landingFromAnalysis,
   landingsForSession,
+  landingsFromHistory,
 } from './dispersion';
 export {
   addShotToActiveSession,
@@ -15,4 +17,4 @@ export {
   RANGE_HISTORY_EVENT,
   startRangeSession,
 } from './storage';
-export type { RangeLanding, RangeSession, RangeSessionStats } from './types';
+export type { DispersionBand, RangeLanding, RangeSession, RangeSessionStats } from './types';

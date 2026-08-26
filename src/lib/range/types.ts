@@ -28,3 +28,11 @@ export type RangeSessionStats = {
   carrySpreadYd: number | null;
   avgDirectionDeg: number | null;
 };
+
+/** Axis-aligned dispersion band (~1σ) for canvas overlay. */
+export type DispersionBand = {
+  centerLateralYd: number;
+  centerCarryYd: number;
+  semiAxisLatYd: number;
+  semiAxisCarryYd: number;
+};

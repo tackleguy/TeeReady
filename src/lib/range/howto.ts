@@ -11,7 +11,7 @@ export const LAUNCH_HOWTO_STEPS = [
 export const RANGE_HOWTO_STEPS = [
   'Pick a club and tap Start range session. One session = one club so dispersion stays meaningful.',
   'Open Launch (Progress → Launch) and upload slow-mo for each ball. You can return here after every shot.',
-  'Shots plot on the fairway view — carry is downrange, left/right is start direction. Latest shot is highlighted.',
-  'Watch avg carry and lateral spread build as you hit more balls. Compare sessions over time, not absolute yardage.',
-  'Tap End when finished. Past sessions stay in your history on this page — all data stays on your device.',
+  'Use Dispersion filters — Live session, All shots, or a past session — to compare patterns.',
+  'The fairway plot shows each landing; the dashed ellipse is typical spread when you have 3+ shots.',
+  'Tap any shot in history to highlight it on the plot. End session when finished — all data stays on-device.',
 ] as const;

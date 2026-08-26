@@ -1,6 +1,6 @@
 /** Launch monitor — upload slow-mo, shot tracer, rough yardage. */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   AlertTriangle,
@@ -12,6 +12,8 @@ import {
   Video,
 } from 'lucide-react';
 import { TracerOverlay } from '../components/launch/TracerOverlay';
+import { RangeDispersionCanvas } from '../components/range/RangeDispersionCanvas';
+import { ShotHistoryList } from '../components/range/ShotHistoryList';
 import { FeatureGuide } from '../components/tutorial/FeatureGuide';
 import {
   analyzeLaunchVideo,
@@ -19,8 +21,10 @@ import {
   filterDisplayMetrics,
   filterDisplayUnavailable,
   formatDirection,
+  formatLaunchClubLabel,
   IDEAL_SETUP_SUMMARY,
   isLaunchAnalysis,
+  LAUNCH_CLUBS,
   LM_TIER_MIN_FPS,
   loadLaunchHistory,
   saveLaunchAnalysis,
@@ -31,6 +35,7 @@ import {
   type LaunchReject,
 } from '../lib/launch';
 import { addShotToActiveSession, getActiveSession } from '../lib/range';
+import { computeDispersionBand, landingsFromHistory } from '../lib/range';
 import { LAUNCH_HOWTO_STEPS } from '../lib/range/howto';
 import { LAUNCH_GUIDE_KEY } from '../lib/featureGuide';
 
@@ -101,6 +106,9 @@ export function LaunchView() {
   const [liveFps, setLiveFps] = useState<number | null>(null);
   const [history, setHistory] = useState<LaunchAnalysis[]>(() => loadLaunchHistory());
   const [rangeSession, setRangeSession] = useState(() => getActiveSession());
+
+  const shotLandings = useMemo(() => landingsFromHistory(history), [history]);
+  const historyBand = useMemo(() => computeDispersionBand(shotLandings), [shotLandings]);
 
   const refreshRangeSession = useCallback(() => {
     setRangeSession(getActiveSession());
@@ -360,13 +368,11 @@ export function LaunchView() {
               onChange={(e) => setClub(e.target.value)}
               className="mt-3 w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-[13px] text-ink"
             >
-              {['driver', '3-wood', '5-wood', 'hybrid', '4-iron', '7-iron', 'wedge'].map(
-                (c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ),
-              )}
+              {LAUNCH_CLUBS.map((c) => (
+                <option key={c} value={c}>
+                  {formatLaunchClubLabel(c)}
+                </option>
+              ))}
             </select>
             <p className="mt-2 text-[11px] text-muted">
               Carry uses typical flight for this club — spin is not shown or measured.
@@ -402,34 +408,41 @@ export function LaunchView() {
           />
 
           {history.length > 0 ? (
-            <section className="pt-2">
-              <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
-                Saved locally
-              </p>
-              <ul className="mt-2 divide-y divide-line overflow-hidden rounded-card bg-surface shadow-card">
-                {history.slice(0, 5).map((h) => (
-                  <li key={h.id}>
-                    <button
-                      type="button"
-                      className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left hover:bg-canvas/60"
-                      onClick={() => {
-                        setResult(h);
-                        setStep('results');
-                      }}
-                    >
-                      <div>
-                        <div className="text-[13px] font-semibold text-ink">
-                          {angleLabel(h.angle)} · ~{Math.round(h.fps)} fps
-                        </div>
-                        <div className="text-[11px] text-muted">
-                          {new Date(h.createdAt).toLocaleString()}
-                        </div>
-                      </div>
-                      <span className="text-[12px] font-medium text-brand">View</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
+            <section className="space-y-3 pt-2">
+              <div className="flex items-end justify-between gap-3">
+                <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
+                  Shot history
+                </p>
+                {shotLandings.length >= 2 ? (
+                  <Link to="/range" className="text-[12px] font-semibold text-brand">
+                    Full dispersion →
+                  </Link>
+                ) : null}
+              </div>
+
+              {shotLandings.length >= 2 ? (
+                <div className="overflow-hidden rounded-card bg-surface p-3 shadow-card">
+                  <RangeDispersionCanvas
+                    landings={[...shotLandings].reverse()}
+                    highlightId={shotLandings[0]?.launchId}
+                    band={historyBand}
+                  />
+                </div>
+              ) : null}
+
+              <div className="overflow-hidden rounded-card bg-surface shadow-card">
+                <ShotHistoryList
+                  landings={shotLandings.slice(0, 12)}
+                  onSelect={(id) => {
+                    const h = history.find((x) => x.id === id);
+                    if (h) {
+                      setResult(h);
+                      setStep('results');
+                    }
+                  }}
+                  emptyMessage="No yardage yet — corner view slow-mo needed for carry."
+                />
+              </div>
             </section>
           ) : null}
         </div>

@@ -3,9 +3,11 @@
 import { computeLaunchMetrics, GOLF_BALL_DIAMETER_MM } from '../src/lib/launch';
 import type { ScaleCalibration, TrackPoint } from '../src/lib/launch';
 import {
+  computeDispersionBand,
   computeSessionStats,
   landingFromAnalysis,
   landingsForSession,
+  landingsFromHistory,
 } from '../src/lib/range/dispersion';
 
 let passed = 0;
@@ -126,6 +128,32 @@ console.log('Driving range tests\n');
     'landings push vs straight',
     landings[1]!.lateralYd > landings[0]!.lateralYd,
   );
+}
+
+// --- landingsFromHistory ---
+{
+  const a = makeAnalysis(100, -20);
+  const b = makeAnalysis(800, -20);
+  a.id = 'hist-a';
+  b.id = 'hist-b';
+  b.createdAt = a.createdAt + 5000;
+  const landings = landingsFromHistory([a, b]);
+  assert('history newest first', landings[0]!.launchId === 'hist-b');
+  assert('history count', landings.length === 2);
+}
+
+// --- computeDispersionBand ---
+{
+  const shots = [
+    makeAnalysis(100, -20),
+    makeAnalysis(105, -20),
+    makeAnalysis(95, -20),
+    makeAnalysis(102, -20),
+  ];
+  const landings = shots.map((s) => landingFromAnalysis(s)!);
+  const band = computeDispersionBand(landings);
+  assert('band with 4 shots', band != null && band.semiAxisCarryYd > 0);
+  assert('band too few shots', computeDispersionBand(landings.slice(0, 2)) == null);
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

@@ -1,7 +1,7 @@
 /** Landing points and session stats from launch monitor analyses. */
 
 import type { LaunchAnalysis } from '../launch/types';
-import type { RangeLanding, RangeSessionStats } from './types';
+import type { DispersionBand, RangeLanding, RangeSessionStats } from './types';
 
 function metricValue(analysis: LaunchAnalysis, id: string): number | null {
   const m = analysis.metrics.find((x) => x.id === id);
@@ -78,4 +78,36 @@ export function landingsForSession(
     if (landing) out.push(landing);
   }
   return out;
+}
+
+/** All plottable shots from launch history (newest first). */
+export function landingsFromHistory(history: LaunchAnalysis[]): RangeLanding[] {
+  return history
+    .map((a) => landingFromAnalysis(a))
+    .filter((l): l is RangeLanding => l != null)
+    .sort((a, b) => b.createdAt - a.createdAt);
+}
+
+/** ~1σ dispersion ellipse for 3+ shots. */
+export function computeDispersionBand(landings: RangeLanding[]): DispersionBand | null {
+  if (landings.length < 3) return null;
+
+  const lat = landings.map((l) => l.lateralYd);
+  const carry = landings.map((l) => l.carryYd);
+  const meanLat = avg(lat);
+  const meanCarry = avg(carry);
+
+  const std = (values: number[], mean: number) =>
+    Math.sqrt(values.reduce((s, v) => s + (v - mean) ** 2, 0) / values.length);
+
+  const semiLat = std(lat, meanLat);
+  const semiCarry = std(carry, meanCarry);
+  if (semiLat < 0.5 && semiCarry < 0.5) return null;
+
+  return {
+    centerLateralYd: meanLat,
+    centerCarryYd: meanCarry,
+    semiAxisLatYd: Math.max(semiLat, 1),
+    semiAxisCarryYd: Math.max(semiCarry, 1),
+  };
 }

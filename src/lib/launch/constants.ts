@@ -40,21 +40,91 @@ export const DEFAULT_ASSUMED_SPIN_RPM = 2500;
 /** Club presets for assumed spin (rpm). */
 export const CLUB_SPIN_RPM: Record<string, number> = {
   driver: 2500,
+  '2-wood': 3200,
   '3-wood': 3500,
+  '4-wood': 3800,
   '5-wood': 4000,
+  '7-wood': 4500,
   hybrid: 4500,
+  '2-hybrid': 4600,
+  '3-hybrid': 4700,
+  '3-iron': 4800,
   '4-iron': 5000,
+  '5-iron': 5500,
+  '6-iron': 6200,
   '7-iron': 7000,
+  '8-iron': 7800,
+  '9-iron': 8600,
+  pw: 9500,
+  gw: 10000,
+  sw: 10500,
+  lw: 11000,
   wedge: 9000,
 };
 
 /** Typical roll after landing (fraction of carry) — matches golf bag model. */
 export const CLUB_ROLL_PCT: Record<string, number> = {
   driver: 0.1,
+  '2-wood': 0.09,
   '3-wood': 0.08,
+  '4-wood': 0.07,
   '5-wood': 0.06,
-  '4-iron': 0.05,
+  '7-wood': 0.06,
   hybrid: 0.05,
+  '2-hybrid': 0.05,
+  '3-hybrid': 0.05,
+  '3-iron': 0.05,
+  '4-iron': 0.05,
+  '5-iron': 0.045,
+  '6-iron': 0.04,
   '7-iron': 0.04,
+  '8-iron': 0.035,
+  '9-iron': 0.03,
+  pw: 0.02,
+  gw: 0.018,
+  sw: 0.015,
+  lw: 0.01,
   wedge: 0.015,
 };
+
+/** Clubs offered in Launch / Range selectors (long → short). */
+export const LAUNCH_CLUBS = [
+  'driver',
+  '2-wood',
+  '3-wood',
+  '4-wood',
+  '5-wood',
+  '7-wood',
+  'hybrid',
+  '2-hybrid',
+  '3-hybrid',
+  '3-iron',
+  '4-iron',
+  '5-iron',
+  '6-iron',
+  '7-iron',
+  '8-iron',
+  '9-iron',
+  'pw',
+  'gw',
+  'sw',
+  'lw',
+] as const;
+
+export type LaunchClub = (typeof LAUNCH_CLUBS)[number];
+
+const LAUNCH_CLUB_LABELS: Record<string, string> = {
+  driver: 'Driver',
+  hybrid: 'Hybrid',
+  '2-hybrid': '2 Hybrid',
+  '3-hybrid': '3 Hybrid',
+  pw: 'Pitching wedge',
+  gw: 'Gap wedge',
+  sw: 'Sand wedge',
+  lw: 'Lob wedge',
+};
+
+/** Display label for club dropdowns. */
+export function formatLaunchClubLabel(club: string): string {
+  return LAUNCH_CLUB_LABELS[club] ?? club;
+}
