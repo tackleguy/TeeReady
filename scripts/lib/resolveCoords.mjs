@@ -5,6 +5,7 @@
 
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { isInUnitedStates, stateAtPoint } from './usStateLookup.mjs';
 
 const CACHE_PATH = resolve('scripts/.cache/golf-coords-cache.json');
 const UA = 'TeeReady/1.0 (golf catalog build)';
@@ -64,14 +65,35 @@ function sharedPrefixTokens(a, b) {
 }
 
 function isUsCoord(lat, lon) {
-  return (
-    Number.isFinite(lat) &&
-    Number.isFinite(lon) &&
-    lat >= 18 &&
-    lat <= 72 &&
-    lon >= -180 &&
-    lon <= -60
+  // North-American bbox alone is not enough — Canada/Mexico pass it.
+  // Prefer real US state polygons; fall back to continental bbox only when
+  // the polygon set fails to load.
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return false;
+  if (lat < 18 || lat > 72 || lon < -180 || lon > -60) return false;
+  try {
+    return isInUnitedStates(lat, lon);
+  } catch {
+    return lat >= 24 && lat <= 49.5 && lon >= -125 && lon <= -66;
+  }
+}
+
+function distMi(aLat, aLon, bLat, bLon) {
+  return Math.hypot(
+    (aLat - bLat) * 69,
+    (aLon - bLon) * 69 * Math.max(0.2, Math.cos((bLat * Math.PI) / 180)),
   );
+}
+
+/** Accept a geocode only if it stays near the bulk pin and matches state when known. */
+function acceptGeocode(result, biasLat, biasLon, stateHint) {
+  if (!result || !isUsCoord(result.la, result.lo)) return false;
+  if (distMi(result.la, result.lo, biasLat, biasLon) > 120) return false;
+  if (stateHint) {
+    const geoSt = stateAtPoint(result.la, result.lo);
+    // Coastal pins can fall just outside polygons — only reject hard mismatches.
+    if (geoSt && geoSt !== stateHint) return false;
+  }
+  return true;
 }
 
 function isClubSibling(a, b) {
@@ -148,7 +170,11 @@ async function geocodeEntry(entry, bulkById, cache, skipNetwork) {
     const cacheKey = query.toLowerCase();
     if (cache[cacheKey] !== undefined) {
       const cached = cache[cacheKey];
-      if (cached && isUsCoord(cached.la, cached.lo)) return cached;
+      if (cached && acceptGeocode(cached, entry.la, entry.lo, state)) {
+        return cached;
+      }
+      // Drop poisoned cache hits (Canada, wrong state, >120 mi jumps).
+      if (cached) cache[cacheKey] = null;
       continue;
     }
     if (skipNetwork) continue;
@@ -197,16 +223,7 @@ async function lookupCoords(query, biasLat, biasLon, stateHint) {
       la: Math.round(Number(coords[1]) * 1e5) / 1e5,
       lo: Math.round(Number(coords[0]) * 1e5) / 1e5,
     };
-    if (!isUsCoord(result.la, result.lo)) return null;
-    const distMi =
-      Math.hypot(
-        (result.la - biasLat) * 69,
-        (result.lo - biasLon) *
-          69 *
-          Math.max(0.2, Math.cos((biasLat * Math.PI) / 180)),
-      );
-    // Reject geocodes that jumped to another state/region (> ~120 mi from bulk pin).
-    if (distMi > 120) return null;
+    if (!acceptGeocode(result, biasLat, biasLon, stateHint)) return null;
     return result;
   } catch {
     return null;
@@ -218,6 +235,7 @@ async function lookupCoords(query, biasLat, biasLon, stateHint) {
 
 export async function disambiguateSharedCoords(catalog, bulkById = new Map(), opts = {}) {
   const skipNetwork = opts.skipNetwork === true;
+  const lockedGids = opts.lockedGids instanceof Set ? opts.lockedGids : new Set();
   const cache = await loadCache();
   let siblingClusters = 0;
   let geocoded = 0;
@@ -246,6 +264,7 @@ export async function disambiguateSharedCoords(catalog, bulkById = new Map(), op
 
       if (pass === 0) {
         for (const entry of entries) {
+          if (entry.g && lockedGids.has(entry.g)) continue;
           const next = await geocodeEntry(entry, bulkById, cache, skipNetwork);
           if (
             next &&
@@ -264,6 +283,7 @@ export async function disambiguateSharedCoords(catalog, bulkById = new Map(), op
       if (pass === 2) {
         entries.forEach((entry, index) => {
           if (index === 0) return;
+          if (entry.g && lockedGids.has(entry.g)) return;
           entry.la = Math.round((entry.la + index * 0.00021) * 1e5) / 1e5;
           entry.lo = Math.round((entry.lo + index * 0.00017) * 1e5) / 1e5;
         });

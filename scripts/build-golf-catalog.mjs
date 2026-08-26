@@ -415,6 +415,7 @@ async function main() {
 
   const coords = await disambiguateSharedCoords(deduped, bulkById, {
     skipNetwork: skipGeocode,
+    lockedGids: new Set(Object.keys(MANUAL_COORDS_BY_GID)),
   });
   const siblingClusters = new Set(
     deduped.filter((entry) => entry.fac).map((entry) => entry.fac),
