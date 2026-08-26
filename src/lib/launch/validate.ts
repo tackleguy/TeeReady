@@ -1,13 +1,16 @@
 /** Setup and upload validation for launch clips. */
 
 import {
+  IDEAL_SETUP_SUMMARY,
+  LM_NUMBERS_MIN_FPS,
   LM_TIER_MIN_FPS,
   MIN_CLIP_DURATION_S,
   MIN_SAMPLED_FRAMES,
   MIN_TRACK_POINTS,
 } from './constants';
+import { fpsSetupWarning } from './accuracy';
 import type { SampledFrame } from './frames';
-import type { TrackPoint } from './types';
+import type { CameraAngle, TrackPoint } from './types';
 
 export type SetupValidation = {
   warnings: string[];
@@ -20,10 +23,14 @@ export function validateSetup(
   duration: number,
   frameCount: number,
   track: TrackPoint[],
-  angle: 'face-on' | 'dtl',
+  angle: CameraAngle,
 ): SetupValidation {
   const warnings: string[] = [];
   const errors: string[] = [];
+
+  if (angle === 'corner') {
+    warnings.push(`Ideal setup: ${IDEAL_SETUP_SUMMARY}`);
+  }
 
   if (duration < MIN_CLIP_DURATION_S) {
     errors.push(`Clip too short (${duration.toFixed(1)}s). Need at least ${MIN_CLIP_DURATION_S}s.`);
@@ -33,9 +40,16 @@ export function validateSetup(
     errors.push(`Too few frames sampled (${frameCount}).`);
   }
 
-  if (fps < LM_TIER_MIN_FPS) {
+  const fpsWarning = fpsSetupWarning(fps);
+  if (fpsWarning) warnings.push(fpsWarning);
+
+  if (fps < LM_NUMBERS_MIN_FPS) {
     warnings.push(
-      `Measured ~${Math.round(fps)} fps — below ${LM_TIER_MIN_FPS} fps launch-monitor tier. Record in native Camera slow-mo (120/240 fps).`,
+      `Below ${LM_NUMBERS_MIN_FPS} fps — shot tracer only; yardage numbers are not shown.`,
+    );
+  } else if (fps < LM_TIER_MIN_FPS) {
+    warnings.push(
+      `30–119 fps clips are supported at reduced accuracy. 120+ fps slow-mo gives the best tracer and yardage.`,
     );
   }
 
@@ -47,8 +61,12 @@ export function validateSetup(
 
   if (angle === 'face-on') {
     warnings.push('Face-on: launch angle and carry available; launch direction is not measurable.');
-  } else {
+  } else if (angle === 'dtl') {
     warnings.push('Down-the-line: speed along line only; launch angle is not reported.');
+  } else {
+    warnings.push(
+      'Corner: estimated launch angle, start direction, and carry — best at 6–10 ft behind, ~45° off line.',
+    );
   }
 
   return {
@@ -58,20 +76,28 @@ export function validateSetup(
   };
 }
 
-export function inferCameraAngleFromTrack(track: TrackPoint[]): 'face-on' | 'dtl' {
-  if (track.length < 3) return 'face-on';
+export function inferCameraAngleFromTrack(track: TrackPoint[]): CameraAngle {
+  if (track.length < 3) return 'corner';
   let dxSum = 0;
   let dySum = 0;
   for (let i = 1; i < track.length; i++) {
     dxSum += Math.abs(track[i]!.px - track[i - 1]!.px);
     dySum += Math.abs(track[i]!.py - track[i - 1]!.py);
   }
-  // Face-on: ball moves mostly vertically on screen; DTL: mostly horizontal.
-  return dxSum > dySum * 1.2 ? 'dtl' : 'face-on';
+  const ratio = dxSum / Math.max(dySum, 0.001);
+  if (ratio > 2) return 'dtl';
+  if (ratio < 0.5) return 'face-on';
+  return 'corner';
 }
 
 export function validatePreImpactBall(frames: SampledFrame[], impactIndex: number): string | null {
   const pre = frames.slice(Math.max(0, impactIndex - 5), impactIndex);
   if (pre.length === 0) return 'No pre-impact frames for ball calibration.';
   return null;
+}
+
+export function angleLabel(angle: CameraAngle): string {
+  if (angle === 'corner') return 'Corner (6–10 ft behind)';
+  if (angle === 'dtl') return 'Down-the-line';
+  return 'Face-on';
 }

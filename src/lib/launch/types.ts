@@ -1,6 +1,6 @@
 /** Launch monitor types — deterministic measurements only. */
 
-export type CameraAngle = 'face-on' | 'dtl';
+export type CameraAngle = 'face-on' | 'dtl' | 'corner';
 
 export type LaunchConfidence = 'uncalibrated';
 

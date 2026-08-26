@@ -13,6 +13,11 @@ import {
 import { TracerOverlay } from '../components/launch/TracerOverlay';
 import {
   analyzeLaunchVideo,
+  angleLabel,
+  filterDisplayMetrics,
+  filterDisplayUnavailable,
+  formatDirection,
+  IDEAL_SETUP_SUMMARY,
   isLaunchAnalysis,
   LM_TIER_MIN_FPS,
   loadLaunchHistory,
@@ -27,42 +32,46 @@ import {
 type Step = 'setup' | 'record' | 'preview' | 'analyzing' | 'results' | 'rejected';
 
 const CHECKLIST = [
-  'Record in native Camera app slow-mo (120 or 240 fps).',
-  'Face-on for launch angle + carry; down-the-line for line speed only.',
+  `Ideal: ${IDEAL_SETUP_SUMMARY}`,
+  '120 or 240 fps slow-mo is best; 30 and 60 fps also work with lower accuracy.',
   'Keep the ball in frame at least 1–2 seconds after impact.',
   'Use a white or yellow ball on contrasting turf when possible.',
   'Hold phone steady — motion blur breaks tracking.',
 ] as const;
 
 function formatMetric(m: LaunchMetric): string {
-  if (m.unit === '°') return `${m.value}°`;
+  if (m.id === 'launch_direction') return formatDirection(m);
+  if (m.unit === 'yd') return `${m.value} yd`;
   return `${m.value} ${m.unit}`;
 }
 
-function MetricRow({ m }: { m: LaunchMetric }) {
+function HeroMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border-b border-line px-4 py-3 last:border-0">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="text-[13px] font-semibold text-ink">{m.label}</div>
-          <p className="mt-0.5 text-[11px] text-amber-700">
-            Uncalibrated — for relative comparison only
-          </p>
-          <p className="mt-0.5 text-[11px] text-muted">
-            {m.validForAngle === 'dtl' ? 'Down-the-line' : 'Face-on'}
-          </p>
-        </div>
-        <div className="shrink-0 text-right text-[15px] font-bold tabular text-brand">
-          {formatMetric(m)}
-        </div>
-      </div>
-      {m.assumptions.length > 0 ? (
-        <ul className="mt-2 list-disc pl-4 text-[10px] leading-snug text-faint">
-          {m.assumptions.slice(0, 3).map((a) => (
-            <li key={a}>{a}</li>
-          ))}
-        </ul>
-      ) : null}
+    <div className="rounded-xl border border-line bg-canvas/80 px-4 py-3 text-center">
+      <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
+        {label}
+      </p>
+      <p className="mt-1 font-display text-[26px] font-bold tabular tracking-tight text-brand">
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function ResultsHero({ metrics }: { metrics: LaunchMetric[] }) {
+  const display = filterDisplayMetrics(metrics);
+  const carry = display.find((m) => m.id === 'carry');
+  const total = display.find((m) => m.id === 'total');
+  const direction = display.find((m) => m.id === 'launch_direction');
+
+  return (
+    <div className="grid grid-cols-3 gap-2">
+      <HeroMetric label="Carry" value={carry ? formatMetric(carry) : '—'} />
+      <HeroMetric label="Total" value={total ? formatMetric(total) : '—'} />
+      <HeroMetric
+        label="Direction"
+        value={direction ? formatDirection(direction) : '—'}
+      />
     </div>
   );
 }
@@ -74,7 +83,7 @@ export function LaunchView() {
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
   const [step, setStep] = useState<Step>('setup');
-  const [angle, setAngle] = useState<CameraAngle | 'auto'>('auto');
+  const [angle, setAngle] = useState<CameraAngle | 'auto'>('corner');
   const [club, setClub] = useState('driver');
   const [blob, setBlob] = useState<Blob | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -245,7 +254,7 @@ export function LaunchView() {
           Launch monitor
         </h1>
         <p className="mt-2 text-[14px] text-muted">
-          Upload slow-mo from your Camera app. Shot tracer and rough yardage — measured on-device, never uploaded.
+          Upload slow-mo from your Camera app. Best from a corner view 6–10 ft behind the ball — shot tracer and rough yardage on-device.
         </p>
       </header>
 
@@ -278,6 +287,7 @@ export function LaunchView() {
             <div className="mt-3 flex flex-wrap gap-2">
               {(
                 [
+                  ['corner', 'Corner (ideal)'],
                   ['auto', 'Auto-detect'],
                   ['face-on', 'Face-on'],
                   ['dtl', 'Down-the-line'],
@@ -297,11 +307,12 @@ export function LaunchView() {
                 </button>
               ))}
             </div>
+            <p className="mt-2 text-[11px] text-muted">{IDEAL_SETUP_SUMMARY}</p>
           </section>
 
           <section className="rounded-card bg-surface p-4 shadow-card">
             <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
-              Club (spin assumption)
+              Club (for carry estimate)
             </p>
             <select
               value={club}
@@ -317,7 +328,7 @@ export function LaunchView() {
               )}
             </select>
             <p className="mt-2 text-[11px] text-muted">
-              Spin is not measurable — carry uses typical spin for this club.
+              Carry uses typical flight for this club — spin is not shown or measured.
             </p>
           </section>
 
@@ -367,8 +378,7 @@ export function LaunchView() {
                     >
                       <div>
                         <div className="text-[13px] font-semibold text-ink">
-                          {h.angle === 'dtl' ? 'Down-the-line' : 'Face-on'} · ~
-                          {Math.round(h.fps)} fps
+                          {angleLabel(h.angle)} · ~{Math.round(h.fps)} fps
                         </div>
                         <div className="text-[11px] text-muted">
                           {new Date(h.createdAt).toLocaleString()}
@@ -506,6 +516,8 @@ export function LaunchView() {
             videoHeight={videoSize.h || 720}
           />
 
+          <ResultsHero metrics={result.metrics} />
+
           <div className="rounded-card border border-amber-500/40 bg-[color-mix(in_srgb,#f59e0b_8%,transparent)] px-4 py-3">
             <div className="flex gap-2">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" aria-hidden="true" />
@@ -520,40 +532,43 @@ export function LaunchView() {
 
           {result.fps < LM_TIER_MIN_FPS ? (
             <div className="rounded-card border border-amber-500/40 bg-surface px-4 py-3 text-[12px] text-ink">
-              Measured ~{Math.round(result.fps)} fps — below {LM_TIER_MIN_FPS} launch-monitor tier. Tracer may work; numbers are less reliable.
+              {result.fps >= 60
+                ? `Measured ~${Math.round(result.fps)} fps — standard rate. Numbers shown at reduced accuracy; 120+ fps slow-mo is more reliable.`
+                : result.fps >= 30
+                  ? `Measured ~${Math.round(result.fps)} fps — low rate. Rough yardage shown but expect wider error; use slow-mo when you can.`
+                  : `Measured ~${Math.round(result.fps)} fps — below 30 fps minimum for yardage. Tracer only.`}
             </div>
           ) : null}
 
-          {result.setupWarnings.map((w) => (
-            <p key={w} className="text-[12px] text-muted">
-              {w}
-            </p>
-          ))}
+          {result.setupWarnings.length > 0 ? (
+            <details className="text-[12px] text-muted">
+              <summary className="cursor-pointer font-medium text-ink">Setup notes</summary>
+              <ul className="mt-2 list-disc pl-4">
+                {result.setupWarnings.map((w) => (
+                  <li key={w}>{w}</li>
+                ))}
+              </ul>
+            </details>
+          ) : null}
 
-          <div className="overflow-hidden rounded-card bg-surface shadow-card">
-            <div className="border-b border-line px-4 py-3">
-              <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
-                Metrics
-              </p>
-              <p className="mt-0.5 text-[11px] text-muted">
-                ~{Math.round(result.fps)} fps · {result.tier.replace('-', ' ')} ·{' '}
-                {result.angle === 'dtl' ? 'down-the-line' : 'face-on'}
-              </p>
+          {Object.keys(filterDisplayUnavailable(result.unavailable)).length > 0 ? (
+            <div className="rounded-card border border-line bg-surface px-4 py-3 text-[12px] text-muted">
+              {Object.entries(filterDisplayUnavailable(result.unavailable)).map(
+                ([id, reason]) => (
+                  <p key={id}>
+                    <span className="font-medium capitalize text-ink">
+                      {id.replace(/_/g, ' ')}:
+                    </span>{' '}
+                    {reason}
+                  </p>
+                ),
+              )}
             </div>
-            {result.metrics.length > 0 ? (
-              result.metrics.map((m) => <MetricRow key={m.id} m={m} />)
-            ) : (
-              <p className="px-4 py-3 text-[13px] text-muted">No numeric metrics for this clip.</p>
-            )}
-            {Object.entries(result.unavailable).map(([id, reason]) => (
-              <div key={id} className="border-t border-line px-4 py-2.5">
-                <p className="text-[12px] font-medium capitalize text-faint">
-                  {id.replace(/_/g, ' ')}
-                </p>
-                <p className="text-[12px] text-muted">{reason}</p>
-              </div>
-            ))}
-          </div>
+          ) : null}
+
+          <p className="text-center text-[11px] text-muted">
+            ~{Math.round(result.fps)} fps · {angleLabel(result.angle)} · uncalibrated
+          </p>
 
           <button
             type="button"
@@ -570,12 +585,12 @@ export function LaunchView() {
           <p className="text-[14px] text-muted">
             Loaded from history — re-upload the clip to replay tracer.
           </p>
-          <div className="overflow-hidden rounded-card bg-surface shadow-card">
-            {result.metrics.map((m) => (
-              <MetricRow key={m.id} m={m} />
-            ))}
-          </div>
-          <button type="button" onClick={reset} className="w-full rounded-xl bg-brand px-4 py-3 text-[14px] font-bold text-white">
+          <ResultsHero metrics={result.metrics} />
+          <button
+            type="button"
+            onClick={reset}
+            className="w-full rounded-xl bg-brand px-4 py-3 text-[14px] font-bold text-white"
+          >
             New shot
           </button>
         </div>

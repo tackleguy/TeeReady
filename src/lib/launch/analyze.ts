@@ -12,6 +12,7 @@ import { computeLaunchMetrics } from './physics';
 import { trackBall } from './track';
 import type {
   AnalyzeLaunchProgress,
+  CameraAngle,
   LaunchAnalysis,
   LaunchReject,
   LaunchResult,
@@ -43,7 +44,7 @@ async function blobToVideo(blob: Blob): Promise<HTMLVideoElement> {
 
 export async function analyzeLaunchVideo(opts: {
   blob: Blob;
-  angle?: 'face-on' | 'dtl' | 'auto';
+  angle?: CameraAngle | 'auto';
   club?: string;
   onProgress?: (p: AnalyzeLaunchProgress) => void;
 }): Promise<LaunchResult> {

@@ -1,7 +1,9 @@
 /** Verify launch physics with hand-computed cases. */
 
 import {
+  analyzeCornerFlight,
   estimateCarryYards,
+  estimateTotalYards,
   GOLF_BALL_DIAMETER_MM,
   mphFromPixels,
 } from '../src/lib/launch';
@@ -40,6 +42,23 @@ assert('carry positive', carry > 100 && carry < 400, `got ${carry} yd`);
 // Zero launch → short roll
 const flat = estimateCarryYards(100, 0, 2500);
 assert('flat launch carry', flat >= 0 && flat < 50, `got ${flat} yd`);
+
+const total = estimateTotalYards(200, 'driver');
+assert('total > carry', total > 200 && total <= 230, `got ${total} yd`);
+
+// Corner decomposition sanity: upward + forward screen motion
+const cornerTrack = [
+  { t: 0, frameIndex: 0, x: 0.5, y: 0.6, px: 500, py: 600 },
+  { t: 0.008, frameIndex: 1, x: 0.52, y: 0.58, px: 520, py: 580 },
+  { t: 0.016, frameIndex: 2, x: 0.54, y: 0.55, px: 540, py: 550 },
+  { t: 0.024, frameIndex: 3, x: 0.56, y: 0.52, px: 560, py: 520 },
+];
+const corner = analyzeCornerFlight(cornerTrack, mmPerPx);
+assert(
+  'corner flight',
+  corner != null && corner.launchAngleDeg > 5 && corner.ballSpeedMph > 0,
+  corner ? `angle ${corner.launchAngleDeg}, speed ${corner.ballSpeedMph}` : 'null',
+);
 
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);

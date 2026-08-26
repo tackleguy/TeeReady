@@ -217,7 +217,6 @@ export function trackBall(
     let pt = centroids[i];
 
     if (!pt && last && i > impactIndex) {
-      // Predict forward from last known — short gap fill.
       const motion = motionBlocks(frames[i - 1]!, frame);
       pt = findMovingBlob(frame, motion, 4, 0);
     }
@@ -233,12 +232,28 @@ export function trackBall(
         py: pt.cy,
       });
     } else if (last && track.length > 0) {
-      // Stop if we lose the ball for 2+ frames after having a track.
       break;
     }
   }
 
-  return { track, impactIndex };
+  return { track: smoothTrack(track), impactIndex };
+}
+
+/** Light smoothing on early flight points for stabler fits. */
+function smoothTrack(track: TrackPoint[]): TrackPoint[] {
+  if (track.length < 3) return track;
+  return track.map((p, i) => {
+    if (i === 0 || i === track.length - 1) return p;
+    const prev = track[i - 1]!;
+    const next = track[i + 1]!;
+    return {
+      ...p,
+      px: prev.px * 0.2 + p.px * 0.6 + next.px * 0.2,
+      py: prev.py * 0.2 + p.py * 0.6 + next.py * 0.2,
+      x: prev.x * 0.2 + p.x * 0.6 + next.x * 0.2,
+      y: prev.y * 0.2 + p.y * 0.6 + next.y * 0.2,
+    };
+  });
 }
 
 export function speedPxPerFrame(track: TrackPoint[]): number[] {
