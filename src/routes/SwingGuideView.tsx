@@ -75,8 +75,7 @@ function Section({
           <h2 className="text-[15px] font-bold text-ink">{title}</h2>
         </div>
         <ChevronDown
-          className={`h-4 w-4 shrink-0 text-muted transition-transform ${open ? 'rotate-180' : ''}`}
-        />
+          className={`h-4 w-4 shrink-0 text-muted transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden="true" />
       </button>
       {open ? <div className="border-t border-line px-4 py-3">{children}</div> : null}
     </section>
@@ -218,7 +217,7 @@ export function SwingGuideView() {
   if (loading) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3 px-5">
-        <Loader2 className="h-8 w-8 animate-spin text-brand" />
+        <Loader2 className="h-8 w-8 animate-spin text-brand" aria-hidden="true" />
         <p className="text-[15px] font-semibold text-ink">Building your guide…</p>
         <p className="text-[12px] text-muted">
           {sectionStatus || 'Assembling measured plan'}
@@ -259,7 +258,7 @@ export function SwingGuideView() {
             onClick={() => window.print()}
             className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-surface px-3 py-2 text-[12px] font-semibold text-ink shadow-card"
           >
-            <Printer className="h-3.5 w-3.5" />
+            <Printer className="h-3.5 w-3.5" aria-hidden="true" />
             Print for the range
           </button>
           <Link
@@ -278,7 +277,7 @@ export function SwingGuideView() {
 
       {stalled ? (
         <div className="mb-4 flex gap-2 rounded-card border border-amber-500/40 bg-[color-mix(in_srgb,#f59e0b_12%,transparent)] px-3 py-3 text-[13px] text-ink">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" aria-hidden="true" />
           <p>
             This cycle didn&apos;t move the checkpoint metric. Don&apos;t silently repeat the same
             plan — try the alternate library drill in your sessions, or see a coach for a live look.
@@ -369,7 +368,7 @@ export function SwingGuideView() {
                                   : 'border-line bg-surface'
                               }`}
                             >
-                              {done ? <Check className="h-3 w-3" strokeWidth={3} /> : null}
+                              {done ? <Check className="h-3 w-3" strokeWidth={3} aria-hidden="true" /> : null}
                             </button>
                             <div className="min-w-0">
                               <div className="text-[13px] font-semibold text-ink">{d.name}</div>
@@ -404,7 +403,7 @@ export function SwingGuideView() {
             {plan.checkpoints.map((cp) => (
               <li key={`${cp.week}-${cp.metricId}`} className="text-[13px] text-ink">
                 <div className="flex items-start gap-2">
-                  <Target className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+                  <Target className="mt-0.5 h-4 w-4 shrink-0 text-brand" aria-hidden="true" />
                   <div>
                     <p className="font-semibold">Week {cp.week}</p>
                     <p className="mt-1 text-muted">{cp.instruction}</p>

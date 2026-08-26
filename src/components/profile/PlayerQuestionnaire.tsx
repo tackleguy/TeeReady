@@ -53,7 +53,7 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 }
 
 function inputClassName() {
-  return 'w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-base text-ink outline-none transition-colors placeholder:text-faint focus:border-brand';
+  return 'w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-base text-ink outline-none transition-colors placeholder:text-faint focus:border-brand focus-visible:ring-2 focus-visible:ring-brand';
 }
 
 function ChipPick<T extends string>({
@@ -288,7 +288,7 @@ export function PlayerQuestionnaire({
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-brand" strokeWidth={2} />
+            <Sparkles className="h-4 w-4 text-brand" strokeWidth={2} aria-hidden="true" />
             <span className="text-[12px] font-semibold text-brand">
               Player profile · step {step + 1} of {STEPS.length}
             </span>
@@ -629,7 +629,7 @@ export function PlayerQuestionnaire({
           onClick={goBack}
           className="inline-flex items-center justify-center gap-1 rounded-xl border border-line bg-surface px-4 py-2.5 text-[13px] font-semibold text-muted hover:text-ink"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           Back
         </button>
         {isLast ? (
@@ -639,7 +639,7 @@ export function PlayerQuestionnaire({
             className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-brand px-4 py-2.5 text-[13px] font-bold text-white"
           >
             Finish profile
-            <Check className="h-4 w-4" />
+            <Check className="h-4 w-4" aria-hidden="true" />
           </button>
         ) : (
           <button
@@ -648,7 +648,7 @@ export function PlayerQuestionnaire({
             className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-brand px-4 py-2.5 text-[13px] font-bold text-white"
           >
             Continue
-            <ArrowRight className="h-4 w-4" />
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </button>
         )}
       </div>

@@ -381,7 +381,7 @@ export function TopNav({
               className="grid h-9 w-9 place-items-center rounded-full border border-line bg-surface text-muted shadow-card hover:text-ink md:hidden"
               aria-label="Open menu"
             >
-              <PanelLeft className="h-4 w-4" strokeWidth={2.2} />
+              <PanelLeft className="h-4 w-4" strokeWidth={2.2} aria-hidden="true" />
             </button>
           ) : null}
           <NavLink to="/today" className="group flex items-center gap-2.5">

@@ -119,7 +119,7 @@ export function StatsView() {
 
       {rounds.length === 0 ? (
         <section className="rounded-card bg-surface p-8 text-center shadow-card">
-          <BarChart3 className="mx-auto h-10 w-10 text-faint" strokeWidth={1.5} />
+          <BarChart3 className="mx-auto h-10 w-10 text-faint" strokeWidth={1.5} aria-hidden="true" />
           <h2 className="mt-4 text-[17px] font-bold text-ink">No rounds yet</h2>
           <p className="mt-2 text-[14px] text-muted">
             Enter scores on the scorecard (Scoring or Stats tab), then tap{' '}

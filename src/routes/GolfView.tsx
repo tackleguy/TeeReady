@@ -283,6 +283,10 @@ export function GolfView({ active = true }: { active?: boolean }) {
     quality: gpsQuality,
     locating: gpsLocating,
     locateOnce,
+    statusLabel: gpsStatusLabel,
+    approximate: gpsApproximate,
+    stale: gpsStale,
+    wakeLockMessage: gpsWakeLockMessage,
   } = useGpsWatch(gpsOn);
 
   useEffect(() => {
@@ -970,14 +974,18 @@ export function GolfView({ active = true }: { active?: boolean }) {
   const hourSlider = course ? (
     <div className={isMobile ? 'px-3 pb-2' : 'border-t border-[var(--line-subtle)] p-3'}>
       <div className="mb-2 flex items-center justify-between gap-2">
-        <span className="text-[11px] font-medium uppercase tracking-wide text-[var(--ink-3)]">
+        <label
+          htmlFor="golf-forecast-hour"
+          className="text-[11px] font-medium uppercase tracking-wide text-[var(--ink-3)]"
+        >
           Forecast hour
-        </span>
+        </label>
         <span className="text-[11px] tabular-nums text-[var(--ink-2)]">
           +{hour}h
         </span>
       </div>
       <input
+        id="golf-forecast-hour"
         type="range"
         min={0}
         max={24}
@@ -987,13 +995,13 @@ export function GolfView({ active = true }: { active?: boolean }) {
       />
       {ensemble && (
         <p className="mt-2 text-[11px] leading-snug text-[var(--ink-2)]">
-          <Sparkles className="mr-1 inline h-3 w-3 text-[var(--accent)]" />
+          <Sparkles className="mr-1 inline h-3 w-3 text-[var(--accent)]" aria-hidden="true" />
           {ensemble.summary}
         </p>
       )}
       {ensLoading && (
         <p className="mt-2 flex items-center gap-1.5 text-[11px] text-[var(--ink-3)]">
-          <RefreshCw className="h-3 w-3 animate-spin" />
+          <RefreshCw className="h-3 w-3 animate-spin" aria-hidden="true" />
           Blending forecasts…
         </p>
       )}
@@ -1020,7 +1028,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
       >
         <div className="border-b border-[var(--line-subtle)] px-3 py-3">
           <div className="flex items-center gap-2">
-          <Flag className="h-4 w-4 text-[var(--accent)]" strokeWidth={1.8} />
+          <Flag className="h-4 w-4 text-[var(--accent)]" strokeWidth={1.8} aria-hidden="true" />
           <div className="min-w-0 flex-1">
             <p className="section-eyebrow">Golf intelligence</p>
             <h1 className="truncate text-sm font-semibold text-[var(--ink-1)]">
@@ -1036,7 +1044,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
             aria-label="WeatherStop weather"
             title="WeatherStop weather"
           >
-            <CloudSun className="h-4 w-4" />
+            <CloudSun className="h-4 w-4" aria-hidden="true" />
           </a>
           {course ? (
             <button
@@ -1054,7 +1062,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
             title={`Settings · HCP ${formatHandicap(profile.handicap)}`}
             onClick={() => navigate('/settings')}
           >
-            <Settings2 className="h-4 w-4" />
+            <Settings2 className="h-4 w-4" aria-hidden="true" />
           </button>
           <button
             type="button"
@@ -1062,11 +1070,11 @@ export function GolfView({ active = true }: { active?: boolean }) {
             aria-label="Change location"
             onClick={() => setSearchOpen((v) => !v)}
           >
-            <Search className="h-4 w-4" />
+            <Search className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
           <div className="mt-3 floating-subpanel flex items-center gap-2 px-3 py-2">
-            <MapPin className="h-3.5 w-3.5 shrink-0 text-[var(--ink-4)]" />
+            <MapPin className="h-3.5 w-3.5 shrink-0 text-[var(--ink-4)]" aria-hidden="true" />
             <span className="truncate text-xs text-[var(--ink-2)]">{loc.name}</span>
           </div>
         </div>
@@ -1122,7 +1130,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-3">
           {coursesLoading && (
             <div className="floating-subpanel flex items-center gap-2 px-3 py-3 text-xs text-[var(--ink-3)]">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />{' '}
+              <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />{' '}
               {courseFilter.trim().length >= 2
                 ? 'Searching 14,000+ courses…'
                 : 'Finding nearby courses…'}
@@ -1447,7 +1455,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                           : 'text-[var(--ink-2)] hover:bg-white/10',
                       ].join(' ')}
                     >
-                      <Mountain className="h-3 w-3" />
+                      <Mountain className="h-3 w-3" aria-hidden="true" />
                       3D
                     </button>
                   ) : null}
@@ -1508,7 +1516,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                         aria-label="Previous hole"
                         className="rounded-lg p-2 text-[var(--ink-2)] transition-colors hover:bg-white/10 hover:text-[var(--ink-1)] disabled:opacity-30 md:p-1.5"
                       >
-                        <ChevronLeft className="h-5 w-5 md:h-4 md:w-4" />
+                        <ChevronLeft className="h-5 w-5 md:h-4 md:w-4" aria-hidden="true" />
                       </button>
                       <button
                         type="button"
@@ -1540,7 +1548,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                         aria-label="Next hole"
                         className="rounded-lg p-2 text-[var(--ink-2)] transition-colors hover:bg-white/10 hover:text-[var(--ink-1)] disabled:opacity-30 md:p-1.5"
                       >
-                        <ChevronRight className="h-5 w-5 md:h-4 md:w-4" />
+                        <ChevronRight className="h-5 w-5 md:h-4 md:w-4" aria-hidden="true" />
                       </button>
                       {activeHole != null &&
                       activeIdx >= 0 &&
@@ -1559,6 +1567,11 @@ export function GolfView({ active = true }: { active?: boolean }) {
                         type="button"
                         onClick={() => setHoleUp((v) => !v)}
                         aria-pressed={holeUp}
+                        aria-label={
+                          holeUp
+                            ? 'Stop hole-up map rotation'
+                            : 'Rotate map so the hole plays up the screen'
+                        }
                         title="Rotate map so the hole plays up the screen"
                         className={[
                           'rounded-lg p-2 transition-colors md:p-1.5',
@@ -1567,7 +1580,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                             : 'text-[var(--ink-3)] hover:bg-white/10',
                         ].join(' ')}
                       >
-                        <Compass className="h-5 w-5 md:h-4 md:w-4" />
+                        <Compass className="h-5 w-5 md:h-4 md:w-4" aria-hidden="true" />
                       </button>
                       {!isMobile || viewMode !== 'gps' ? (
                         <>
@@ -1645,6 +1658,10 @@ export function GolfView({ active = true }: { active?: boolean }) {
                   holeYards={activeHoleObj?.yards ?? null}
                   holeNumber={activeHoleObj?.number ?? null}
                   bearingToPin={gpsBearingToPin}
+                  statusLabel={gpsStatusLabel}
+                  approximate={gpsApproximate}
+                  stale={gpsStale}
+                  wakeLockMessage={gpsWakeLockMessage}
                   onToggleFollow={() => setGpsFollow((v) => !v)}
                   onLocate={() => {
                     locateOnce();
@@ -1868,9 +1885,9 @@ export function GolfView({ active = true }: { active?: boolean }) {
                       </div>
                     </div>
                     {sheetExpanded ? (
-                      <ChevronDown className="h-4 w-4 shrink-0 text-[var(--ink-3)]" />
+                      <ChevronDown className="h-4 w-4 shrink-0 text-[var(--ink-3)]" aria-hidden="true" />
                     ) : (
-                      <ChevronUp className="h-4 w-4 shrink-0 text-[var(--ink-3)]" />
+                      <ChevronUp className="h-4 w-4 shrink-0 text-[var(--ink-3)]" aria-hidden="true" />
                     )}
                   </button>
                 ) : (
@@ -1916,7 +1933,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     >
                       {holesLoading ? (
                         <>
-                          <Loader2 className="h-3 w-3 animate-spin" />
+                          <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
                           Loading…
                         </>
                       ) : holesFromBackup ? (
@@ -1933,7 +1950,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     onClick={() => setBookOpen(true)}
                     className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-[var(--accent)]/20 px-2 py-1.5 text-[11px] font-semibold text-[var(--ink-1)] hover:bg-[var(--accent)]/30"
                   >
-                    <BookOpen className="h-3.5 w-3.5" />
+                    <BookOpen className="h-3.5 w-3.5" aria-hidden="true" />
                     {savedYardageNotes ? 'Yardage notes' : 'Yardage book'}
                   </button>
                 </div>
@@ -2111,8 +2128,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                                 className="mt-1 h-3.5 w-3.5 shrink-0 text-[var(--ink-4)]"
                                 style={{
                                   transform: `rotate(${h.bearingDeg}deg)`,
-                                }}
-                              />
+                                }} aria-hidden="true" />
                             </button>
                           </li>
                         );
@@ -2134,7 +2150,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
           </>
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-3 bg-[var(--surface-0)] px-6 text-center">
-            <Flag className="h-8 w-8 text-[var(--ink-4)]" />
+            <Flag className="h-8 w-8 text-[var(--ink-4)]" aria-hidden="true" />
             <p className="max-w-sm text-sm text-[var(--ink-2)]">
               Pick a course to open satellite imagery, hole yardages and
               bearings, then a hole-by-hole wind read from multiple forecasts.

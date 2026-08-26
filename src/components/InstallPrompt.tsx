@@ -55,7 +55,7 @@ export function InstallPrompt() {
   return (
     <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 z-40 w-[min(100vw-1.5rem,24rem)] -translate-x-1/2 sm:bottom-6">
       <div className="flex items-center gap-3 rounded-2xl border border-white/15 bg-[rgba(11,16,32,0.92)] px-4 py-3 shadow-2xl backdrop-blur-xl">
-        <Download className="h-4 w-4 shrink-0 text-white" strokeWidth={2.2} />
+        <Download className="h-4 w-4 shrink-0 text-white" strokeWidth={2.2} aria-hidden="true" />
         <div className="min-w-0 text-[13px] text-white/85">
           Install TeeReady for fast on-course access.
         </div>
@@ -80,14 +80,14 @@ export function InstallPrompt() {
         </button>
         <button
           type="button"
-          aria-label="Dismiss"
+          aria-label="Dismiss install prompt"
           onClick={() => {
             markDismissed();
             setVisible(false);
           }}
           className="grid h-7 w-7 place-items-center rounded-full text-white/55 hover:bg-white/10 hover:text-white"
         >
-          <X className="h-3.5 w-3.5" strokeWidth={2.2} />
+          <X className="h-3.5 w-3.5" strokeWidth={2.2} aria-hidden="true" />
         </button>
       </div>
     </div>

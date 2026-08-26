@@ -169,7 +169,7 @@ function Lobby({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-base text-ink outline-none focus:border-brand"
+                className="w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-base text-ink outline-none focus:border-brand focus-visible:ring-2 focus-visible:ring-brand"
               />
             </label>
             <div className="block">
@@ -191,7 +191,7 @@ function Lobby({
                 <input
                   value={format}
                   onChange={(e) => setFormat(e.target.value)}
-                  className="w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-base text-ink outline-none focus:border-brand"
+                  className="w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-base text-ink outline-none focus:border-brand focus-visible:ring-2 focus-visible:ring-brand"
                 />
               </label>
               <label className="block">
@@ -202,7 +202,7 @@ function Lobby({
                   value={pot}
                   onChange={(e) => setPot(e.target.value)}
                   placeholder={gameMode === 'skins' ? '$40' : 'Optional'}
-                  className="w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-base text-ink outline-none focus:border-brand"
+                  className="w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-base text-ink outline-none focus:border-brand focus-visible:ring-2 focus-visible:ring-brand"
                 />
               </label>
             </div>
@@ -232,7 +232,7 @@ function Lobby({
                 required
                 minLength={4}
                 placeholder="ABC123"
-                className="w-full rounded-xl border border-line bg-canvas px-3 py-2.5 font-mono text-[16px] tracking-[0.2em] text-ink outline-none focus:border-brand"
+                className="w-full rounded-xl border border-line bg-canvas px-3 py-2.5 font-mono text-[16px] tracking-[0.2em] text-ink outline-none focus:border-brand focus-visible:ring-2 focus-visible:ring-brand"
               />
             </label>
             <button
@@ -276,8 +276,9 @@ function ModeControls({
             type="button"
             onClick={() => onBumpPoints(-1)}
             className="grid h-9 w-9 place-items-center rounded-lg border border-line"
+            aria-label="Decrease points by 1"
           >
-            <Minus className="h-4 w-4" />
+            <Minus className="h-4 w-4" aria-hidden="true" />
           </button>
           <span className="min-w-[3rem] text-center text-[15px] font-bold tabular">
             {me.points ?? 0}
@@ -286,8 +287,9 @@ function ModeControls({
             type="button"
             onClick={() => onBumpPoints(1)}
             className="grid h-9 w-9 place-items-center rounded-lg border border-line"
+            aria-label="Increase points by 1"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-4 w-4" aria-hidden="true" />
           </button>
           <button
             type="button"
@@ -311,8 +313,9 @@ function ModeControls({
             type="button"
             onClick={() => onBumpScore(-1, 0)}
             className="grid h-9 w-9 place-items-center rounded-lg border border-line"
+            aria-label="Decrease score by 1"
           >
-            <Minus className="h-4 w-4" />
+            <Minus className="h-4 w-4" aria-hidden="true" />
           </button>
           <span className="min-w-[2.5rem] text-center text-[14px] font-bold tabular">
             {formatToPar(me.to_par)}
@@ -321,16 +324,18 @@ function ModeControls({
             type="button"
             onClick={() => onBumpScore(1, 0)}
             className="grid h-9 w-9 place-items-center rounded-lg border border-line"
+            aria-label="Increase score by 1"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-4 w-4" aria-hidden="true" />
           </button>
           <span className="ml-2 mr-1 text-[11px] text-faint">Skins</span>
           <button
             type="button"
             onClick={() => onBumpSkins(-1)}
             className="grid h-9 w-9 place-items-center rounded-lg border border-line"
+            aria-label="Decrease skins by 1"
           >
-            <Minus className="h-4 w-4" />
+            <Minus className="h-4 w-4" aria-hidden="true" />
           </button>
           <span className="min-w-[2rem] text-center text-[14px] font-bold tabular">
             {me.skins_won}
@@ -339,8 +344,9 @@ function ModeControls({
             type="button"
             onClick={() => onBumpSkins(1)}
             className="grid h-9 w-9 place-items-center rounded-lg border border-line"
+            aria-label="Increase skins by 1"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-4 w-4" aria-hidden="true" />
           </button>
           <button
             type="button"
@@ -364,8 +370,9 @@ function ModeControls({
             onClick={() => onBumpMatch(-1)}
             className="grid h-9 w-9 place-items-center rounded-lg border border-line"
             title="One down"
+            aria-label="One hole down"
           >
-            <Minus className="h-4 w-4" />
+            <Minus className="h-4 w-4" aria-hidden="true" />
           </button>
           <span className="min-w-[3.5rem] text-center text-[15px] font-bold tabular">
             {formatPrimaryStat('match', me, formatToPar)}
@@ -375,8 +382,9 @@ function ModeControls({
             onClick={() => onBumpMatch(1)}
             className="grid h-9 w-9 place-items-center rounded-lg border border-line"
             title="One up"
+            aria-label="One hole up"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-4 w-4" aria-hidden="true" />
           </button>
           <button
             type="button"
@@ -401,8 +409,9 @@ function ModeControls({
           type="button"
           onClick={() => onBumpScore(-1, 0)}
           className="grid h-9 w-9 place-items-center rounded-lg border border-line"
+          aria-label="Decrease score by 1"
         >
-          <Minus className="h-4 w-4" />
+          <Minus className="h-4 w-4" aria-hidden="true" />
         </button>
         <span className="min-w-[3rem] text-center text-[15px] font-bold tabular">
           {formatToPar(me.to_par)}
@@ -411,8 +420,9 @@ function ModeControls({
           type="button"
           onClick={() => onBumpScore(1, 0)}
           className="grid h-9 w-9 place-items-center rounded-lg border border-line"
+          aria-label="Increase score by 1"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-4 w-4" aria-hidden="true" />
         </button>
         <button
           type="button"
@@ -532,7 +542,7 @@ export function GroupView() {
               {mode.label}
             </span>
             <span className="inline-flex items-center gap-1 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
-              <Users className="h-3 w-3" />
+              <Users className="h-3 w-3" aria-hidden="true" />
               {ranked.length} player{ranked.length === 1 ? '' : 's'}
             </span>
           </div>
@@ -552,9 +562,9 @@ export function GroupView() {
             className="inline-flex items-center gap-2 rounded-xl border border-line bg-surface px-3.5 py-2.5 text-[13px] font-semibold text-muted hover:text-ink"
           >
             {copied ? (
-              <Check className="h-3.5 w-3.5 text-brand" />
+              <Check className="h-3.5 w-3.5 text-brand" aria-hidden="true" />
             ) : (
-              <Copy className="h-3.5 w-3.5" />
+              <Copy className="h-3.5 w-3.5" aria-hidden="true" />
             )}
             {copied ? 'Copied' : mp.group.invite_code}
           </button>
@@ -570,7 +580,7 @@ export function GroupView() {
             title="Leave group"
             className="inline-flex items-center gap-2 rounded-xl border border-line px-3 py-2.5 text-[13px] font-semibold text-muted hover:text-ink"
           >
-            <LogOut className="h-3.5 w-3.5" />
+            <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
             Leave
           </button>
         </div>

@@ -35,7 +35,7 @@ export function CitySearchField({ value, onChange }: Props) {
             : 'border-line'
         }`}
       >
-        <Search className="h-4 w-4 shrink-0 text-muted" strokeWidth={2} />
+        <Search className="h-4 w-4 shrink-0 text-muted" strokeWidth={2} aria-hidden="true" />
         <input
           type="search"
           value={open ? q : display}
@@ -71,10 +71,10 @@ export function CitySearchField({ value, onChange }: Props) {
             }}
             className="text-faint hover:text-ink"
           >
-            <X className="h-4 w-4" strokeWidth={2} />
+            <X className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
           </button>
         ) : (
-          <MapPin className="h-4 w-4 shrink-0 text-faint" strokeWidth={2} />
+          <MapPin className="h-4 w-4 shrink-0 text-faint" strokeWidth={2} aria-hidden="true" />
         )}
       </div>
 
@@ -104,8 +104,7 @@ export function CitySearchField({ value, onChange }: Props) {
                   >
                     <MapPin
                       className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand"
-                      strokeWidth={2}
-                    />
+                      strokeWidth={2} aria-hidden="true" />
                     <span className="min-w-0 text-ink">{r.label}</span>
                   </button>
                 </li>

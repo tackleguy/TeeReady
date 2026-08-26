@@ -112,7 +112,7 @@ function CourseCard({
             </div>
             {has3d ? (
               <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-brand/90 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm">
-                <Box className="h-3 w-3" strokeWidth={2.5} />
+                <Box className="h-3 w-3" strokeWidth={2.5} aria-hidden="true" />
                 3D
               </span>
             ) : null}
@@ -124,7 +124,7 @@ function CourseCard({
         <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted">
           {course.distanceMi != null ? (
             <span className="inline-flex items-center gap-1">
-              <MapPin className="h-3.5 w-3.5" strokeWidth={2} />
+              <MapPin className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
               {course.distanceMi.toFixed(1)} mi
             </span>
           ) : null}
@@ -143,10 +143,10 @@ function CourseCard({
             className="inline-flex min-h-[44px] items-center gap-1 px-2 text-[13px] font-semibold text-muted hover:text-ink disabled:opacity-60"
           >
             {busy === 'gps' ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             ) : (
               <>
-                <Navigation className="h-3.5 w-3.5" strokeWidth={2.2} />
+                <Navigation className="h-3.5 w-3.5" strokeWidth={2.2} aria-hidden="true" />
                 GPS
               </>
             )}
@@ -163,13 +163,13 @@ function CourseCard({
           >
             {busy === 'prep' ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                 Opening…
               </>
             ) : (
               <>
                 Prep
-                <ArrowUpRight className="h-4 w-4" />
+                <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
               </>
             )}
           </button>
@@ -320,13 +320,14 @@ export function CoursesView() {
           </div>
 
           <div className="mt-3 flex items-center gap-2 rounded-xl border border-line bg-canvas px-3 py-2.5">
-            <Search className="h-4 w-4 shrink-0 text-muted" strokeWidth={2} />
+            <Search className="h-4 w-4 shrink-0 text-muted" strokeWidth={2} aria-hidden="true" />
             <input
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search courses…"
-              className="min-w-0 flex-1 bg-transparent text-base text-ink outline-none placeholder:text-faint"
+              aria-label="Search courses"
+              className="min-w-0 flex-1 bg-transparent text-base text-ink outline-none placeholder:text-faint focus-visible:ring-2 focus-visible:ring-brand"
               autoComplete="off"
               enterKeyHint="search"
             />
@@ -340,7 +341,7 @@ export function CoursesView() {
             {filterBtn(
               '3d',
               <span className="inline-flex items-center gap-1">
-                <Box className="h-3 w-3" strokeWidth={2.5} />
+                <Box className="h-3 w-3" strokeWidth={2.5} aria-hidden="true" />
                 3D
                 {!green3dLoading ? (
                   <span className="opacity-70">{green3dCourses.length}</span>
@@ -354,7 +355,7 @@ export function CoursesView() {
           {filter === '3d' ? (
             green3dLoading ? (
               <div className="flex items-center justify-center gap-2 px-4 py-10 text-[13px] text-muted">
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                 Loading…
               </div>
             ) : filteredGreen3d.length === 0 ? (
@@ -385,7 +386,7 @@ export function CoursesView() {
                               : ''}
                           </p>
                         </div>
-                        <ArrowUpRight className="h-4 w-4 shrink-0 text-brand" />
+                        <ArrowUpRight className="h-4 w-4 shrink-0 text-brand" aria-hidden="true" />
                       </button>
                     </li>
                   );

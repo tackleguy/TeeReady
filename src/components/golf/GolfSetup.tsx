@@ -82,7 +82,7 @@ export function GolfSetup({ initial, onComplete, onCancel }: Props) {
       <div className="w-full max-w-lg">
         <div className="mb-6 flex items-start gap-3">
           <div className="mt-0.5 grid h-10 w-10 place-items-center rounded-xl bg-[var(--accent)]/20 text-[var(--accent)]">
-            <Flag className="h-5 w-5" strokeWidth={1.8} />
+            <Flag className="h-5 w-5" strokeWidth={1.8} aria-hidden="true" />
           </div>
           <div>
             <h1 className="text-lg font-semibold text-[var(--ink-1)]">
@@ -103,7 +103,7 @@ export function GolfSetup({ initial, onComplete, onCancel }: Props) {
             value={commonText}
             onChange={(e) => setCommonText(e.target.value)}
             placeholder="e.g. Torrey Pines, Rancho Park, Riviera"
-            className="w-full rounded-xl border border-[var(--line-default)] bg-canvas px-3 py-3 text-base text-[var(--ink-1)] placeholder:text-[var(--ink-4)] outline-none focus:border-[var(--accent)]"
+            className="w-full rounded-xl border border-[var(--line-default)] bg-canvas px-3 py-3 text-base text-[var(--ink-1)] placeholder:text-[var(--ink-4)] outline-none focus:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
           />
           <span className="mt-1 block text-[11px] text-[var(--ink-4)]">
             Comma-separated — shown as quick picks in search.
@@ -122,7 +122,7 @@ export function GolfSetup({ initial, onComplete, onCancel }: Props) {
               step={0.1}
               value={handicap}
               onChange={(e) => setHandicap(Number(e.target.value))}
-              className="w-full rounded-xl border border-[var(--line-default)] bg-canvas px-3 py-3 text-base tabular-nums text-[var(--ink-1)] outline-none focus:border-[var(--accent)]"
+              className="w-full rounded-xl border border-[var(--line-default)] bg-canvas px-3 py-3 text-base tabular-nums text-[var(--ink-1)] outline-none focus:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
             />
             <span className="mt-1 block text-[11px] text-[var(--ink-4)]">
               −10 to 54 index — negative for plus (e.g. −2 = +2).
@@ -174,7 +174,7 @@ export function GolfSetup({ initial, onComplete, onCancel }: Props) {
                 max={220}
                 value={sevenIronYards}
                 onChange={(e) => setSevenIronYards(Number(e.target.value))}
-                className="w-full rounded-xl border border-[var(--line-default)] bg-canvas px-3 py-3 pr-10 text-base tabular-nums text-[var(--ink-1)] outline-none focus:border-[var(--accent)]"
+                className="w-full rounded-xl border border-[var(--line-default)] bg-canvas px-3 py-3 pr-10 text-base tabular-nums text-[var(--ink-1)] outline-none focus:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
               />
               <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-[var(--ink-4)]">
                 yd
@@ -192,7 +192,7 @@ export function GolfSetup({ initial, onComplete, onCancel }: Props) {
                 max={360}
                 value={driverYards}
                 onChange={(e) => setDriverYards(Number(e.target.value))}
-                className="w-full rounded-xl border border-[var(--line-default)] bg-canvas px-3 py-3 pr-10 text-base tabular-nums text-[var(--ink-1)] outline-none focus:border-[var(--accent)]"
+                className="w-full rounded-xl border border-[var(--line-default)] bg-canvas px-3 py-3 pr-10 text-base tabular-nums text-[var(--ink-1)] outline-none focus:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
               />
               <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-[var(--ink-4)]">
                 yd
@@ -209,7 +209,7 @@ export function GolfSetup({ initial, onComplete, onCancel }: Props) {
 
         <div className="mb-6 rounded-xl border border-[var(--line-subtle)] bg-canvas px-3 py-3">
           <div className="mb-2 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-[var(--ink-3)]">
-            <Sparkles className="h-3 w-3 text-[var(--accent)]" />
+            <Sparkles className="h-3 w-3 text-[var(--accent)]" aria-hidden="true" />
             Your bag preview — total avg
           </div>
           <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-6">

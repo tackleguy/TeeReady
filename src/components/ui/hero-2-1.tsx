@@ -71,11 +71,13 @@ export function Hero2({ onSignIn, onSignUp }: Props) {
             className="md:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            <span className="sr-only">Toggle menu</span>
+            <span className="sr-only">
+              {mobileMenuOpen ? 'Close menu' : 'Open menu'}
+            </span>
             {mobileMenuOpen ? (
-              <X className="h-6 w-6 text-white" />
+              <X className="h-6 w-6 text-white" aria-hidden="true" />
             ) : (
-              <Menu className="h-6 w-6 text-white" />
+              <Menu className="h-6 w-6 text-white" aria-hidden="true" />
             )}
           </button>
         </nav>
@@ -90,13 +92,17 @@ export function Hero2({ onSignIn, onSignUp }: Props) {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Flag className="h-5 w-5 text-accent" />
+                  <Flag className="h-5 w-5 text-accent" aria-hidden="true" />
                   <span className="font-display text-lg font-semibold text-white">
                     TeeReady
                   </span>
                 </div>
-                <button type="button" onClick={() => setMobileMenuOpen(false)}>
-                  <X className="h-6 w-6 text-white" />
+                <button
+                  type="button"
+                  onClick={() => setMobileMenuOpen(false)}
+                  aria-label="Close menu"
+                >
+                  <X className="h-6 w-6 text-white" aria-hidden="true" />
                 </button>
               </div>
               <div className="mt-10 flex flex-col gap-4">
@@ -113,7 +119,7 @@ export function Hero2({ onSignIn, onSignUp }: Props) {
                     }}
                   >
                     {label}
-                    <ArrowRight className="h-4 w-4 text-white/50" />
+                    <ArrowRight className="h-4 w-4 text-white/50" aria-hidden="true" />
                   </button>
                 ))}
                 <button type="button" onClick={goSignUp} className="btn-accent mt-4">
@@ -136,7 +142,7 @@ export function Hero2({ onSignIn, onSignUp }: Props) {
           <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
             <button type="button" onClick={goSignUp} className="btn-accent">
               Create free account
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </button>
             <button
               type="button"

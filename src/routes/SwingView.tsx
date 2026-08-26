@@ -334,7 +334,7 @@ export function SwingView() {
               onClick={() => void startCamera()}
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-[14px] font-bold text-white"
             >
-              <Camera className="h-4 w-4" strokeWidth={2.2} />
+              <Camera className="h-4 w-4" strokeWidth={2.2} aria-hidden="true" />
               Open camera
             </button>
             <button
@@ -342,7 +342,7 @@ export function SwingView() {
               onClick={() => fileRef.current?.click()}
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-line bg-surface px-4 py-3 text-[14px] font-semibold text-ink shadow-card"
             >
-              <Upload className="h-4 w-4" strokeWidth={2.2} />
+              <Upload className="h-4 w-4" strokeWidth={2.2} aria-hidden="true" />
               Upload video
             </button>
             <input
@@ -350,6 +350,7 @@ export function SwingView() {
               type="file"
               accept="video/*"
               className="hidden"
+              aria-label="Upload swing video"
               onChange={(e) => {
                 const f = e.target.files?.[0];
                 if (f) onUpload(f);
@@ -421,7 +422,7 @@ export function SwingView() {
 
           {lowFps ? (
             <div className="flex gap-2 rounded-card border border-amber-500/40 bg-[color-mix(in_srgb,#f59e0b_12%,transparent)] px-3 py-2.5 text-[12px] text-ink">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" aria-hidden="true" />
               <p>
                 Below 30 fps — impact-position metrics will be flagged unreliable.
                 Most phones at 30 fps are fine; higher frame rates still help at impact.
@@ -436,7 +437,7 @@ export function SwingView() {
                 onClick={startRecording}
                 className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-[14px] font-bold text-white"
               >
-                <Video className="h-4 w-4" />
+                <Video className="h-4 w-4" aria-hidden="true" />
                 Record swing
               </button>
             ) : (
@@ -473,7 +474,7 @@ export function SwingView() {
           </p>
           {lowFps ? (
             <div className="flex gap-2 rounded-card border border-amber-500/40 bg-[color-mix(in_srgb,#f59e0b_12%,transparent)] px-3 py-2.5 text-[12px] text-ink">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" aria-hidden="true" />
               <p>
                 Impact metrics need 30+ fps. They’ll show as low confidence on this clip.
               </p>
@@ -492,7 +493,7 @@ export function SwingView() {
               onClick={reset}
               className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-surface px-4 py-3 text-[13px] font-semibold text-ink"
             >
-              <RotateCcw className="h-3.5 w-3.5" />
+              <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
               Retake
             </button>
           </div>
@@ -501,7 +502,7 @@ export function SwingView() {
 
       {step === 'analyzing' ? (
         <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-brand" />
+          <Loader2 className="h-8 w-8 animate-spin text-brand" aria-hidden="true" />
           <p className="text-[15px] font-semibold text-ink">
             {progress?.stage === 'measure' ? 'Measuring your swing…' : 'Estimating pose…'}
           </p>
@@ -567,7 +568,7 @@ export function SwingView() {
             </p>
             {coachLoading ? (
               <p className="mt-2 flex items-center gap-2 text-[13px] text-muted">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
                 Asking local caddie…
               </p>
             ) : null}

@@ -59,7 +59,7 @@ export function CourseSearchSelect({
           open ? 'border-brand ring-1 ring-[color-mix(in_srgb,var(--brand)_25%,transparent)]' : '',
         ].join(' ')}
       >
-        <Search className="h-4 w-4 shrink-0 text-muted" strokeWidth={2} />
+        <Search className="h-4 w-4 shrink-0 text-muted" strokeWidth={2} aria-hidden="true" />
         <input
           type="search"
           required={required && !value}
@@ -87,7 +87,7 @@ export function CourseSearchSelect({
           className="min-w-0 flex-1 bg-transparent text-base text-ink outline-none placeholder:text-faint focus-visible:ring-2 focus-visible:ring-brand"
         />
         {loading ? (
-          <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted" />
+          <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted" aria-hidden="true" />
         ) : value && !open ? (
           <button
             type="button"
@@ -95,10 +95,10 @@ export function CourseSearchSelect({
             onClick={clear}
             className="shrink-0 text-muted hover:text-ink"
           >
-            <X className="h-4 w-4" strokeWidth={2.2} />
+            <X className="h-4 w-4" strokeWidth={2.2} aria-hidden="true" />
           </button>
         ) : (
-          <ChevronDown className="h-4 w-4 shrink-0 text-muted" strokeWidth={2} />
+          <ChevronDown className="h-4 w-4 shrink-0 text-muted" strokeWidth={2} aria-hidden="true" />
         )}
       </div>
 

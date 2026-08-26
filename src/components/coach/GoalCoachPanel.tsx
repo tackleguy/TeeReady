@@ -37,7 +37,7 @@ export function GoalCoachPanel({ compact = false }: Props) {
       <section className="surface-card p-4 sm:p-5">
         <div className="flex items-start gap-3">
           <div className="grid h-9 w-9 place-items-center rounded-full bg-brand-soft text-brand">
-            <Sparkles className="h-4 w-4" strokeWidth={2} />
+            <Sparkles className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
           </div>
           <div>
             <h2 className="text-[15px] font-semibold text-ink">Your coach</h2>
@@ -50,7 +50,7 @@ export function GoalCoachPanel({ compact = false }: Props) {
               className="mt-2 inline-flex items-center gap-1 text-[13px] font-semibold text-brand"
             >
               Set goals
-              <ArrowRight className="h-3.5 w-3.5" />
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
             </Link>
           </div>
         </div>
@@ -66,7 +66,7 @@ export function GoalCoachPanel({ compact = false }: Props) {
       <section className="surface-card p-4 sm:p-5">
         <div className="flex items-start gap-3">
           <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand text-white">
-            <Sparkles className="h-4 w-4" strokeWidth={2} />
+            <Sparkles className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
           </div>
           <div className="min-w-0 flex-1">
             <h2 className="text-title text-ink">{plan.headline}</h2>
@@ -101,7 +101,7 @@ export function GoalCoachPanel({ compact = false }: Props) {
                     className="mt-2 inline-flex items-center gap-1 text-[13px] font-semibold text-brand"
                   >
                     {focusStep.cta}
-                    <ArrowRight className="h-3.5 w-3.5" />
+                    <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                   </Link>
                 ) : null}
               </div>
@@ -124,7 +124,7 @@ export function GoalCoachPanel({ compact = false }: Props) {
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand text-white">
-              <Sparkles className="h-5 w-5" strokeWidth={2} />
+              <Sparkles className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
             </div>
             <div>
               <p className="section-eyebrow !text-brand">Your coach</p>
@@ -178,7 +178,7 @@ export function GoalCoachPanel({ compact = false }: Props) {
                   className="mt-2 inline-flex items-center gap-1 text-[13px] font-semibold text-brand"
                 >
                   {step.cta}
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                 </Link>
               ) : null}
             </div>

@@ -32,7 +32,7 @@ function FieldLabel({ children }: { children: ReactNode }) {
 }
 
 function inputClassName() {
-  return 'w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-base text-ink outline-none transition-colors placeholder:text-faint focus:border-brand';
+  return 'w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-base text-ink outline-none transition-colors placeholder:text-faint focus:border-brand focus-visible:ring-2 focus-visible:ring-brand';
 }
 
 function QRow({ label, value }: { label: string; value: string }) {
@@ -145,7 +145,7 @@ export function ProfileView() {
         <section className="rounded-card border border-brand/30 bg-brand-soft p-5 shadow-card">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">
-              <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-brand" />
+              <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-brand" aria-hidden="true" />
               <div>
                 <h2 className="text-[15px] font-bold text-ink">
                   Complete your player profile

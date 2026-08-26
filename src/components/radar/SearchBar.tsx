@@ -31,8 +31,7 @@ export function SearchBar({ onPick }: Props) {
       >
         <Search
           className="h-3.5 w-3.5 text-[var(--ink-3)]"
-          strokeWidth={2}
-        />
+          strokeWidth={2} aria-hidden="true" />
         <input
           type="search"
           value={q}
@@ -55,11 +54,11 @@ export function SearchBar({ onPick }: Props) {
         {q ? (
           <button
             type="button"
-            aria-label="Clear"
+            aria-label="Clear search"
             onClick={() => setQ('')}
             className="text-[var(--ink-4)] hover:text-[var(--ink-1)]"
           >
-            <X className="h-3.5 w-3.5" strokeWidth={2.2} />
+            <X className="h-3.5 w-3.5" strokeWidth={2.2} aria-hidden="true" />
           </button>
         ) : null}
       </div>

@@ -35,6 +35,14 @@ interface Props {
   compact?: boolean;
   expanded?: boolean;
   onToggleExpanded?: () => void;
+  /** From useGpsWatch — searching / live / signal lost, etc. */
+  statusLabel?: string | null;
+  /** Holding last good through a poor fix — yardages are approximate. */
+  approximate?: boolean;
+  /** Position may be outdated after backgrounding. */
+  stale?: boolean;
+  /** Wake Lock unavailable — ask user to keep screen on. */
+  wakeLockMessage?: string | null;
   className?: string;
 }
 
@@ -59,6 +67,10 @@ export function GpsMod({
   compact = false,
   expanded = true,
   onToggleExpanded,
+  statusLabel = null,
+  approximate = false,
+  stale = false,
+  wakeLockMessage = null,
   className = '',
 }: Props) {
   const qColor = gpsQualityColor(quality);
@@ -91,7 +103,7 @@ export function GpsMod({
             className="grid h-7 w-7 shrink-0 place-items-center rounded-full"
             style={{ background: `${qColor}22`, color: qColor }}
           >
-            <Satellite className="h-3.5 w-3.5" strokeWidth={2} />
+            <Satellite className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
           </span>
           <span className="text-[18px] font-bold tabular-nums text-ink">
             {midYd != null ? midYd : '—'}
@@ -99,6 +111,11 @@ export function GpsMod({
               yd
             </span>
           </span>
+          {approximate || stale ? (
+            <span className="truncate text-[11px] font-mono font-semibold uppercase tracking-[0.1em] text-[var(--warn)]">
+              {stale ? 'stale' : 'approx'}
+            </span>
+          ) : null}
           {offCourse ? (
             <span className="truncate text-[11px] font-mono font-semibold uppercase tracking-[0.1em] text-faint">
               tee
@@ -110,10 +127,10 @@ export function GpsMod({
           onClick={onLocate}
           disabled={locating}
           className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-muted hover:bg-canvas hover:text-ink disabled:opacity-40"
-          aria-label="Fix GPS"
+          aria-label="Refresh GPS fix"
           title="Fix"
         >
-          <Crosshair className="h-4 w-4" />
+          <Crosshair className="h-4 w-4" aria-hidden="true" />
         </button>
         <button
           type="button"
@@ -124,10 +141,10 @@ export function GpsMod({
               ? 'grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[color-mix(in_srgb,#3b82f6_16%,transparent)] text-[#3b82f6]'
               : 'grid h-11 w-11 shrink-0 place-items-center rounded-full text-muted hover:bg-canvas hover:text-ink'
           }
-          aria-label="Follow"
+          aria-label={follow ? 'Stop following location' : 'Follow my location'}
           title="Follow"
         >
-          <LocateFixed className="h-4 w-4" />
+          <LocateFixed className="h-4 w-4" aria-hidden="true" />
         </button>
         {onClose ? (
           <button
@@ -136,7 +153,7 @@ export function GpsMod({
             className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-muted hover:bg-canvas hover:text-ink"
             aria-label="Close GPS panel"
           >
-            <X className="h-4 w-4" strokeWidth={2} />
+            <X className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
           </button>
         ) : null}
       </div>
@@ -153,16 +170,23 @@ export function GpsMod({
             className="grid h-9 w-9 shrink-0 place-items-center rounded-full"
             style={{ background: `${qColor}22`, color: qColor }}
           >
-            <Satellite className="h-4 w-4" strokeWidth={2} />
+            <Satellite className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
           </div>
           <div className="min-w-0">
             <div className="text-[13px] font-bold text-ink">GPS</div>
-            <div className="truncate font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-faint">
+            <div
+              className="truncate font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-faint"
+              role="status"
+            >
               {enabled
-                ? locating
-                  ? 'Acquiring…'
-                  : `${gpsQualityLabel(quality)} · live`
+                ? statusLabel
+                  ? statusLabel
+                  : locating
+                    ? 'Acquiring…'
+                    : `${gpsQualityLabel(quality)} · live`
                 : 'Off'}
+              {enabled && approximate ? ' · approx' : ''}
+              {enabled && stale ? ' · stale' : ''}
             </div>
           </div>
         </div>
@@ -190,7 +214,7 @@ export function GpsMod({
               aria-label="Close GPS panel"
               title="Close"
             >
-              <X className="h-4 w-4" strokeWidth={2} />
+              <X className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
             </button>
           ) : null}
         </div>
@@ -262,7 +286,15 @@ export function GpsMod({
           ) : null}
 
           {error ? (
-            <p className="mt-1.5 text-[13px] text-bad">{error}</p>
+            <p className="mt-1.5 text-[13px] text-bad" role="alert">
+              {error}
+            </p>
+          ) : null}
+
+          {wakeLockMessage ? (
+            <p className="mt-1.5 text-[13px] leading-snug text-[var(--warn)]" role="status">
+              {wakeLockMessage}
+            </p>
           ) : null}
 
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
@@ -271,21 +303,23 @@ export function GpsMod({
               onClick={onLocate}
               disabled={locating}
               className="inline-flex items-center gap-1.5 rounded-md border border-line bg-canvas px-3 text-[13px] font-semibold text-muted hover:text-ink disabled:opacity-40"
+              aria-label="Refresh GPS fix"
             >
-              <Crosshair className="h-3.5 w-3.5" />
+              <Crosshair className="h-3.5 w-3.5" aria-hidden="true" />
               Fix
             </button>
             <button
               type="button"
               onClick={onToggleFollow}
               aria-pressed={follow}
+              aria-label={follow ? 'Stop following location' : 'Follow my location'}
               className={
                 follow
                   ? 'inline-flex items-center gap-1.5 rounded-md bg-[color-mix(in_srgb,#3b82f6_16%,transparent)] px-3 text-[13px] font-semibold text-[#3b82f6] ring-1 ring-[color-mix(in_srgb,#3b82f6_30%,transparent)]'
                   : 'inline-flex items-center gap-1.5 rounded-md border border-line bg-canvas px-3 text-[13px] font-semibold text-muted hover:text-ink'
               }
             >
-              <LocateFixed className="h-3.5 w-3.5" />
+              <LocateFixed className="h-3.5 w-3.5" aria-hidden="true" />
               Follow
             </button>
             {onDropShot ? (
@@ -294,8 +328,9 @@ export function GpsMod({
                 onClick={onDropShot}
                 disabled={!canDropShot}
                 className="inline-flex items-center gap-1.5 rounded-md bg-[color-mix(in_srgb,#ec4899_18%,transparent)] px-3 text-[13px] font-bold text-[#db2777] disabled:opacity-40"
+                aria-label="Drop shot marker at current location"
               >
-                <Navigation className="h-3.5 w-3.5" />
+                <Navigation className="h-3.5 w-3.5" aria-hidden="true" />
                 Drop
               </button>
             ) : null}

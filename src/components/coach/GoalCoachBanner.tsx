@@ -61,8 +61,7 @@ export function GoalCoachBanner() {
         <div className="flex items-start gap-2">
           <Sparkles
             className="mt-0.5 h-4 w-4 shrink-0 text-brand"
-            strokeWidth={2}
-          />
+            strokeWidth={2} aria-hidden="true" />
           <div className="min-w-0 flex-1">
             <p className="text-[13px] font-semibold leading-snug text-ink">
               {plan.headline}

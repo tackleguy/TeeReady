@@ -61,7 +61,7 @@ export function CourseSearchMultiSelect({
                   onClick={() => remove(c.id)}
                   className="rounded-full p-0.5 text-muted hover:bg-[var(--hover-fill)] hover:text-ink"
                 >
-                  <X className="h-3.5 w-3.5" strokeWidth={2.2} />
+                  <X className="h-3.5 w-3.5" strokeWidth={2.2} aria-hidden="true" />
                 </button>
               </span>
             </li>
@@ -79,7 +79,7 @@ export function CourseSearchMultiSelect({
             atMax ? 'opacity-60' : '',
           ].join(' ')}
         >
-          <Search className="h-4 w-4 shrink-0 text-muted" strokeWidth={2} />
+          <Search className="h-4 w-4 shrink-0 text-muted" strokeWidth={2} aria-hidden="true" />
           <input
             type="search"
             disabled={atMax}
@@ -105,9 +105,9 @@ export function CourseSearchMultiSelect({
             className="min-w-0 flex-1 bg-transparent text-base text-ink outline-none placeholder:text-faint focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed"
           />
           {loading ? (
-            <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted" />
+            <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted" aria-hidden="true" />
           ) : (
-            <ChevronDown className="h-4 w-4 shrink-0 text-muted" strokeWidth={2} />
+            <ChevronDown className="h-4 w-4 shrink-0 text-muted" strokeWidth={2} aria-hidden="true" />
           )}
         </div>
 
@@ -155,7 +155,7 @@ export function CourseSearchMultiSelect({
                             Added
                           </span>
                         ) : (
-                          <Plus className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+                          <Plus className="mt-0.5 h-4 w-4 shrink-0 text-brand" aria-hidden="true" />
                         )}
                       </button>
                     </li>

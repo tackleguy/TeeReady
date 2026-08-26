@@ -391,7 +391,9 @@ textarea {
   }
 }
 
-:focus-visible {
+/* Keyboard focus — 2.4.7. Beats Tailwind outline-none (same layer, higher specificity). */
+:focus-visible,
+.outline-none:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }

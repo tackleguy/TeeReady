@@ -157,7 +157,7 @@ export function TodayView() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">
               <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-accent-soft text-accent">
-                <Sparkles className="h-4 w-4" strokeWidth={2} />
+                <Sparkles className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
               </span>
               <div>
                 <h2 className="text-title text-ink">Finish your player profile</h2>
@@ -305,9 +305,9 @@ export function TodayView() {
           <span className="inline-flex items-center gap-1 text-detail font-medium text-muted">
             {showHours ? 'Hide' : 'Show all'}
             {showHours ? (
-              <ChevronUp className="h-4 w-4" strokeWidth={2.2} />
+              <ChevronUp className="h-4 w-4" strokeWidth={2.2} aria-hidden="true" />
             ) : (
-              <ChevronDown className="h-4 w-4" strokeWidth={2.2} />
+              <ChevronDown className="h-4 w-4" strokeWidth={2.2} aria-hidden="true" />
             )}
           </span>
         </button>

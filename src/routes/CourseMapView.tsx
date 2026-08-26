@@ -69,7 +69,7 @@ export function CourseMapView() {
             Courses near {loc.name} — pick one to prep or play.
           </p>
           <div className="mt-3 flex items-center gap-2 rounded-xl border border-line bg-canvas px-3 py-2.5">
-            <Search className="h-4 w-4 shrink-0 text-muted" strokeWidth={2} />
+            <Search className="h-4 w-4 shrink-0 text-muted" strokeWidth={2} aria-hidden="true" />
             <input
               type="search"
               value={query}
@@ -84,7 +84,7 @@ export function CourseMapView() {
         <div className="min-h-0 flex-1 overflow-y-auto">
           {loading && filtered.length === 0 ? (
             <div className="flex items-center justify-center gap-2 px-4 py-10 text-[13px] text-muted">
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
               Finding courses…
             </div>
           ) : error && filtered.length === 0 ? (
@@ -143,7 +143,7 @@ export function CourseMapView() {
                         <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] text-muted">
                           {c.distanceMi != null ? (
                             <span className="inline-flex items-center gap-0.5">
-                              <MapPin className="h-3 w-3" strokeWidth={2} />
+                              <MapPin className="h-3 w-3" strokeWidth={2} aria-hidden="true" />
                               {c.distanceMi.toFixed(1)} mi
                             </span>
                           ) : null}
@@ -193,7 +193,7 @@ export function CourseMapView() {
 
         {!mapReady ? (
           <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-canvas/60">
-            <Loader2 className="h-6 w-6 animate-spin text-brand" />
+            <Loader2 className="h-6 w-6 animate-spin text-brand" aria-hidden="true" />
           </div>
         ) : null}
 
@@ -230,7 +230,7 @@ export function CourseMapView() {
                       className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-brand px-3 py-2 text-[12px] font-bold text-white"
                     >
                       Prep
-                      <ArrowUpRight className="h-3.5 w-3.5" />
+                      <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
                     </button>
                     <button
                       type="button"

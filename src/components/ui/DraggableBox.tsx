@@ -395,7 +395,7 @@ export function DraggableBox({
               aria-label="Close panel"
               title="Close"
             >
-              <X className="h-3.5 w-3.5" strokeWidth={2} />
+              <X className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
             </button>
           ) : null}
         </div>

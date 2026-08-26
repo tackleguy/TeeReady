@@ -327,7 +327,7 @@ export function GolfScorecard({
                 disabled={!canPrev}
                 className="inline-flex items-center gap-1 rounded-xl border border-line px-2.5 py-2 text-[13px] font-semibold text-muted hover:text-ink disabled:opacity-30"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="h-4 w-4" aria-hidden="true" />
                 Prev
               </button>
               <div className="text-center">
@@ -364,7 +364,7 @@ export function GolfScorecard({
                 className="inline-flex items-center gap-1 rounded-xl border border-line px-2.5 py-2 text-[13px] font-semibold text-muted hover:text-ink disabled:opacity-30"
               >
                 Next
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
 
@@ -534,7 +534,7 @@ export function GolfScorecard({
                   <span className="font-medium opacity-90">
                     · {nextHoleObj!.number}
                   </span>
-                  <ChevronRight className="h-5 w-5" />
+                  <ChevronRight className="h-5 w-5" aria-hidden="true" />
                 </>
               ) : (
                 'Last hole'

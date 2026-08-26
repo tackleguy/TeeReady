@@ -29,7 +29,7 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 }
 
 function inputClassName() {
-  return 'w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-base text-ink outline-none transition-colors placeholder:text-faint focus:border-brand';
+  return 'w-full rounded-xl border border-line bg-canvas px-3 py-2.5 text-base text-ink outline-none transition-colors placeholder:text-faint focus:border-brand focus-visible:ring-2 focus-visible:ring-brand';
 }
 
 export type SignupDraft = {

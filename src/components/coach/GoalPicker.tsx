@@ -113,7 +113,7 @@ export function GoalPicker({
                       }
                       className="rounded-full p-0.5 text-muted hover:bg-[var(--hover-fill)] hover:text-ink"
                     >
-                      <X className="h-3.5 w-3.5" strokeWidth={2.2} />
+                      <X className="h-3.5 w-3.5" strokeWidth={2.2} aria-hidden="true" />
                     </button>
                   </span>
                 </li>
@@ -141,7 +141,7 @@ export function GoalPicker({
               disabled={customAtMax || !draft.trim()}
               className="inline-flex shrink-0 items-center gap-1 rounded-xl border border-line bg-surface px-3 py-2 text-[13px] font-semibold text-muted hover:text-ink disabled:opacity-40"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-4 w-4" aria-hidden="true" />
               Add
             </button>
           </div>
