@@ -54,7 +54,7 @@ const STEPS: Step[] = [
     id: 'progress',
     target: 'progress',
     title: 'Look back and improve',
-    body: 'Progress holds stats, swing analysis, Launch (shot tracer + yardage from slow-mo), and Driving Range (session dispersion).',
+    body: 'Progress holds your stats after a round and swing analysis when you want to work on mechanics.',
     primary: 'Next',
   },
   {

@@ -16,11 +16,6 @@ import {
   type ThemeId,
 } from '../lib/theme';
 import { requestTutorialReplay } from '../lib/tutorial';
-import {
-  LAUNCH_GUIDE_KEY,
-  RANGE_GUIDE_KEY,
-  resetFeatureGuide,
-} from '../lib/featureGuide';
 
 function FieldLabel({ children }: { children: ReactNode }) {
   return (
@@ -195,40 +190,18 @@ export function SettingsView() {
       <section className="rounded-card bg-surface p-5 shadow-card">
         <h2 className="text-[15px] font-bold text-ink">Tutorial</h2>
         <p className="mt-1 text-[13px] text-muted">
-          App walkthrough plus how-to guides for Launch and Driving Range.
+          A short walkthrough of Today, Courses, Prep, and GPS — replay anytime.
         </p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              requestTutorialReplay();
-              flash('Tutorial starting');
-            }}
-            className="rounded-xl border border-line px-4 py-2.5 text-[13px] font-semibold text-ink hover:border-brand/40 hover:bg-brand-soft"
-          >
-            Replay app tour
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              resetFeatureGuide(LAUNCH_GUIDE_KEY);
-              flash('Launch how-to will show on next visit');
-            }}
-            className="rounded-xl border border-line px-4 py-2.5 text-[13px] font-semibold text-ink hover:border-brand/40 hover:bg-brand-soft"
-          >
-            Show Launch how-to
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              resetFeatureGuide(RANGE_GUIDE_KEY);
-              flash('Range how-to will show on next visit');
-            }}
-            className="rounded-xl border border-line px-4 py-2.5 text-[13px] font-semibold text-ink hover:border-brand/40 hover:bg-brand-soft"
-          >
-            Show Range how-to
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => {
+            requestTutorialReplay();
+            flash('Tutorial starting');
+          }}
+          className="mt-4 rounded-xl border border-line px-4 py-2.5 text-[13px] font-semibold text-ink hover:border-brand/40 hover:bg-brand-soft"
+        >
+          Replay tutorial
+        </button>
       </section>
 
       <section className="rounded-card bg-surface p-5 shadow-card">

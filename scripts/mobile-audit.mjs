@@ -17,8 +17,6 @@ const ROUTES = [
   '/rounds/gps',
   '/stats',
   '/swing',
-  '/launch',
-  '/range',
   '/settings',
   '/profile',
   '/group',

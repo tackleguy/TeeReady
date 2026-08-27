@@ -52,19 +52,6 @@ const SwingView = lazy(() =>
 const SwingGuideView = lazy(() =>
   import('./routes/SwingGuideView').then((m) => ({ default: m.SwingGuideView })),
 );
-const LaunchView = lazy(() =>
-  import('./routes/LaunchView').then((m) => ({ default: m.LaunchView })),
-);
-const RangeView = lazy(() =>
-  import('./routes/RangeView').then((m) => ({ default: m.RangeView })),
-);
-const CameraProbe = import.meta.env.DEV
-  ? lazy(() =>
-      import('./routes/CameraProbe').then((m) => ({
-        default: m.CameraProbe,
-      })),
-    )
-  : null;
 const UiAuditPreview = import.meta.env.DEV
   ? lazy(() =>
       import('./routes/UiAuditPreview').then((m) => ({
@@ -286,16 +273,6 @@ function Shell() {
               }
             />
           ) : null}
-          {import.meta.env.DEV && CameraProbe ? (
-            <Route
-              path="/dev/camera-probe"
-              element={
-                <Suspense fallback={<RouteFallback />}>
-                  <CameraProbe />
-                </Suspense>
-              }
-            />
-          ) : null}
           <Route
             path="/today"
             element={
@@ -365,22 +342,6 @@ function Shell() {
             element={
               <RequireAuth>
                 <SwingGuideView />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/launch"
-            element={
-              <RequireAuth>
-                <LaunchView />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/range"
-            element={
-              <RequireAuth>
-                <RangeView />
               </RequireAuth>
             }
           />
