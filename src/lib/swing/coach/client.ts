@@ -2,7 +2,6 @@
 
 import {
   isMixedContentRisk,
-  isSafariBrowser,
   mixedContentHint,
   swingLlmBaseUrl,
   swingLlmModel,
