@@ -74,20 +74,11 @@ export function swingLlmBaseUrl(): string {
   const raw = readViteEnv('VITE_SWING_LLM_URL')?.replace(/\/$/, '');
   const configured = (raw || DEFAULT_SWING_LLM_URL).replace(/\/$/, '');
 
+  // Vite browser: same-origin /llm proxy (see vite.config.ts) — no mixed content.
   if (typeof window !== 'undefined' && isViteDev()) {
     if (!raw || isLocalHttpLlmUrl(configured)) {
       return DEV_SWING_LLM_PROXY_PATH;
     }
-  }
-
-  // Production HTTPS + localhost http → rewrite only helps if a same-origin
-  // /llm proxy exists (vite preview). Prefer explicit relative override.
-  if (
-    typeof window !== 'undefined' &&
-    window.location.protocol === 'https:' &&
-    isLocalHttpLlmUrl(configured)
-  ) {
-    return DEV_SWING_LLM_PROXY_PATH;
   }
 
   return configured;

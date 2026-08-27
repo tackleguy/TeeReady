@@ -3,6 +3,7 @@
 import {
   isMixedContentRisk,
   isSafariBrowser,
+  mixedContentHint,
   swingLlmBaseUrl,
   swingLlmModel,
 } from './config';
@@ -51,15 +52,12 @@ export async function resolveSwingLlmModel(
     res = await fetch(`${base}/models`, { signal });
   } catch (e) {
     if (isMixedContentRisk(base)) {
-      throw new CoachFetchError(
-        'mixed-content',
-        'Browser blocked the local model request (mixed content). Use Chrome/Edge, or serve the app over HTTP for local coaching.',
-      );
+      throw new CoachFetchError('mixed-content', mixedContentHint());
     }
     const msg = e instanceof Error ? e.message : 'Network error';
     throw new CoachFetchError(
       'unreachable',
-      `Local LLM unreachable at ${base} (${msg}). Start LM Studio / Ollama on port 1234.`,
+      `Local LLM unreachable at ${base} (${msg}). Start LM Studio / Ollama on port 1234, and use npm run dev (proxies /llm).`,
     );
   }
   if (!res.ok) {
@@ -117,11 +115,8 @@ export async function requestCoachCompletion(opts: {
   const base = swingLlmBaseUrl();
   const url = `${base}/chat/completions`;
 
-  if (isMixedContentRisk(base) && isSafariBrowser()) {
-    throw new CoachFetchError(
-      'mixed-content',
-      'Safari blocks HTTPS pages from calling http://localhost. Open TeeReady on http://localhost in Chrome or Edge, or run the app over HTTP while using a local model.',
-    );
+  if (isMixedContentRisk(base)) {
+    throw new CoachFetchError('mixed-content', mixedContentHint());
   }
 
   const model = await resolveSwingLlmModel(opts.signal);
@@ -155,10 +150,7 @@ export async function requestCoachCompletion(opts: {
   } catch (e) {
     if (opts.signal?.aborted) throw e;
     if (isMixedContentRisk(base)) {
-      throw new CoachFetchError(
-        'mixed-content',
-        'Browser blocked the local model request (mixed content). Use Chrome/Edge, or serve the app over HTTP for local coaching.',
-      );
+      throw new CoachFetchError('mixed-content', mixedContentHint());
     }
     const msg = e instanceof Error ? e.message : 'Network error';
     throw new CoachFetchError('unreachable', msg);
