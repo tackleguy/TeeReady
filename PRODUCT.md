@@ -45,10 +45,12 @@ Best-in-class hole prep (miss lines, wind, front/mid/back yardages) plus reliabl
 - Themes: light, dark, sand, auto
 
 **Constraints:**
-- API routes require Vercel dev or production (`/api/*` stubbed locally unless `DEV_API_PROXY` set)
+- **Local-first course maps:** Prefer `public/golf/holes` packs + localStorage before live OSM. Soft-refresh Overpass only after paint. Courses without packs may show blank maps until OSM succeeds — UI labels **Map ready** vs **Live map**.
+- **Local-first AI:** Swing coach, caddie, and swing guide use a local OpenAI-compatible LLM (`VITE_SWING_LLM_URL`, default `http://localhost:1234/v1`) with rules/authored fallbacks. Set `VITE_SWING_LLM_DISABLED=1` to skip LLM entirely.
+- API routes for course search / wind: `npm run dev` proxies `/api` to production by default; `npm run dev:api` (`vercel dev`) + `DEV_API_PROXY=http://127.0.0.1:3000` for local API; `npm run dev:offline` disables `/api` (packs still serve).
 - Profile and round data primarily local-first; cloud sync for core profile fields only
 - No fabricated testimonials, customer logos, or performance benchmarks in marketing
-- Golf course data quality varies by OSM coverage
+- Golf course data quality varies by OSM coverage; expand packs with `npm run backup:osm` (see COURSE-DATA-README.md)
 
 **Terminology:** Prep, GPS, Today, Rounds, Golfer info, Questionnaire, Stats, Social
 

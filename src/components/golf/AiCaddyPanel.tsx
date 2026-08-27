@@ -304,7 +304,7 @@ function CaddyBubble({
       <p className="text-[12px] leading-snug text-[var(--ink-1)]">{text}</p>
       {source ? (
         <p className="mt-0.5 text-[10px] uppercase tracking-wide text-[var(--ink-4)]">
-          {source === 'llm' ? 'Llama 3.2' : 'Rules'}
+          {source === 'llm' ? 'Llama 3.2' : 'Rules · offline'}
         </p>
       ) : null}
     </div>

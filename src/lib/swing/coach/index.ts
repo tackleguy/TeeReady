@@ -6,6 +6,7 @@ import {
   isMixedContentRisk,
   isSafariBrowser,
   swingLlmBaseUrl,
+  swingLlmEnabled,
   swingLlmModel,
 } from './config';
 import { buildCoachUserText, SWING_COACH_SYSTEM_PROMPT } from './prompt';
@@ -41,6 +42,8 @@ export async function coachSwingAnalysis(
     text: analysis.summary,
     source: 'rules',
   });
+
+  if (!swingLlmEnabled()) return rulesFallback();
 
   const base = swingLlmBaseUrl();
   if (isMixedContentRisk(base) && isSafariBrowser()) {
@@ -112,6 +115,7 @@ export {
   DEFAULT_SWING_LLM_MODEL,
   swingLlmBaseUrl,
   swingLlmModel,
+  swingLlmEnabled,
   isMixedContentRisk,
   isSafariBrowser,
 } from './config';

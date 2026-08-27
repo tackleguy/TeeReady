@@ -16,6 +16,10 @@ import {
   loadGreenMeshManifest,
   type GreenMeshManifestEntry,
 } from '../lib/golfGreen3d';
+import {
+  loadHolePackManifest,
+  type HolePackManifestEntry,
+} from '../lib/golfHolePacks';
 import { loadGolfProfile } from '../lib/golfProfile';
 import { stashPendingCourse } from '../lib/pendingCourse';
 import { defaultSearchLoc } from '../lib/searchLoc';
@@ -70,12 +74,14 @@ function nameMatchesHome(courseName: string, homes: string[]): boolean {
 function CourseCard({
   course,
   has3d,
+  mapReady,
   onOpen,
   onPrep,
   onGps,
 }: {
   course: GolfCourseSummary;
   has3d?: boolean;
+  mapReady?: boolean;
   onOpen: (c: GolfCourseSummary) => void;
   onPrep: (c: GolfCourseSummary) => void;
   onGps: (c: GolfCourseSummary) => void;
@@ -110,12 +116,19 @@ function CourseCard({
                 </p>
               ) : null}
             </div>
-            {has3d ? (
-              <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-brand/90 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm">
-                <Box className="h-3 w-3" strokeWidth={2.5} aria-hidden="true" />
-                3D
-              </span>
-            ) : null}
+            <div className="flex shrink-0 flex-col items-end gap-1">
+              {mapReady ? (
+                <span className="inline-flex items-center gap-1 rounded-md bg-black/55 px-2.5 py-1 text-[11px] font-medium text-white/95 backdrop-blur-sm">
+                  Map ready
+                </span>
+              ) : null}
+              {has3d ? (
+                <span className="inline-flex items-center gap-1 rounded-md bg-brand/90 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm">
+                  <Box className="h-3 w-3" strokeWidth={2.5} aria-hidden="true" />
+                  3D
+                </span>
+              ) : null}
+            </div>
           </div>
         </div>
       </button>
@@ -192,6 +205,9 @@ export function CoursesView() {
     GreenMeshManifestEntry[]
   >([]);
   const [green3dLoading, setGreen3dLoading] = useState(true);
+  const [holePackCourses, setHolePackCourses] = useState<
+    HolePackManifestEntry[]
+  >([]);
 
   const { courses, loading, error, retry } = useGolfCourses(
     loc.lat,
@@ -215,11 +231,14 @@ export function CoursesView() {
   useEffect(() => {
     let cancelled = false;
     setGreen3dLoading(true);
-    loadGreenMeshManifest().then((manifest) => {
-      if (cancelled) return;
-      setGreen3dCourses(manifest?.courses ?? []);
-      setGreen3dLoading(false);
-    });
+    Promise.all([loadGreenMeshManifest(), loadHolePackManifest()]).then(
+      ([greenManifest, holeManifest]) => {
+        if (cancelled) return;
+        setGreen3dCourses(greenManifest?.courses ?? []);
+        setHolePackCourses(holeManifest?.courses ?? []);
+        setGreen3dLoading(false);
+      },
+    );
     return () => {
       cancelled = true;
     };
@@ -227,6 +246,12 @@ export function CoursesView() {
 
   const courseHas3d = (course: GolfCourseSummary) =>
     green3dCourses.some((entry) => {
+      if (entry.name.toLowerCase() === course.name.toLowerCase()) return true;
+      return haversineMi(course.lat, course.lon, entry.lat, entry.lon) < 0.85;
+    });
+
+  const courseMapReady = (course: GolfCourseSummary) =>
+    holePackCourses.some((entry) => {
       if (entry.name.toLowerCase() === course.name.toLowerCase()) return true;
       return haversineMi(course.lat, course.lon, entry.lat, entry.lon) < 0.85;
     });
@@ -414,9 +439,11 @@ export function CoursesView() {
           ) : (
             <div className="px-4 py-5 text-[13px] leading-relaxed text-muted">
               <p>
-                Browse nearby courses in the main view. Cards show layout type
-                (par 3 / executive) and public vs private when known. Prep is the
-                default path; GPS starts a live round.
+                Browse nearby courses in the main view. Cards marked{' '}
+                <span className="font-semibold text-ink">Map ready</span> have
+                offline hole lines; <span className="font-semibold text-ink">3D</span>{' '}
+                means a local green mesh pack. Prep is the default path; GPS
+                starts a live round.
               </p>
             </div>
           )}
@@ -437,6 +464,7 @@ export function CoursesView() {
                 key={course.id}
                 course={course}
                 has3d
+                mapReady={courseMapReady(course)}
                 onOpen={openMap}
                 onPrep={openPrep}
                 onGps={openGps}
@@ -503,6 +531,7 @@ export function CoursesView() {
                 key={course.id}
                 course={course}
                 has3d={courseHas3d(course)}
+                mapReady={courseMapReady(course)}
                 onOpen={openMap}
                 onPrep={openPrep}
                 onGps={openGps}

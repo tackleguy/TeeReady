@@ -6,6 +6,18 @@ export const DEFAULT_SWING_LLM_MODEL = 'llama-3.2-11b-vision-instruct';
 /** Soft cap on coach prose (chars). Longer responses are rejected. */
 export const COACH_MAX_CHARS = 1400;
 
+/**
+ * When true, skip local LLM calls and use rules / authored fallbacks only.
+ * Set `VITE_SWING_LLM_DISABLED=1` for fully offline coaching UX.
+ */
+export function swingLlmEnabled(): boolean {
+  const raw = (
+    import.meta.env as Record<string, string | undefined>
+  ).VITE_SWING_LLM_DISABLED?.trim();
+  if (raw === '1' || raw === 'true' || raw === 'yes') return false;
+  return true;
+}
+
 export function swingLlmBaseUrl(): string {
   const raw = (import.meta.env.VITE_SWING_LLM_URL as string | undefined)?.trim();
   return (raw || DEFAULT_SWING_LLM_URL).replace(/\/$/, '');

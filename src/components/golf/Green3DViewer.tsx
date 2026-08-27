@@ -6,7 +6,11 @@ import { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { loadThree } from '../../lib/loadThree';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
-import type { GreenMesh, GreenMeshCourse } from '../../lib/golfGreen3d';
+import {
+  pickGreenMesh,
+  type GreenMesh,
+  type GreenMeshCourse,
+} from '../../lib/golfGreen3d';
 
 interface Props {
   course: GreenMeshCourse;
@@ -286,7 +290,9 @@ export function Green3DViewer({ course, hole, onClose }: Props) {
   const [threeReady, setThreeReady] = useState(false);
   const reliefRef = useRef(relief);
   reliefRef.current = relief;
-  const green = course.greens.find((g) => g.hole === hole) ?? null;
+  const green = pickGreenMesh(course, hole);
+  const showingHole = green?.hole ?? hole;
+  const usedFallback = green != null && green.hole !== hole;
   const elevSpan =
     green == null
       ? null
@@ -468,7 +474,12 @@ export function Green3DViewer({ course, hole, onClose }: Props) {
             id="green-reader-title"
             className="text-[22px] font-semibold tracking-tight text-emerald-50"
           >
-            Hole {hole}
+            Hole {showingHole}
+            {usedFallback ? (
+              <span className="ml-2 text-[13px] font-normal text-emerald-200/55">
+                (nearest to {hole})
+              </span>
+            ) : null}
           </div>
           <div className="text-[11px] text-emerald-200/70">
             Green read

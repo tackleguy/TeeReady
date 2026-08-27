@@ -6,6 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:api": "vercel dev --listen 3000",
+    "dev:offline": "DEV_API_PROXY=none vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",
@@ -26,6 +28,9 @@
     "build:green-meshes": "node scripts/build-green-meshes.mjs",
     "build:course-assets": "node scripts/build-course-asset-packs.mjs",
     "build:course-assets:manifest": "node scripts/build-course-asset-packs.mjs --manifest-only",
+    "backup:osm": "node scripts/backup-osm-data.mjs",
+    "backup:osm:skip": "node scripts/backup-osm-data.mjs --skip-existing",
+    "test:course-assets": "tsx scripts/batch-test-holes.ts",
     "smoke": "node scripts/smoke-mobile.mjs",
     "test:mobile": "node scripts/mobile-audit.mjs",
     "audit:contrast": "node scripts/contrast-audit.mjs",

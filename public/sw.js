@@ -98,10 +98,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Course catalog + 3D green packs — cache-first (static public data).
+  // Course catalog + hole / green / scorecard / OSM packs — cache-first.
   if (
     url.pathname === '/golf/catalog.us.json' ||
-    url.pathname.startsWith('/golf/greens/')
+    url.pathname.startsWith('/golf/greens/') ||
+    url.pathname.startsWith('/golf/holes/') ||
+    url.pathname.startsWith('/golf/scorecards/') ||
+    url.pathname.startsWith('/golf/osm/')
   ) {
     event.respondWith(cacheFirst(req));
     return;

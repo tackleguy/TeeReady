@@ -8,6 +8,7 @@ import {
   isMixedContentRisk,
   isSafariBrowser,
   swingLlmBaseUrl,
+  swingLlmEnabled,
   swingLlmModel,
 } from '../swing/coach/config';
 import type { CaddyContext, CaddyResult } from './types';
@@ -31,6 +32,7 @@ export {
   swingLlmBaseUrl as caddyLlmBaseUrl,
   swingLlmModel as caddyLlmModel,
   DEFAULT_SWING_LLM_MODEL as DEFAULT_CADDY_LLM_MODEL,
+  swingLlmEnabled as caddyLlmEnabled,
 } from '../swing/coach/config';
 
 async function runCaddyLlm(opts: {
@@ -39,6 +41,8 @@ async function runCaddyLlm(opts: {
   fallback: CaddyResult;
   signal?: AbortSignal;
 }): Promise<CaddyResult> {
+  if (!swingLlmEnabled()) return opts.fallback;
+
   const base = swingLlmBaseUrl();
   if (isMixedContentRisk(base) && isSafariBrowser()) {
     return {

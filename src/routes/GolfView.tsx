@@ -84,6 +84,7 @@ import {
   resolveGreenMeshSlug,
   type GreenMeshCourse,
 } from '../lib/golfGreen3d';
+import { loadHolePackManifest } from '../lib/golfHolePacks';
 
 const Green3DViewer = lazy(() =>
   import('../components/golf/Green3DViewer').then((m) => ({
@@ -208,6 +209,8 @@ export function GolfView({ active = true }: { active?: boolean }) {
   const [greens3d, setGreens3d] = useState(false);
   const [greenMeshCourse, setGreenMeshCourse] =
     useState<GreenMeshCourse | null>(null);
+  const [greenMeshLoading, setGreenMeshLoading] = useState(false);
+  const [greenMeshError, setGreenMeshError] = useState<string | null>(null);
   const [canGreens3d, setCanGreens3d] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(true);
   const [sheetExpanded, setSheetExpanded] = useState(false);
@@ -216,6 +219,47 @@ export function GolfView({ active = true }: { active?: boolean }) {
   const [planningMode, setPlanningMode] = useState<'tee' | 'approach'>('tee');
   const [bookOpen, setBookOpen] = useState(false);
   const [mapReady, setMapReady] = useState(false);
+  const [holePackKeys, setHolePackKeys] = useState<
+    Array<{ name: string; lat: number; lon: number }>
+  >([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadHolePackManifest().then((manifest) => {
+      if (cancelled || !manifest?.courses?.length) return;
+      setHolePackKeys(
+        manifest.courses.map((c) => ({
+          name: c.name,
+          lat: c.lat,
+          lon: c.lon,
+        })),
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const courseHasMapPack = useCallback(
+    (c: GolfCourseSummary) => {
+      const n = c.name.toLowerCase();
+      return holePackKeys.some((entry) => {
+        if (entry.name.toLowerCase() === n) return true;
+        if (
+          !Number.isFinite(entry.lat) ||
+          !Number.isFinite(entry.lon) ||
+          !Number.isFinite(c.lat) ||
+          !Number.isFinite(c.lon)
+        ) {
+          return false;
+        }
+        return (
+          haversineYards(c.lat, c.lon, entry.lat, entry.lon) < 0.85 * 1760
+        );
+      });
+    },
+    [holePackKeys],
+  );
 
   // Prep / GPS from URL when on /rounds; keep last mode while backgrounded.
   const pathMode: 'prep' | 'gps' | null = location.pathname.includes(
@@ -329,6 +373,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
     loading: holesLoading,
     error: holesError,
     fromBackup: holesFromBackup,
+    fromPack: holesFromPack,
     retry: retryHoles,
   } = useGolfHoles(
     course?.lat ?? null,
@@ -561,6 +606,8 @@ export function GolfView({ active = true }: { active?: boolean }) {
       setCourse(next);
       setGreens3d(false);
       setGreenMeshCourse(null);
+      setGreenMeshError(null);
+      setGreenMeshLoading(false);
       setActiveHole(null);
       setLoop(null);
       setTeeKind('mid');
@@ -899,17 +946,33 @@ export function GolfView({ active = true }: { active?: boolean }) {
   useEffect(() => {
     if (!greens3d || !course) {
       setGreenMeshCourse(null);
+      setGreenMeshLoading(false);
+      setGreenMeshError(null);
       return;
     }
     let cancelled = false;
+    setGreenMeshLoading(true);
+    setGreenMeshError(null);
     resolveGreenMeshSlug(course.name, course.lat, course.lon).then((slug) => {
       if (cancelled) return;
       if (!slug) {
         setGreenMeshCourse(null);
+        setGreenMeshLoading(false);
+        setGreenMeshError('No 3D green pack for this course.');
+        setCanGreens3d(false);
         return;
       }
       loadGreenMeshCourse(slug).then((data) => {
-        if (!cancelled) setGreenMeshCourse(data);
+        if (cancelled) return;
+        setGreenMeshLoading(false);
+        if (!data?.greens?.length) {
+          setGreenMeshCourse(null);
+          setGreenMeshError('3D green pack failed to load.');
+          setCanGreens3d(false);
+          return;
+        }
+        setGreenMeshCourse(data);
+        setGreenMeshError(null);
       });
     });
     return () => {
@@ -1232,6 +1295,15 @@ export function GolfView({ active = true }: { active?: boolean }) {
                       {c.region && <span className="truncate">{c.region}</span>}
                       {c.holes != null && <span>{c.holes} holes</span>}
                       {c.par != null && <span>par {c.par}</span>}
+                      {courseHasMapPack(c) ? (
+                        <span className="rounded bg-emerald-500/20 px-1 py-px font-medium text-emerald-200">
+                          Map ready
+                        </span>
+                      ) : (
+                        <span className="rounded bg-white/10 px-1 py-px text-[var(--ink-4)]">
+                          Live map
+                        </span>
+                      )}
                         </div>
                       </div>
                       {active ? (
@@ -1484,7 +1556,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     <ClipboardList className="h-3 w-3" aria-hidden />
                     {!isMobile ? 'Card' : null}
                   </button>
-                  {course && canGreens3d && !isMobile ? (
+                  {course && canGreens3d ? (
                     <button
                       type="button"
                       onClick={() => {
@@ -1503,7 +1575,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                       ].join(' ')}
                     >
                       <Mountain className="h-3 w-3" aria-hidden="true" />
-                      3D
+                      {!isMobile ? '3D' : null}
                     </button>
                   ) : null}
                   {course && activeHoleObj && profile ? (
@@ -1937,15 +2009,17 @@ export function GolfView({ active = true }: { active?: boolean }) {
                       <div className="text-[11px] text-[var(--ink-3)]">
                         {holesLoading && !playHoles.length
                           ? 'Loading hole maps…'
-                          : holesFromBackup && playHoles.length
-                            ? `Saved course map · ${layoutLabel}`
-                            : holesError && !playHoles.length
-                              ? 'Course map server is busy — hole data unavailable'
-                              : playHoles.length
-                                ? ensemble?.ensemble.windMph != null
-                                  ? `${layoutLabel} · ${Math.round(ensemble.ensemble.windMph)} mph ${bearingCompass(ensemble.ensemble.windFromDeg)}`
-                                  : `${layoutLabel} · yardage, bearing & elevation`
-                                : "We don't have hole maps for this course yet"}
+                          : holesFromPack && playHoles.length
+                            ? `Offline map pack · ${layoutLabel}`
+                            : holesFromBackup && playHoles.length
+                              ? `Saved course map · ${layoutLabel}`
+                              : holesError && !playHoles.length
+                                ? 'No local map pack — course map server unavailable'
+                                : playHoles.length
+                                  ? ensemble?.ensemble.windMph != null
+                                    ? `${layoutLabel} · ${Math.round(ensemble.ensemble.windMph)} mph ${bearingCompass(ensemble.ensemble.windFromDeg)}`
+                                    : `${layoutLabel} · yardage, bearing & elevation`
+                                  : "We don't have hole maps for this course yet"}
                       </div>
                     </div>
                     {sheetExpanded ? (
@@ -1963,13 +2037,15 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     <div className="mt-1 text-[11px] text-[var(--ink-3)]">
                       {holesLoading && !playHoles.length
                         ? 'Loading hole maps…'
-                        : holesFromBackup && playHoles.length
-                          ? `Saved course map · ${layoutLabel}`
-                          : holesError && !playHoles.length
-                            ? 'Course map server is busy — hole data unavailable'
-                            : playHoles.length
-                              ? `${layoutLabel} · yardage, bearing & elevation`
-                              : "We don't have hole maps for this course yet"}
+                        : holesFromPack && playHoles.length
+                          ? `Offline map pack · ${layoutLabel}`
+                          : holesFromBackup && playHoles.length
+                            ? `Saved course map · ${layoutLabel}`
+                            : holesError && !playHoles.length
+                              ? 'No local map pack — course map server unavailable'
+                              : playHoles.length
+                                ? `${layoutLabel} · yardage, bearing & elevation`
+                                : "We don't have hole maps for this course yet"}
                     </div>
                     {playHoles[0]?.provenance ? (
                       <DataProvenanceNote
@@ -2238,14 +2314,49 @@ export function GolfView({ active = true }: { active?: boolean }) {
         />
       ) : null}
 
-      {greens3d && greenMeshCourse && activeHole != null ? (
-        <Suspense fallback={null}>
-          <Green3DViewer
-            course={greenMeshCourse}
-            hole={activeHole}
-            onClose={() => setGreens3d(false)}
-          />
-        </Suspense>
+      {greens3d && activeHole != null ? (
+        greenMeshCourse ? (
+          <Suspense fallback={null}>
+            <Green3DViewer
+              course={greenMeshCourse}
+              hole={activeHole}
+              onClose={() => setGreens3d(false)}
+            />
+          </Suspense>
+        ) : (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={
+              greenMeshLoading ? 'Loading 3D green' : '3D green unavailable'
+            }
+            className={
+              'fixed inset-0 z-[80] grid place-items-center bg-[#07140f]'
+            }
+          >
+            <div className="max-w-sm px-6 text-center">
+              {greenMeshLoading ? (
+                <div
+                  className="mx-auto h-2 w-32 overflow-hidden rounded-full bg-emerald-900/60"
+                  aria-busy="true"
+                >
+                  <div className="h-full w-1/3 animate-[shimmer_1.6s_linear_infinite] bg-emerald-400/40" />
+                </div>
+              ) : (
+                <p className="text-sm text-emerald-200/70">
+                  {greenMeshError ?? '3D green unavailable for this course.'}
+                </p>
+              )}
+              <button
+                type="button"
+                onClick={() => setGreens3d(false)}
+                className="mt-5 rounded-full border border-emerald-400/25 px-4 py-2 text-[12px] font-semibold text-emerald-100/90"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )
       ) : null}
     </div>
   );

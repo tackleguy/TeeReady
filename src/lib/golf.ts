@@ -6,6 +6,8 @@ import { isPlayableCourse, venueKindFromName } from './venueKind';
 import { courseHeroImage } from './courseImages';
 import { warmSatelliteTiles } from './golfSatelliteCache';
 import { resolveAndWarmGreenMesh } from './golfGreen3d';
+import { resolveHolePack, resolveAndWarmHolePack } from './golfHolePacks';
+import { resolveAndWarmScorecardPack } from './golfScorecardPacks';
 import { standardizeLayouts } from './golfHolesNormalize';
 
 export type VenueKind = 'course' | 'sim' | 'range';
@@ -344,6 +346,14 @@ export function peekGolfCoursesCache(
   return null;
 }
 
+export type GolfHolesLoadResult = {
+  holes: GolfHole[];
+  /** True when OSM failed/empty and a durable course-map backup was used. */
+  fromBackup: boolean;
+  /** True when geometry came from a static /golf/holes pack. */
+  fromPack?: boolean;
+};
+
 type HolesFetchOpts = {
   radius?: number;
   bbox?: [number, number, number, number];
@@ -351,6 +361,11 @@ type HolesFetchOpts = {
   osmId?: number;
   courseName?: string;
   signal?: AbortSignal;
+  /**
+   * Fired as soon as a pack or durable backup is ready so Prep/GPS can paint
+   * hole lines without waiting on Overpass soft-refresh.
+   */
+  onAvailable?: (result: GolfHolesLoadResult) => void;
 };
 
 export type GolfHolesPeek = {
@@ -363,7 +378,7 @@ export type GolfHolesPeek = {
 export function peekGolfHolesCache(
   lat: number,
   lon: number,
-  opts?: Omit<HolesFetchOpts, 'signal'>,
+  opts?: Omit<HolesFetchOpts, 'signal' | 'onAvailable'>,
 ): GolfHole[] | null {
   return peekGolfHolesDetail(lat, lon, opts)?.holes ?? null;
 }
@@ -372,7 +387,7 @@ export function peekGolfHolesCache(
 export function peekGolfHolesDetail(
   lat: number,
   lon: number,
-  opts?: Omit<HolesFetchOpts, 'signal'>,
+  opts?: Omit<HolesFetchOpts, 'signal' | 'onAvailable'>,
 ): GolfHolesPeek | null {
   const { requestKey, backupKey } = holesRequestKey(lat, lon, opts);
   // Session = OSM-confirmed this tab — instant reopen, no soft-refresh needed.
@@ -398,6 +413,7 @@ export function peekGolfHolesDetail(
   return { holes, fromBackup: true };
 }
 
+/** Live OSM confirm — session hit skips soft-refresh on reopen. */
 function saveHolesBackup(backupKey: string, requestKey: string, holes: GolfHole[]): void {
   if (!holes.length) return;
   const cleaned = standardizeLayouts(holes);
@@ -406,6 +422,24 @@ function saveHolesBackup(backupKey: string, requestKey: string, holes: GolfHole[
   sessionSet(requestKey, cleaned);
   localSet(backupKey, cleaned);
   touchBackupIndex(backupKey);
+}
+
+/**
+ * Pack / durable hydrate without session confirm so a soft-refresh can still
+ * upgrade geometry when Overpass is healthy.
+ */
+function hydrateDurableBackup(
+  backupKey: string,
+  requestKey: string,
+  holes: GolfHole[],
+): GolfHole[] {
+  if (!holes.length) return [];
+  const cleaned = standardizeLayouts(holes);
+  if (!cleaned.length) return [];
+  memSet(requestKey, cleaned);
+  localSet(backupKey, cleaned);
+  touchBackupIndex(backupKey);
+  return cleaned;
 }
 
 function cleanHoles(holes: GolfHole[]): GolfHole[] {
@@ -566,12 +600,6 @@ function cleanCourseList(courses: GolfCourseSummary[]): GolfCourseSummary[] {
   return out;
 }
 
-export type GolfHolesLoadResult = {
-  holes: GolfHole[];
-  /** True when OSM failed/empty and a durable course-map backup was used. */
-  fromBackup: boolean;
-};
-
 export async function fetchGolfHoles(
   lat: number,
   lon: number,
@@ -602,7 +630,40 @@ export async function loadGolfHoles(
   if (peeked?.holes.length && !peeked.fromBackup) {
     return { holes: peeked.holes, fromBackup: false };
   }
-  const backup = peeked?.holes?.length ? peeked.holes : null;
+  let backup = peeked?.holes?.length ? peeked.holes : null;
+  let fromPack = false;
+
+  // Static /golf/holes packs are the durable backup when localStorage is cold
+  // (new device, private mode, or a course never opened while OSM was healthy).
+  if (!backup?.length) {
+    try {
+      const pack = await resolveHolePack(opts?.courseName, lat, lon);
+      if (pack?.holes?.length) {
+        const cleaned = hydrateDurableBackup(
+          backupKey,
+          requestKey,
+          pack.holes,
+        );
+        if (cleaned.length) {
+          backup = cleaned;
+          fromPack = true;
+        }
+      }
+    } catch {
+      // Pack miss is fine — fall through to live OSM.
+    }
+  }
+
+  const backupResult = (): GolfHolesLoadResult | null => {
+    if (!backup?.length) return null;
+    const cleaned = cleanHoles(backup);
+    keepBackupHot(backupKey, requestKey, cleaned);
+    return { holes: cleaned, fromBackup: true, fromPack };
+  };
+
+  // Paint immediately from pack/localStorage — soft-refresh must not blank the map.
+  const early = backupResult();
+  if (early) opts?.onAvailable?.(early);
 
   const params = new URLSearchParams({
     lat: String(lat),
@@ -622,8 +683,9 @@ export async function loadGolfHoles(
   const softRefresh = Boolean(backup?.length);
   const radii = [opts?.radius ?? 1800];
   const attempts = 1;
-  // First open without backup: still cap wait so UI isn't stuck 30–60s.
-  const hardDeadlineMs = softRefresh ? HOLES_SOFT_REFRESH_MS : 6_500;
+  // Cold open must wait long enough for OSM map.json on dense clubs
+  // (multi-MB downloads + shrink-retries) before declaring the course blank.
+  const hardDeadlineMs = softRefresh ? HOLES_SOFT_REFRESH_MS : 14_000;
 
   let lastErr: unknown = null;
   for (const radius of radii) {
@@ -661,11 +723,7 @@ export async function loadGolfHoles(
         saveHolesBackup(backupKey, requestKey, holes);
         return { holes, fromBackup: false };
       }
-      if (backup?.length) {
-        const cleaned = cleanHoles(backup);
-        keepBackupHot(backupKey, requestKey, cleaned);
-        return { holes: cleaned, fromBackup: true };
-      }
+      if (early) return early;
       return { holes: [], fromBackup: false };
     } catch (err) {
       if (opts?.signal?.aborted) throw err;
@@ -677,11 +735,7 @@ export async function loadGolfHoles(
     }
   }
 
-  if (backup?.length) {
-    const cleaned = cleanHoles(backup);
-    keepBackupHot(backupKey, requestKey, cleaned);
-    return { holes: cleaned, fromBackup: true };
-  }
+  if (early) return early;
 
   throw lastErr instanceof Error
     ? lastErr
@@ -705,8 +759,10 @@ export function warmNearbyCourseMaps(
     for (const course of targets) {
       const id = course.id || `${course.osmType}:${course.osmId}`;
       warmSatelliteTiles(course.lat, course.lon, { courseId: id });
-      // Prefetch 3D green packs when available so toggle feels instant.
+      // Prefetch static packs (holes / 3D greens / scorecards) before OSM.
+      void resolveAndWarmHolePack(course.name, course.lat, course.lon);
       void resolveAndWarmGreenMesh(course.name, course.lat, course.lon);
+      void resolveAndWarmScorecardPack(course.name);
       const peek = peekGolfHolesDetail(course.lat, course.lon, {
         bbox: course.bbox,
         osmType: course.osmType,

@@ -1,7 +1,11 @@
 // Direct OSM map.json reads — used when public Overpass mirrors are busy.
 // The main map API is authoritative for a small bbox and does not depend on
 // Overpass instance health.
+//
+// When live OSM fails, callers can pass a Request so we load durable backups
+// from /golf/osm (see scripts/backup-osm-data.mjs).
 
+import { loadOsmMapBackup } from './osmBackup';
 import { UA, type OsmElement } from './overpass';
 
 const OSM_MAP_URLS = [
@@ -67,19 +71,51 @@ export function holesBboxKey(bbox: OsmMapBbox): string {
   return `${bbox.south},${bbox.west},${bbox.north},${bbox.east}`;
 }
 
+export type OsmMapFetchResult =
+  | { kind: 'ok'; elements: OsmElement[] }
+  /** OSM rejected the bbox (usually >50k nodes). Caller should shrink. */
+  | { kind: 'too-large' }
+  /** Transport / timeout / non-size upstream failure. */
+  | { kind: 'error' };
+
+/** Shrink a bbox toward its center (factor < 1). */
+export function shrinkBbox(bbox: OsmMapBbox, factor = 0.72): OsmMapBbox {
+  const f = Math.min(Math.max(factor, 0.35), 0.95);
+  const midLat = (bbox.south + bbox.north) / 2;
+  const midLon = (bbox.west + bbox.east) / 2;
+  const halfLat = ((bbox.north - bbox.south) / 2) * f;
+  const halfLon = ((bbox.east - bbox.west) / 2) * f;
+  return {
+    south: midLat - halfLat,
+    west: midLon - halfLon,
+    north: midLat + halfLat,
+    east: midLon + halfLon,
+  };
+}
+
 /**
- * Fetch raw OSM elements for a small bbox. Returns null on transport /
- * size / upstream failure so callers can fall through to Overpass.
+ * Fetch raw OSM elements for a small bbox.
+ * Distinguishes "too many nodes" (shrink + retry) from transport errors
+ * (fall through to Overpass).
+ * When live OSM fails and `opts.req` is set, tries /golf/osm course backups.
  */
 export async function fetchOsmMapElements(
   bbox: OsmMapBbox,
-  opts?: { timeoutMs?: number; attempts?: number },
-): Promise<OsmElement[] | null> {
-  if (bboxArea(bbox) > 0.12) return null;
+  opts?: {
+    timeoutMs?: number;
+    attempts?: number;
+    /** When set, load durable /golf/osm backups after live OSM fails. */
+    req?: Request;
+    courseName?: string;
+  },
+): Promise<OsmMapFetchResult> {
+  if (bboxArea(bbox) > 0.12) return { kind: 'error' };
 
-  const timeoutMs = opts?.timeoutMs ?? 8_000;
+  // Dense coastal clubs (Pebble, Torrey) routinely return 4–8 MB; 3s was
+  // aborting healthy downloads and leaving Prep with a blank satellite map.
+  const timeoutMs = opts?.timeoutMs ?? 10_000;
   const attempts = opts?.attempts ?? 2;
-  let lastErr: unknown = null;
+  let sawTooLarge = false;
 
   for (let attempt = 0; attempt < attempts; attempt += 1) {
     const url = OSM_MAP_URLS[attempt % OSM_MAP_URLS.length]!;
@@ -91,7 +127,14 @@ export async function fetchOsmMapElements(
         signal: ac.signal,
       });
       if (!res.ok) {
-        lastErr = new Error(`osm-map ${res.status}`);
+        const detail = await res.text().catch(() => '');
+        if (
+          res.status === 400 &&
+          /too many nodes|smaller area|bbox/i.test(detail)
+        ) {
+          sawTooLarge = true;
+          return { kind: 'too-large' };
+        }
         continue;
       }
       const body = (await res.json()) as {
@@ -104,16 +147,32 @@ export async function fetchOsmMapElements(
           tags?: Record<string, string>;
         }>;
       };
-      return reconstructGolfElements(body.elements ?? []);
-    } catch (err) {
-      lastErr = err;
+      return {
+        kind: 'ok',
+        elements: reconstructGolfElements(body.elements ?? []),
+      };
+    } catch {
+      // try next mirror / attempt
     } finally {
       clearTimeout(timer);
     }
   }
 
-  void lastErr;
-  return null;
+  // Transport failure → durable course backup (never for "too large"; caller shrinks).
+  if (!sawTooLarge && opts?.req) {
+    const lat = (bbox.south + bbox.north) / 2;
+    const lon = (bbox.west + bbox.east) / 2;
+    const backup = await loadOsmMapBackup(opts.req, {
+      lat,
+      lon,
+      courseName: opts.courseName,
+    });
+    if (backup?.elements?.length) {
+      return { kind: 'ok', elements: backup.elements };
+    }
+  }
+
+  return { kind: 'error' };
 }
 
 function reconstructGolfElements(

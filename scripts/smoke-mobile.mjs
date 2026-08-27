@@ -24,6 +24,8 @@ const ROUTES = [
 
 const ASSETS = [
   '/golf/greens/manifest.json',
+  '/golf/holes/manifest.json',
+  '/golf/scorecards/manifest.json',
   '/manifest.webmanifest',
   '/icon.svg',
 ];

@@ -47,6 +47,13 @@ const CURATED = [
     lon: -121.9296,
     radiusM: 1400,
   },
+  {
+    slug: 'coronado-golf-course',
+    name: 'Coronado Golf Course',
+    lat: 33.4791,
+    lon: -111.91715,
+    radiusM: 1400,
+  },
 ];
 
 /** Prefer well-mapped venues when expanding from the US catalog. */
@@ -781,6 +788,7 @@ const SKIP_CATALOG_SLUGS = new Set([
   'north-at-torrey-pines-municipal-golf-course', // → torrey-pines-north
   'south-at-torrey-pines-municipal-golf-course', // → torrey-pines-south
   'pebble-beach-golf-links', // curated
+  'coronado-golf-course', // curated — 3 US courses share this slugify name
 ]);
 
 function existingGreenSlugs() {

@@ -107,7 +107,13 @@ const SLUGS: Array<{ slug: string; test: (name: string) => boolean }> = [
   },
 ];
 
-const MATCH_M = 1200;
+/** Disambiguate named candidates at multi-course facilities. */
+const MATCH_NAME_M = 1200;
+/**
+ * Pure lat/lon match without a name hit. Keep tight — Florida / Phoenix
+ * complexes pack unrelated courses inside ~1 km.
+ */
+const MATCH_COORD_M = 350;
 
 function haversineM(
   aLat: number,
@@ -123,6 +129,28 @@ function haversineM(
     Math.sin(dLat / 2) ** 2 +
     Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLon / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(A));
+}
+
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/** Loose name match that still rejects short-name substring false positives. */
+function namesLooselyMatch(courseName: string, packName: string): boolean {
+  const a = courseName.toLowerCase().trim();
+  const b = packName.toLowerCase().trim();
+  if (!a || !b) return false;
+  if (a === b) return true;
+  const shorter = a.length <= b.length ? a : b;
+  const longer = a.length <= b.length ? b : a;
+  // Short labels ("12 Oaks", "Erin Hills") must match as a whole phrase.
+  if (shorter.length < 14) {
+    const re = new RegExp(
+      `(^|[^a-z0-9])${escapeRegExp(shorter)}([^a-z0-9]|$)`,
+    );
+    return re.test(longer);
+  }
+  return longer.includes(shorter);
 }
 
 let manifestPromise: Promise<GreenMeshManifest | null> | null = null;
@@ -151,11 +179,7 @@ function matchSlugFromManifest(
     if (exact) return exact.slug;
 
     const named = manifest.courses
-      .filter(
-        (c) =>
-          n.includes(c.name.toLowerCase()) ||
-          c.name.toLowerCase().includes(n),
-      )
+      .filter((c) => namesLooselyMatch(n, c.name))
       .sort((a, b) => b.holes - a.holes || a.slug.localeCompare(b.slug));
     if (named.length === 1) return named[0]!.slug;
     if (named.length > 1 && lat != null && lon != null) {
@@ -163,7 +187,7 @@ function matchSlugFromManifest(
       let bestScore = -Infinity;
       for (const c of named) {
         const d = haversineM(lat, lon, c.lat, c.lon);
-        if (d > MATCH_M) continue;
+        if (d > MATCH_NAME_M) continue;
         // Prefer closer packs, then more complete hole coverage.
         const score = -d + c.holes * 40;
         if (score > bestScore) {
@@ -187,7 +211,7 @@ function matchSlugFromManifest(
     let bestScore = -Infinity;
     for (const c of manifest.courses) {
       const d = haversineM(lat, lon, c.lat, c.lon);
-      if (d > MATCH_M) continue;
+      if (d > MATCH_COORD_M) continue;
       const score = -d + c.holes * 40;
       if (score > bestScore) {
         bestScore = score;
@@ -230,13 +254,16 @@ export function hasGreenMeshes(courseName: string | undefined | null): boolean {
   return greenMeshSlug(courseName) != null;
 }
 
-/** True if this course is in the mesh pack (manifest or legacy name). */
+/** True if this course has a mesh pack that actually loads. */
 export async function courseHasGreenMeshes(
   courseName: string | undefined | null,
   lat?: number | null,
   lon?: number | null,
 ): Promise<boolean> {
-  return (await resolveGreenMeshSlug(courseName, lat, lon)) != null;
+  const slug = await resolveGreenMeshSlug(courseName, lat, lon);
+  if (!slug) return false;
+  const data = await loadGreenMeshCourse(slug);
+  return (data?.greens?.length ?? 0) > 0;
 }
 
 const cache = new Map<string, Promise<GreenMeshCourse | null>>();
@@ -245,10 +272,33 @@ export function loadGreenMeshCourse(slug: string): Promise<GreenMeshCourse | nul
   const hit = cache.get(slug);
   if (hit) return hit;
   const pending = fetch(`${greensBaseUrl()}/${slug}.json`)
-    .then((res) => (res.ok ? (res.json() as Promise<GreenMeshCourse>) : null))
-    .catch(() => null);
+    .then(async (res) => {
+      if (!res.ok) return null;
+      const data = (await res.json()) as GreenMeshCourse;
+      if (!Array.isArray(data?.greens) || data.greens.length === 0) return null;
+      return data;
+    })
+    .catch(() => null)
+    .then((data) => {
+      // Do not permanently cache misses — packs may land after a deploy.
+      if (!data) cache.delete(slug);
+      return data;
+    });
   cache.set(slug, pending);
   return pending;
+}
+
+/** Exact hole mesh, or nearest hole number in the pack. */
+export function pickGreenMesh(
+  course: GreenMeshCourse | null | undefined,
+  hole: number,
+): GreenMesh | null {
+  if (!course?.greens.length || !Number.isFinite(hole)) return null;
+  const exact = course.greens.find((g) => g.hole === hole);
+  if (exact) return exact;
+  return course.greens.reduce((best, g) =>
+    Math.abs(g.hole - hole) < Math.abs(best.hole - hole) ? g : best,
+  );
 }
 
 /** Resolve + fetch a green pack so 3D toggle / map open is instant. */

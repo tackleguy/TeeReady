@@ -1,0 +1,1066 @@
+{
+  "id": "cedar-hollow",
+  "name": "Cedar Hollow",
+  "fictional": true,
+  "designer": "TeeReady original design",
+  "holes": 9,
+  "par": 36,
+  "tees": [
+    {
+      "name": "Back",
+      "yards": 3518,
+      "rating": 36.4,
+      "slope": 128
+    },
+    {
+      "name": "Middle",
+      "yards": 3264,
+      "rating": 35.1,
+      "slope": 122
+    },
+    {
+      "name": "Forward",
+      "yards": 2800,
+      "rating": 33.8,
+      "slope": 115
+    }
+  ],
+  "defaultWind": {
+    "speedMph": 8,
+    "fromDeg": 225
+  },
+  "surface": {
+    "fairwayFirmness": "medium",
+    "greenSpeedStimp": 10.5
+  },
+  "holesData": [
+    {
+      "number": 1,
+      "par": 4,
+      "handicap": 5,
+      "tees": [
+        {
+          "name": "Back",
+          "yards": 412
+        },
+        {
+          "name": "Middle",
+          "yards": 385
+        },
+        {
+          "name": "Forward",
+          "yards": 330
+        }
+      ],
+      "centerline": [
+        [
+          0,
+          0
+        ],
+        [
+          2,
+          180
+        ],
+        [
+          10,
+          300
+        ],
+        [
+          18,
+          412
+        ]
+      ],
+      "elevationFt": [
+        [
+          0,
+          0
+        ],
+        [
+          180,
+          -3
+        ],
+        [
+          300,
+          0
+        ],
+        [
+          412,
+          6
+        ]
+      ],
+      "widthYd": {
+        "fairway": 38,
+        "rough": 62
+      },
+      "hazards": [
+        {
+          "type": "bunker",
+          "name": "right fairway",
+          "shape": "ellipse",
+          "center": [
+            22,
+            255
+          ],
+          "radiusYd": [
+            9,
+            14
+          ],
+          "penaltyStrokes": 0
+        },
+        {
+          "type": "bunker",
+          "name": "greenside left",
+          "shape": "ellipse",
+          "center": [
+            6,
+            400
+          ],
+          "radiusYd": [
+            7,
+            9
+          ],
+          "penaltyStrokes": 0
+        }
+      ],
+      "green": {
+        "center": [
+          18,
+          412
+        ],
+        "radiusYd": 15,
+        "tiers": 1,
+        "slopePct": 2.0
+      },
+      "pin": [
+        21,
+        415
+      ],
+      "designNotes": "Gentle opener. Fairway bunker punishes the aggressive line right; green sits slightly above."
+    },
+    {
+      "number": 2,
+      "par": 5,
+      "handicap": 3,
+      "tees": [
+        {
+          "name": "Back",
+          "yards": 538
+        },
+        {
+          "name": "Middle",
+          "yards": 505
+        },
+        {
+          "name": "Forward",
+          "yards": 440
+        }
+      ],
+      "centerline": [
+        [
+          0,
+          0
+        ],
+        [
+          -5,
+          200
+        ],
+        [
+          -18,
+          340
+        ],
+        [
+          -8,
+          460
+        ],
+        [
+          6,
+          538
+        ]
+      ],
+      "elevationFt": [
+        [
+          0,
+          0
+        ],
+        [
+          200,
+          4
+        ],
+        [
+          340,
+          2
+        ],
+        [
+          460,
+          -6
+        ],
+        [
+          538,
+          -4
+        ]
+      ],
+      "widthYd": {
+        "fairway": 40,
+        "rough": 64
+      },
+      "hazards": [
+        {
+          "type": "bunker",
+          "name": "left elbow",
+          "shape": "ellipse",
+          "center": [
+            -30,
+            330
+          ],
+          "radiusYd": [
+            11,
+            16
+          ],
+          "penaltyStrokes": 0
+        },
+        {
+          "type": "water",
+          "name": "short right",
+          "shape": "ellipse",
+          "center": [
+            26,
+            500
+          ],
+          "radiusYd": [
+            18,
+            22
+          ],
+          "penaltyStrokes": 1
+        },
+        {
+          "type": "bunker",
+          "name": "greenside back",
+          "shape": "ellipse",
+          "center": [
+            10,
+            556
+          ],
+          "radiusYd": [
+            8,
+            10
+          ],
+          "penaltyStrokes": 0
+        }
+      ],
+      "green": {
+        "center": [
+          6,
+          538
+        ],
+        "radiusYd": 16,
+        "tiers": 2,
+        "slopePct": 2.5
+      },
+      "pin": [
+        3,
+        542
+      ],
+      "designNotes": "Reachable in two for a long hitter, but water guards the direct line. Lay-up left is safe."
+    },
+    {
+      "number": 3,
+      "par": 3,
+      "handicap": 9,
+      "tees": [
+        {
+          "name": "Back",
+          "yards": 168
+        },
+        {
+          "name": "Middle",
+          "yards": 148
+        },
+        {
+          "name": "Forward",
+          "yards": 120
+        }
+      ],
+      "centerline": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          168
+        ]
+      ],
+      "elevationFt": [
+        [
+          0,
+          0
+        ],
+        [
+          60,
+          -18
+        ],
+        [
+          110,
+          -16
+        ],
+        [
+          168,
+          4
+        ]
+      ],
+      "widthYd": {
+        "fairway": 0,
+        "rough": 55
+      },
+      "hazards": [
+        {
+          "type": "water",
+          "name": "ravine",
+          "shape": "ellipse",
+          "center": [
+            0,
+            85
+          ],
+          "radiusYd": [
+            30,
+            34
+          ],
+          "penaltyStrokes": 1
+        },
+        {
+          "type": "bunker",
+          "name": "left",
+          "shape": "ellipse",
+          "center": [
+            -14,
+            160
+          ],
+          "radiusYd": [
+            8,
+            10
+          ],
+          "penaltyStrokes": 0
+        },
+        {
+          "type": "bunker",
+          "name": "right",
+          "shape": "ellipse",
+          "center": [
+            15,
+            158
+          ],
+          "radiusYd": [
+            7,
+            9
+          ],
+          "penaltyStrokes": 0
+        }
+      ],
+      "green": {
+        "center": [
+          0,
+          168
+        ],
+        "radiusYd": 14,
+        "tiers": 1,
+        "slopePct": 1.5
+      },
+      "pin": [
+        -3,
+        172
+      ],
+      "designNotes": "All carry over a ravine. Green sits back up at tee height \u2014 plays its number, not the drop."
+    },
+    {
+      "number": 4,
+      "par": 4,
+      "handicap": 15,
+      "tees": [
+        {
+          "name": "Back",
+          "yards": 356
+        },
+        {
+          "name": "Middle",
+          "yards": 330
+        },
+        {
+          "name": "Forward",
+          "yards": 290
+        }
+      ],
+      "centerline": [
+        [
+          0,
+          0
+        ],
+        [
+          6,
+          160
+        ],
+        [
+          14,
+          280
+        ],
+        [
+          16,
+          356
+        ]
+      ],
+      "elevationFt": [
+        [
+          0,
+          0
+        ],
+        [
+          160,
+          2
+        ],
+        [
+          280,
+          5
+        ],
+        [
+          356,
+          9
+        ]
+      ],
+      "widthYd": {
+        "fairway": 34,
+        "rough": 58
+      },
+      "hazards": [
+        {
+          "type": "bunker",
+          "name": "left carry",
+          "shape": "ellipse",
+          "center": [
+            -16,
+            215
+          ],
+          "radiusYd": [
+            10,
+            15
+          ],
+          "penaltyStrokes": 0
+        },
+        {
+          "type": "bunker",
+          "name": "right carry",
+          "shape": "ellipse",
+          "center": [
+            26,
+            230
+          ],
+          "radiusYd": [
+            10,
+            14
+          ],
+          "penaltyStrokes": 0
+        },
+        {
+          "type": "bunker",
+          "name": "greenside front",
+          "shape": "ellipse",
+          "center": [
+            12,
+            340
+          ],
+          "radiusYd": [
+            9,
+            7
+          ],
+          "penaltyStrokes": 0
+        },
+        {
+          "type": "bunker",
+          "name": "greenside right",
+          "shape": "ellipse",
+          "center": [
+            30,
+            356
+          ],
+          "radiusYd": [
+            7,
+            9
+          ],
+          "penaltyStrokes": 0
+        }
+      ],
+      "green": {
+        "center": [
+          16,
+          356
+        ],
+        "radiusYd": 13,
+        "tiers": 1,
+        "slopePct": 3.0
+      },
+      "pin": [
+        18,
+        360
+      ],
+      "designNotes": "Short and tempting. Five bunkers make the aggressive line a genuine gamble."
+    },
+    {
+      "number": 5,
+      "par": 4,
+      "handicap": 1,
+      "tees": [
+        {
+          "name": "Back",
+          "yards": 445
+        },
+        {
+          "name": "Middle",
+          "yards": 415
+        },
+        {
+          "name": "Forward",
+          "yards": 355
+        }
+      ],
+      "centerline": [
+        [
+          0,
+          0
+        ],
+        [
+          -3,
+          200
+        ],
+        [
+          -6,
+          330
+        ],
+        [
+          -4,
+          445
+        ]
+      ],
+      "elevationFt": [
+        [
+          0,
+          0
+        ],
+        [
+          200,
+          8
+        ],
+        [
+          330,
+          16
+        ],
+        [
+          445,
+          24
+        ]
+      ],
+      "widthYd": {
+        "fairway": 36,
+        "rough": 58
+      },
+      "hazards": [
+        {
+          "type": "ob",
+          "side": "left",
+          "fromYd": 0,
+          "toYd": 445,
+          "penaltyStrokes": 1
+        },
+        {
+          "type": "bunker",
+          "name": "right fairway",
+          "shape": "ellipse",
+          "center": [
+            24,
+            290
+          ],
+          "radiusYd": [
+            10,
+            16
+          ],
+          "penaltyStrokes": 0
+        },
+        {
+          "type": "bunker",
+          "name": "greenside left",
+          "shape": "ellipse",
+          "center": [
+            -18,
+            438
+          ],
+          "radiusYd": [
+            8,
+            11
+          ],
+          "penaltyStrokes": 0
+        }
+      ],
+      "green": {
+        "center": [
+          -4,
+          445
+        ],
+        "radiusYd": 15,
+        "tiers": 2,
+        "slopePct": 2.0
+      },
+      "pin": [
+        -8,
+        449
+      ],
+      "designNotes": "The hardest hole. Long, uphill all the way, out of bounds down the entire left side."
+    },
+    {
+      "number": 6,
+      "par": 3,
+      "handicap": 13,
+      "tees": [
+        {
+          "name": "Back",
+          "yards": 205
+        },
+        {
+          "name": "Middle",
+          "yards": 178
+        },
+        {
+          "name": "Forward",
+          "yards": 140
+        }
+      ],
+      "centerline": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          205
+        ]
+      ],
+      "elevationFt": [
+        [
+          0,
+          0
+        ],
+        [
+          100,
+          -2
+        ],
+        [
+          205,
+          -8
+        ]
+      ],
+      "widthYd": {
+        "fairway": 0,
+        "rough": 60
+      },
+      "hazards": [
+        {
+          "type": "bunker",
+          "name": "front left",
+          "shape": "ellipse",
+          "center": [
+            -13,
+            190
+          ],
+          "radiusYd": [
+            9,
+            11
+          ],
+          "penaltyStrokes": 0
+        },
+        {
+          "type": "bunker",
+          "name": "front right",
+          "shape": "ellipse",
+          "center": [
+            14,
+            192
+          ],
+          "radiusYd": [
+            8,
+            10
+          ],
+          "penaltyStrokes": 0
+        },
+        {
+          "type": "bunker",
+          "name": "back",
+          "shape": "ellipse",
+          "center": [
+            2,
+            220
+          ],
+          "radiusYd": [
+            10,
+            7
+          ],
+          "penaltyStrokes": 0
+        }
+      ],
+      "green": {
+        "center": [
+          0,
+          205
+        ],
+        "radiusYd": 17,
+        "tiers": 2,
+        "slopePct": 2.5
+      },
+      "pin": [
+        5,
+        210
+      ],
+      "designNotes": "Long par 3, downhill and exposed to wind. Big green, but ringed with sand."
+    },
+    {
+      "number": 7,
+      "par": 5,
+      "handicap": 7,
+      "tees": [
+        {
+          "name": "Back",
+          "yards": 572
+        },
+        {
+          "name": "Middle",
+          "yards": 535
+        },
+        {
+          "name": "Forward",
+          "yards": 470
+        }
+      ],
+      "centerline": [
+        [
+          0,
+          0
+        ],
+        [
+          8,
+          210
+        ],
+        [
+          24,
+          360
+        ],
+        [
+          10,
+          480
+        ],
+        [
+          -4,
+          572
+        ]
+      ],
+      "elevationFt": [
+        [
+          0,
+          0
+        ],
+        [
+          210,
+          -4
+        ],
+        [
+          360,
+          -10
+        ],
+        [
+          480,
+          -6
+        ],
+        [
+          572,
+          0
+        ]
+      ],
+      "widthYd": {
+        "fairway": 40,
+        "rough": 66
+      },
+      "hazards": [
+        {
+          "type": "bunker",
+          "name": "right corner",
+          "shape": "ellipse",
+          "center": [
+            40,
+            345
+          ],
+          "radiusYd": [
+            12,
+            18
+          ],
+          "penaltyStrokes": 0
+        },
+        {
+          "type": "water",
+          "name": "left of lay-up",
+          "shape": "ellipse",
+          "center": [
+            -26,
+            455
+          ],
+          "radiusYd": [
+            16,
+            26
+          ],
+          "penaltyStrokes": 1
+        },
+        {
+          "type": "bunker",
+          "name": "greenside right",
+          "shape": "ellipse",
+          "center": [
+            12,
+            566
+          ],
+          "radiusYd": [
+            8,
+            10
+          ],
+          "penaltyStrokes": 0
+        }
+      ],
+      "green": {
+        "center": [
+          -4,
+          572
+        ],
+        "radiusYd": 16,
+        "tiers": 1,
+        "slopePct": 2.0
+      },
+      "pin": [
+        -1,
+        576
+      ],
+      "designNotes": "A true three-shotter. Dogleg left off the second shot; water squeezes the ideal lay-up."
+    },
+    {
+      "number": 8,
+      "par": 4,
+      "handicap": 11,
+      "tees": [
+        {
+          "name": "Back",
+          "yards": 398
+        },
+        {
+          "name": "Middle",
+          "yards": 372
+        },
+        {
+          "name": "Forward",
+          "yards": 315
+        }
+      ],
+      "centerline": [
+        [
+          0,
+          0
+        ],
+        [
+          -4,
+          190
+        ],
+        [
+          -10,
+          300
+        ],
+        [
+          -14,
+          398
+        ]
+      ],
+      "elevationFt": [
+        [
+          0,
+          0
+        ],
+        [
+          190,
+          -3
+        ],
+        [
+          300,
+          -6
+        ],
+        [
+          398,
+          -2
+        ]
+      ],
+      "widthYd": {
+        "fairway": 36,
+        "rough": 60
+      },
+      "hazards": [
+        {
+          "type": "water",
+          "name": "right side",
+          "shape": "ellipse",
+          "center": [
+            30,
+            300
+          ],
+          "radiusYd": [
+            20,
+            90
+          ],
+          "penaltyStrokes": 1
+        },
+        {
+          "type": "bunker",
+          "name": "greenside left",
+          "shape": "ellipse",
+          "center": [
+            -28,
+            392
+          ],
+          "radiusYd": [
+            9,
+            11
+          ],
+          "penaltyStrokes": 0
+        }
+      ],
+      "green": {
+        "center": [
+          -14,
+          398
+        ],
+        "radiusYd": 14,
+        "tiers": 1,
+        "slopePct": 2.5
+      },
+      "pin": [
+        -17,
+        401
+      ],
+      "designNotes": "Water runs the whole right side from 210 to 390. Bail left and face a hard up-and-down."
+    },
+    {
+      "number": 9,
+      "par": 4,
+      "handicap": 17,
+      "tees": [
+        {
+          "name": "Back",
+          "yards": 424
+        },
+        {
+          "name": "Middle",
+          "yards": 396
+        },
+        {
+          "name": "Forward",
+          "yards": 340
+        }
+      ],
+      "centerline": [
+        [
+          0,
+          0
+        ],
+        [
+          4,
+          190
+        ],
+        [
+          10,
+          310
+        ],
+        [
+          8,
+          424
+        ]
+      ],
+      "elevationFt": [
+        [
+          0,
+          0
+        ],
+        [
+          190,
+          6
+        ],
+        [
+          310,
+          14
+        ],
+        [
+          424,
+          22
+        ]
+      ],
+      "widthYd": {
+        "fairway": 38,
+        "rough": 60
+      },
+      "hazards": [
+        {
+          "type": "bunker",
+          "name": "left fairway",
+          "shape": "ellipse",
+          "center": [
+            -20,
+            265
+          ],
+          "radiusYd": [
+            10,
+            15
+          ],
+          "penaltyStrokes": 0
+        },
+        {
+          "type": "bunker",
+          "name": "greenside front left",
+          "shape": "ellipse",
+          "center": [
+            -4,
+            412
+          ],
+          "radiusYd": [
+            9,
+            8
+          ],
+          "penaltyStrokes": 0
+        },
+        {
+          "type": "bunker",
+          "name": "greenside right",
+          "shape": "ellipse",
+          "center": [
+            24,
+            424
+          ],
+          "radiusYd": [
+            8,
+            10
+          ],
+          "penaltyStrokes": 0
+        }
+      ],
+      "green": {
+        "center": [
+          8,
+          424
+        ],
+        "radiusYd": 15,
+        "tiers": 2,
+        "slopePct": 3.0
+      },
+      "pin": [
+        10,
+        428
+      ],
+      "designNotes": "Uphill finisher to a two-tier green. Back pin is two clubs more than the front."
+    }
+  ]
+}

@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-08-26T16:50:43.351Z",
-  "catalogEntries": 14253,
-  "publicEntries": 14253,
+  "generatedAt": "2026-08-27T01:58:58.578Z",
+  "catalogEntries": 14254,
+  "publicEntries": 14254,
   "verifiedEntries": 12770,
   "findings": 4237,
   "errors": 1783,
-  "warns": 701,
-  "infos": 1753,
+  "warns": 2184,
+  "infos": 270,
   "baseline": {
-    "missingBothHp": 0,
+    "missingBothHp": 1483,
     "missingEitherHp": 1483,
     "exactDupGroups": 695,
     "exactDupExtras": 1064,
-    "sharedCoordClusters": 480,
-    "sharedCoordCourses": 1144,
+    "sharedCoordClusters": 481,
+    "sharedCoordCourses": 1146,
     "worstCluster": 5,
     "badPar18Band": 362
   },
   "courseTypes": {
     "regulation": 11360,
-    "unknown": 1484,
+    "unknown": 1485,
     "par3": 729,
     "executive": 680
   },
@@ -33,8 +33,8 @@
     "A1-coord-cluster": 158
   },
   "geometry": {
-    "greenPacks": 148,
-    "greensChecked": 2619,
+    "greenPacks": 160,
+    "greensChecked": 2835,
     "greensFarFromCentroid": 0,
     "teeGreenVsCard": "skipped-no-local-tee-geometry"
   }

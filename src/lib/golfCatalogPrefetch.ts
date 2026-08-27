@@ -70,8 +70,10 @@ export async function readGolfCatalog(): Promise<unknown | null> {
 
 export function warmGolfCatalog(): void {
   purgeLegacyCatalogStorage();
-  // Greens manifest is tiny — always keep it hot for 3D course matching.
-  void import('./golfGreen3d').then((m) => m.prefetchGreenMeshManifest());
+  // Static course packs — keep manifests hot so Prep/GPS resolve backups fast.
+  void import('./golfCourseAssets').then((m) =>
+    m.prefetchCourseAssetManifests(),
+  );
   if (inflight) return;
   try {
     const at = Number(localStorage.getItem(STAMP_KEY));

@@ -14,6 +14,7 @@ import {
 } from '../lib/golf';
 import type { GolfPlayerProfile } from '../lib/golfProfile';
 import { warmSatelliteTiles } from '../lib/golfSatelliteCache';
+import { prefetchCourseAssetManifests } from '../lib/golfCourseAssets';
 
 export function useGolfCourses(
   lat: number | null,
@@ -27,6 +28,7 @@ export function useGolfCourses(
 
   useEffect(() => {
     if (lat == null || lon == null) return;
+    prefetchCourseAssetManifests();
     const ac = new AbortController();
     setError(null);
     const nationalQuery = query.trim().length >= 2 ? query.trim() : undefined;
@@ -48,7 +50,7 @@ export function useGolfCourses(
             setCourses(next);
             // Warm hole-map backups for nearby courses while OSM is healthy.
             if (!nationalQuery && next.length) {
-              warmNearbyCourseMaps(next, 3);
+              warmNearbyCourseMaps(next, 6);
             }
           })
           .catch((err) => {
@@ -92,6 +94,7 @@ export function useGolfHoles(
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fromBackup, setFromBackup] = useState(false);
+  const [fromPack, setFromPack] = useState(false);
   const [attempt, setAttempt] = useState(0);
 
   const bboxKey = course?.bbox?.join(',') ?? '';
@@ -119,39 +122,54 @@ export function useGolfHoles(
       setLoading(false);
       // Don't warn on paint — only after OSM soft-refresh confirms failure.
       setFromBackup(false);
+      setFromPack(false);
       setError(null);
     } else {
       setHoles([]);
       setLoading(true);
       setFromBackup(false);
+      setFromPack(false);
       setError(null);
     }
+
+    const backupMessage = (pack?: boolean) =>
+      pack
+        ? 'Showing offline map pack — live map refresh unavailable.'
+        : 'Course map server is busy — showing saved course map.';
 
     loadGolfHoles(lat, lon, {
       ...opts,
       signal: ac.signal,
+      onAvailable: (early) => {
+        if (ac.signal.aborted || !early.holes.length) return;
+        setHoles(early.holes);
+        setLoading(false);
+        setFromBackup(early.fromBackup);
+        setFromPack(Boolean(early.fromPack));
+        // Soft-refresh still running — keep chrome quiet until final result.
+        setError(null);
+      },
     })
       .then((result) => {
         if (ac.signal.aborted) return;
         setHoles(result.holes);
         setFromBackup(result.fromBackup);
-        setError(
-          result.fromBackup
-            ? 'Course map server is busy — showing saved course map.'
-            : null,
-        );
+        setFromPack(Boolean(result.fromPack));
+        setError(result.fromBackup ? backupMessage(result.fromPack) : null);
       })
       .catch((err) => {
         if (ac.signal.aborted) return;
         if (peeked?.holes.length) {
           setHoles(peeked.holes);
           setFromBackup(true);
-          setError('Course map server is busy — showing saved course map.');
+          setFromPack(false);
+          setError(backupMessage(false));
           return;
         }
         setError(err instanceof Error ? err.message : 'Failed to load holes');
         setHoles([]);
         setFromBackup(false);
+        setFromPack(false);
       })
       .finally(() => {
         if (!ac.signal.aborted) setLoading(false);
@@ -164,6 +182,7 @@ export function useGolfHoles(
     loading,
     error,
     fromBackup,
+    fromPack,
     retry: () => setAttempt((n) => n + 1),
   };
 }

@@ -4,7 +4,7 @@ import { getSwingFault } from '../../../data/swingFaults';
 import type { GolfPlayerProfile } from '../../golfProfile';
 import { buildSwingPlan, type SwingPlan } from '../../swingPlan';
 import { buildContactSheet } from '../coach/contactSheet';
-import { swingLlmBaseUrl } from '../coach/config';
+import { swingLlmBaseUrl, swingLlmEnabled } from '../coach/config';
 import type { SwingAnalysis } from '../types';
 import {
   GUIDE_SYSTEM_BASE,
@@ -170,7 +170,8 @@ export async function buildSwingGuide(
   let totalLlmMs = 0;
   let usedLlm = false;
   let contactSheet: string | undefined;
-  if (!opts.disableLlm) {
+  const llmOff = Boolean(opts.disableLlm) || !swingLlmEnabled();
+  if (!llmOff) {
     try {
       contactSheet = await buildContactSheet(opts.analysis.keyframes);
     } catch {
@@ -178,7 +179,7 @@ export async function buildSwingGuide(
     }
   }
 
-  const run = !opts.disableLlm;
+  const run = !llmOff;
 
   opts.onSection?.('assessment', 'start');
   let assessment = fallbackBlock(assessmentFb);

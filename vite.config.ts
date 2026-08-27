@@ -4,6 +4,16 @@ import path from 'node:path';
 
 const DEFAULT_DEV_API = 'https://tee-ready.vercel.app';
 
+/**
+ * Dev API routing:
+ * - default → proxy /api to production (course search, wind, live OSM soft-refresh)
+ * - DEV_API_PROXY=http://127.0.0.1:3000 → local `vercel dev` (npm run dev:api)
+ * - DEV_API_PROXY=none → no /api (static packs under /golf/* still work)
+ *
+ * Hole lines / 3D greens / scorecards load from public/golf/* first; Prep paints
+ * from packs without waiting on Overpass.
+ */
+
 function devApiStub(enabled: boolean): Plugin {
   return {
     name: 'teeready-dev-api-stub',

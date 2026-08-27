@@ -15,7 +15,7 @@ import {
   UA,
   type OsmElement,
 } from './_lib/overpass';
-import { bboxFromLatLon, fetchOsmMapElements, padBbox } from './_lib/osmMap';
+import { bboxFromLatLon, fetchOsmMapElements, padBbox, shrinkBbox } from './_lib/osmMap';
 import { isClubSibling } from './_lib/courseRelate';
 import {
   classifyVenueKind,
@@ -671,10 +671,23 @@ async function mapCourses(
   radiusM: number,
 ): Promise<GolfCourseSummary[]> {
   const box = padBbox(bboxFromLatLon(lat, lon, Math.min(radiusM, 3500)), 0.15);
-  const elements = await fetchOsmMapElements(box, {
-    timeoutMs: 2_500,
-    attempts: 1,
-  });
+  let fetchBox = box;
+  let elements: OsmElement[] | null = null;
+  for (let shrink = 0; shrink < 4; shrink += 1) {
+    const result = await fetchOsmMapElements(fetchBox, {
+      timeoutMs: 8_000,
+      attempts: 1,
+    });
+    if (result.kind === 'ok') {
+      elements = result.elements;
+      break;
+    }
+    if (result.kind === 'too-large') {
+      fetchBox = shrinkBbox(fetchBox, 0.72);
+      continue;
+    }
+    break;
+  }
   if (!elements) return [];
 
   const courses: GolfCourseSummary[] = [];

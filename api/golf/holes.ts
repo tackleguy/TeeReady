@@ -24,8 +24,10 @@ import {
   holesBboxKey,
   padBbox,
   parseMapBbox,
+  shrinkBbox,
   type OsmMapBbox,
 } from './_lib/osmMap';
+import { loadHolePackBackup } from './_lib/osmBackup';
 import {
   centerOf,
   errResponse,
@@ -120,11 +122,19 @@ function parseRef(
 ): number | null {
   const direct = tags?.ref ?? tags?.hole;
   if (direct != null && String(direct).trim() !== '') {
-    const n = Number(String(direct).trim());
+    const raw = String(direct).trim();
+    const n = Number(raw);
     if (Number.isInteger(n) && n >= 1 && n <= 36) return n;
+    const mDirect = raw.match(/^(?:#|no\.?\s*)?(\d{1,2})\b/i);
+    if (mDirect) {
+      const parsed = Number(mDirect[1]);
+      if (parsed >= 1 && parsed <= 36) return parsed;
+    }
   }
   const name = (tags?.name ?? '').trim();
-  const m = name.match(/^hole\s*#?\s*(\d{1,2})\b/i);
+  const m = name.match(
+    /^(?:hole\s*#?\s*|#|no\.?\s*)?(\d{1,2})\b/i,
+  );
   if (m) {
     const n = Number(m[1]);
     if (n >= 1 && n <= 36) return n;
@@ -1160,6 +1170,11 @@ function fetchLooksComplete(holes: GolfHole[]): boolean {
   return holes.length >= 18;
 }
 
+type OsmMapHolesResult =
+  | { kind: 'ok'; holes: GolfHole[] }
+  | { kind: 'too-large' }
+  | { kind: 'error' };
+
 /**
  * Read a small course bbox from OSM's main map API. This avoids overloaded
  * Overpass for local courses while still using authoritative OSM geometry.
@@ -1170,16 +1185,21 @@ async function holesFromOsmMap(
   osmId?: number,
   expanded = false,
   courseName?: string,
-): Promise<GolfHole[] | null> {
+  req?: Request,
+): Promise<OsmMapHolesResult> {
   const bbox =
     typeof bboxInput === 'string' ? parseMapBbox(bboxInput) : bboxInput;
-  if (!bbox) return null;
+  if (!bbox) return { kind: 'error' };
 
-  const elements = await fetchOsmMapElements(bbox, {
-    timeoutMs: 3_000,
-    attempts: 1,
+  const fetched = await fetchOsmMapElements(bbox, {
+    timeoutMs: 10_000,
+    attempts: 2,
+    req,
+    courseName,
   });
-  if (!elements) return null;
+  if (fetched.kind === 'too-large') return { kind: 'too-large' };
+  if (fetched.kind === 'error') return { kind: 'error' };
+  const elements = fetched.elements;
 
   const polys = extractCoursePolygons(elements);
   let holes = holesFromWays(elements, polys);
@@ -1209,7 +1229,7 @@ async function holesFromOsmMap(
         polys.length >= 2 &&
         labeled.length > 0 &&
         labeled.length < polys.length * 14));
-  if (!needsWiden) return labeled;
+  if (!needsWiden) return { kind: 'ok', holes: labeled };
 
   let next = padBbox(bbox, dupRefs > 0 ? 0.4 : 0.2);
   if (polys.length) {
@@ -1232,16 +1252,19 @@ async function holesFromOsmMap(
       east: e + 0.002,
     };
   }
-  if (bboxArea(next) > 0.08) return labeled;
+  if (bboxArea(next) > 0.08) return { kind: 'ok', holes: labeled };
   const wider = await holesFromOsmMap(
     next,
     osmType,
     osmId,
     true,
     courseName,
+    req,
   );
-  if (wider && wider.length > labeled.length) return wider;
-  return labeled;
+  if (wider.kind === 'ok' && wider.holes.length > labeled.length) {
+    return wider;
+  }
+  return { kind: 'ok', holes: labeled };
 }
 
 /** Parse `bbox=south,west,north,east`, padded to catch edge tees. */
@@ -1330,7 +1353,9 @@ export default async function handler(req: Request): Promise<Response> {
   let lastError: string | null = null;
   let best: { holes: GolfHole[]; scope: string } = { holes: [], scope: 'none' };
   const startedAt = Date.now();
-  const HARD_BUDGET_MS = 5_500;
+  // Map downloads for dense clubs can take ~3–8s; keep budget above that so
+  // we don't abandon a healthy OSM map fetch and fall into a busy Overpass.
+  const HARD_BUDGET_MS = 12_000;
 
   // Prefer OSM's main map API for a course bbox. Public Overpass mirrors are
   // often busy; map.json is local-to-the-bbox and keeps Golf working offline
@@ -1343,19 +1368,34 @@ export default async function handler(req: Request): Promise<Response> {
     box: OsmMapBbox,
     scopeName: string,
   ): Promise<boolean> => {
-    const mapHoles = await holesFromOsmMap(
-      box,
-      osmType,
-      osmId,
-      false,
-      courseName || undefined,
-    );
-    // null = transport failure → fall through. [] = mapped but no golf tags.
-    if (mapHoles === null) return false;
-    if (mapHoles.length > best.holes.length) {
-      best = { holes: mapHoles, scope: scopeName };
+    let current = box;
+    // Dense tourist coasts (Pebble Beach) exceed OSM's 50k-node map limit at
+    // ~1.8 km. Shrink toward the pin and retry before giving up on map.json.
+    for (let shrink = 0; shrink < 5; shrink += 1) {
+      if (Date.now() - startedAt > HARD_BUDGET_MS) break;
+      const mapHoles = await holesFromOsmMap(
+        current,
+        osmType,
+        osmId,
+        false,
+        courseName || undefined,
+        req,
+      );
+      if (mapHoles.kind === 'too-large') {
+        current = shrinkBbox(current, 0.72);
+        continue;
+      }
+      // Transport failure → fall through to Overpass (or a wider/narrower box).
+      if (mapHoles.kind === 'error') return false;
+      if (mapHoles.holes.length > best.holes.length) {
+        best = {
+          holes: mapHoles.holes,
+          scope: shrink > 0 ? `${scopeName}-shrink${shrink}` : scopeName,
+        };
+      }
+      return fetchLooksComplete(mapHoles.holes);
     }
-    return fetchLooksComplete(mapHoles);
+    return false;
   };
 
   if (await tryMap(mapBbox, bbox ? 'osm-map' : 'osm-map-synth')) {
@@ -1455,6 +1495,29 @@ out geom;
   }
 
   if (!best.holes.length) {
+    // Live OSM + Overpass empty/failed → durable hole-pack backup.
+    const pack = await loadHolePackBackup(req, {
+      lat,
+      lon,
+      courseName: courseName || undefined,
+    });
+    if (pack?.holes?.length) {
+      const holesWithElevation = await addElevations(
+        pack.holes as GolfHole[],
+      );
+      HOLE_MEM.set(cacheKey, { at: Date.now(), holes: holesWithElevation });
+      return jsonResponse(
+        {
+          holes: holesWithElevation,
+          count: holesWithElevation.length,
+          scope: 'osm-backup',
+          provenance: holesWithElevation[0]?.provenance ?? 'geometric',
+          attribution: '© OpenStreetMap contributors (ODbL)',
+        },
+        3600,
+        604_800,
+      );
+    }
     // Only error when every Overpass attempt failed and map also found nothing.
     if (lastError) return errResponse(lastError);
     return jsonResponse(
