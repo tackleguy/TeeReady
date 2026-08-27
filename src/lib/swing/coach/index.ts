@@ -4,7 +4,7 @@ import { buildContactSheet } from './contactSheet';
 import { CoachFetchError, requestCoachCompletion } from './client';
 import {
   isMixedContentRisk,
-  isSafariBrowser,
+  mixedContentHint,
   swingLlmBaseUrl,
   swingLlmEnabled,
 } from './config';
@@ -45,11 +45,10 @@ export async function coachSwingAnalysis(
   if (!swingLlmEnabled()) return rulesFallback();
 
   const base = swingLlmBaseUrl();
-  if (isMixedContentRisk(base) && isSafariBrowser()) {
+  if (isMixedContentRisk(base)) {
     return {
       ...rulesFallback(),
-      notice:
-        'Safari blocks this HTTPS page from reaching a local http://localhost model. Use Chrome or Edge, or open the app at http://localhost while coaching.',
+      notice: mixedContentHint(),
     };
   }
 
@@ -111,9 +110,11 @@ export { probeSwingLlm, CoachFetchError } from './client';
 export {
   DEFAULT_SWING_LLM_URL,
   DEFAULT_SWING_LLM_MODEL,
+  DEV_SWING_LLM_PROXY_PATH,
   swingLlmBaseUrl,
   swingLlmModel,
   swingLlmEnabled,
   isMixedContentRisk,
+  mixedContentHint,
   isSafariBrowser,
 } from './config';

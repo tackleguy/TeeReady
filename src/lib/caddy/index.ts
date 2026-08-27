@@ -6,7 +6,7 @@ import {
 } from '../swing/coach/client';
 import {
   isMixedContentRisk,
-  isSafariBrowser,
+  mixedContentHint,
   swingLlmBaseUrl,
   swingLlmEnabled,
 } from '../swing/coach/config';
@@ -54,9 +54,8 @@ async function runCaddyLlm(opts: {
   }
 
   const base = swingLlmBaseUrl();
-  if (isMixedContentRisk(base) && isSafariBrowser()) {
-    const notice =
-      'Safari blocks this HTTPS page from reaching a local http://localhost model. Use Chrome or Edge, or open the app at http://localhost.';
+  if (isMixedContentRisk(base)) {
+    const notice = mixedContentHint();
     if (opts.requireLlm) throw new CoachFetchError('mixed-content', notice);
     return { ...opts.fallback, notice };
   }
