@@ -13,6 +13,7 @@
     "typecheck": "tsc -b --noEmit",
     "verify:swing-coach": "tsx scripts/verify-swing-coach-validator.ts",
     "verify:caddy": "tsx scripts/verify-caddy-validator.ts",
+    "smoke:caddy-llm": "tsx scripts/smoke-caddy-llm.ts",
     "test:swing-plan": "tsx scripts/test-swing-plan.ts",
     "verify:swing-guide": "tsx scripts/verify-swing-guide-validator.ts",
     "verify:swing-guide-fallback": "tsx scripts/verify-swing-guide-fallback.ts",

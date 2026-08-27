@@ -9,7 +9,6 @@ import {
   isSafariBrowser,
   swingLlmBaseUrl,
   swingLlmEnabled,
-  swingLlmModel,
 } from '../swing/coach/config';
 import type { CaddyContext, CaddyResult } from './types';
 import {
@@ -27,6 +26,7 @@ export { rulesCaddyTip, rulesCaddyAsk } from './rules';
 export {
   probeSwingLlm as probeCaddyLlm,
   CoachFetchError,
+  resolveSwingLlmModel as resolveCaddyLlmModel,
 } from '../swing/coach/client';
 export {
   swingLlmBaseUrl as caddyLlmBaseUrl,
@@ -40,20 +40,29 @@ async function runCaddyLlm(opts: {
   userText: string;
   fallback: CaddyResult;
   signal?: AbortSignal;
+  /** When true, throw instead of rules fallback (smoke / CI). */
+  requireLlm?: boolean;
 }): Promise<CaddyResult> {
-  if (!swingLlmEnabled()) return opts.fallback;
-
-  const base = swingLlmBaseUrl();
-  if (isMixedContentRisk(base) && isSafariBrowser()) {
+  if (!swingLlmEnabled()) {
+    if (opts.requireLlm) {
+      throw new Error('VITE_SWING_LLM_DISABLED is set — local Llama required');
+    }
     return {
       ...opts.fallback,
-      notice:
-        'Safari blocks this HTTPS page from reaching a local http://localhost model. Use Chrome or Edge, or open the app at http://localhost.',
+      notice: 'Local LLM disabled — using rules.',
     };
   }
 
+  const base = swingLlmBaseUrl();
+  if (isMixedContentRisk(base) && isSafariBrowser()) {
+    const notice =
+      'Safari blocks this HTTPS page from reaching a local http://localhost model. Use Chrome or Edge, or open the app at http://localhost.';
+    if (opts.requireLlm) throw new CoachFetchError('mixed-content', notice);
+    return { ...opts.fallback, notice };
+  }
+
   try {
-    const { text, elapsedMs } = await requestCoachCompletion({
+    const { text, elapsedMs, model } = await requestCoachCompletion({
       system: CADDY_SYSTEM_PROMPT,
       userText: opts.userText,
       signal: opts.signal,
@@ -63,11 +72,15 @@ async function runCaddyLlm(opts: {
 
     const validated = validateCaddyResponse(text, opts.ctx.facts);
     if (!validated.ok) {
+      if (opts.requireLlm) {
+        throw new Error(`Caddy LLM rejected: ${validated.detail}`);
+      }
       return {
         ...opts.fallback,
         rejectionReason: validated.detail,
         elapsedMs,
-        model: swingLlmModel(),
+        model,
+        notice: `Local model reply rejected — using rules. ${validated.detail}`,
       };
     }
 
@@ -75,20 +88,23 @@ async function runCaddyLlm(opts: {
       text: validated.text,
       source: 'llm',
       elapsedMs,
-      model: swingLlmModel(),
+      model,
     };
   } catch (e) {
-    if (e instanceof CoachFetchError && e.kind === 'mixed-content') {
+    if (opts.signal?.aborted) throw e;
+    if (opts.requireLlm) throw e;
+    if (e instanceof CoachFetchError) {
       return { ...opts.fallback, notice: e.message };
     }
-    return opts.fallback;
+    const msg = e instanceof Error ? e.message : 'Local model error';
+    return { ...opts.fallback, notice: msg };
   }
 }
 
 /** Auto tip when hole or weather changes. */
 export async function autoCaddyTip(
   ctx: CaddyContext,
-  opts?: { signal?: AbortSignal },
+  opts?: { signal?: AbortSignal; requireLlm?: boolean },
 ): Promise<CaddyResult> {
   const fallback = rulesCaddyTip(ctx);
   return runCaddyLlm({
@@ -96,6 +112,7 @@ export async function autoCaddyTip(
     userText: buildAutoTipUserText(ctx.facts),
     fallback,
     signal: opts?.signal,
+    requireLlm: opts?.requireLlm,
   });
 }
 
@@ -103,7 +120,7 @@ export async function autoCaddyTip(
 export async function askCaddy(
   ctx: CaddyContext,
   question: string,
-  opts?: { signal?: AbortSignal },
+  opts?: { signal?: AbortSignal; requireLlm?: boolean },
 ): Promise<CaddyResult> {
   const q = question.trim();
   if (!q) return rulesCaddyTip(ctx);
@@ -113,5 +130,6 @@ export async function askCaddy(
     userText: buildAskUserText(ctx.facts, q),
     fallback,
     signal: opts?.signal,
+    requireLlm: opts?.requireLlm,
   });
 }

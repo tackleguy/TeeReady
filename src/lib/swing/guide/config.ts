@@ -1,6 +1,6 @@
 /** Per-section model routing for the swing guide. */
 
-import { swingLlmModel } from '../coach/config';
+import { readViteEnv, swingLlmModel } from '../coach/config';
 
 export type GuideSectionId =
   | 'assessment'
@@ -20,7 +20,7 @@ const ENV_KEYS: Record<GuideSectionId, keyof ImportMetaEnv | string> = {
 /** Override model per section without rewriting the feature. Falls back to VITE_SWING_LLM_MODEL. */
 export function modelForGuideSection(section: GuideSectionId): string {
   const key = ENV_KEYS[section];
-  const raw = (import.meta.env as Record<string, string | undefined>)[key]?.trim();
+  const raw = readViteEnv(String(key));
   return raw || swingLlmModel();
 }
 

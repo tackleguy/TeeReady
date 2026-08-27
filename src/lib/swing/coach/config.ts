@@ -1,4 +1,4 @@
-/** Local OpenAI-compatible swing coach config. */
+/** Local OpenAI-compatible swing coach / caddie config. */
 
 export const DEFAULT_SWING_LLM_URL = 'http://localhost:1234/v1';
 export const DEFAULT_SWING_LLM_MODEL = 'llama-3.2-11b-vision-instruct';
@@ -6,25 +6,41 @@ export const DEFAULT_SWING_LLM_MODEL = 'llama-3.2-11b-vision-instruct';
 /** Soft cap on coach prose (chars). Longer responses are rejected. */
 export const COACH_MAX_CHARS = 1400;
 
+/** Read Vite `import.meta.env` or Node `process.env` without throwing. */
+export function readViteEnv(key: string): string | undefined {
+  try {
+    const meta = (import.meta as ImportMeta & {
+      env?: Record<string, string | undefined>;
+    }).env;
+    const fromMeta = meta?.[key]?.trim();
+    if (fromMeta) return fromMeta;
+  } catch {
+    /* import.meta.env absent outside Vite */
+  }
+  if (typeof process !== 'undefined' && process.env) {
+    const fromProcess = process.env[key]?.trim();
+    if (fromProcess) return fromProcess;
+  }
+  return undefined;
+}
+
 /**
- * When true, skip local LLM calls and use rules / authored fallbacks only.
+ * When false, skip local LLM calls and use rules / authored fallbacks only.
  * Set `VITE_SWING_LLM_DISABLED=1` for fully offline coaching UX.
  */
 export function swingLlmEnabled(): boolean {
-  const raw = (
-    import.meta.env as Record<string, string | undefined>
-  ).VITE_SWING_LLM_DISABLED?.trim();
+  const raw = readViteEnv('VITE_SWING_LLM_DISABLED');
   if (raw === '1' || raw === 'true' || raw === 'yes') return false;
   return true;
 }
 
 export function swingLlmBaseUrl(): string {
-  const raw = (import.meta.env.VITE_SWING_LLM_URL as string | undefined)?.trim();
+  const raw = readViteEnv('VITE_SWING_LLM_URL');
   return (raw || DEFAULT_SWING_LLM_URL).replace(/\/$/, '');
 }
 
 export function swingLlmModel(): string {
-  const raw = (import.meta.env.VITE_SWING_LLM_MODEL as string | undefined)?.trim();
+  const raw = readViteEnv('VITE_SWING_LLM_MODEL');
   return raw || DEFAULT_SWING_LLM_MODEL;
 }
 

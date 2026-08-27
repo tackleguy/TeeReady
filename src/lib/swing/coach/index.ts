@@ -7,7 +7,6 @@ import {
   isSafariBrowser,
   swingLlmBaseUrl,
   swingLlmEnabled,
-  swingLlmModel,
 } from './config';
 import { buildCoachUserText, SWING_COACH_SYSTEM_PROMPT } from './prompt';
 import {
@@ -56,7 +55,7 @@ export async function coachSwingAnalysis(
 
   try {
     const imageDataUrl = await buildContactSheet(analysis.keyframes);
-    const { text, elapsedMs } = await requestCoachCompletion({
+    const { text, elapsedMs, model } = await requestCoachCompletion({
       system: SWING_COACH_SYSTEM_PROMPT,
       userText: buildCoachUserText(analysis),
       imageDataUrl,
@@ -78,7 +77,8 @@ export async function coachSwingAnalysis(
         ...rulesFallback(),
         rejectionReason: validated.detail,
         elapsedMs,
-        model: swingLlmModel(),
+        model,
+        notice: `Local model reply rejected — using rules. ${validated.detail}`,
       };
     }
 
@@ -86,17 +86,15 @@ export async function coachSwingAnalysis(
       text: validated.text,
       source: 'llm',
       elapsedMs,
-      model: swingLlmModel(),
+      model,
     };
   } catch (e) {
+    if (opts?.signal?.aborted) throw e;
     if (e instanceof CoachFetchError) {
-      if (e.kind === 'mixed-content') {
-        return { ...rulesFallback(), notice: e.message };
-      }
-      // Unreachable / HTTP / parse — degrade quietly to rules.
-      return rulesFallback();
+      return { ...rulesFallback(), notice: e.message };
     }
-    return rulesFallback();
+    const msg = e instanceof Error ? e.message : 'Local model error';
+    return { ...rulesFallback(), notice: msg };
   }
 }
 
