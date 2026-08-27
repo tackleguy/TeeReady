@@ -34,13 +34,16 @@ type ContentPart =
 
 /**
  * POST /chat/completions against LM Studio / Ollama (OpenAI-compatible).
+ * Text-only by default; pass imageDataUrl for vision coach.
  */
 export async function requestCoachCompletion(opts: {
   system: string;
   userText: string;
-  /** data:image/...;base64,... */
-  imageDataUrl: string;
+  /** data:image/...;base64,... — omit for text-only caddie calls */
+  imageDataUrl?: string;
   signal?: AbortSignal;
+  temperature?: number;
+  maxTokens?: number;
 }): Promise<ChatCompletionResult> {
   const base = swingLlmBaseUrl();
   const model = swingLlmModel();
@@ -53,19 +56,20 @@ export async function requestCoachCompletion(opts: {
     );
   }
 
+  const userContent: ContentPart[] | string = opts.imageDataUrl
+    ? [
+        { type: 'text', text: opts.userText },
+        { type: 'image_url', image_url: { url: opts.imageDataUrl } },
+      ]
+    : opts.userText;
+
   const body = {
     model,
-    temperature: 0.35,
-    max_tokens: 450,
+    temperature: opts.temperature ?? 0.35,
+    max_tokens: opts.maxTokens ?? 450,
     messages: [
       { role: 'system', content: opts.system },
-      {
-        role: 'user',
-        content: [
-          { type: 'text', text: opts.userText },
-          { type: 'image_url', image_url: { url: opts.imageDataUrl } },
-        ] satisfies ContentPart[],
-      },
+      { role: 'user', content: userContent },
     ],
   };
 

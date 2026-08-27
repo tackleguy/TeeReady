@@ -25,6 +25,7 @@ import {
 import { GolfMap } from '../components/golf/GolfMap';
 import { CourseHeroImage } from '../components/golf/CourseHeroImage';
 import { GolfMapBoundary } from '../components/golf/GolfMapBoundary';
+import { AiCaddyPanel } from '../components/golf/AiCaddyPanel';
 import { GolfHoleIntel } from '../components/golf/GolfHoleIntel';
 import { GolfSetup } from '../components/golf/GolfSetup';
 import { GolfScorecard } from '../components/golf/GolfScorecard';
@@ -42,8 +43,8 @@ import {
 } from '../lib/pendingCourse';
 import {
   peekSatelliteTilesWarm,
-  warmSatelliteTiles,
 } from '../lib/golfSatelliteCache';
+import { warmCourseAssets } from '../lib/golfCourseAssets';
 import {
   loadYardageNotes,
   saveYardageNotesFromPrep,
@@ -80,7 +81,6 @@ import { warmGolfCatalog, readGolfCatalog } from '../lib/golfCatalogPrefetch';
 import {
   courseHasGreenMeshes,
   loadGreenMeshCourse,
-  resolveAndWarmGreenMesh,
   resolveGreenMeshSlug,
   type GreenMeshCourse,
 } from '../lib/golfGreen3d';
@@ -254,6 +254,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
   const [gpsHudOpen, setGpsHudOpen] = useState(true);
   const [gpsHudExpanded, setGpsHudExpanded] = useState(false);
   const [intelPanelOpen, setIntelPanelOpen] = useState(false);
+  const [caddyOpen, setCaddyOpen] = useState(true);
 
   // Keep player HCP in sync when Settings (or another tab) saves.
   useEffect(() => {
@@ -550,11 +551,13 @@ export function GolfView({ active = true }: { active?: boolean }) {
         );
         if (!ok) return;
       }
-      warmSatelliteTiles(next.lat, next.lon, {
+      void warmCourseAssets({
+        name: next.name,
+        lat: next.lat,
+        lon: next.lon,
         courseId: next.id,
         priority: 'high',
       });
-      void resolveAndWarmGreenMesh(next.name, next.lat, next.lon);
       setCourse(next);
       setGreens3d(false);
       setGreenMeshCourse(null);
@@ -1174,12 +1177,20 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     type="button"
                     onClick={() => pickCourse(c)}
                     onMouseEnter={() => {
-                      warmSatelliteTiles(c.lat, c.lon, { courseId: c.id });
-                      void resolveAndWarmGreenMesh(c.name, c.lat, c.lon);
+                      void warmCourseAssets({
+                        name: c.name,
+                        lat: c.lat,
+                        lon: c.lon,
+                        courseId: c.id,
+                      });
                     }}
                     onFocus={() => {
-                      warmSatelliteTiles(c.lat, c.lon, { courseId: c.id });
-                      void resolveAndWarmGreenMesh(c.name, c.lat, c.lon);
+                      void warmCourseAssets({
+                        name: c.name,
+                        lat: c.lat,
+                        lon: c.lon,
+                        courseId: c.id,
+                      });
                     }}
                     className={[
                       'floating-subpanel w-full px-3 py-3 text-left transition-colors',
@@ -1393,6 +1404,42 @@ export function GolfView({ active = true }: { active?: boolean }) {
               </DraggableBox>
             ) : null}
 
+            {caddyOpen && course && activeHoleObj && profile ? (
+              <DraggableBox
+                id="ai-caddy"
+                defaultAnchor={
+                  isMobile
+                    ? { right: 12, bottom: viewMode === 'gps' ? 120 : 88 }
+                    : { right: 12, bottom: 16 }
+                }
+                zIndex={25}
+                showHandle={false}
+              >
+                <AiCaddyPanel
+                  mode={viewMode}
+                  courseName={course.name}
+                  hole={activeHoleObj}
+                  profile={profile}
+                  bag={bag}
+                  brief={activeBrief}
+                  turf={turf}
+                  forecast={forecast}
+                  remain={
+                    viewMode === 'gps' && gpsHudDistances
+                      ? {
+                          front: gpsHudDistances.front,
+                          mid: gpsHudDistances.mid,
+                          back: gpsHudDistances.back,
+                        }
+                      : null
+                  }
+                  ensembleSummary={ensemble?.summary ?? null}
+                  compact={isMobile}
+                  onClose={() => setCaddyOpen(false)}
+                />
+              </DraggableBox>
+            ) : null}
+
             {/* Scorecard — Prep/GPS chosen from Rounds nav dropdown */}
             {course ? (
               <DraggableBox
@@ -1457,6 +1504,23 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     >
                       <Mountain className="h-3 w-3" aria-hidden="true" />
                       3D
+                    </button>
+                  ) : null}
+                  {course && activeHoleObj && profile ? (
+                    <button
+                      type="button"
+                      onClick={() => setCaddyOpen((v) => !v)}
+                      aria-pressed={caddyOpen}
+                      title="AI caddie · weather + bag"
+                      className={[
+                        'inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] font-semibold transition-colors',
+                        caddyOpen
+                          ? 'bg-brand/30 text-[var(--ink-1)]'
+                          : 'text-[var(--ink-2)] hover:bg-white/10',
+                      ].join(' ')}
+                    >
+                      <Sparkles className="h-3 w-3" aria-hidden />
+                      {!isMobile ? 'Caddie' : null}
                     </button>
                   ) : null}
                   {!intelPanelOpen && !isMobile ? (
