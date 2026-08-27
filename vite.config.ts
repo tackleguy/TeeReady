@@ -1,14 +1,18 @@
-import { defineConfig, loadEnv, type Plugin } from 'vite';
+import { defineConfig, loadEnv, type Plugin, type ProxyOptions } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
 
 const DEFAULT_DEV_API = 'https://tee-ready.vercel.app';
+const DEFAULT_LLM_PROXY = 'http://127.0.0.1:1234';
 
 /**
  * Dev API routing:
  * - default → proxy /api to production (course search, wind, live OSM soft-refresh)
  * - DEV_API_PROXY=http://127.0.0.1:3000 → local `vercel dev` (npm run dev:api)
  * - DEV_API_PROXY=none → no /api (static packs under /golf/* still work)
+ *
+ * Local LLM: `/llm` → LM Studio / Ollama (default http://127.0.0.1:1234) so the
+ * browser uses same-origin requests and never hits mixed-content blocks.
  *
  * Hole lines / 3D greens / scorecards load from public/golf/* first; Prep paints
  * from packs without waiting on Overpass.
@@ -44,9 +48,21 @@ export default defineConfig(({ mode }) => {
       ? undefined
       : proxyRaw || DEFAULT_DEV_API;
 
-  const apiProxyConfig = apiProxy
-    ? { '/api': { target: apiProxy, changeOrigin: true, secure: true } }
-    : undefined;
+  const llmTarget = (env.SWING_LLM_PROXY || DEFAULT_LLM_PROXY).replace(
+    /\/$/,
+    '',
+  );
+
+  const proxy: Record<string, string | ProxyOptions> = {
+    '/llm': {
+      target: llmTarget,
+      changeOrigin: true,
+      rewrite: (p) => p.replace(/^\/llm/, ''),
+    },
+  };
+  if (apiProxy) {
+    proxy['/api'] = { target: apiProxy, changeOrigin: true, secure: true };
+  }
 
   return {
     plugins: [react(), devApiStub(!apiProxy)],
@@ -58,10 +74,15 @@ export default defineConfig(({ mode }) => {
     server: {
       host: true,
       port: 5173,
-      proxy: apiProxyConfig,
+      proxy,
       watch: {
         ignored: ['**/api/**', '**/.vercel/**', '**/dist/**'],
       },
+    },
+    preview: {
+      host: true,
+      port: 4173,
+      proxy,
     },
     build: {
       rollupOptions: {
