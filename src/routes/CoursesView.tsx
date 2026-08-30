@@ -421,8 +421,8 @@ export function CoursesView() {
             <div className="px-4 py-5 text-[13px] leading-relaxed text-muted">
               <p>
                 {manifestsLoading
-                  ? 'Loading backed-up courses…'
-                  : `${workingCount.toLocaleString()} playable courses with offline hole lines.`}{' '}
+                  ? 'Loading playable courses…'
+                  : `${filteredNearby.length.toLocaleString()} playable courses (nearest first). ${workingCount.toLocaleString()} total with offline hole lines.`}{' '}
                 Cards marked{' '}
                 <span className="font-semibold text-ink">Map ready</span> have
                 local hole geometry; <span className="font-semibold text-ink">3D</span>{' '}

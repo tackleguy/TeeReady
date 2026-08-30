@@ -75,7 +75,7 @@ export function searchWorkingManifest(
   query: string,
   lat: number,
   lon: number,
-  limit = 40,
+  limit = 80,
 ): GolfCourseSummary[] {
   const q = query.trim().toLowerCase();
   if (q.length < 2) return [];
@@ -106,6 +106,32 @@ export function nearbyWorkingManifest(
     .map((e) => holePackEntryToSummary(e, { lat, lon }));
 }
 
+/** Prefer live API rows (OSM ids, region, photos) when they match a pack entry. */
+export function preferApiSummaries(
+  manifestCourses: GolfCourseSummary[],
+  apiCourses: GolfCourseSummary[],
+  entries: HolePackManifestEntry[],
+): GolfCourseSummary[] {
+  return manifestCourses.map((manifest) => {
+    const slug = manifest.id.startsWith('holepack:')
+      ? manifest.id.slice('holepack:'.length)
+      : '';
+    const entry =
+      entries.find((e) => e.slug === slug) ??
+      entries.find(
+        (e) => e.name.toLowerCase() === manifest.name.toLowerCase(),
+      );
+    if (!entry) return manifest;
+    const api = apiCourses.find((c) => courseMatchesHolePackEntry(c, entry));
+    if (!api) return manifest;
+    return {
+      ...api,
+      holes: api.holes ?? manifest.holes,
+      distanceMi: manifest.distanceMi ?? api.distanceMi,
+    };
+  });
+}
+
 /** API nearby/search merged with static hole-pack manifest. */
 export function mergeWorkingCourses(
   apiCourses: GolfCourseSummary[],
@@ -119,12 +145,12 @@ export function mergeWorkingCourses(
   if (q.length >= 2) {
     const manifest = searchWorkingManifest(entries, q, lat, lon);
     const seen = new Set(manifest.map((c) => c.id));
+    const merged = [...manifest];
     for (const c of filterToWorkingCourses(apiCourses, entries)) {
-      if (!seen.has(c.id)) manifest.push(c);
+      if (!seen.has(c.id)) merged.push(c);
     }
-    return manifest;
+    return preferApiSummaries(merged, apiCourses, entries);
   }
-  const fromApi = filterToWorkingCourses(apiCourses, entries);
-  if (fromApi.length >= 5) return fromApi;
-  return nearbyWorkingManifest(entries, lat, lon, 48);
+  const nearby = nearbyWorkingManifest(entries, lat, lon, entries.length);
+  return preferApiSummaries(nearby, apiCourses, entries);
 }
