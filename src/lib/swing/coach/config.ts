@@ -39,17 +39,27 @@ function isViteDev(): boolean {
   }
 }
 
+function isLoopbackHost(hostname: string): boolean {
+  return (
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname === '[::1]'
+  );
+}
+
+/** Vite or the app opened on localhost — `/llm` proxy exists. */
+function hasLlmProxy(): boolean {
+  if (typeof window === 'undefined') return false;
+  return isViteDev() || isLoopbackHost(window.location.hostname);
+}
+
 function isLocalHttpLlmUrl(url: string): boolean {
   try {
     const base =
       typeof window !== 'undefined' ? window.location.href : 'http://localhost/';
     const u = new URL(url, base);
     if (u.protocol !== 'http:') return false;
-    return (
-      u.hostname === 'localhost' ||
-      u.hostname === '127.0.0.1' ||
-      u.hostname === '[::1]'
-    );
+    return isLoopbackHost(u.hostname);
   } catch {
     return false;
   }
@@ -65,23 +75,51 @@ export function swingLlmEnabled(): boolean {
   return true;
 }
 
-/**
- * Base URL for OpenAI-compatible `/models` and `/chat/completions`.
- * In the Vite browser (dev), defaults to same-origin `/llm/v1` so HTTPS pages
- * do not hit mixed-content blocks talking to LM Studio on :1234.
- */
-export function swingLlmBaseUrl(): string {
+function configuredLlmUrl(): { raw: string | undefined; configured: string } {
   const raw = readViteEnv('VITE_SWING_LLM_URL')?.replace(/\/$/, '');
   const configured = (raw || DEFAULT_SWING_LLM_URL).replace(/\/$/, '');
+  return { raw, configured };
+}
 
-  // Vite browser: same-origin /llm proxy (see vite.config.ts) — no mixed content.
-  if (typeof window !== 'undefined' && isViteDev()) {
-    if (!raw || isLocalHttpLlmUrl(configured)) {
-      return DEV_SWING_LLM_PROXY_PATH;
+/**
+ * Base URL for OpenAI-compatible `/models` and `/chat/completions`.
+ * On Vite / localhost, use same-origin `/llm/v1` so HTTPS pages never fetch
+ * http://localhost:1234 (browsers block that as mixed content).
+ */
+export function swingLlmBaseUrl(): string {
+  const { raw, configured } = configuredLlmUrl();
+
+  if (typeof window !== 'undefined' && hasLlmProxy()) {
+    if (!raw || isLocalHttpLlmUrl(configured) || configured.startsWith('/')) {
+      return configured.startsWith('/') ? configured : DEV_SWING_LLM_PROXY_PATH;
     }
   }
 
   return configured;
+}
+
+/**
+ * False on deployed HTTPS (Vercel, etc.): the local LM Studio URL cannot be
+ * called from the browser. Callers should use rules with no mixed-content banner.
+ */
+export function swingLlmReachableFromPage(): boolean {
+  if (!swingLlmEnabled()) return false;
+  if (typeof window === 'undefined') return true;
+  if (hasLlmProxy()) return true;
+
+  const { configured } = configuredLlmUrl();
+  if (configured.startsWith('/')) return false;
+  try {
+    const u = new URL(configured, window.location.href);
+    if (u.protocol === 'https:') return true;
+    if (u.protocol === 'http:') {
+      if (window.location.protocol === 'https:') return false;
+      return !isLocalHttpLlmUrl(configured) || isLoopbackHost(window.location.hostname);
+    }
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function swingLlmModel(): string {

@@ -4,12 +4,7 @@ import {
   CoachFetchError,
   requestCoachCompletion,
 } from '../swing/coach/client';
-import {
-  isMixedContentRisk,
-  mixedContentHint,
-  swingLlmBaseUrl,
-  swingLlmEnabled,
-} from '../swing/coach/config';
+import { swingLlmEnabled, swingLlmReachableFromPage } from '../swing/coach/config';
 import type { CaddyContext, CaddyResult } from './types';
 import {
   buildAskUserText,
@@ -17,6 +12,7 @@ import {
   CADDY_SYSTEM_PROMPT,
 } from './prompt';
 import { rulesCaddyAsk, rulesCaddyTip } from './rules';
+import { requestSiteCaddyCompletion } from './siteClient';
 import { validateCaddyResponse } from './validate';
 
 export type { CaddyContext, CaddyFacts, CaddyMode, CaddyResult, CaddySource } from './types';
@@ -47,28 +43,14 @@ async function runCaddyLlm(opts: {
     if (opts.requireLlm) {
       throw new Error('VITE_SWING_LLM_DISABLED is set — local Llama required');
     }
-    return {
-      ...opts.fallback,
-      notice: 'Local LLM disabled — using rules.',
-    };
+    return opts.fallback;
   }
 
-  const base = swingLlmBaseUrl();
-  if (isMixedContentRisk(base)) {
-    const notice = mixedContentHint();
-    if (opts.requireLlm) throw new CoachFetchError('mixed-content', notice);
-    return { ...opts.fallback, notice };
-  }
-
-  try {
-    const { text, elapsedMs, model } = await requestCoachCompletion({
-      system: CADDY_SYSTEM_PROMPT,
-      userText: opts.userText,
-      signal: opts.signal,
-      temperature: 0.3,
-      maxTokens: 280,
-    });
-
+  const applyText = (
+    text: string,
+    elapsedMs: number | undefined,
+    model: string | undefined,
+  ): CaddyResult => {
     const validated = validateCaddyResponse(text, opts.ctx.facts);
     if (!validated.ok) {
       if (opts.requireLlm) {
@@ -79,24 +61,51 @@ async function runCaddyLlm(opts: {
         rejectionReason: validated.detail,
         elapsedMs,
         model,
-        notice: `Local model reply rejected — using rules. ${validated.detail}`,
       };
     }
-
     return {
       text: validated.text,
       source: 'llm',
       elapsedMs,
       model,
     };
+  };
+
+  const site = await requestSiteCaddyCompletion({
+    system: CADDY_SYSTEM_PROMPT,
+    userText: opts.userText,
+    signal: opts.signal,
+    temperature: 0.3,
+    maxTokens: 280,
+  });
+  if (opts.signal?.aborted) {
+    throw new DOMException('Aborted', 'AbortError');
+  }
+  if (site) return applyText(site.text, site.elapsedMs, site.model);
+
+  if (!swingLlmReachableFromPage()) {
+    if (opts.requireLlm) {
+      throw new CoachFetchError(
+        'unreachable',
+        'Site caddy API and local Llama are both unavailable.',
+      );
+    }
+    return opts.fallback;
+  }
+
+  try {
+    const { text, elapsedMs, model } = await requestCoachCompletion({
+      system: CADDY_SYSTEM_PROMPT,
+      userText: opts.userText,
+      signal: opts.signal,
+      temperature: 0.3,
+      maxTokens: 280,
+    });
+    return applyText(text, elapsedMs, model);
   } catch (e) {
     if (opts.signal?.aborted) throw e;
     if (opts.requireLlm) throw e;
-    if (e instanceof CoachFetchError) {
-      return { ...opts.fallback, notice: e.message };
-    }
-    const msg = e instanceof Error ? e.message : 'Local model error';
-    return { ...opts.fallback, notice: msg };
+    return opts.fallback;
   }
 }
 

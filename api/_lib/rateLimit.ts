@@ -75,6 +75,7 @@ export const RATE = {
   ensemble: { key: 'ensemble', limit: 40, windowMs: 60_000 },
   notebook: { key: 'notebook', limit: 20, windowMs: 60_000 },
   hours: { key: 'hours', limit: 40, windowMs: 60_000 },
+  caddy: { key: 'caddy', limit: 24, windowMs: 60_000 },
 } as const;
 
 export const MAX_POST_HOLES = 54;

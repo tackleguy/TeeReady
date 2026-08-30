@@ -3,10 +3,8 @@
 import { buildContactSheet } from './contactSheet';
 import { CoachFetchError, requestCoachCompletion } from './client';
 import {
-  isMixedContentRisk,
-  mixedContentHint,
-  swingLlmBaseUrl,
   swingLlmEnabled,
+  swingLlmReachableFromPage,
 } from './config';
 import { buildCoachUserText, SWING_COACH_SYSTEM_PROMPT } from './prompt';
 import {
@@ -43,14 +41,7 @@ export async function coachSwingAnalysis(
   });
 
   if (!swingLlmEnabled()) return rulesFallback();
-
-  const base = swingLlmBaseUrl();
-  if (isMixedContentRisk(base)) {
-    return {
-      ...rulesFallback(),
-      notice: mixedContentHint(),
-    };
-  }
+  if (!swingLlmReachableFromPage()) return rulesFallback();
 
   try {
     const imageDataUrl = await buildContactSheet(analysis.keyframes);
@@ -90,6 +81,9 @@ export async function coachSwingAnalysis(
   } catch (e) {
     if (opts?.signal?.aborted) throw e;
     if (e instanceof CoachFetchError) {
+      if (e.kind === 'mixed-content' || e.kind === 'unreachable') {
+        return rulesFallback();
+      }
       return { ...rulesFallback(), notice: e.message };
     }
     const msg = e instanceof Error ? e.message : 'Local model error';
@@ -114,6 +108,7 @@ export {
   swingLlmBaseUrl,
   swingLlmModel,
   swingLlmEnabled,
+  swingLlmReachableFromPage,
   isMixedContentRisk,
   mixedContentHint,
   isSafariBrowser,

@@ -46,7 +46,7 @@ Best-in-class hole prep (miss lines, wind, front/mid/back yardages) plus reliabl
 
 **Constraints:**
 - **Local-first course maps:** Prefer `public/golf/holes` packs + localStorage before live OSM. Soft-refresh Overpass only after paint. Courses without packs may show blank maps until OSM succeeds — UI labels **Map ready** vs **Live map**.
-- **Local-first AI:** Swing coach, caddie, and swing guide use a local OpenAI-compatible LLM. `npm run dev` proxies `/llm` → LM Studio (`SWING_LLM_PROXY`, default `http://127.0.0.1:1234`) so the browser avoids HTTPS mixed-content blocks. Override with `VITE_SWING_LLM_URL`. Set `VITE_SWING_LLM_DISABLED=1` to skip LLM entirely.
+- **Caddie on the live site:** Prep/GPS AI posts to same-origin `/api/caddy` (HTTPS). The Edge function calls Vercel AI Gateway (`meta/llama-3.2-3b`) or Groq (`GROQ_API_KEY`). Local LM Studio is only used from `npm run dev` via `/llm`. Set `VITE_SWING_LLM_DISABLED=1` to skip LLM.
 - API routes for course search / wind: `npm run dev` proxies `/api` to production by default; `npm run dev:api` (`vercel dev`) + `DEV_API_PROXY=http://127.0.0.1:3000` for local API; `npm run dev:offline` disables `/api` (packs still serve).
 - Profile and round data primarily local-first; cloud sync for core profile fields only
 - No fabricated testimonials, customer logos, or performance benchmarks in marketing
