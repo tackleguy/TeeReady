@@ -11,6 +11,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_OUT_DIR = join(ROOT, 'public/golf/greens');
 /** Resolved after parseArgs — defaults to public/golf/greens. */
 let OUT_DIR = DEFAULT_OUT_DIR;
+const OSM_DIR = join(ROOT, 'public/golf/osm');
 const CATALOG_PATH = join(ROOT, 'api/golf/_data/usCatalog.json');
 const OVERPASS_URLS = [
   'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
@@ -533,30 +534,47 @@ function assignHoles(greenItems, holeEndsList, targetHoles = 18) {
 async function buildCourse(course) {
   const { slug, lat, lon, radiusM, name, maxLat, minLat, targetHoles = 18 } =
     course;
-  const greenQuery = `
+  let greenElements = [];
+  let holeElements = [];
+  const local = course.fromOsmBackup ? loadOsmBackup(slug) : null;
+  if (local?.elements?.length) {
+    greenElements = local.elements.filter(
+      (el) => el.tags?.golf === 'green' && el.geometry?.length >= 3,
+    );
+    holeElements = local.elements.filter(
+      (el) => el.tags?.golf === 'hole' && el.geometry?.length,
+    );
+    console.log(
+      `${slug}: local OSM — ${greenElements.length} greens, ${holeElements.length} hole ways`,
+    );
+  } else {
+    const greenQuery = `
 [out:json][timeout:60];
 (
   way["golf"="green"](around:${radiusM},${lat},${lon});
 );
 out tags geom;
 `.trim();
-  const holeQuery = `
+    const holeQuery = `
 [out:json][timeout:45];
 way["golf"="hole"](around:${radiusM},${lat},${lon});
 out tags geom;
 `.trim();
 
-  const greenBody = await overpass(greenQuery);
-  let holeBody = { elements: [] };
-  try {
-    holeBody = await overpass(holeQuery);
-  } catch {
-    console.warn(`${slug}: hole lines unavailable — matching by proximity only`);
+    const greenBody = await overpass(greenQuery);
+    let holeBody = { elements: [] };
+    try {
+      holeBody = await overpass(holeQuery);
+    } catch {
+      console.warn(`${slug}: hole lines unavailable — matching by proximity only`);
+    }
+    greenElements = greenBody.elements ?? [];
+    holeElements = holeBody.elements ?? [];
   }
-  const greens = (greenBody.elements ?? []).filter(
+  const greens = greenElements.filter(
     (el) => el.tags?.golf === 'green' && el.geometry?.length >= 3,
   );
-  const holes = holeEnds(holeBody.elements ?? []);
+  const holes = holeEnds(holeElements);
   console.log(`${slug}: ${greens.length} greens, ${holes.length} hole ends`);
 
   const scale = mPerDegree(lat);
@@ -745,6 +763,7 @@ function parseArgs(argv) {
     else if (a === '--force') flags.add('force');
     else if (a === '--complete-incomplete') flags.add('complete-incomplete');
     else if (a === '--manifest-only') flags.add('manifest-only');
+    else if (a === '--from-osm-backups') flags.add('from-osm-backups');
     else if (a === '--all-catalog') flags.add('all-catalog');
     else if (a.startsWith('--limit=')) limit = Number(a.slice(8)) || limit;
     else if (a.startsWith('--min-greens='))
@@ -798,6 +817,53 @@ function existingGreenSlugs() {
       .filter((f) => f.endsWith('.json') && f !== 'manifest.json')
       .map((f) => f.replace(/\.json$/, '')),
   );
+}
+
+function loadOsmBackup(slug) {
+  const p = join(OSM_DIR, `${slug}.json`);
+  if (!existsSync(p)) return null;
+  try {
+    return JSON.parse(readFileSync(p, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+function countLocalOsmGreens(slug) {
+  const pack = loadOsmBackup(slug);
+  if (!pack?.elements?.length) return 0;
+  return pack.elements.filter(
+    (el) => el.tags?.golf === 'green' && el.geometry?.length >= 3,
+  ).length;
+}
+
+/** Courses with local OSM packs dense enough for 3D greens — no live Overpass pre-check. */
+function loadFromOsmBackups({ limit, shard, minGreens }) {
+  if (!existsSync(OSM_DIR)) return [];
+  const have = existingGreenSlugs();
+  /** @type {Array<{ slug: string; name: string; lat: number; lon: number; radiusM: number; fromOsmBackup: true }>} */
+  const out = [];
+  for (const f of readdirSync(OSM_DIR)) {
+    if (!f.endsWith('.json') || f === 'manifest.json') continue;
+    if (out.length >= limit) break;
+    const slug = f.replace(/\.json$/, '');
+    if (have.has(slug)) continue;
+    if (!inShard(slug, shard)) continue;
+    const n = countLocalOsmGreens(slug);
+    if (n < minGreens) continue;
+    const pack = loadOsmBackup(slug);
+    if (pack?.lat == null || pack?.lon == null) continue;
+    out.push({
+      slug,
+      name: pack.name || slug,
+      lat: pack.lat,
+      lon: pack.lon,
+      radiusM: DEFAULT_RADIUS_M,
+      fromOsmBackup: true,
+    });
+  }
+  out.sort((a, b) => a.slug.localeCompare(b.slug));
+  return out;
 }
 
 function loadFromCatalog({ limit, allCatalog, shard }) {
@@ -1026,7 +1092,7 @@ async function writeCourse(course, { skipExisting, minGreens, force }) {
   }
 
   // Quick OSM density check before full geom + 3DEP pull.
-  if (!course.maxLat && !course.minLat && !force) {
+  if (!course.maxLat && !course.minLat && !force && !course.fromOsmBackup) {
     try {
       const n = await countOsmGreens(course.lat, course.lon, course.radiusM);
       console.log(`${course.slug}: OSM green count ≈ ${n}`);
@@ -1040,6 +1106,13 @@ async function writeCourse(course, { skipExisting, minGreens, force }) {
       );
     }
     await sleep(400);
+  } else if (course.fromOsmBackup) {
+    const n = countLocalOsmGreens(course.slug);
+    console.log(`${course.slug}: local OSM green count = ${n}`);
+    if (n < minGreens) {
+      console.log(`  skip — need ≥ ${minGreens} greens\n`);
+      return 'skipped-sparse';
+    }
   }
 
   const data = await buildCourse(course);
@@ -1118,15 +1191,19 @@ if (flags.has('complete-incomplete')) {
     process.exitCode = 1;
   }
 } else if (flags.has('bulk')) {
-  const curated = shard
-    ? CURATED.filter((c) => inShard(c.slug, shard))
-    : [...CURATED];
-  const fromCatalog = loadFromCatalog({
-    limit,
-    allCatalog: flags.has('all-catalog'),
-    shard,
-  });
-  queue = [...curated, ...fromCatalog];
+  if (flags.has('from-osm-backups')) {
+    queue = loadFromOsmBackups({ limit, shard, minGreens });
+  } else {
+    const curated = shard
+      ? CURATED.filter((c) => inShard(c.slug, shard))
+      : [...CURATED];
+    const fromCatalog = loadFromCatalog({
+      limit,
+      allCatalog: flags.has('all-catalog'),
+      shard,
+    });
+    queue = [...curated, ...fromCatalog];
+  }
 } else {
   queue = [...CURATED];
 }

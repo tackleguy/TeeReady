@@ -18,6 +18,7 @@ import {
   CATALOG_PATCH_BY_GID,
   PREFER_GOLF_GID,
   applyCatalogPatch,
+  isNineCombinationArtifact,
 } from './lib/catalogFixes.mjs';
 import { fillMissingCities } from './lib/geocodeCity.mjs';
 import { disambiguateSharedCoords, isClubSibling } from './lib/resolveCoords.mjs';
@@ -284,6 +285,7 @@ function buildEntry(feature) {
     .replace(/\s+/g, ' ')
     .trim();
   if (!name || name.length < 3 || SKIP_NAME.test(name)) return null;
+  if (isNineCombinationArtifact(name)) return null;
   if (props.type === 'Driving Range') return null;
   if (props.id && EXCLUDE_GOLF_GIDS.has(String(props.id))) return null;
 

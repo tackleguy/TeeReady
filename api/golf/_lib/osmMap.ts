@@ -147,10 +147,11 @@ export async function fetchOsmMapElements(
           tags?: Record<string, string>;
         }>;
       };
-      return {
-        kind: 'ok',
-        elements: reconstructGolfElements(body.elements ?? []),
-      };
+      const elements = reconstructGolfElements(body.elements ?? []);
+      if (elements.length) return { kind: 'ok', elements };
+      // Live map answered but no golf tags in this (possibly shrunk) bbox —
+      // try the durable course backup before declaring empty.
+      break;
     } catch {
       // try next mirror / attempt
     } finally {
@@ -158,7 +159,7 @@ export async function fetchOsmMapElements(
     }
   }
 
-  // Transport failure → durable course backup (never for "too large"; caller shrinks).
+  // Transport failure or empty golf extract → durable course backup.
   if (!sawTooLarge && opts?.req) {
     const lat = (bbox.south + bbox.north) / 2;
     const lon = (bbox.west + bbox.east) / 2;

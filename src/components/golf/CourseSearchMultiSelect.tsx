@@ -1,6 +1,6 @@
 import { ChevronDown, Loader2, Plus, Search, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { useGolfCourses } from '../../hooks/useGolf';
+import { useWorkingCourses } from '../../hooks/useWorkingCourses';
 import type { GolfCourseSummary } from '../../lib/golf';
 import { defaultSearchLoc } from '../../lib/searchLoc';
 import { courseLabel } from './CourseSearchSelect';
@@ -22,7 +22,7 @@ export function CourseSearchMultiSelect({
   const [query, setQuery] = useState(initialQuery);
   const [open, setOpen] = useState(false);
   const blurTimer = useRef<number | undefined>(undefined);
-  const { courses, loading } = useGolfCourses(loc.lat, loc.lon, query);
+  const { courses, loading } = useWorkingCourses(loc.lat, loc.lon, query);
   const atMax = value.length >= max;
 
   useEffect(

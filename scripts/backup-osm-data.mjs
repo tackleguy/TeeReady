@@ -16,6 +16,7 @@
  *   node scripts/backup-osm-data.mjs --osm-only
  *   node scripts/backup-osm-data.mjs --holes-only
  *   node scripts/backup-osm-data.mjs --only=pebble-beach-golf-links
+ *   node scripts/backup-osm-data.mjs --from-catalog --missing-only --limit=300 --concurrency=8 --fast --goal=100 --deadline-ms=600000
  *
  * Env:
  *   HOLES_API_BASE  default https://tee-ready.vercel.app
@@ -30,6 +31,7 @@ import {
 } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { isNineCombinationArtifact } from './lib/catalogFixes.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const GREENS_DIR = join(ROOT, 'public/golf/greens');
@@ -37,6 +39,7 @@ const OSM_DIR = join(ROOT, 'public/golf/osm');
 const HOLES_DIR = join(ROOT, 'public/golf/holes');
 const DATA_DIR = join(ROOT, 'data/osm-backup');
 const VENUES_COURSES = join(ROOT, 'src/data/venues.courses.json');
+const CATALOG_PATH = join(ROOT, 'api/golf/_data/usCatalog.json');
 const API_BASE = (
   process.env.HOLES_API_BASE || 'https://tee-ready.vercel.app'
 ).replace(/\/+$/, '');
@@ -52,19 +55,34 @@ function parseArgs(argv) {
   const only = [];
   let limit = Infinity;
   let concurrency = 2;
+  let goal = Infinity;
+  let deadlineMs = 0;
+  let shard = null;
   for (const a of argv) {
     if (a === '--skip-existing') flags.add('skip-existing');
     else if (a === '--force') flags.add('force');
     else if (a === '--dry-run') flags.add('dry-run');
     else if (a === '--osm-only') flags.add('osm-only');
     else if (a === '--holes-only') flags.add('holes-only');
+    else if (a === '--from-catalog') flags.add('from-catalog');
+    else if (a === '--missing-only') flags.add('missing-only');
+    else if (a === '--needs-osm') flags.add('needs-osm');
+    else if (a === '--needs-holes') flags.add('needs-holes');
+    else if (a === '--from-osm-backups') flags.add('from-osm-backups');
+    else if (a === '--fast') flags.add('fast');
     else if (a.startsWith('--limit=')) limit = Number(a.slice(8)) || limit;
+    else if (a.startsWith('--goal=')) goal = Number(a.slice(7)) || goal;
+    else if (a.startsWith('--deadline-ms='))
+      deadlineMs = Number(a.slice(14)) || deadlineMs;
     else if (a.startsWith('--concurrency='))
       concurrency = Math.max(1, Number(a.slice(14)) || concurrency);
-    else if (a.startsWith('--only=')) only.push(a.slice(7));
+    else if (a.startsWith('--shard=')) {
+      const m = a.slice(8).match(/^(\d+)\/(\d+)$/);
+      if (m) shard = { index: Number(m[1]), total: Number(m[2]) };
+    } else if (a.startsWith('--only=')) only.push(a.slice(7));
     else if (!a.startsWith('-')) only.push(a);
   }
-  return { flags, only, limit, concurrency };
+  return { flags, only, limit, concurrency, goal, deadlineMs, shard };
 }
 
 function slugify(name) {
@@ -219,11 +237,22 @@ async function fetchOverpassGolf(bbox, { timeoutMs = 20_000 } = {}) {
 );
 out geom;
 `.trim();
-  const urls = [
-    'https://overpass.kumi.systems/api/interpreter',
-    'https://overpass.private.coffee/api/interpreter',
-    'https://overpass-api.de/api/interpreter',
-  ];
+  const pinned = process.env.OVERPASS_URL?.trim();
+  const fromEnv = (process.env.OVERPASS_URLS ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const urls = pinned
+    ? [pinned, ...fromEnv.filter((u) => u !== pinned)]
+    : fromEnv.length
+      ? fromEnv
+      : [
+          'https://overpass.kumi.systems/api/interpreter',
+          'https://overpass.private.coffee/api/interpreter',
+          'https://overpass-api.de/api/interpreter',
+          'https://lz4.overpass-api.de/api/interpreter',
+          'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
+        ];
   let lastErr = null;
   for (const url of urls) {
     const ac = new AbortController();
@@ -341,62 +370,25 @@ function bearingDeg(lat1, lon1, lat2, lon2) {
   return (toDeg(Math.atan2(y, x)) + 360) % 360;
 }
 
-function parseHoleRef(tags) {
-  const direct = tags?.ref ?? tags?.hole;
-  if (direct != null && String(direct).trim() !== '') {
-    const n = Number(String(direct).trim());
-    if (Number.isInteger(n) && n >= 1 && n <= 36) return n;
+let deriveHolesFromOsmElements = null;
+async function loadDeriveHoles() {
+  if (!deriveHolesFromOsmElements) {
+    const mod = await import('../api/golf/holes.ts');
+    deriveHolesFromOsmElements = mod.deriveHolesFromOsmElements;
   }
-  const name = (tags?.name ?? '').trim();
-  const m = name.match(/^(?:hole\s*#?\s*|#|no\.?\s*)?(\d{1,2})\b/i);
-  if (m) {
-    const n = Number(m[1]);
-    if (n >= 1 && n <= 36) return n;
-  }
-  return null;
+  return deriveHolesFromOsmElements;
 }
 
-/** Derive hole packs from a local OSM backup when the holes API is down. */
-function holesFromLocalOsm(course) {
+/** Derive hole packs from a local OSM backup (same logic as the holes API). */
+async function holesFromLocalOsm(course) {
   const osmPath = join(OSM_DIR, `${course.slug}.json`);
   if (!existsSync(osmPath)) return [];
   try {
     const pack = readJson(osmPath);
     const elements = pack.elements ?? [];
-    const byNum = new Map();
-    for (const way of elements) {
-      if (way.type !== 'way' || way.tags?.golf !== 'hole') continue;
-      const geom = way.geometry;
-      if (!geom || geom.length < 2) continue;
-      const num = parseHoleRef(way.tags);
-      if (num == null) continue;
-      const tee = geom[0];
-      const green = geom[geom.length - 1];
-      const yards = Math.round(pathLengthYards(geom));
-      if (yards < 35 || yards > 780) continue;
-      const hole = {
-        number: num,
-        yards,
-        bearingDeg: Math.round(
-          bearingDeg(tee.lat, tee.lon, green.lat, green.lon),
-        ),
-        tee: { lat: tee.lat, lon: tee.lon },
-        green: { lat: green.lat, lon: green.lon },
-        path: geom.length <= 8 ? geom : [
-          geom[0],
-          geom[Math.floor(geom.length / 3)],
-          geom[Math.floor((2 * geom.length) / 3)],
-          geom[geom.length - 1],
-        ],
-        source: 'hole-way',
-        provenance: 'geometric',
-        ...(way.tags?.par ? { par: Number(way.tags.par) } : {}),
-        ...(way.tags?.name ? { name: way.tags.name } : {}),
-      };
-      const prev = byNum.get(num);
-      if (!prev || hole.yards > prev.yards) byNum.set(num, hole);
-    }
-    return [...byNum.values()].sort((a, b) => a.number - b.number);
+    if (!elements.length) return [];
+    const derive = await loadDeriveHoles();
+    return derive(elements, { courseName: course.name }) ?? [];
   } catch {
     return [];
   }
@@ -480,6 +472,78 @@ async function fetchHoles(course, { retries = 4 } = {}) {
   throw lastErr ?? new Error('holes fetch failed');
 }
 
+function shardKey(slug) {
+  let h = 0;
+  for (let i = 0; i < slug.length; i += 1) {
+    h = (h * 31 + slug.charCodeAt(i)) >>> 0;
+  }
+  return h;
+}
+
+function inShard(slug, shard) {
+  if (!shard || shard.total < 1) return true;
+  return shardKey(slug) % shard.total === shard.index;
+}
+
+function hasOsmPack(slug) {
+  const p = join(OSM_DIR, `${slug}.json`);
+  if (!existsSync(p)) return false;
+  try {
+    return (readJson(p).elements?.length ?? 0) > 0;
+  } catch {
+    return false;
+  }
+}
+
+function hasCompleteHolePack(slug) {
+  const p = join(HOLES_DIR, `${slug}.json`);
+  if (!existsSync(p)) return false;
+  try {
+    return isCompleteLayout(readJson(p).holes);
+  } catch {
+    return false;
+  }
+}
+
+function isFullyLocalized(slug) {
+  return hasOsmPack(slug) && hasCompleteHolePack(slug);
+}
+
+function loadCatalogCourses({ limit, missingOnly, needsOsm, needsHoles, shard }) {
+  if (!existsSync(CATALOG_PATH)) return [];
+  const cat = readJson(CATALOG_PATH);
+  const seen = new Set();
+  const out = [];
+  const sorted = [...cat].sort((a, b) => {
+    if ((b.q ?? 0) !== (a.q ?? 0)) return (b.q ?? 0) - (a.q ?? 0);
+    if ((b.o ? 1 : 0) !== (a.o ? 1 : 0)) return (b.o ? 1 : 0) - (a.o ? 1 : 0);
+    return String(a.n ?? '').localeCompare(String(b.n ?? ''));
+  });
+  for (const c of sorted) {
+    if (out.length >= limit) break;
+    if (c.la == null || c.lo == null) continue;
+    if (c.h != null && c.h !== 9 && c.h !== 18) continue;
+    if (c.st === 'HI') continue;
+    if (isNineCombinationArtifact(c.n)) continue;
+    const slug = slugify(c.n);
+    if (!slug || seen.has(slug)) continue;
+    if (!inShard(slug, shard)) continue;
+    if (missingOnly && isFullyLocalized(slug)) continue;
+    if (needsOsm && hasOsmPack(slug)) continue;
+    if (needsHoles && hasCompleteHolePack(slug)) continue;
+    seen.add(slug);
+    out.push({
+      slug,
+      name: c.n,
+      lat: c.la,
+      lon: c.lo,
+      holes: c.h ?? 18,
+      radiusM: 2200,
+    });
+  }
+  return out;
+}
+
 function loadGreenCourses() {
   if (!existsSync(GREENS_DIR)) return [];
   const files = readdirSync(GREENS_DIR).filter(
@@ -490,7 +554,7 @@ function loadGreenCourses() {
     try {
       const mesh = readJson(join(GREENS_DIR, f));
       const greens = mesh.greens ?? [];
-      if (greens.length !== 9 && greens.length !== 18) continue;
+      if (greens.length < 9) continue;
       out.push({
         slug: mesh.id || f.replace(/\.json$/, ''),
         name: mesh.name,
@@ -525,11 +589,69 @@ function loadVenueCourses() {
   }
 }
 
-function mergeTargets({ only, limit }) {
+/** Existing OSM JSON on disk that still lacks a complete hole pack. */
+function loadOsmNeedingHoles() {
+  if (!existsSync(OSM_DIR)) return [];
+  const out = [];
+  for (const f of readdirSync(OSM_DIR)) {
+    if (!f.endsWith('.json') || f === 'manifest.json') continue;
+    const slug = f.replace(/\.json$/, '');
+    if (hasCompleteHolePack(slug)) continue;
+    try {
+      const data = readJson(join(OSM_DIR, f));
+      if (!(data.elements?.length > 0)) continue;
+      out.push({
+        slug: data.slug || slug,
+        name: data.name || slug,
+        lat: data.lat,
+        lon: data.lon,
+        holes: 18,
+        radiusM: 2200,
+      });
+    } catch {
+      /* skip */
+    }
+  }
+  return out;
+}
+
+function mergeTargets({
+  only,
+  limit,
+  fromCatalog,
+  fromOsmBackups,
+  missingOnly,
+  needsOsm,
+  needsHoles,
+  shard,
+}) {
   const bySlug = new Map();
-  for (const c of loadGreenCourses()) bySlug.set(c.slug, c);
-  for (const c of loadVenueCourses()) {
-    if (!bySlug.has(c.slug)) bySlug.set(c.slug, c);
+  if (fromOsmBackups) {
+    for (const c of loadOsmNeedingHoles()) {
+      if (inShard(c.slug, shard)) bySlug.set(c.slug, c);
+    }
+  }
+  if (fromCatalog) {
+    for (const c of loadCatalogCourses({
+      limit: Infinity,
+      missingOnly,
+      needsOsm,
+      needsHoles,
+      shard,
+    }))
+      bySlug.set(c.slug, c);
+  } else {
+    for (const c of loadGreenCourses()) bySlug.set(c.slug, c);
+    for (const c of loadVenueCourses()) {
+      if (!bySlug.has(c.slug)) bySlug.set(c.slug, c);
+    }
+    if (missingOnly || needsOsm || needsHoles) {
+      for (const [slug] of [...bySlug.entries()]) {
+        if (missingOnly && isFullyLocalized(slug)) bySlug.delete(slug);
+        else if (needsOsm && hasOsmPack(slug)) bySlug.delete(slug);
+        else if (needsHoles && hasCompleteHolePack(slug)) bySlug.delete(slug);
+      }
+    }
   }
   let list = [...bySlug.values()];
   if (only.length) {
@@ -700,18 +822,25 @@ async function backupOsmOne(course, { skipExisting, force, dryRun }) {
 async function backupHolesOne(course, { skipExisting, force, dryRun }) {
   const outPath = join(HOLES_DIR, `${course.slug}.json`);
   if (skipExisting && !force && existsSync(outPath)) {
-    return { slug: course.slug, status: 'skipped' };
+    try {
+      const existing = readJson(outPath);
+      if (isCompleteLayout(existing.holes)) {
+        return { slug: course.slug, status: 'skipped' };
+      }
+    } catch {
+      // rewrite corrupt / incomplete
+    }
   }
   let holes = [];
   let source = 'api';
   try {
     holes = await fetchHoles(course);
   } catch {
-    holes = holesFromLocalOsm(course);
+    holes = await holesFromLocalOsm(course);
     source = 'osm-backup';
   }
   if (!isCompleteLayout(holes)) {
-    const local = holesFromLocalOsm(course);
+    const local = await holesFromLocalOsm(course);
     if (isCompleteLayout(local) && local.length >= (holes?.length ?? 0)) {
       holes = local;
       source = 'osm-backup';
@@ -751,11 +880,12 @@ async function backupHolesOne(course, { skipExisting, force, dryRun }) {
   };
 }
 
-async function mapPool(items, concurrency, fn) {
+async function mapPool(items, concurrency, fn, { shouldStop } = {}) {
   const results = new Array(items.length);
   let next = 0;
   async function worker() {
     while (next < items.length) {
+      if (shouldStop?.()) break;
       const i = next++;
       results[i] = await fn(items[i], i);
     }
@@ -767,82 +897,147 @@ async function mapPool(items, concurrency, fn) {
 }
 
 async function main() {
-  const { flags, only, limit, concurrency } = parseArgs(process.argv.slice(2));
+  const { flags, only, limit, concurrency, goal, deadlineMs, shard } = parseArgs(
+    process.argv.slice(2),
+  );
   const dryRun = flags.has('dry-run');
   const skipExisting = flags.has('skip-existing') && !flags.has('force');
   const doOsm = !flags.has('holes-only');
   const doHoles = !flags.has('osm-only');
+  const fast = flags.has('fast');
+  const startedAt = Date.now();
+  const deadlineAt = deadlineMs > 0 ? startedAt + deadlineMs : Infinity;
+  const localizedAtStart = new Set();
+  if (existsSync(HOLES_DIR) && existsSync(OSM_DIR)) {
+    for (const f of readdirSync(HOLES_DIR)) {
+      if (!f.endsWith('.json') || f === 'manifest.json') continue;
+      const slug = f.replace(/\.json$/, '');
+      if (isFullyLocalized(slug)) localizedAtStart.add(slug);
+    }
+  }
+  let newLocalized = 0;
+  const noteNew = (slug) => {
+    if (!localizedAtStart.has(slug) && isFullyLocalized(slug)) {
+      localizedAtStart.add(slug);
+      newLocalized += 1;
+      if (Number.isFinite(goal) && newLocalized >= goal) {
+        console.log(`\n★ Goal reached: ${newLocalized} newly localized`);
+      }
+    }
+  };
+  const shouldStop = () =>
+    Date.now() >= deadlineAt ||
+    (Number.isFinite(goal) && newLocalized >= goal);
 
-  const targets = mergeTargets({ only, limit });
+  const targets = mergeTargets({
+    only,
+    limit,
+    fromCatalog: flags.has('from-catalog'),
+    fromOsmBackups: flags.has('from-osm-backups'),
+    missingOnly: flags.has('missing-only'),
+    needsOsm: flags.has('needs-osm'),
+    needsHoles: flags.has('needs-holes'),
+    shard,
+  });
+  const shardLabel = shard ? ` shard ${shard.index}/${shard.total}` : '';
+  const mirrorLabel = process.env.OVERPASS_URL
+    ? ` mirror ${new URL(process.env.OVERPASS_URL).hostname}`
+    : '';
   console.log(
     `OSM backup for ${targets.length} courses` +
       ` (concurrency=${concurrency}` +
       `${doOsm ? ', osm' : ''}${doHoles ? ', holes' : ''}` +
+      `${flags.has('from-catalog') ? ', catalog' : ''}` +
+      `${flags.has('missing-only') ? ', missing-only' : ''}` +
+      `${fast ? ', fast' : ''}` +
+      `${shardLabel}${mirrorLabel}` +
+      `${Number.isFinite(goal) ? `, goal=${goal}` : ''}` +
+      `${deadlineMs ? `, deadline=${Math.round(deadlineMs / 1000)}s` : ''}` +
       `${dryRun ? ', dry-run' : ''}` +
       `${skipExisting ? ', skip-existing' : ''})`,
   );
+  console.log(`Fully localized at start: ${localizedAtStart.size}`);
+
+  const osmOkDelay = fast ? 80 : 600;
+  const osmFailDelay = fast ? 400 : 1_500;
+  const holesDelay = fast ? 60 : 400;
+  const holesConcurrency = fast ? concurrency : Math.min(concurrency, 2);
 
   if (doOsm) {
     console.log('\n=== Raw OSM map elements → public/golf/osm ===');
-    const results = await mapPool(targets, concurrency, async (course) => {
-      const result = await backupOsmOne(course, {
-        skipExisting,
-        force: flags.has('force'),
-        dryRun,
-      });
-      const mark =
-        result.status === 'ok'
-          ? '✓'
-          : result.status === 'skipped'
-            ? '·'
-            : result.status === 'empty'
-              ? '~'
-              : '✗';
-      console.log(
-        `${mark} osm ${course.slug} → ${result.status}` +
-          (result.elementCount != null ? ` (${result.elementCount} els` : '') +
-          (result.source ? ` via ${result.source}` : '') +
-          (result.elementCount != null ? ')' : '') +
-          (result.error ? ` — ${result.error}` : '') +
-          (result.bytes ? ` ${Math.round(result.bytes / 1024)}KB` : ''),
-      );
-      if (result.status === 'ok') await sleep(600);
-      else if (result.status === 'failed') await sleep(1_500);
-      return result;
-    });
+    const results = await mapPool(
+      targets,
+      concurrency,
+      async (course) => {
+        const result = await backupOsmOne(course, {
+          skipExisting,
+          force: flags.has('force'),
+          dryRun,
+        });
+        const mark =
+          result.status === 'ok'
+            ? '✓'
+            : result.status === 'skipped'
+              ? '·'
+              : result.status === 'empty'
+                ? '~'
+                : '✗';
+        console.log(
+          `${mark} osm ${course.slug} → ${result.status}` +
+            (result.elementCount != null ? ` (${result.elementCount} els` : '') +
+            (result.source ? ` via ${result.source}` : '') +
+            (result.elementCount != null ? ')' : '') +
+            (result.error ? ` — ${result.error}` : '') +
+            (result.bytes ? ` ${Math.round(result.bytes / 1024)}KB` : ''),
+        );
+        if (result.status === 'ok') await sleep(osmOkDelay);
+        else if (result.status === 'failed') await sleep(osmFailDelay);
+        return result;
+      },
+      { shouldStop },
+    );
     const ok = results.filter((r) => r.status === 'ok').length;
     const skipped = results.filter((r) => r.status === 'skipped').length;
     const failed = results.filter((r) => r.status === 'failed').length;
     console.log(`OSM map: ${ok} ok, ${skipped} skipped, ${failed} failed`);
   }
 
-  if (doHoles) {
+  if (doHoles && !shouldStop()) {
     console.log('\n=== Hole geometry packs → public/golf/holes ===');
-    const results = await mapPool(targets, Math.min(concurrency, 2), async (course) => {
-      const result = await backupHolesOne(course, {
-        skipExisting,
-        force: flags.has('force'),
-        dryRun,
-      });
-      const mark =
-        result.status === 'ok'
-          ? '✓'
-          : result.status === 'skipped'
-            ? '·'
-            : result.status === 'incomplete'
-              ? '~'
-              : '✗';
-      console.log(
-        `${mark} holes ${course.slug} → ${result.status}` +
-          (result.count != null ? ` (${result.count} holes)` : '') +
-          (result.error ? ` — ${result.error}` : '') +
-          (result.bytes ? ` ${Math.round(result.bytes / 1024)}KB` : ''),
-      );
-      if (result.status === 'ok' || result.status === 'incomplete') {
-        await sleep(400);
-      }
-      return result;
-    });
+    const results = await mapPool(
+      targets,
+      holesConcurrency,
+      async (course) => {
+        const result = await backupHolesOne(course, {
+          skipExisting,
+          force: flags.has('force'),
+          dryRun,
+        });
+        if (result.status === 'ok') noteNew(course.slug);
+        const mark =
+          result.status === 'ok'
+            ? '✓'
+            : result.status === 'skipped'
+              ? '·'
+              : result.status === 'incomplete'
+                ? '~'
+                : '✗';
+        console.log(
+          `${mark} holes ${course.slug} → ${result.status}` +
+            (result.count != null ? ` (${result.count} holes)` : '') +
+            (result.error ? ` — ${result.error}` : '') +
+            (result.bytes ? ` ${Math.round(result.bytes / 1024)}KB` : '') +
+            (newLocalized > 0 && Number.isFinite(goal)
+              ? ` [${newLocalized}/${goal}]`
+              : ''),
+        );
+        if (result.status === 'ok' || result.status === 'incomplete') {
+          await sleep(holesDelay);
+        }
+        return result;
+      },
+      { shouldStop },
+    );
     const ok = results.filter((r) => r.status === 'ok').length;
     const skipped = results.filter((r) => r.status === 'skipped').length;
     const incomplete = results.filter((r) => r.status === 'incomplete').length;
@@ -860,6 +1055,10 @@ async function main() {
       `\nIndex: osm=${index.osm.count} holes=${index.holes.count} → data/osm-backup/manifest.json`,
     );
   }
+  const elapsed = Math.round((Date.now() - startedAt) / 1000);
+  console.log(
+    `\nSprint: +${newLocalized} newly localized in ${elapsed}s (total ${localizedAtStart.size})`,
+  );
 }
 
 main().catch((err) => {

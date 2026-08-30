@@ -10,39 +10,20 @@ import {
 } from 'lucide-react';
 import { CourseHeroImage } from '../components/golf/CourseHeroImage';
 import { CourseSignals } from '../components/golf/CourseSignals';
-import { useGolfCourses } from '../hooks/useGolf';
+import { useWorkingCourses } from '../hooks/useWorkingCourses';
 import type { GolfCourseSummary } from '../lib/golf';
 import {
   loadGreenMeshManifest,
   type GreenMeshManifestEntry,
 } from '../lib/golfGreen3d';
-import {
-  loadHolePackManifest,
-  type HolePackManifestEntry,
-} from '../lib/golfHolePacks';
+import { haversineMi } from '../lib/workingCourses';
 import { loadGolfProfile } from '../lib/golfProfile';
 import { stashPendingCourse } from '../lib/pendingCourse';
 import { defaultSearchLoc } from '../lib/searchLoc';
 
 type FilterMode = 'nearby' | 'mine' | '3d';
 
-function haversineMi(
-  aLat: number,
-  aLon: number,
-  bLat: number,
-  bLon: number,
-): number {
-  const R = 3958.8;
-  const toRad = (d: number) => (d * Math.PI) / 180;
-  const dLat = toRad(bLat - aLat);
-  const dLon = toRad(bLon - aLon);
-  const A =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLon / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(A));
-}
-
-function manifestToSummary(
+function greenEntryToSummary(
   entry: GreenMeshManifestEntry,
   from?: { lat: number; lon: number },
 ): GolfCourseSummary {
@@ -69,6 +50,17 @@ function nameMatchesHome(courseName: string, homes: string[]): boolean {
     if (!home) return false;
     return n.includes(home) || home.includes(n);
   });
+}
+
+function courseHas3dEntry(
+  course: GolfCourseSummary,
+  entries: GreenMeshManifestEntry[],
+): boolean {
+  return entries.some(
+    (entry) =>
+      entry.name.toLowerCase() === course.name.toLowerCase() ||
+      haversineMi(course.lat, course.lon, entry.lat, entry.lon) < 0.85,
+  );
 }
 
 function CourseCard({
@@ -204,16 +196,15 @@ export function CoursesView() {
   const [green3dCourses, setGreen3dCourses] = useState<
     GreenMeshManifestEntry[]
   >([]);
-  const [green3dLoading, setGreen3dLoading] = useState(true);
-  const [holePackCourses, setHolePackCourses] = useState<
-    HolePackManifestEntry[]
-  >([]);
+  const [greenManifestLoading, setGreenManifestLoading] = useState(true);
 
-  const { courses, loading, error, retry } = useGolfCourses(
-    loc.lat,
-    loc.lon,
-    '',
-  );
+  const {
+    courses,
+    loading,
+    error,
+    retry,
+    workingCount,
+  } = useWorkingCourses(loc.lat, loc.lon, query);
 
   useEffect(() => {
     const sync = () => {
@@ -230,31 +221,21 @@ export function CoursesView() {
 
   useEffect(() => {
     let cancelled = false;
-    setGreen3dLoading(true);
-    Promise.all([loadGreenMeshManifest(), loadHolePackManifest()]).then(
-      ([greenManifest, holeManifest]) => {
-        if (cancelled) return;
-        setGreen3dCourses(greenManifest?.courses ?? []);
-        setHolePackCourses(holeManifest?.courses ?? []);
-        setGreen3dLoading(false);
-      },
-    );
+    setGreenManifestLoading(true);
+    loadGreenMeshManifest().then((greenManifest) => {
+      if (cancelled) return;
+      setGreen3dCourses(greenManifest?.courses ?? []);
+      setGreenManifestLoading(false);
+    });
     return () => {
       cancelled = true;
     };
   }, []);
 
-  const courseHas3d = (course: GolfCourseSummary) =>
-    green3dCourses.some((entry) => {
-      if (entry.name.toLowerCase() === course.name.toLowerCase()) return true;
-      return haversineMi(course.lat, course.lon, entry.lat, entry.lon) < 0.85;
-    });
+  const manifestsLoading = loading || greenManifestLoading;
 
-  const courseMapReady = (course: GolfCourseSummary) =>
-    holePackCourses.some((entry) => {
-      if (entry.name.toLowerCase() === course.name.toLowerCase()) return true;
-      return haversineMi(course.lat, course.lon, entry.lat, entry.lon) < 0.85;
-    });
+  const courseHas3d = (course: GolfCourseSummary) =>
+    courseHas3dEntry(course, green3dCourses);
 
   const filteredNearby = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -368,7 +349,7 @@ export function CoursesView() {
               <span className="inline-flex items-center gap-1">
                 <Box className="h-3 w-3" strokeWidth={2.5} aria-hidden="true" />
                 3D
-                {!green3dLoading ? (
+                {!manifestsLoading ? (
                   <span className="opacity-70">{green3dCourses.length}</span>
                 ) : null}
               </span>,
@@ -378,7 +359,7 @@ export function CoursesView() {
 
         <div className="min-h-0 flex-1 overflow-y-auto">
           {filter === '3d' ? (
-            green3dLoading ? (
+            manifestsLoading ? (
               <div className="flex items-center justify-center gap-2 px-4 py-10 text-[13px] text-muted">
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                 Loading…
@@ -396,7 +377,7 @@ export function CoursesView() {
                       <button
                         type="button"
                         onClick={() =>
-                          openPrep(manifestToSummary(entry, loc))
+                          openPrep(greenEntryToSummary(entry, loc))
                         }
                         className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-canvas"
                       >
@@ -439,9 +420,12 @@ export function CoursesView() {
           ) : (
             <div className="px-4 py-5 text-[13px] leading-relaxed text-muted">
               <p>
-                Browse nearby courses in the main view. Cards marked{' '}
+                {manifestsLoading
+                  ? 'Loading backed-up courses…'
+                  : `${workingCount.toLocaleString()} playable courses with offline hole lines.`}{' '}
+                Cards marked{' '}
                 <span className="font-semibold text-ink">Map ready</span> have
-                offline hole lines; <span className="font-semibold text-ink">3D</span>{' '}
+                local hole geometry; <span className="font-semibold text-ink">3D</span>{' '}
                 means a local green mesh pack. Prep is the default path; GPS
                 starts a live round.
               </p>
@@ -464,7 +448,7 @@ export function CoursesView() {
                 key={course.id}
                 course={course}
                 has3d
-                mapReady={courseMapReady(course)}
+                mapReady
                 onOpen={openMap}
                 onPrep={openPrep}
                 onGps={openGps}
@@ -476,7 +460,7 @@ export function CoursesView() {
               </p>
             ) : null}
           </div>
-        ) : loading && courses.length === 0 ? (
+        ) : (loading && courses.length === 0) || manifestsLoading ? (
           <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {[0, 1, 2, 3, 4, 5].map((i) => (
               <div
@@ -509,10 +493,10 @@ export function CoursesView() {
           <div className="rounded-2xl border border-line bg-surface px-5 py-8 text-center">
             <p className="text-[15px] font-medium text-ink">
               {query.trim()
-                ? 'No courses match'
+                ? 'No backed-up courses match'
                 : filter === 'mine'
-                  ? 'No home courses nearby'
-                  : 'No courses nearby'}
+                  ? 'No backed-up home courses nearby'
+                  : 'No backed-up courses nearby'}
             </p>
             {filter === 'mine' ? (
               <p className="mt-2 text-[13px] text-muted">
@@ -531,7 +515,7 @@ export function CoursesView() {
                 key={course.id}
                 course={course}
                 has3d={courseHas3d(course)}
-                mapReady={courseMapReady(course)}
+                mapReady
                 onOpen={openMap}
                 onPrep={openPrep}
                 onGps={openGps}

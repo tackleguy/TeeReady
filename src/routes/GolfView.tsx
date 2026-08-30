@@ -53,11 +53,11 @@ import { useIsMobile } from '../hooks/useMediaQuery';
 import { bearingCompass, bearingDeg } from '../lib/geo';
 import { formatHandicap } from '../lib/golfHandicap';
 import {
-  useGolfCourses,
   useGolfEnsemble,
   useGolfHoles,
   useGolfNotebook,
 } from '../hooks/useGolf';
+import { useWorkingCourses } from '../hooks/useWorkingCourses';
 import type { GolfCourseSummary, HoleBrief, TeeKind } from '../lib/golf';
 import { DEFAULT_TURF } from '../lib/golf';
 import {
@@ -84,7 +84,6 @@ import {
   resolveGreenMeshSlug,
   type GreenMeshCourse,
 } from '../lib/golfGreen3d';
-import { loadHolePackManifest } from '../lib/golfHolePacks';
 
 const Green3DViewer = lazy(() =>
   import('../components/golf/Green3DViewer').then((m) => ({
@@ -219,47 +218,6 @@ export function GolfView({ active = true }: { active?: boolean }) {
   const [planningMode, setPlanningMode] = useState<'tee' | 'approach'>('tee');
   const [bookOpen, setBookOpen] = useState(false);
   const [mapReady, setMapReady] = useState(false);
-  const [holePackKeys, setHolePackKeys] = useState<
-    Array<{ name: string; lat: number; lon: number }>
-  >([]);
-
-  useEffect(() => {
-    let cancelled = false;
-    loadHolePackManifest().then((manifest) => {
-      if (cancelled || !manifest?.courses?.length) return;
-      setHolePackKeys(
-        manifest.courses.map((c) => ({
-          name: c.name,
-          lat: c.lat,
-          lon: c.lon,
-        })),
-      );
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const courseHasMapPack = useCallback(
-    (c: GolfCourseSummary) => {
-      const n = c.name.toLowerCase();
-      return holePackKeys.some((entry) => {
-        if (entry.name.toLowerCase() === n) return true;
-        if (
-          !Number.isFinite(entry.lat) ||
-          !Number.isFinite(entry.lon) ||
-          !Number.isFinite(c.lat) ||
-          !Number.isFinite(c.lon)
-        ) {
-          return false;
-        }
-        return (
-          haversineYards(c.lat, c.lon, entry.lat, entry.lon) < 0.85 * 1760
-        );
-      });
-    },
-    [holePackKeys],
-  );
 
   // Prep / GPS from URL when on /rounds; keep last mode while backgrounded.
   const pathMode: 'prep' | 'gps' | null = location.pathname.includes(
@@ -367,7 +325,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
     loading: coursesLoading,
     error: coursesError,
     retry: retryCourses,
-  } = useGolfCourses(loc.lat, loc.lon, courseFilter);
+  } = useWorkingCourses(loc.lat, loc.lon, courseFilter);
   const {
     holes,
     loading: holesLoading,
@@ -1198,7 +1156,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
             <div className="floating-subpanel flex items-center gap-2 px-3 py-3 text-xs text-[var(--ink-3)]">
               <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />{' '}
               {courseFilter.trim().length >= 2
-                ? 'Searching 14,000+ courses…'
+                ? 'Searching playable courses…'
                 : 'Finding nearby courses…'}
             </div>
           )}
@@ -1295,15 +1253,9 @@ export function GolfView({ active = true }: { active?: boolean }) {
                       {c.region && <span className="truncate">{c.region}</span>}
                       {c.holes != null && <span>{c.holes} holes</span>}
                       {c.par != null && <span>par {c.par}</span>}
-                      {courseHasMapPack(c) ? (
-                        <span className="rounded bg-emerald-500/20 px-1 py-px font-medium text-emerald-200">
-                          Map ready
-                        </span>
-                      ) : (
-                        <span className="rounded bg-white/10 px-1 py-px text-[var(--ink-4)]">
-                          Live map
-                        </span>
-                      )}
+                      <span className="rounded bg-emerald-500/20 px-1 py-px font-medium text-emerald-200">
+                        Map ready
+                      </span>
                         </div>
                       </div>
                       {active ? (

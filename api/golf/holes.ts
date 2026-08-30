@@ -1017,11 +1017,98 @@ function holesFromWays(els: OsmElement[], polys: CoursePoly[] = []): GolfHole[] 
   return holes;
 }
 
+/** Nine rotation labels from bulk scorecards — not separate courses. */
+function isCompleteLayout(holes: GolfHole[]): boolean {
+  if (!holes.length) return false;
+  const nums = holes.map((h) => h.number).filter((n) => Number.isFinite(n));
+  if (nums.length !== 9 && nums.length !== 18) return false;
+  const target = nums.length;
+  for (let n = 1; n <= target; n += 1) {
+    if (!nums.includes(n)) return false;
+  }
+  return true;
+}
+
+/** When OSM has tagged greens but no hole centerlines or tee boxes. */
+function holesFromGreensOnly(
+  greenPts: Array<{ ref: number | null; pt: Pt; loop: string }>,
+): GolfHole[] {
+  const byRef = new Map<number, Pt>();
+  for (const g of greenPts) {
+    if (g.ref == null || g.ref < 1 || g.ref > 36) continue;
+    if (!byRef.has(g.ref)) byRef.set(g.ref, g.pt);
+  }
+  const front = [...byRef.keys()].filter((n) => n >= 1 && n <= 9).length;
+  const back = [...byRef.keys()].filter((n) => n >= 10 && n <= 18).length;
+  const target =
+    front >= 8 && back >= 8 ? 18 : front >= 7 && back <= 2 ? 9 : 18;
+  const holes: GolfHole[] = [];
+  for (let n = 1; n <= target; n += 1) {
+    const green = byRef.get(n);
+    if (!green) continue;
+    // Synthetic tee ~140 yd south — enough for map bearing until tees are mapped.
+    const tee = { lat: green.lat - 0.00125, lon: green.lon };
+    const yards = Math.round(
+      haversineYards(tee.lat, tee.lon, green.lat, green.lon),
+    );
+    holes.push({
+      number: n,
+      yards: yards >= 35 ? yards : 140,
+      bearingDeg: Math.round(
+        bearingDeg(tee.lat, tee.lon, green.lat, green.lon),
+      ),
+      tee,
+      green,
+      path: [tee, green],
+      source: 'tee-green',
+      provenance: 'geometric',
+    });
+  }
+  return holes;
+}
+
+/** Greens tagged without ref — number by angle from centroid (last resort). */
+function holesFromUnrefGreens(
+  greenPts: Array<{ ref: number | null; pt: Pt; loop: string }>,
+): GolfHole[] {
+  const unref = greenPts.filter((g) => g.ref == null);
+  if (unref.length < 9) return [];
+  const target = unref.length <= 10 ? 9 : 18;
+  if (unref.length < target) return [];
+  const c = centroid(unref.map((g) => g.pt));
+  const ordered = [...unref].sort((a, b) => {
+    const angA = Math.atan2(a.pt.lat - c.lat, a.pt.lon - c.lon);
+    const angB = Math.atan2(b.pt.lat - c.lat, b.pt.lon - c.lon);
+    return angA - angB;
+  });
+  const holes: GolfHole[] = [];
+  for (let i = 0; i < target; i += 1) {
+    const green = ordered[i]!.pt;
+    const tee = { lat: green.lat - 0.00125, lon: green.lon };
+    const yards = Math.round(
+      haversineYards(tee.lat, tee.lon, green.lat, green.lon),
+    );
+    holes.push({
+      number: i + 1,
+      yards: yards >= 35 ? yards : 140,
+      bearingDeg: Math.round(
+        bearingDeg(tee.lat, tee.lon, green.lat, green.lon),
+      ),
+      tee,
+      green,
+      path: [tee, green],
+      source: 'tee-green',
+      provenance: 'geometric',
+    });
+  }
+  return holes;
+}
+
 function holesFromTeeGreen(
   els: OsmElement[],
   existing: GolfHole[],
 ): GolfHole[] {
-  const holes = existing.map((h) => ({
+  let holes = existing.map((h) => ({
     ...h,
     tees: h.tees ? [...h.tees] : undefined,
   }));
@@ -1094,8 +1181,8 @@ function holesFromTeeGreen(
       continue;
     }
 
-    // Only build missing holes when almost nothing is mapped yet.
-    if (holes.length >= 7) continue;
+    // Only build missing holes when the layout is not already complete.
+    if (fetchLooksComplete(holes)) continue;
 
     let best: { pt: Pt; d: number } | null = null;
     for (const g of greenPts) {
@@ -1125,8 +1212,37 @@ function holesFromTeeGreen(
     });
   }
 
+  if (holes.length < 7 && greenPts.length >= 9) {
+    const fromGreens = holesFromGreensOnly(greenPts);
+    if (
+      isCompleteLayout(fromGreens) ||
+      fromGreens.length > holes.length
+    ) {
+      holes = fromGreens;
+    }
+  }
+  if (!isCompleteLayout(holes) && greenPts.length >= 9) {
+    const fromUnref = holesFromUnrefGreens(greenPts);
+    if (fromUnref.length > holes.length) holes = fromUnref;
+  }
+
   pruneOutlierTees(holes);
   return holes;
+}
+
+/** Pure derivation from cached OSM elements (local backups, no Overpass). */
+export function deriveHolesFromOsmElements(
+  elements: OsmElement[],
+  options?: { courseName?: string; osmId?: number },
+): GolfHole[] {
+  const polys = extractCoursePolygons(elements);
+  let holes = holesFromTeeGreen(elements, holesFromWays(elements, polys));
+  return finalizeHoles(
+    holes,
+    polys,
+    options?.courseName,
+    options?.osmId,
+  ).holes;
 }
 
 async function queryGolfBundle(scope: string): Promise<OsmElement[]> {

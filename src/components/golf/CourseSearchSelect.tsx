@@ -1,6 +1,6 @@
 import { ChevronDown, Loader2, Search, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { useGolfCourses } from '../../hooks/useGolf';
+import { useWorkingCourses } from '../../hooks/useWorkingCourses';
 import type { GolfCourseSummary } from '../../lib/golf';
 import { defaultSearchLoc } from '../../lib/searchLoc';
 import { venueKindLabel } from '../../lib/venueKind';
@@ -27,7 +27,7 @@ export function CourseSearchSelect({
   const [query, setQuery] = useState(initialQuery);
   const [open, setOpen] = useState(false);
   const blurTimer = useRef<number | undefined>(undefined);
-  const { courses, loading } = useGolfCourses(loc.lat, loc.lon, query);
+  const { courses, loading } = useWorkingCourses(loc.lat, loc.lon, query);
 
   useEffect(
     () => () => {
@@ -64,7 +64,7 @@ export function CourseSearchSelect({
           type="search"
           required={required && !value}
           value={open ? query : display}
-          placeholder="Search 14,000+ courses (11,000+ verified)…"
+          placeholder="Search playable courses…"
           aria-label="Search golf courses"
           onChange={(e) => {
             setQuery(e.target.value);

@@ -3,6 +3,14 @@
  * duplicates, or missing layout metadata. Applied in build-golf-catalog.mjs.
  */
 
+/** Nine rotation labels ("1 10 At …") — not separate courses. */
+export function isNineCombinationArtifact(name) {
+  const n = String(name ?? '').trim();
+  if (/^\d{1,2}\s+\d{1,2}\s+at\s/i.test(n)) return true;
+  if (/^\d{1,2}\s+\d{1,2}\s+club$/i.test(n)) return true;
+  return false;
+}
+
 /** Drop inferior duplicate rows (same name/city) — keep the other gid. */
 export const EXCLUDE_GOLF_GIDS = new Set([
   'a544677d-111d-4169-a655-4c0b2a2b2f51', // Lake of the Sandhills — coords in Canada

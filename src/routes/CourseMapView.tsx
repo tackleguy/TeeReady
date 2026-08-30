@@ -4,7 +4,7 @@ import { ArrowUpRight, Loader2, MapPin, Search } from 'lucide-react';
 import { CourseHeroImage } from '../components/golf/CourseHeroImage';
 import { CoursesLocatorMap } from '../components/golf/CoursesLocatorMap';
 import { GolfMapBoundary } from '../components/golf/GolfMapBoundary';
-import { useGolfCourses } from '../hooks/useGolf';
+import { useWorkingCourses } from '../hooks/useWorkingCourses';
 import type { GolfCourseSummary } from '../lib/golf';
 import { stashPendingCourse } from '../lib/pendingCourse';
 import { defaultSearchLoc } from '../lib/searchLoc';
@@ -23,7 +23,7 @@ export function CourseMapView() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [mapReady, setMapReady] = useState(false);
 
-  const { courses, loading, error, retry } = useGolfCourses(
+  const { courses, loading, error, retry } = useWorkingCourses(
     loc.lat,
     loc.lon,
     query,
