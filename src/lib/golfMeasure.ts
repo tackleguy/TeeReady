@@ -1,6 +1,7 @@
 // Tee-only ranging: haversine splits, bag distance rings, altitude vs sea level.
 
-import { bearingDeg, haversineMiles } from './geo';
+import { bearingDeg } from './geo';
+import { geodesicYards } from './geodesic';
 import type { GolfHole } from './golf';
 import { destPoint, type LonLat } from './golfWind';
 import type { BagClub } from './golfProfile';
@@ -14,7 +15,7 @@ export function haversineYards(
   bLat: number,
   bLon: number,
 ): number {
-  return haversineMiles(aLat, aLon, bLat, bLon) * YARDS_PER_MILE;
+  return geodesicYards(aLat, aLon, bLat, bLon);
 }
 
 export function metersToFeet(m: number): number {
@@ -230,36 +231,101 @@ export interface GreenMarks {
   front: LonLat;
   mid: LonLat;
   back: LonLat;
-  /** Half-depth used for front/back offset, yards. */
+  /** Half-depth used for front/back offset, yards. 0 when unverified. */
   halfDepthYd: number;
+  /** False when front/back are not from a mapped green polygon. */
+  frontBackVerified: boolean;
 }
 
 export interface GreenDistances {
-  front: number;
+  front: number | null;
   mid: number;
-  back: number;
+  back: number | null;
 }
 
-/** Front / mid / back of green along the approach axis (tee → green). */
-export function greenMarks(hole: GolfHole, halfDepthYd = 15): GreenMarks {
+type GreenMarksOpts = {
+  halfDepthYd?: number;
+  polygon?: LonLat[] | null;
+};
+
+/**
+ * Front / mid / back of green. Front/back only when a mapped polygon exists.
+ * Does not invent a 15-yard green depth.
+ */
+export function greenMarks(
+  hole: GolfHole,
+  halfDepthYdOrOpts: number | GreenMarksOpts = {},
+): GreenMarks {
+  const opts: GreenMarksOpts =
+    typeof halfDepthYdOrOpts === 'number'
+      ? { halfDepthYd: halfDepthYdOrOpts }
+      : halfDepthYdOrOpts ?? {};
   const mid: LonLat = { lon: hole.green.lon, lat: hole.green.lat };
-  const approachBearing = hole.bearingDeg;
-  const front = destPoint(mid, (approachBearing + 180) % 360, halfDepthYd);
-  const back = destPoint(mid, approachBearing, halfDepthYd);
-  return { front, mid, back, halfDepthYd };
+  const ring = opts.polygon?.filter(
+    (p) => Number.isFinite(p.lat) && Number.isFinite(p.lon),
+  );
+  if (ring && ring.length >= 3) {
+    const axis = hole.bearingDeg;
+    let minProj = Infinity;
+    let maxProj = -Infinity;
+    let minPt = mid;
+    let maxPt = mid;
+    let latSum = 0;
+    let lonSum = 0;
+    for (const p of ring) {
+      const yd = haversineYards(hole.tee.lat, hole.tee.lon, p.lat, p.lon);
+      const brg = bearingDeg(hole.tee.lat, hole.tee.lon, p.lat, p.lon);
+      const toRad = (d: number) => (d * Math.PI) / 180;
+      const dAng = toRad(brg - axis);
+      const along = yd * Math.cos(dAng);
+      if (along < minProj) {
+        minProj = along;
+        minPt = p;
+      }
+      if (along > maxProj) {
+        maxProj = along;
+        maxPt = p;
+      }
+      latSum += p.lat;
+      lonSum += p.lon;
+    }
+    const centroid: LonLat = {
+      lat: latSum / ring.length,
+      lon: lonSum / ring.length,
+    };
+    return {
+      front: minPt,
+      mid: centroid,
+      back: maxPt,
+      halfDepthYd: Math.max(0, (maxProj - minProj) / 2),
+      frontBackVerified: true,
+    };
+  }
+
+  return {
+    front: mid,
+    mid,
+    back: mid,
+    halfDepthYd: 0,
+    frontBackVerified: false,
+  };
 }
 
 export function distancesToGreen(
   from: LonLat,
   marks: GreenMarks,
 ): GreenDistances {
+  const mid = Math.round(
+    haversineYards(from.lat, from.lon, marks.mid.lat, marks.mid.lon),
+  );
+  if (!marks.frontBackVerified) {
+    return { front: null, mid, back: null };
+  }
   return {
     front: Math.round(
       haversineYards(from.lat, from.lon, marks.front.lat, marks.front.lon),
     ),
-    mid: Math.round(
-      haversineYards(from.lat, from.lon, marks.mid.lat, marks.mid.lon),
-    ),
+    mid,
     back: Math.round(
       haversineYards(from.lat, from.lon, marks.back.lat, marks.back.lon),
     ),
@@ -371,27 +437,29 @@ export function gpsGuideGeoJSON(
     }
   };
 
-  // Soft front / back depth whiskers (not the main path).
-  for (const row of [
-    { key: 'F', pt: marks.front, yards: dist.front, color: '#86efac' },
-    { key: 'B', pt: marks.back, yards: dist.back, color: '#fde68a' },
-  ] as const) {
-    features.push({
-      type: 'Feature',
-      properties: {
-        kind: 'whisker',
-        role: row.key,
-        color: row.color,
-        yards: row.yards,
-      },
-      geometry: {
-        type: 'LineString',
-        coordinates: [
-          [from.lon, from.lat],
-          [row.pt.lon, row.pt.lat],
-        ],
-      },
-    });
+  // Front / back whiskers only from a mapped green polygon.
+  if (marks.frontBackVerified && dist.front != null && dist.back != null) {
+    for (const row of [
+      { key: 'F', pt: marks.front, yards: dist.front, color: '#86efac' },
+      { key: 'B', pt: marks.back, yards: dist.back, color: '#fde68a' },
+    ] as const) {
+      features.push({
+        type: 'Feature',
+        properties: {
+          kind: 'whisker',
+          role: row.key,
+          color: row.color,
+          yards: row.yards,
+        },
+        geometry: {
+          type: 'LineString',
+          coordinates: [
+            [from.lon, from.lat],
+            [row.pt.lon, row.pt.lat],
+          ],
+        },
+      });
+    }
   }
 
   const carryClub = opts?.midClub ?? '—';

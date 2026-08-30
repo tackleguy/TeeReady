@@ -22,6 +22,8 @@ interface Props {
   farThresholdYd?: number;
   /** GPS fix is far from the course — distances are tee-based fallbacks. */
   offCourse?: boolean;
+  /** Front/back not derived from a green polygon. */
+  frontBackVerified?: boolean;
   /** Scorecard / playing yardage for the active hole. */
   holeYards?: number | null;
   holeNumber?: number | null;
@@ -56,6 +58,7 @@ export function GpsMod({
   distances,
   farThresholdYd = 700,
   offCourse = false,
+  frontBackVerified = true,
   holeYards = null,
   holeNumber = null,
   bearingToPin,
@@ -243,6 +246,11 @@ export function GpsMod({
               {offCourse ? (
                 <p className="col-span-3 mb-0.5 text-center text-[13px] text-faint">
                   Away from course · tee yardages
+                </p>
+              ) : null}
+              {frontBackVerified === false ? (
+                <p className="col-span-3 mb-0.5 text-center text-[13px] text-faint">
+                  Mid from mapped green · front/back need a green outline
                 </p>
               ) : null}
               {(

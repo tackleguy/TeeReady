@@ -9,6 +9,7 @@ import { resolveAndWarmGreenMesh } from './golfGreen3d';
 import { resolveHolePack, resolveAndWarmHolePack } from './golfHolePacks';
 import { resolveAndWarmScorecardPack } from './golfScorecardPacks';
 import { standardizeLayouts } from './golfHolesNormalize';
+import { annotateHolesGeo } from './geoAccuracy';
 
 export type VenueKind = 'course' | 'sim' | 'range';
 
@@ -53,8 +54,10 @@ export interface GolfTeeBox {
 }
 
 import type { ScorecardProvenance } from './scorecardProvenance';
+import type { GeoAccuracyMeta } from './geoAccuracy';
 
 export type { ScorecardProvenance };
+export type { GeoAccuracyMeta, GeoConfidence } from './geoAccuracy';
 
 export interface GolfHole {
   number: number;
@@ -75,6 +78,8 @@ export interface GolfHole {
   strokeIndex?: number;
   /** Where pars/yardages for this course came from. */
   provenance?: ScorecardProvenance;
+  /** Geographic confidence — never implied by a guessed tee. */
+  geo?: GeoAccuracyMeta;
 }
 
 export interface TurfReport {
@@ -416,7 +421,7 @@ export function peekGolfHolesDetail(
 /** Live OSM confirm — session hit skips soft-refresh on reopen. */
 function saveHolesBackup(backupKey: string, requestKey: string, holes: GolfHole[]): void {
   if (!holes.length) return;
-  const cleaned = standardizeLayouts(holes);
+  const cleaned = cleanHoles(holes);
   if (!cleaned.length) return;
   memSet(requestKey, cleaned);
   sessionSet(requestKey, cleaned);
@@ -434,7 +439,7 @@ function hydrateDurableBackup(
   holes: GolfHole[],
 ): GolfHole[] {
   if (!holes.length) return [];
-  const cleaned = standardizeLayouts(holes);
+  const cleaned = cleanHoles(holes);
   if (!cleaned.length) return [];
   memSet(requestKey, cleaned);
   localSet(backupKey, cleaned);
@@ -443,7 +448,7 @@ function hydrateDurableBackup(
 }
 
 function cleanHoles(holes: GolfHole[]): GolfHole[] {
-  return standardizeLayouts(holes);
+  return annotateHolesGeo(standardizeLayouts(holes));
 }
 
 /**

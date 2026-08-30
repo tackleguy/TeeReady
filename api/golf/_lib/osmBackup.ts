@@ -6,8 +6,9 @@
  */
 
 import type { OsmElement } from './overpass';
+import { filterNameMatches, namesConflict } from './courseRelate';
 
-const MATCH_M = 1_400;
+const MATCH_COORD_M = 250;
 
 export type OsmBackupManifestEntry = {
   slug: string;
@@ -104,30 +105,35 @@ function matchSlug(
   courses: OsmBackupManifestEntry[],
   opts: { lat: number; lon: number; courseName?: string; matchM?: number },
 ): string | null {
-  const matchM = opts.matchM ?? MATCH_M;
-  const name = opts.courseName?.trim().toLowerCase();
+  const matchM = opts.matchM ?? MATCH_COORD_M;
+  const name = opts.courseName?.trim();
   if (name) {
-    const exact = courses.find((c) => c.name.toLowerCase() === name);
-    if (exact) return exact.slug;
-    const partial = courses.find(
-      (c) =>
-        name.includes(c.name.toLowerCase()) ||
-        c.name.toLowerCase().includes(name),
-    );
-    if (partial) return partial.slug;
-  }
-
-  let best: OsmBackupManifestEntry | null = null;
-  let bestD = Infinity;
-  for (const c of courses) {
-    if (!Number.isFinite(c.lat) || !Number.isFinite(c.lon)) continue;
-    const d = haversineM(opts.lat, opts.lon, c.lat, c.lon);
-    if (d < bestD) {
-      bestD = d;
-      best = c;
+    const named = filterNameMatches(courses, name);
+    if (named.length === 1) return named[0]!.slug;
+    if (named.length > 1) {
+      const unique = named.filter((c) => !namesConflict(name, c.name));
+      const pool = unique.length ? unique : named;
+      let best: OsmBackupManifestEntry | null = null;
+      let bestD = Infinity;
+      for (const c of pool) {
+        const d = haversineM(opts.lat, opts.lon, c.lat, c.lon);
+        if (d < bestD) {
+          bestD = d;
+          best = c;
+        }
+      }
+      return best?.slug ?? pool[0]!.slug;
     }
   }
-  return best && bestD <= matchM ? best.slug : null;
+
+  const ranked = courses
+    .filter((c) => Number.isFinite(c.lat) && Number.isFinite(c.lon))
+    .map((c) => ({ c, d: haversineM(opts.lat, opts.lon, c.lat, c.lon) }))
+    .filter((x) => x.d <= matchM)
+    .sort((a, b) => a.d - b.d);
+  if (!ranked.length) return null;
+  if (ranked.length >= 2 && ranked[1]!.d - ranked[0]!.d < 80) return null;
+  return ranked[0]!.c.slug;
 }
 
 const manifestCache = new Map<

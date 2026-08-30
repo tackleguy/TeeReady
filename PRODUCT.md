@@ -46,7 +46,7 @@ Best-in-class hole prep (miss lines, wind, front/mid/back yardages) plus reliabl
 
 **Constraints:**
 - **Local-first course maps:** Prefer `public/golf/holes` packs + localStorage before live OSM. Soft-refresh Overpass only after paint. Courses without packs may show blank maps until OSM succeeds — UI labels **Map ready** vs **Live map**.
-- **Caddie on the live site:** Prep/GPS AI posts to same-origin `/api/caddy` (HTTPS). The Edge function calls Vercel AI Gateway (`meta/llama-3.2-3b`) or Groq (`GROQ_API_KEY`). Local LM Studio is only used from `npm run dev` via `/llm`. Set `VITE_SWING_LLM_DISABLED=1` to skip LLM.
+- **Caddie:** Browser posts to same-origin `/api/caddy`. Local Vite handles that route and calls **Ollama** (`OLLAMA_HOST`, default `http://127.0.0.1:11434`, model `llama3.2`). Production uses Vercel AI Gateway or Groq. Set `VITE_SWING_LLM_DISABLED=1` to skip LLM.
 - API routes for course search / wind: `npm run dev` proxies `/api` to production by default; `npm run dev:api` (`vercel dev`) + `DEV_API_PROXY=http://127.0.0.1:3000` for local API; `npm run dev:offline` disables `/api` (packs still serve).
 - Profile and round data primarily local-first; cloud sync for core profile fields only
 - No fabricated testimonials, customer logos, or performance benchmarks in marketing

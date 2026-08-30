@@ -59,6 +59,13 @@ const UiAuditPreview = import.meta.env.DEV
       })),
     )
   : null;
+const GeoQaView = import.meta.env.DEV
+  ? lazy(() =>
+      import('./routes/GeoQaView').then((m) => ({
+        default: m.GeoQaView,
+      })),
+    )
+  : null;
 
 class AppErrorBoundary extends Component<
   { children: ReactNode },
@@ -269,6 +276,16 @@ function Shell() {
               element={
                 <Suspense fallback={<RouteFallback />}>
                   <UiAuditPreview />
+                </Suspense>
+              }
+            />
+          ) : null}
+          {import.meta.env.DEV && GeoQaView ? (
+            <Route
+              path="/dev/geo-qa"
+              element={
+                <Suspense fallback={<RouteFallback />}>
+                  <GeoQaView />
                 </Suspense>
               }
             />

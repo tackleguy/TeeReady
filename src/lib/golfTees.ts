@@ -1,3 +1,7 @@
+import {
+  layoutKey,
+  namesLooselyMatch,
+} from '../../api/golf/_lib/courseRelate';
 import type { GolfHole, GolfTeeBox, TeeKind } from './golf';
 import { haversineYards } from './golfMeasure';
 
@@ -22,7 +26,12 @@ export function holesOnLoop(holes: GolfHole[], loop: string | null): GolfHole[] 
   const loops = loopNames(holes);
   if (!loop) {
     if (loops.length <= 1) return holes;
-    return holes.filter((h) => !h.loop);
+    // Multiple layouts and no selection — do not overlay all of them.
+    const unlabeled = holes.filter((h) => !h.loop);
+    if (unlabeled.length >= 7) return unlabeled;
+    return holes.filter(
+      (h) => (h.loop ?? '').toLowerCase() === loops[0]!.toLowerCase(),
+    );
   }
   return holes.filter((h) => loopsMatch(h.loop ?? '', loop));
 }
@@ -105,6 +114,13 @@ export function pickLoopForCourse(courseName: string, loops: string[]): string |
   const byLen = [...loops].sort((a, b) => b.length - a.length);
   const named = byLen.find((loop) => n.includes(loop.toLowerCase()));
   if (named) return named;
+  const loose = byLen.find((loop) => namesLooselyMatch(courseName, loop));
+  if (loose) return loose;
+  const want = layoutKey(courseName);
+  if (want) {
+    const hit = loops.find((loop) => layoutKey(loop) === want);
+    if (hit) return hit;
+  }
   const dirs = [
     'north',
     'south',

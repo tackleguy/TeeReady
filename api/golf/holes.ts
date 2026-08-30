@@ -10,10 +10,14 @@
 import {
   layoutKey,
   layoutLabelFromName,
-  sameClub,
+  namesConflict,
+  namesLooselyMatch,
+  pickPolygonForCourse,
   titleCaseName,
 } from './_lib/courseRelate';
 import { bearingDeg, haversineYards, pathLengthYards } from './_lib/geo';
+import type { GeoAccuracyMeta } from '../../src/lib/geoAccuracy';
+import { inspectHoleGeo } from '../../src/lib/geoAccuracy';
 import { findScorecard, inferCardProvenance, type CourseScorecard } from './_data/scorecards';
 import type { ScorecardProvenance } from './_lib/scorecardProvenance';
 import { holeHasCardYardage } from './_lib/scorecardProvenance';
@@ -75,6 +79,7 @@ export interface GolfHole {
   strokeIndex?: number;
   /** Course-level data provenance stamped onto each hole. */
   provenance?: ScorecardProvenance;
+  geo?: GeoAccuracyMeta;
 }
 
 /** Process-local cache — hole geometry almost never changes. */
@@ -171,13 +176,16 @@ function loopForPoint(pt: Pt, polys: CoursePoly[]): string {
     hits.sort((a, b) => polygonArea(a.ring) - polygonArea(b.ring));
     return hits[0]!.loop;
   }
+  // Do not snap to a neighbor layout. Adjacent 18s (Wilson/Harding, Torrey
+  // North/South) sit a few hundred yards apart — 900 yd used to swallow them.
+  if (polys.length >= 2) return '';
   let best: { loop: string; d: number } | null = null;
   for (const p of polys) {
     const c = centroid(p.ring);
     const d = haversineYards(pt.lat, pt.lon, c.lat, c.lon);
     if (!best || d < best.d) best = { loop: p.loop, d };
   }
-  return best && best.d < 900 ? best.loop : '';
+  return best && best.d < 50 ? best.loop : '';
 }
 
 function holeQuality(h: GolfHole): number {
@@ -219,9 +227,14 @@ function normalizeOnePerNumber(holes: GolfHole[]): GolfHole[] {
           other.green.lat,
           other.green.lon,
         );
-        if (dGreen >= 90) {
-          // Same hole number on a different green = another layout. Keep it;
-          // autoLoops should have labeled it, but never drop the geometry.
+        const dTee = haversineYards(
+          bucket[0]!.tee.lat,
+          bucket[0]!.tee.lon,
+          other.tee.lat,
+          other.tee.lon,
+        );
+        if (dGreen >= 90 || dTee >= 140) {
+          // Same number, different layout (sibling 18s finishing near one green).
           out.push({
             ...other,
             tees: other.tees ? [...other.tees] : undefined,
@@ -314,7 +327,144 @@ function isRealLoop(loop: string | undefined): boolean {
   if (layoutKey(loop)) return true;
   if (/^(second|third|fourth)\b/i.test(loop)) return true;
   if (/^course\s*\d+$/i.test(loop.trim())) return true;
-  return false;
+  // Polygon-derived layout names (Harding / Wilson / Balboa) — not club stems
+  // from a single leisure=golf_course way (those stay unlabeled).
+  return loop.trim().length >= 3;
+}
+
+function holeInPoly(hole: GolfHole, ring: Pt[]): boolean {
+  return pointInPolygon(hole.green, ring) || pointInPolygon(hole.tee, ring);
+}
+
+function polyContainScore(hole: GolfHole, ring: Pt[]): number {
+  return (
+    (pointInPolygon(hole.green, ring) ? 2 : 0) +
+    (pointInPolygon(hole.tee, ring) ? 1 : 0)
+  );
+}
+
+function bestOf(group: GolfHole[]): GolfHole {
+  return [...group].sort((a, b) => holeQuality(b) - holeQuality(a))[0]!;
+}
+
+/**
+ * Keep only the selected layout. Sibling 18s in the same OSM bbox must not
+ * paint on the course the golfer opened.
+ */
+function scopeHolesToSelectedCourse(
+  holes: GolfHole[],
+  polys: CoursePoly[],
+  selectedName?: string,
+  selectedId?: number,
+): GolfHole[] {
+  if (!holes.length) return holes;
+  const selected = pickPolygonForCourse(polys, selectedName, selectedId);
+  const foreign = selectedName
+    ? polys.filter((p) => {
+        if (selected && p.id === selected.id) return false;
+        if (
+          namesLooselyMatch(selectedName, p.name) &&
+          !namesConflict(selectedName, p.name)
+        ) {
+          return false;
+        }
+        return true;
+      })
+    : [];
+
+  const byNum = new Map<number, GolfHole[]>();
+  for (const h of holes) {
+    const list = byNum.get(h.number) ?? [];
+    list.push(h);
+    byNum.set(h.number, list);
+  }
+  const hasDupes = [...byNum.values()].some((g) => g.length >= 2);
+
+  if (hasDupes && (selected || foreign.length)) {
+    const keep: GolfHole[] = [];
+    for (const group of byNum.values()) {
+      if (group.length === 1) {
+        const h = group[0]!;
+        if (selected) {
+          if (holeInPoly(h, selected.ring)) keep.push(h);
+        } else if (!foreign.some((p) => holeInPoly(h, p.ring))) {
+          keep.push(h);
+        }
+        continue;
+      }
+      if (selected) {
+        const ranked = [...group].sort(
+          (a, b) =>
+            polyContainScore(b, selected.ring) - polyContainScore(a, selected.ring) ||
+            holeQuality(b) - holeQuality(a),
+        );
+        if (polyContainScore(ranked[0]!, selected.ring) > 0) keep.push(ranked[0]!);
+        continue;
+      }
+      const ranked = [...group].sort((a, b) => {
+        const aF = Math.max(
+          ...foreign.map((p) => polyContainScore(a, p.ring)),
+          0,
+        );
+        const bF = Math.max(
+          ...foreign.map((p) => polyContainScore(b, p.ring)),
+          0,
+        );
+        return aF - bF || holeQuality(b) - holeQuality(a);
+      });
+      if (
+        Math.max(...foreign.map((p) => polyContainScore(ranked[0]!, p.ring)), 0) <
+        3
+      ) {
+        keep.push(ranked[0]!);
+      }
+    }
+    if (keep.length >= 7) return keep;
+  }
+
+  if (selected) {
+    const inside = holes.filter((h) => holeInPoly(h, selected.ring));
+    if (inside.length >= 7) return inside;
+  }
+
+  if (selectedName && foreign.length) {
+    const outsideForeign = holes.filter(
+      (h) => !foreign.some((p) => holeInPoly(h, p.ring)),
+    );
+    if (outsideForeign.length >= 7 && outsideForeign.length < holes.length) {
+      return outsideForeign;
+    }
+  }
+
+  if (selectedName) {
+    const byLoop = new Map<string, GolfHole[]>();
+    for (const h of holes) {
+      const key = (h.loop ?? '').trim();
+      if (!key) continue;
+      const list = byLoop.get(key) ?? [];
+      list.push(h);
+      byLoop.set(key, list);
+    }
+    if (byLoop.size >= 2) {
+      const hits: GolfHole[][] = [];
+      for (const [loop, group] of byLoop) {
+        if (group.length < 7) continue;
+        if (namesConflict(selectedName, loop)) continue;
+        if (
+          namesLooselyMatch(selectedName, loop) ||
+          selectedName.toLowerCase().includes(loop.toLowerCase())
+        ) {
+          hits.push(group);
+        }
+        const want = layoutKey(selectedName);
+        if (want && layoutKey(loop) === want) hits.push(group);
+      }
+      const unique = [...new Map(hits.map((g) => [g[0]?.loop, g])).values()];
+      if (unique.length === 1) return unique[0]!;
+    }
+  }
+
+  return holes;
 }
 
 /** Layout name from OSM tags. golf:course=18_hole means hole count, not North/South. */
@@ -350,24 +500,17 @@ function extractCoursePolygons(els: OsmElement[]): CoursePoly[] {
     raw.push({
       id: el.id,
       name,
-      // Prefer a layout token in the name (Torrey Pines South → South).
-      // Club-only names stay unlabeled so autoLoops can split North/South.
-      loop: layoutKey(name)
-        ? layoutLabelFromName(name)
-        : '',
+      // Prefer a layout token (Torrey Pines South → South). A single
+      // club-only polygon stays unlabeled so autoLoops can split 36 holes.
+      loop: layoutKey(name) ? layoutLabelFromName(name) : '',
       ring,
     });
   }
-  // Multiple sibling polygons without layout tokens (rare) → Course 1 / 2.
-  const unlabeled = raw.filter((p) => !p.loop);
-  if (unlabeled.length >= 2) {
-    const related = unlabeled.filter((p) =>
-      unlabeled.some((o) => o.id !== p.id && sameClub(o.name, p.name)),
-    );
-    if (related.length >= 2) {
-      related.forEach((p, i) => {
-        p.loop = `Course ${i + 1}`;
-      });
+  // Two+ named golf_course polygons in one bbox are sibling layouts
+  // (Harding / Wilson), even when they don't share a club-stem prefix.
+  if (raw.length >= 2) {
+    for (const p of raw) {
+      if (!p.loop) p.loop = layoutLabelFromName(p.name);
     }
   }
   const seen = new Map<string, number>();
@@ -385,10 +528,6 @@ function extractCoursePolygons(els: OsmElement[]): CoursePoly[] {
   });
 }
 
-function relatedCourseNames(a: string, b: string): boolean {
-  return sameClub(a, b);
-}
-
 function assignLoopsFromPolygons(
   holes: GolfHole[],
   polys: CoursePoly[],
@@ -396,10 +535,7 @@ function assignLoopsFromPolygons(
   selectedId?: number,
 ): GolfHole[] {
   if (!polys.length) return holes;
-  const selected =
-    polys.find((p) => selectedId != null && p.id === selectedId) ??
-    polys.find((p) => selectedName && relatedCourseNames(p.name, selectedName)) ??
-    null;
+  const selected = pickPolygonForCourse(polys, selectedName, selectedId);
 
   return holes.map((hole) => {
     if (isRealLoop(hole.loop)) return hole;
@@ -689,7 +825,8 @@ function upsertTee(
       h.number === input.number &&
       loopKey(h.loop) === loopKey(input.loop || undefined) &&
       haversineYards(h.green.lat, h.green.lon, input.green.lat, input.green.lon) <
-        90,
+        90 &&
+      haversineYards(h.tee.lat, h.tee.lon, input.tee.lat, input.tee.lon) < 140,
   );
   if (same) {
     const corridor =
@@ -948,22 +1085,10 @@ function finalizeHoles(
   selectedId?: number,
 ): { holes: GolfHole[]; provenance: ScorecardProvenance } {
   let next = assignLoopsFromPolygons(holes, polys, selectedName, selectedId);
-
-  // When the client asked for a specific OSM course, drop holes that sit
-  // only inside a neighboring club's polygon (Augusta National vs ACC).
-  if (selectedId != null && Number.isFinite(selectedId) && polys.length) {
-    const selected = polys.find((p) => p.id === selectedId);
-    if (selected) {
-      const scoped = next.filter(
-        (h) =>
-          pointInPolygon(h.green, selected.ring) ||
-          pointInPolygon(h.tee, selected.ring),
-      );
-      if (scoped.length >= 7) next = scoped;
-    }
-  }
+  next = scopeHolesToSelectedCourse(next, polys, selectedName, selectedId);
 
   next = autoLoops(next);
+  next = scopeHolesToSelectedCourse(next, polys, selectedName, selectedId);
   next = normalizeOnePerNumber(next);
   next = standardizeLayouts(next);
   pruneOutlierTees(next);
@@ -975,8 +1100,9 @@ function finalizeHoles(
     if (loop) return loop;
     return a.number - b.number;
   });
+  next = next.slice(0, 36).map((h) => ({ ...h, geo: inspectHoleGeo(h) }));
   return {
-    holes: next.slice(0, 36),
+    holes: next,
     provenance: applied.provenance,
   };
 }
@@ -1027,81 +1153,6 @@ function isCompleteLayout(holes: GolfHole[]): boolean {
     if (!nums.includes(n)) return false;
   }
   return true;
-}
-
-/** When OSM has tagged greens but no hole centerlines or tee boxes. */
-function holesFromGreensOnly(
-  greenPts: Array<{ ref: number | null; pt: Pt; loop: string }>,
-): GolfHole[] {
-  const byRef = new Map<number, Pt>();
-  for (const g of greenPts) {
-    if (g.ref == null || g.ref < 1 || g.ref > 36) continue;
-    if (!byRef.has(g.ref)) byRef.set(g.ref, g.pt);
-  }
-  const front = [...byRef.keys()].filter((n) => n >= 1 && n <= 9).length;
-  const back = [...byRef.keys()].filter((n) => n >= 10 && n <= 18).length;
-  const target =
-    front >= 8 && back >= 8 ? 18 : front >= 7 && back <= 2 ? 9 : 18;
-  const holes: GolfHole[] = [];
-  for (let n = 1; n <= target; n += 1) {
-    const green = byRef.get(n);
-    if (!green) continue;
-    // Synthetic tee ~140 yd south — enough for map bearing until tees are mapped.
-    const tee = { lat: green.lat - 0.00125, lon: green.lon };
-    const yards = Math.round(
-      haversineYards(tee.lat, tee.lon, green.lat, green.lon),
-    );
-    holes.push({
-      number: n,
-      yards: yards >= 35 ? yards : 140,
-      bearingDeg: Math.round(
-        bearingDeg(tee.lat, tee.lon, green.lat, green.lon),
-      ),
-      tee,
-      green,
-      path: [tee, green],
-      source: 'tee-green',
-      provenance: 'geometric',
-    });
-  }
-  return holes;
-}
-
-/** Greens tagged without ref — number by angle from centroid (last resort). */
-function holesFromUnrefGreens(
-  greenPts: Array<{ ref: number | null; pt: Pt; loop: string }>,
-): GolfHole[] {
-  const unref = greenPts.filter((g) => g.ref == null);
-  if (unref.length < 9) return [];
-  const target = unref.length <= 10 ? 9 : 18;
-  if (unref.length < target) return [];
-  const c = centroid(unref.map((g) => g.pt));
-  const ordered = [...unref].sort((a, b) => {
-    const angA = Math.atan2(a.pt.lat - c.lat, a.pt.lon - c.lon);
-    const angB = Math.atan2(b.pt.lat - c.lat, b.pt.lon - c.lon);
-    return angA - angB;
-  });
-  const holes: GolfHole[] = [];
-  for (let i = 0; i < target; i += 1) {
-    const green = ordered[i]!.pt;
-    const tee = { lat: green.lat - 0.00125, lon: green.lon };
-    const yards = Math.round(
-      haversineYards(tee.lat, tee.lon, green.lat, green.lon),
-    );
-    holes.push({
-      number: i + 1,
-      yards: yards >= 35 ? yards : 140,
-      bearingDeg: Math.round(
-        bearingDeg(tee.lat, tee.lon, green.lat, green.lon),
-      ),
-      tee,
-      green,
-      path: [tee, green],
-      source: 'tee-green',
-      provenance: 'geometric',
-    });
-  }
-  return holes;
 }
 
 function holesFromTeeGreen(
@@ -1183,6 +1234,7 @@ function holesFromTeeGreen(
 
     // Only build missing holes when the layout is not already complete.
     if (fetchLooksComplete(holes)) continue;
+    if (tee.ref == null) continue;
 
     let best: { pt: Pt; d: number } | null = null;
     for (const g of greenPts) {
@@ -1194,6 +1246,7 @@ function holesFromTeeGreen(
     }
     if (!best) continue;
 
+    // Real OSM tee + green points; pairing without matching refs needs review.
     upsertTee(holes, {
       number: tee.ref ?? holes.length + 1,
       loop: tee.loop,
@@ -1210,20 +1263,6 @@ function holesFromTeeGreen(
       name: tee.name,
       source: 'tee-green',
     });
-  }
-
-  if (holes.length < 7 && greenPts.length >= 9) {
-    const fromGreens = holesFromGreensOnly(greenPts);
-    if (
-      isCompleteLayout(fromGreens) ||
-      fromGreens.length > holes.length
-    ) {
-      holes = fromGreens;
-    }
-  }
-  if (!isCompleteLayout(holes) && greenPts.length >= 9) {
-    const fromUnref = holesFromUnrefGreens(greenPts);
-    if (fromUnref.length > holes.length) holes = fromUnref;
   }
 
   pruneOutlierTees(holes);
@@ -1278,11 +1317,13 @@ async function holesInScope(
 }
 
 function fetchLooksComplete(holes: GolfHole[]): boolean {
-  if (holes.length >= 36) return true;
   const loops = [
     ...new Set(holes.map((h) => h.loop).filter((l): l is string => isRealLoop(l))),
   ];
-  if (loops.length >= 2) return holes.length >= loops.length * 16;
+  if (loops.length >= 2) {
+    // Scoped layout, or both siblings already in-hand — never widen the bbox.
+    return holes.length >= 9;
+  }
   return holes.length >= 18;
 }
 

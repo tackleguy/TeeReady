@@ -1,19 +1,15 @@
-const R_MI = 3958.7613;
-const YARDS_PER_MI = 1760;
+import { geodesicYards } from '../../../src/lib/geodesic';
 
+export { geodesicYards };
+
+/** WGS84 geodesic (Vincenty), yards. Name kept for callers. */
 export function haversineYards(
   aLat: number,
   aLon: number,
   bLat: number,
   bLon: number,
 ): number {
-  const toRad = (d: number) => (d * Math.PI) / 180;
-  const dLat = toRad(bLat - aLat);
-  const dLon = toRad(bLon - aLon);
-  const A =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLon / 2) ** 2;
-  return 2 * R_MI * Math.asin(Math.sqrt(A)) * YARDS_PER_MI;
+  return geodesicYards(aLat, aLon, bLat, bLon);
 }
 
 /** Initial bearing A→B, 0–360 true. */

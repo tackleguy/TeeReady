@@ -1,6 +1,10 @@
 /** Static hole-geometry packs — durable OSM backups shipped under /golf/holes. */
 
 import type { GolfHole } from './golf';
+import {
+  filterNameMatches,
+  namesConflict,
+} from '../../api/golf/_lib/courseRelate';
 
 function holesBaseUrl(): string {
   const raw = (import.meta.env as Record<string, string | undefined>)
@@ -92,7 +96,11 @@ const SLUGS: Array<{ slug: string; test: (name: string) => boolean }> = [
   },
 ];
 
-const MATCH_M = 1200;
+/**
+ * Pure lat/lon match without a name hit. Adjacent municipal 18s are often
+ * 200–800 m apart, so this must stay well under that.
+ */
+const MATCH_COORD_M = 250;
 
 function haversineM(
   aLat: number,
@@ -139,30 +147,39 @@ function matchSlugFromManifest(
   if (!manifest?.courses?.length) return null;
 
   if (courseName) {
-    const n = courseName.toLowerCase().trim();
-    const exact = manifest.courses.find((c) => c.name.toLowerCase() === n);
-    if (exact) return exact.slug;
-    const partial = manifest.courses.find(
-      (c) =>
-        n.includes(c.name.toLowerCase()) || c.name.toLowerCase().includes(n),
-    );
-    if (partial) return partial.slug;
+    const named = filterNameMatches(manifest.courses, courseName);
+    if (named.length === 1) return named[0]!.slug;
+    if (named.length > 1) {
+      const unique = named.filter((c) => !namesConflict(courseName, c.name));
+      const pool = unique.length ? unique : named;
+      if (lat != null && lon != null && Number.isFinite(lat) && Number.isFinite(lon)) {
+        let best: HolePackManifestEntry | null = null;
+        let bestD = Infinity;
+        for (const c of pool) {
+          const d = haversineM(lat, lon, c.lat, c.lon);
+          if (d < bestD) {
+            bestD = d;
+            best = c;
+          }
+        }
+        if (best) return best.slug;
+      }
+      return pool[0]!.slug;
+    }
   }
 
   if (lat == null || lon == null || !Number.isFinite(lat) || !Number.isFinite(lon)) {
     return null;
   }
-  let best: HolePackManifestEntry | null = null;
-  let bestD = Infinity;
-  for (const c of manifest.courses) {
-    if (!Number.isFinite(c.lat) || !Number.isFinite(c.lon)) continue;
-    const d = haversineM(lat, lon, c.lat, c.lon);
-    if (d < bestD) {
-      bestD = d;
-      best = c;
-    }
-  }
-  return best && bestD <= MATCH_M ? best.slug : null;
+  // Last resort: unique nearest pack, and only if nothing else is similarly close.
+  const ranked = manifest.courses
+    .filter((c) => Number.isFinite(c.lat) && Number.isFinite(c.lon))
+    .map((c) => ({ c, d: haversineM(lat, lon, c.lat, c.lon) }))
+    .filter((x) => x.d <= MATCH_COORD_M)
+    .sort((a, b) => a.d - b.d);
+  if (!ranked.length) return null;
+  if (ranked.length >= 2 && ranked[1]!.d - ranked[0]!.d < 80) return null;
+  return ranked[0]!.c.slug;
 }
 
 export async function resolveHolePackSlug(

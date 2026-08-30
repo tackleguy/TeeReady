@@ -1,6 +1,6 @@
 // Golf: OSM courses + satellite map + multi-model hole wind briefs.
 
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   BookOpen,
@@ -80,10 +80,12 @@ import { weatherAppHref } from '../lib/golfApp';
 import { warmGolfCatalog, readGolfCatalog } from '../lib/golfCatalogPrefetch';
 import {
   courseHasGreenMeshes,
+  greenRingLonLat,
   loadGreenMeshCourse,
   resolveGreenMeshSlug,
   type GreenMeshCourse,
 } from '../lib/golfGreen3d';
+import { identifyCourseFromGps, identifyHoleFromGps } from '../lib/geoAccuracy';
 
 const Green3DViewer = lazy(() =>
   import('../components/golf/Green3DViewer').then((m) => ({
@@ -103,6 +105,7 @@ import {
 } from '../lib/golfTees';
 import {
   bestLoopName,
+  scopeHolesToSelectedCourse,
   standardizeHoleSet,
   standardizeLayouts,
 } from '../lib/golfHolesNormalize';
@@ -199,6 +202,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
   const [loc, setLoc] = useState<Loc>(defaultLoc);
   const [course, setCourse] = useState<GolfCourseSummary | null>(null);
   const [activeHole, setActiveHole] = useState<number | null>(null);
+  const holePickedByUser = useRef(false);
   const [loop, setLoop] = useState<string | null>(null);
   const [teeKind, setTeeKind] = useState<TeeKind>('mid');
   const [hour, setHour] = useState(0);
@@ -327,6 +331,16 @@ export function GolfView({ active = true }: { active?: boolean }) {
     retry: retryCourses,
     workingCount,
   } = useWorkingCourses(loc.lat, loc.lon, courseFilter);
+
+  const gpsCourseHint = useMemo(() => {
+    if (!gpsPos || !courses.length) return null;
+    return identifyCourseFromGps(
+      gpsPos.lat,
+      gpsPos.lon,
+      courses,
+      gpsPos.accuracyM,
+    );
+  }, [gpsPos, courses]);
   const {
     holes,
     loading: holesLoading,
@@ -349,10 +363,10 @@ export function GolfView({ active = true }: { active?: boolean }) {
 
   const expectedHoles =
     course?.holes === 9 || course?.holes === 18 ? course.holes : null;
-  const normalizedHoles = useMemo(
-    () => standardizeLayouts(holes, expectedHoles),
-    [holes, expectedHoles],
-  );
+  const normalizedHoles = useMemo(() => {
+    const scoped = scopeHolesToSelectedCourse(holes, course?.name);
+    return standardizeLayouts(scoped, expectedHoles);
+  }, [holes, expectedHoles, course?.name]);
   const loops = useMemo(() => loopNames(normalizedHoles), [normalizedHoles]);
   const resolvedLoop =
     loop ??
@@ -362,13 +376,18 @@ export function GolfView({ active = true }: { active?: boolean }) {
   const loopHoles = useMemo(() => {
     const scoped = holesOnLoop(normalizedHoles, resolvedLoop);
     let std = standardizeHoleSet(scoped, expectedHoles);
-    // Wrong auto-loop (e.g. "North" with 5 scraps) — fall back to best full set.
     if (std.length < 7 && normalizedHoles.length > std.length) {
-      const all = standardizeHoleSet(normalizedHoles, expectedHoles);
-      if (all.length > std.length) std = all;
+      const best = bestLoopName(normalizedHoles, course?.name);
+      const fallback = best
+        ? standardizeHoleSet(
+            holesOnLoop(normalizedHoles, best),
+            expectedHoles,
+          )
+        : [];
+      if (fallback.length > std.length) std = fallback;
     }
     return std;
-  }, [normalizedHoles, resolvedLoop, expectedHoles]);
+  }, [normalizedHoles, resolvedLoop, expectedHoles, course?.name]);
   const playHoles = useMemo(
     () => loopHoles.map((h) => applyTee(h, teeKind)),
     [loopHoles, teeKind],
@@ -562,6 +581,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
         priority: 'high',
       });
       setCourse(next);
+      holePickedByUser.current = false;
       setGreens3d(false);
       setGreenMeshCourse(null);
       setGreenMeshError(null);
@@ -744,6 +764,11 @@ export function GolfView({ active = true }: { active?: boolean }) {
     );
   }, [gpsPos, activeHoleObj]);
 
+  const activeGreenRing = useMemo(
+    () => greenRingLonLat(greenMeshCourse, activeHole),
+    [greenMeshCourse, activeHole],
+  );
+
   const gpsGreenDistances = useMemo(() => {
     if (!activeHoleObj) return null;
     const from =
@@ -751,8 +776,11 @@ export function GolfView({ active = true }: { active?: boolean }) {
         ? { lat: gpsPos.lat, lon: gpsPos.lon }
         : null;
     if (!from) return null;
-    return distancesToGreen(from, greenMarks(activeHoleObj));
-  }, [gpsPos, activeHoleObj, viewMode]);
+    return distancesToGreen(
+      from,
+      greenMarks(activeHoleObj, { polygon: activeGreenRing }),
+    );
+  }, [gpsPos, activeHoleObj, viewMode, activeGreenRing]);
 
   /** Ball for F/M/B lines: only with a live on-course fix (else GPS shows wind shot path). */
   const liveGpsRanging = useMemo(() => {
@@ -774,18 +802,18 @@ export function GolfView({ active = true }: { active?: boolean }) {
     if (liveGpsRanging && gpsPos) {
       return distancesToGreen(
         { lat: gpsPos.lat, lon: gpsPos.lon },
-        greenMarks(activeHoleObj),
+        greenMarks(activeHoleObj, { polygon: activeGreenRing }),
       );
     }
     // HUD fallback from the tee when GPS isn't ranging live.
     if (viewMode === 'gps') {
       return distancesToGreen(
         { lat: activeHoleObj.tee.lat, lon: activeHoleObj.tee.lon },
-        greenMarks(activeHoleObj),
+        greenMarks(activeHoleObj, { polygon: activeGreenRing }),
       );
     }
     return null;
-  }, [activeHoleObj, liveGpsRanging, gpsPos, viewMode]);
+  }, [activeHoleObj, liveGpsRanging, gpsPos, viewMode, activeGreenRing]);
 
   /** GPS fix is nowhere near this hole — show tee yardages instead of raw GPS. */
   const gpsOffCourse = useMemo(() => {
@@ -842,9 +870,15 @@ export function GolfView({ active = true }: { active?: boolean }) {
       ),
     );
     return {
-      front: bestClubForDistance(rangefinderDistances.front, bag) ?? null,
+      front: bestClubForDistance(
+        rangefinderDistances.front ?? rangefinderDistances.mid,
+        bag,
+      ) ?? null,
       mid: bestClubForDistance(aimYd, bag) ?? null,
-      back: bestClubForDistance(remainYd, bag) ?? null,
+      back: bestClubForDistance(
+        rangefinderDistances.back ?? remainYd,
+        bag,
+      ) ?? null,
     };
   }, [
     viewMode,
@@ -940,10 +974,43 @@ export function GolfView({ active = true }: { active?: boolean }) {
 
   useEffect(() => {
     if (viewMode !== 'gps') return;
-    if (activeHole != null) return;
-    if (!playHoles.length) return;
-    setActiveHole(playHoles[0]!.number);
-  }, [viewMode, activeHole, playHoles]);
+    if (!playHoles.length || !gpsPos) return;
+    const hit = identifyHoleFromGps({
+      lat: gpsPos.lat,
+      lon: gpsPos.lon,
+      accuracyM: gpsPos.accuracyM,
+      holes: playHoles,
+      previousHole: activeHole,
+      bbox: course?.bbox,
+    });
+    if (!hit) return;
+    if (hit.confidence === 'UNVERIFIED') return;
+
+    const idx = playHoles.findIndex((h) => h.number === activeHole);
+    const nextPlaying =
+      idx >= 0 ? playHoles[idx + 1]?.number : playHoles[0]?.number;
+
+    if (holePickedByUser.current) {
+      const allowAdvance =
+        nextPlaying != null &&
+        hit.holeNumber === nextPlaying &&
+        (hit.confidence === 'HIGH_CONFIDENCE' || hit.confidence === 'VERIFIED');
+      if (allowAdvance) {
+        holePickedByUser.current = false;
+        setActiveHole(hit.holeNumber);
+      }
+      return;
+    }
+
+    if (activeHole == null || hit.holeNumber !== activeHole) {
+      if (
+        hit.confidence === 'HIGH_CONFIDENCE' ||
+        activeHole == null
+      ) {
+        setActiveHole(hit.holeNumber);
+      }
+    }
+  }, [viewMode, playHoles, gpsPos, activeHole, course?.bbox]);
 
   useEffect(() => {
     if (!course) setMapReady(false);
@@ -952,6 +1019,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
   const stepHole = useCallback(
     (delta: number) => {
       if (!playHoles.length) return;
+      holePickedByUser.current = true;
       setActiveHole((prev) => {
         if (prev == null) return playHoles[0].number;
         const i = playHoles.findIndex((h) => h.number === prev);
@@ -963,7 +1031,10 @@ export function GolfView({ active = true }: { active?: boolean }) {
     [playHoles],
   );
 
-  // Arrow keys walk the course once a hole is open.
+  const selectHole = useCallback((n: number | null) => {
+    holePickedByUser.current = true;
+    setActiveHole(n);
+  }, []);
   useEffect(() => {
     if (activeHole == null) return;
     const onKey = (e: KeyboardEvent) => {
@@ -1137,6 +1208,21 @@ export function GolfView({ active = true }: { active?: boolean }) {
             className={`w-full rounded-2xl border border-[var(--line-default)] ${isMobile ? 'bg-canvas' : 'bg-black/20'} px-3 py-2.5 text-base text-[var(--ink-1)] placeholder:text-[var(--ink-4)] outline-none focus:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] md:py-2`}
           />
         </div>
+
+        {gpsCourseHint?.course && !courseFilter.trim() ? (
+          <div className="px-3 pb-2">
+            <button
+              type="button"
+              onClick={() => pickCourse(gpsCourseHint.course)}
+              className="chip-button w-full justify-start text-left"
+            >
+              GPS: {gpsCourseHint.course.name}
+              {gpsCourseHint.ambiguousWith
+                ? ` · also near ${gpsCourseHint.ambiguousWith}`
+                : ` · ${gpsCourseHint.yards} yd`}
+            </button>
+          </div>
+        ) : null}
 
         {profile.commonCourses.length > 0 && (
           <div className="flex gap-1.5 overflow-x-auto px-3 pb-2">
@@ -1322,7 +1408,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                 lon={searchLon}
                 holes={playHoles}
                 activeHole={activeHole}
-                onSelectHole={setActiveHole}
+                onSelectHole={selectHole}
                 target={mapTarget}
                 arcClubs={viewMode === 'prep' ? arcClubs : []}
                 onSetTarget={tracking ? dropShotAtTap : onMapTap}
@@ -1453,9 +1539,10 @@ export function GolfView({ active = true }: { active?: boolean }) {
                   remain={
                     viewMode === 'gps' && gpsHudDistances
                       ? {
-                          front: gpsHudDistances.front,
+                          front:
+                            gpsHudDistances.front ?? gpsHudDistances.mid,
                           mid: gpsHudDistances.mid,
-                          back: gpsHudDistances.back,
+                          back: gpsHudDistances.back ?? gpsHudDistances.mid,
                         }
                       : null
                   }
@@ -1745,6 +1832,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                   locating={gpsLocating}
                   distances={gpsHudDistances}
                   offCourse={gpsOffCourse}
+                  frontBackVerified={gpsHudDistances?.front != null}
                   holeYards={activeHoleObj?.yards ?? null}
                   holeNumber={activeHoleObj?.number ?? null}
                   bearingToPin={gpsBearingToPin}
@@ -1878,7 +1966,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     }}
                     onClose={() => setScorecardOpen(false)}
                     onFinishRound={endRound}
-                    onSelectHole={setActiveHole}
+                    onSelectHole={selectHole}
                     onNextHole={() => stepHole(1)}
                     onPrevHole={() => stepHole(-1)}
                   />

@@ -107,6 +107,87 @@ export function layoutLabelFromName(name: string): string {
   return stem ? titleCaseName(stem) : titleCaseName(name);
 }
 
+function stemTokens(name: string): string[] {
+  return clubStem(name).split(' ').filter((t) => t.length >= 4);
+}
+
+/**
+ * True when two names are different layouts at the same pin (Wilson vs Harding,
+ * North vs South). Shared facility words (griffith, torrey, pines) are ignored.
+ */
+export function namesConflict(a: string, b: string): boolean {
+  const la = layoutKey(a);
+  const lb = layoutKey(b);
+  if (la && lb && la !== lb) return true;
+  const da = stemTokens(a);
+  const db = stemTokens(b);
+  const aOnly = da.filter((t) => !db.includes(t));
+  const bOnly = db.filter((t) => !da.includes(t));
+  return aOnly.length > 0 && bOnly.length > 0;
+}
+
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/** Loose name match that still rejects sibling layouts and short substrings. */
+export function namesLooselyMatch(courseName: string, packName: string): boolean {
+  const a = courseName.toLowerCase().trim();
+  const b = packName.toLowerCase().trim();
+  if (!a || !b) return false;
+  if (a === b) return true;
+  if (namesConflict(courseName, packName)) return false;
+  const da = stemTokens(courseName);
+  const db = stemTokens(packName);
+  if (da.length && db.length && da.every((t) => db.includes(t))) return true;
+  if (da.length && db.length && db.every((t) => da.includes(t))) return true;
+  const shorter = a.length <= b.length ? a : b;
+  const longer = a.length <= b.length ? b : a;
+  if (shorter.length < 14) {
+    const re = new RegExp(
+      `(^|[^a-z0-9])${escapeRegExp(shorter)}([^a-z0-9]|$)`,
+    );
+    return re.test(longer);
+  }
+  return longer.includes(shorter);
+}
+
+export function filterNameMatches<T extends { name: string }>(
+  items: T[],
+  courseName: string,
+): T[] {
+  const n = courseName.toLowerCase().trim();
+  if (!n) return [];
+  const exact = items.filter((c) => c.name.toLowerCase() === n);
+  if (exact.length) return exact;
+  return items.filter((c) => namesLooselyMatch(n, c.name));
+}
+
+/** OSM golf_course polygon that belongs to the selected layout — never a sibling. */
+export function pickPolygonForCourse<T extends { id: number; name: string }>(
+  polys: T[],
+  courseName?: string,
+  osmId?: number,
+): T | null {
+  if (!polys.length) return null;
+  if (osmId != null && Number.isFinite(osmId) && osmId > 0) {
+    const byId = polys.find((p) => p.id === osmId);
+    if (byId) return byId;
+  }
+  if (!courseName?.trim()) return null;
+  const named = filterNameMatches(polys, courseName);
+  if (named.length === 1) return named[0]!;
+  if (named.length > 1) {
+    const want = layoutKey(courseName);
+    if (want) {
+      const layoutHits = named.filter((p) => layoutKey(p.name) === want);
+      if (layoutHits.length === 1) return layoutHits[0]!;
+    }
+    return named[0]!;
+  }
+  return null;
+}
+
 export function sameClub(a: string, b: string): boolean {
   const ta = tokens(a);
   const tb = tokens(b);

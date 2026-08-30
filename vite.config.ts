@@ -1,22 +1,129 @@
 import { defineConfig, loadEnv, type Plugin, type ProxyOptions } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
+import type { IncomingMessage, ServerResponse } from 'node:http';
+import {
+  completeCaddyPrompt,
+  MAX_CADDY_SYSTEM,
+  MAX_CADDY_USER,
+  resolveCaddyUpstream,
+} from './api/_lib/caddyLlm';
 
 const DEFAULT_DEV_API = 'https://tee-ready.vercel.app';
-const DEFAULT_LLM_PROXY = 'http://127.0.0.1:1234';
+const DEFAULT_LLM_PROXY = 'http://127.0.0.1:11434';
 
 /**
  * Dev API routing:
- * - default → proxy /api to production (course search, wind, live OSM soft-refresh)
- * - DEV_API_PROXY=http://127.0.0.1:3000 → local `vercel dev` (npm run dev:api)
- * - DEV_API_PROXY=none → no /api (static packs under /golf/* still work)
- *
- * Local LLM: `/llm` → LM Studio / Ollama (default http://127.0.0.1:1234) so the
- * browser uses same-origin requests and never hits mixed-content blocks.
- *
- * Hole lines / 3D greens / scorecards load from public/golf/* first; Prep paints
- * from packs without waiting on Overpass.
+ * - default → proxy /api to production (course search, wind, live OSM)
+ * - /api/caddy is handled locally by Vite → Ollama (127.0.0.1:11434)
+ * - DEV_API_PROXY=http://127.0.0.1:3000 → local `vercel dev`
+ * - DEV_API_PROXY=none → no /api except local /api/caddy
  */
+
+function readBody(req: IncomingMessage): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    req.on('data', (c) => chunks.push(Buffer.isBuffer(c) ? c : Buffer.from(c)));
+    req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+    req.on('error', reject);
+  });
+}
+
+function sendJson(res: ServerResponse, status: number, body: unknown): void {
+  res.statusCode = status;
+  res.setHeader('content-type', 'application/json');
+  res.setHeader('cache-control', 'no-store');
+  res.end(JSON.stringify(body));
+}
+
+function localOllamaCaddy(): Plugin {
+  const handle = async (
+    req: IncomingMessage,
+    res: ServerResponse,
+    next: () => void,
+  ) => {
+    const url = req.url?.split('?')[0];
+    if (url !== '/api/caddy') return next();
+
+    if (req.method === 'GET') {
+      const up = await resolveCaddyUpstream({ preferOllama: true });
+      sendJson(res, 200, {
+        ok: true,
+        configured: Boolean(up),
+        backend: up?.base ?? null,
+      });
+      return;
+    }
+
+    if (req.method !== 'POST') {
+      sendJson(res, 405, { error: 'method not allowed' });
+      return;
+    }
+
+    let rec: Record<string, unknown> = {};
+    try {
+      const raw = await readBody(req);
+      rec = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+    } catch {
+      sendJson(res, 400, { error: 'invalid json' });
+      return;
+    }
+
+    const system = typeof rec.system === 'string' ? rec.system.trim() : '';
+    const userText = typeof rec.userText === 'string' ? rec.userText.trim() : '';
+    if (!system || !userText) {
+      sendJson(res, 400, { error: 'system and userText required' });
+      return;
+    }
+    if (system.length > MAX_CADDY_SYSTEM || userText.length > MAX_CADDY_USER) {
+      sendJson(res, 413, { error: 'prompt too long' });
+      return;
+    }
+
+    const temperature =
+      typeof rec.temperature === 'number' && Number.isFinite(rec.temperature)
+        ? Math.min(1, Math.max(0, rec.temperature))
+        : 0.3;
+    const maxTokens =
+      typeof rec.maxTokens === 'number' && Number.isFinite(rec.maxTokens)
+        ? Math.min(400, Math.max(40, Math.round(rec.maxTokens)))
+        : 280;
+
+    const result = await completeCaddyPrompt({
+      system,
+      userText,
+      temperature,
+      maxTokens,
+      preferOllama: true,
+    });
+    if (!result.ok) {
+      sendJson(res, result.status === 503 ? 503 : 502, {
+        error: result.error ?? 'upstream llm failed',
+        status: result.status,
+      });
+      return;
+    }
+    sendJson(res, 200, {
+      text: result.text,
+      model: result.model,
+      source: 'llm',
+    });
+  };
+
+  return {
+    name: 'teeready-local-ollama-caddy',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        void handle(req, res, next);
+      });
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use((req, res, next) => {
+        void handle(req, res, next);
+      });
+    },
+  };
+}
 
 function devApiStub(enabled: boolean): Plugin {
   return {
@@ -25,6 +132,7 @@ function devApiStub(enabled: boolean): Plugin {
     configureServer(server) {
       if (!enabled) return;
       server.middlewares.use((req, res, next) => {
+        if (req.url?.split('?')[0] === '/api/caddy') return next();
         if (!req.url?.startsWith('/api/')) return next();
         res.statusCode = 503;
         res.setHeader('content-type', 'application/json');
@@ -61,11 +169,19 @@ export default defineConfig(({ mode }) => {
     },
   };
   if (apiProxy) {
-    proxy['/api'] = { target: apiProxy, changeOrigin: true, secure: true };
+    proxy['/api'] = {
+      target: apiProxy,
+      changeOrigin: true,
+      secure: true,
+      bypass(req) {
+        const url = req.url?.split('?')[0];
+        if (url === '/api/caddy') return req.url || '/api/caddy';
+      },
+    };
   }
 
   return {
-    plugins: [react(), devApiStub(!apiProxy)],
+    plugins: [react(), localOllamaCaddy(), devApiStub(!apiProxy)],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),

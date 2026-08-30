@@ -101,7 +101,7 @@ export function GolfTargetHud({
                 {label}
               </div>
               <div className="text-[18px] font-semibold tabular-nums text-[var(--ink-1)]">
-                {yd}
+                {yd != null ? yd : '—'}
                 <span className="ml-0.5 text-[13px] font-medium text-[var(--ink-3)]">
                   yd
                 </span>

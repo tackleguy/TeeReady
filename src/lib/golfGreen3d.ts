@@ -317,6 +317,37 @@ export function prefetchGreenMeshManifest(): void {
   void loadGreenMeshManifest();
 }
 
+function greenMeshRingLonLat(
+  course: GreenMeshCourse,
+  g: GreenMesh,
+): Array<{ lon: number; lat: number }> {
+  const scale = mPerDegree(course.lat);
+  const pts: Array<[number, number]> = [];
+  for (let i = 0; i < g.positions.length; i += 3) {
+    const x = g.positions[i]!;
+    const z = g.positions[i + 2]!;
+    pts.push([
+      course.lon + x / scale.mLon,
+      course.lat + z / scale.mLat,
+    ]);
+  }
+  const ring = convexHull(pts);
+  if (ring.length < 3) return [];
+  return ring.map(([lon, lat]) => ({ lon, lat }));
+}
+
+/** Mapped green outline for front/center/back GPS ranging. */
+export function greenRingLonLat(
+  course: GreenMeshCourse | null,
+  holeNumber: number | null,
+): Array<{ lon: number; lat: number }> | null {
+  if (!course || holeNumber == null) return null;
+  const g = course.greens.find((x) => x.hole === holeNumber);
+  if (!g) return null;
+  const ring = greenMeshRingLonLat(course, g);
+  return ring.length >= 3 ? ring : null;
+}
+
 function mPerDegree(lat: number) {
   const latRad = (lat * Math.PI) / 180;
   return { mLat: 111_320, mLon: Math.max(1e-6, 111_320 * Math.cos(latRad)) };

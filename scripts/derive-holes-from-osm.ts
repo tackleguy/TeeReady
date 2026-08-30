@@ -32,6 +32,7 @@ function parseArgs(argv: string[]) {
   let limit = Infinity;
   for (const a of argv) {
     if (a === '--cleanup-artifacts') flags.add('cleanup-artifacts');
+    else if (a === '--force') flags.add('force');
     else if (a.startsWith('--limit=')) limit = Number(a.slice(8)) || limit;
     else if (a.startsWith('--only=')) only.push(a.slice(7));
     else if (!a.startsWith('-')) only.push(a);
@@ -64,6 +65,7 @@ function compactHole(h: Record<string, unknown>) {
   if (h.loop) out.loop = h.loop;
   if (h.strokeIndex != null) out.strokeIndex = h.strokeIndex;
   if (h.provenance) out.provenance = h.provenance;
+  if (h.geo) out.geo = h.geo;
   if (Array.isArray(h.path) && h.path.length >= 2) out.path = h.path;
   if (Array.isArray(h.tees) && h.tees.length) out.tees = h.tees;
   return out;
@@ -152,7 +154,7 @@ function main() {
       continue;
     }
 
-    if (existsSync(holePath)) {
+    if (existsSync(holePath) && !flags.has('force')) {
       try {
         const existing = JSON.parse(readFileSync(holePath, 'utf8'));
         if (isCompleteLayout(existing.holes ?? [])) {
@@ -171,7 +173,10 @@ function main() {
       continue;
     }
 
-    const holes = deriveHolesFromOsmElements(elements, { courseName: name });
+    const holes = deriveHolesFromOsmElements(elements, {
+      courseName: name,
+      osmId: Number.isFinite(pack.osmId) ? Number(pack.osmId) : undefined,
+    });
     if (!isCompleteLayout(holes)) {
       incomplete += 1;
       console.log(

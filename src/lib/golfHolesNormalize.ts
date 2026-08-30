@@ -1,5 +1,11 @@
 /** Normalize OSM hole maps to a single standard 9- or 18-hole layout. */
 
+import {
+  layoutKey,
+  namesConflict,
+  namesLooselyMatch,
+} from '../../api/golf/_lib/courseRelate';
+
 export type HoleLike = {
   number: number;
   yards: number;
@@ -146,8 +152,37 @@ export function bestLoopName<T extends HoleLike>(
     if (std.length === 9) score += 40;
     const n = (courseName ?? '').toLowerCase();
     if (n && n.includes(loop.toLowerCase())) score += 80;
+    if (courseName && namesLooselyMatch(courseName, loop)) score += 90;
+    if (courseName && namesConflict(courseName, loop)) score -= 200;
+    const want = courseName ? layoutKey(courseName) : null;
+    if (want && layoutKey(loop) === want) score += 120;
     return { loop, score, count: std.length };
   });
   scored.sort((a, b) => b.score - a.score || b.count - a.count);
   return scored[0]?.loop ?? null;
+}
+
+/**
+ * Drop sibling-layout holes when the golfer opened a named course.
+ * Never merges two 18s into one overlay.
+ */
+export function scopeHolesToSelectedCourse<T extends HoleLike>(
+  holes: T[],
+  courseName?: string | null,
+): T[] {
+  if (!holes.length || !courseName?.trim()) return holes;
+  const loops = [
+    ...new Set(
+      holes
+        .map((h) => h.loop)
+        .filter((l): l is string => Boolean(l && l.trim())),
+    ),
+  ];
+  if (loops.length < 2) return holes;
+  const pick = bestLoopName(holes, courseName);
+  if (!pick) return holes;
+  const scoped = holes.filter(
+    (h) => (h.loop ?? '').toLowerCase() === pick.toLowerCase(),
+  );
+  return scoped.length ? scoped : holes;
 }

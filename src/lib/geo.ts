@@ -1,19 +1,14 @@
 // Geographic helpers shared across radar components.
 
+import { geodesicMiles } from './geodesic';
+
 export function haversineMiles(
   aLat: number,
   aLon: number,
   bLat: number,
   bLon: number,
 ): number {
-  const toRad = (d: number) => (d * Math.PI) / 180;
-  const R = 3958.7613; // mean Earth radius, miles
-  const dLat = toRad(bLat - aLat);
-  const dLon = toRad(bLon - aLon);
-  const A =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLon / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(A));
+  return geodesicMiles(aLat, aLon, bLat, bLon);
 }
 
 export function milesToKm(miles: number): number {

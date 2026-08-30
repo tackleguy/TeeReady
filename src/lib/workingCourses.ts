@@ -4,8 +4,12 @@
 
 import type { GolfCourseSummary } from './golf';
 import type { HolePackManifestEntry } from './golfHolePacks';
-
-const MI_MATCH = 0.85;
+import {
+  filterNameMatches,
+  namesConflict,
+  namesLooselyMatch,
+} from '../../api/golf/_lib/courseRelate';
+import { geodesicMiles } from './geodesic';
 
 export function haversineMi(
   aLat: number,
@@ -13,14 +17,7 @@ export function haversineMi(
   bLat: number,
   bLon: number,
 ): number {
-  const R = 3958.8;
-  const toRad = (d: number) => (d * Math.PI) / 180;
-  const dLat = toRad(bLat - aLat);
-  const dLon = toRad(bLon - aLon);
-  const A =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLon / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(A));
+  return geodesicMiles(aLat, aLon, bLat, bLon);
 }
 
 export function courseMatchesHolePackEntry(
@@ -28,15 +25,9 @@ export function courseMatchesHolePackEntry(
   entry: HolePackManifestEntry,
 ): boolean {
   if (entry.name.toLowerCase() === course.name.toLowerCase()) return true;
-  if (
-    !Number.isFinite(course.lat) ||
-    !Number.isFinite(course.lon) ||
-    !Number.isFinite(entry.lat) ||
-    !Number.isFinite(entry.lon)
-  ) {
-    return false;
-  }
-  return haversineMi(course.lat, course.lon, entry.lat, entry.lon) < MI_MATCH;
+  if (namesConflict(course.name, entry.name)) return false;
+  if (namesLooselyMatch(course.name, entry.name)) return true;
+  return false;
 }
 
 export function filterToWorkingCourses(
@@ -122,7 +113,10 @@ export function preferApiSummaries(
         (e) => e.name.toLowerCase() === manifest.name.toLowerCase(),
       );
     if (!entry) return manifest;
-    const api = apiCourses.find((c) => courseMatchesHolePackEntry(c, entry));
+    const named = filterNameMatches(apiCourses, entry.name);
+    const api =
+      named.find((c) => !namesConflict(c.name, entry.name)) ??
+      (named.length === 1 ? named[0] : undefined);
     if (!api) return manifest;
     return {
       ...api,
