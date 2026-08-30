@@ -8,7 +8,7 @@
 // This is intentionally simple — no Workbox dependency, no precache
 // manifest. Vite's hashed asset filenames give us cache-busting for free.
 
-const VERSION = 'teeready-v24';
+const VERSION = 'teeready-v25';
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 const SATELLITE_CACHE = `${VERSION}-satellite`;
@@ -98,9 +98,20 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Course catalog + hole / green / scorecard / OSM packs — cache-first.
+  // Manifests change every derive — never cache-first or the course list
+  // sticks at an old snapshot (e.g. 143 nearby instead of 1,400+ packs).
   if (
     url.pathname === '/golf/catalog.us.json' ||
+    /\/golf\/(?:greens|holes|scorecards|osm)\/manifest\.json$/.test(
+      url.pathname,
+    )
+  ) {
+    event.respondWith(staleWhileRevalidate(req));
+    return;
+  }
+
+  // Individual hole / green / scorecard / OSM packs — cache-first.
+  if (
     url.pathname.startsWith('/golf/greens/') ||
     url.pathname.startsWith('/golf/holes/') ||
     url.pathname.startsWith('/golf/scorecards/') ||

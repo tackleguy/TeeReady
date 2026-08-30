@@ -120,6 +120,7 @@ export function preferApiSummaries(
     if (!api) return manifest;
     return {
       ...api,
+      id: manifest.id,
       holes: api.holes ?? manifest.holes,
       distanceMi: manifest.distanceMi ?? api.distanceMi,
     };
@@ -137,13 +138,7 @@ export function mergeWorkingCourses(
   if (!entries.length) return [];
   const q = query.trim();
   if (q.length >= 2) {
-    const manifest = searchWorkingManifest(entries, q, lat, lon);
-    const seen = new Set(manifest.map((c) => c.id));
-    const merged = [...manifest];
-    for (const c of filterToWorkingCourses(apiCourses, entries)) {
-      if (!seen.has(c.id)) merged.push(c);
-    }
-    return preferApiSummaries(merged, apiCourses, entries);
+    return searchWorkingManifest(entries, q, lat, lon);
   }
   const nearby = nearbyWorkingManifest(entries, lat, lon, entries.length);
   return preferApiSummaries(nearby, apiCourses, entries);

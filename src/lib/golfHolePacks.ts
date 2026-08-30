@@ -123,7 +123,9 @@ const packCache = new Map<string, Promise<HolePack | null>>();
 
 export function loadHolePackManifest(): Promise<HolePackManifest | null> {
   if (manifestPromise) return manifestPromise;
-  manifestPromise = fetch(`${holesBaseUrl()}/manifest.json`)
+  manifestPromise = fetch(`${holesBaseUrl()}/manifest.json`, {
+    cache: 'no-store',
+  })
     .then((res) => (res.ok ? (res.json() as Promise<HolePackManifest>) : null))
     .catch(() => null);
   return manifestPromise;

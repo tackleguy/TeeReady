@@ -48,7 +48,9 @@ const packCache = new Map<string, Promise<ScorecardPack | null>>();
 
 export function loadScorecardPackManifest(): Promise<ScorecardPackManifest | null> {
   if (manifestPromise) return manifestPromise;
-  manifestPromise = fetch(`${scorecardsBaseUrl()}/manifest.json`)
+  manifestPromise = fetch(`${scorecardsBaseUrl()}/manifest.json`, {
+    cache: 'no-store',
+  })
     .then((res) =>
       res.ok ? (res.json() as Promise<ScorecardPackManifest>) : null,
     )

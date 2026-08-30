@@ -157,7 +157,9 @@ let manifestPromise: Promise<GreenMeshManifest | null> | null = null;
 
 export function loadGreenMeshManifest(): Promise<GreenMeshManifest | null> {
   if (manifestPromise) return manifestPromise;
-  manifestPromise = fetch(`${greensBaseUrl()}/manifest.json`)
+  manifestPromise = fetch(`${greensBaseUrl()}/manifest.json`, {
+    cache: 'no-store',
+  })
     .then((res) => (res.ok ? (res.json() as Promise<GreenMeshManifest>) : null))
     .catch(() => null);
   return manifestPromise;

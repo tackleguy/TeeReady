@@ -14,7 +14,7 @@ export function useWorkingCourses(
 ) {
   const [entries, setEntries] = useState<HolePackManifestEntry[]>([]);
   const [manifestReady, setManifestReady] = useState(false);
-  const { courses, loading, error, retry } = useGolfCourses(lat, lon, query);
+  const { courses, loading, error, retry } = useGolfCourses(lat, lon, '');
 
   useEffect(() => {
     let cancelled = false;
