@@ -325,6 +325,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
     loading: coursesLoading,
     error: coursesError,
     retry: retryCourses,
+    workingCount,
   } = useWorkingCourses(loc.lat, loc.lon, courseFilter);
   const {
     holes,
@@ -387,8 +388,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
     setPlanningMode('tee');
   }, [normalizedHoles, course?.id, course?.name]);
 
-  // One character filters the nearby list; two or more searches the
-  // bundled 14,000+ U.S. course catalog (11,000+ verified with par/yardage).
+  // One character filters nearby playable courses; two+ searches the hole-pack manifest.
   const filteredCourses = useMemo(() => {
     const standard = courses.filter(
       (c) => c.holes == null || c.holes === 9 || c.holes === 18,
@@ -1059,7 +1059,9 @@ export function GolfView({ active = true }: { active?: boolean }) {
               TeeReady
             </h1>
             <p className="truncate text-[11px] text-[var(--ink-3)]">
-              11,000+ verified · 14,000+ searchable
+              {workingCount > 0
+                ? `${workingCount.toLocaleString()} playable · offline maps`
+                : 'Loading playable courses…'}
             </p>
           </div>
           <a
@@ -1130,8 +1132,8 @@ export function GolfView({ active = true }: { active?: boolean }) {
             spellCheck={false}
             value={courseFilter}
             onChange={(e) => setCourseFilter(e.target.value)}
-            placeholder="City courses & private clubs…"
-            aria-label="Search city courses and private clubs"
+            placeholder="Search playable courses…"
+            aria-label="Search playable courses"
             className={`w-full rounded-2xl border border-[var(--line-default)] ${isMobile ? 'bg-canvas' : 'bg-black/20'} px-3 py-2.5 text-base text-[var(--ink-1)] placeholder:text-[var(--ink-4)] outline-none focus:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] md:py-2`}
           />
         </div>

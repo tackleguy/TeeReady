@@ -87,9 +87,9 @@ export function CourseSearchMultiSelect({
             placeholder={
               atMax
                 ? `${max} courses selected`
-                : 'Search and add courses…'
+                : 'Search playable courses…'
             }
-            aria-label="Search and add golf courses"
+            aria-label="Search playable golf courses"
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => {
               if (atMax) return;
