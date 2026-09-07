@@ -1,0 +1,4 @@
+# Raw OSM element dumps are multi-GB and only used as a server-side Overpass
+# fallback. Hole packs + greens are enough for the playable course list / maps.
+public/golf/osm/
+data/osm-backup/
