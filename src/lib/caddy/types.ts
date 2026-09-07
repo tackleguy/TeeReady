@@ -45,6 +45,11 @@ export type CaddyFacts = {
   bagClubForRemain: string | null;
   ensembleSummary: string | null;
   forecastNarrative: string | null;
+  /** Prep: strategic focus for this hole from the round plan. */
+  prepFocus: string | null;
+  prepFocusTip: string | null;
+  teeKind: string | null;
+  loop: string | null;
 };
 
 export type CaddyContext = {

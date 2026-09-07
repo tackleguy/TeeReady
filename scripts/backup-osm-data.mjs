@@ -39,6 +39,7 @@ const OSM_DIR = join(ROOT, 'public/golf/osm');
 const HOLES_DIR = join(ROOT, 'public/golf/holes');
 const DATA_DIR = join(ROOT, 'data/osm-backup');
 const VENUES_COURSES = join(ROOT, 'src/data/venues.courses.json');
+const VENUES_USER = join(ROOT, 'src/data/venues.user.json');
 const CATALOG_PATH = join(ROOT, 'api/golf/_data/usCatalog.json');
 const API_BASE = (
   process.env.HOLES_API_BASE || 'https://tee-ready.vercel.app'
@@ -570,10 +571,10 @@ function loadGreenCourses() {
   return out;
 }
 
-function loadVenueCourses() {
-  if (!existsSync(VENUES_COURSES)) return [];
+function loadVenueRows(path) {
+  if (!existsSync(path)) return [];
   try {
-    const rows = readJson(VENUES_COURSES);
+    const rows = readJson(path);
     return rows
       .filter((r) => r?.kind === 'course' && r.center)
       .map((r) => ({
@@ -587,6 +588,14 @@ function loadVenueCourses() {
   } catch {
     return [];
   }
+}
+
+function loadVenueCourses() {
+  const bySlug = new Map();
+  for (const c of loadVenueRows(VENUES_COURSES)) bySlug.set(c.slug, c);
+  // User-added venues win on slug collision (hand-tuned pins).
+  for (const c of loadVenueRows(VENUES_USER)) bySlug.set(c.slug, c);
+  return [...bySlug.values()];
 }
 
 /** Existing OSM JSON on disk that still lacks a complete hole pack. */

@@ -30,6 +30,9 @@ export function buildCaddyContext(input: {
   forecast: HoleForecast | null | undefined;
   remain?: { front: number; mid: number; back: number } | null;
   ensembleSummary?: string | null;
+  prepFocus?: string | null;
+  prepFocusTip?: string | null;
+  teeKind?: string | null;
 }): CaddyContext {
   const { hole, profile, brief, turf, forecast, remain, bag } = input;
   const bagClubForRemain =
@@ -71,6 +74,10 @@ export function buildCaddyContext(input: {
     bagClubForRemain,
     ensembleSummary: input.ensembleSummary ?? null,
     forecastNarrative: forecast?.narrative ?? null,
+    prepFocus: input.prepFocus ?? null,
+    prepFocusTip: input.prepFocusTip ?? null,
+    teeKind: input.teeKind ?? null,
+    loop: hole.loop ?? null,
   };
 
   return {

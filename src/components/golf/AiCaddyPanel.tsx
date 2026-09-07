@@ -6,6 +6,7 @@ import {
   askCaddy,
   autoCaddyTip,
   buildCaddyContext,
+  CADDY_QUICK_ASKS,
   type CaddyResult,
 } from '../../lib/caddy';
 import type { GolfHole, HoleBrief, TurfReport } from '../../lib/golf';
@@ -24,6 +25,9 @@ type Props = {
   forecast: HoleForecast | null | undefined;
   remain?: { front: number; mid: number; back: number } | null;
   ensembleSummary?: string | null;
+  prepFocus?: string | null;
+  prepFocusTip?: string | null;
+  teeKind?: string | null;
   /** Compact strip for mobile GPS. */
   compact?: boolean;
   onClose?: () => void;
@@ -47,6 +51,9 @@ export function AiCaddyPanel({
   forecast,
   remain,
   ensembleSummary,
+  prepFocus = null,
+  prepFocusTip = null,
+  teeKind = null,
   compact = false,
   onClose,
 }: Props) {
@@ -72,6 +79,9 @@ export function AiCaddyPanel({
         forecast,
         remain,
         ensembleSummary,
+        prepFocus,
+        prepFocusTip,
+        teeKind,
       }),
     [
       mode,
@@ -84,6 +94,9 @@ export function AiCaddyPanel({
       forecast,
       remain,
       ensembleSummary,
+      prepFocus,
+      prepFocusTip,
+      teeKind,
     ],
   );
 
@@ -97,9 +110,10 @@ export function AiCaddyPanel({
         brief?.recommendedClub ?? '',
         remain?.mid ?? '',
         turf?.fairway ?? '',
+        prepFocus ?? '',
         hourBucket(ensembleSummary),
       ].join('|'),
-    [mode, hole.number, brief, remain, turf, ensembleSummary],
+    [mode, hole.number, brief, remain, turf, prepFocus, ensembleSummary],
   );
 
   const refreshTip = useCallback(async () => {
@@ -136,35 +150,40 @@ export function AiCaddyPanel({
     };
   }, [tipKey, refreshTip]);
 
-  const sendAsk = useCallback(async () => {
-    const q = question.trim();
-    if (!q || busy) return;
-    setQuestion('');
+  const sendAsk = useCallback(
+    async (raw?: string) => {
+      const q = (raw ?? question).trim();
+      if (!q || busy) return;
+      setQuestion('');
       setTurns((prev) => [
-      ...prev,
-      { id: `you-${Date.now()}`, role: 'you' as const, text: q },
-    ]);
-    abortRef.current?.abort();
-    const ac = new AbortController();
-    abortRef.current = ac;
-    setBusy(true);
-    try {
-      const result = await askCaddy(ctx, q, { signal: ac.signal });
-      if (ac.signal.aborted) return;
-      setNotice(result.notice ?? null);
-      setTurns((prev) => {
-        const reply: ChatTurn = {
-          id: `caddy-${Date.now()}`,
-          role: 'caddy',
-          text: result.text,
-          source: result.source,
-        };
-        return [...prev, reply].slice(-10);
-      });
-    } finally {
-      if (!ac.signal.aborted) setBusy(false);
-    }
-  }, [question, busy, ctx]);
+        ...prev,
+        { id: `you-${Date.now()}`, role: 'you' as const, text: q },
+      ]);
+      abortRef.current?.abort();
+      const ac = new AbortController();
+      abortRef.current = ac;
+      setBusy(true);
+      try {
+        const result = await askCaddy(ctx, q, { signal: ac.signal });
+        if (ac.signal.aborted) return;
+        setNotice(result.notice ?? null);
+        setTurns((prev) => {
+          const reply: ChatTurn = {
+            id: `caddy-${Date.now()}`,
+            role: 'caddy',
+            text: result.text,
+            source: result.source,
+          };
+          return [...prev, reply].slice(-10);
+        });
+      } finally {
+        if (!ac.signal.aborted) setBusy(false);
+      }
+    },
+    [question, busy, ctx],
+  );
+
+  const quickAsks = CADDY_QUICK_ASKS[mode];
 
   const header = (
     <div className="flex items-center gap-2 px-2.5 py-1.5">
@@ -232,6 +251,19 @@ export function AiCaddyPanel({
             </p>
           ) : null}
 
+          {mode === 'prep' && prepFocus ? (
+            <div className="border-b border-[var(--line-subtle)] px-2.5 py-1.5">
+              <span className="rounded bg-brand/20 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-brand">
+                {prepFocus}
+              </span>
+              {prepFocusTip ? (
+                <p className="mt-1 text-[11px] leading-snug text-[var(--ink-3)]">
+                  {prepFocusTip}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+
           <div className="max-h-40 space-y-1.5 overflow-y-auto overscroll-contain px-2.5 py-2">
             {turns.length === 0 && tip ? (
               <CaddyBubble text={tip.text} source={tip.source} />
@@ -251,6 +283,20 @@ export function AiCaddyPanel({
             {busy && turns.length === 0 && !tip ? (
               <p className="text-[11px] text-[var(--ink-4)]">Reading conditions…</p>
             ) : null}
+          </div>
+
+          <div className="flex flex-wrap gap-1 border-b border-[var(--line-subtle)] px-2 py-1.5">
+            {quickAsks.map((q) => (
+              <button
+                key={q.label}
+                type="button"
+                disabled={busy}
+                onClick={() => void sendAsk(q.question)}
+                className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-medium text-[var(--ink-2)] hover:bg-white/15 disabled:opacity-40"
+              >
+                {q.label}
+              </button>
+            ))}
           </div>
 
           <form

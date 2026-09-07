@@ -1,1 +1,58 @@
-[]
+[
+  {
+    "slug": "bandon-dunes",
+    "name": "Bandon Dunes",
+    "kind": "course",
+    "center": {
+      "lat": 43.1874,
+      "lon": -124.3867
+    },
+    "region": "Bandon, OR",
+    "source": "user-added",
+    "holes": 18,
+    "par": 72,
+    "type": "regulation"
+  },
+  {
+    "slug": "pacific-dunes",
+    "name": "Pacific Dunes",
+    "kind": "course",
+    "center": {
+      "lat": 43.2036,
+      "lon": -124.3935
+    },
+    "region": "Bandon, OR",
+    "source": "user-added",
+    "holes": 18,
+    "par": 71,
+    "type": "regulation"
+  },
+  {
+    "slug": "ocean-course-at-kiawah-island-golf-resort",
+    "name": "Ocean Course At Kiawah Island Golf Resort",
+    "kind": "course",
+    "center": {
+      "lat": 32.6092,
+      "lon": -80.0258
+    },
+    "region": "Kiawah Island, SC",
+    "source": "user-added",
+    "holes": 18,
+    "par": 72,
+    "type": "regulation"
+  },
+  {
+    "slug": "bandon-trails",
+    "name": "Bandon Trails",
+    "kind": "course",
+    "center": {
+      "lat": 43.1865,
+      "lon": -124.3755
+    },
+    "region": "Bandon, OR",
+    "source": "user-added",
+    "holes": 18,
+    "par": 71,
+    "type": "regulation"
+  }
+]

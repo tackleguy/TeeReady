@@ -19,6 +19,7 @@ export type { CaddyContext, CaddyFacts, CaddyMode, CaddyResult, CaddySource } fr
 export { buildCaddyContext, allowedNumbersFromFacts } from './context';
 export { validateCaddyResponse, extractNumbersFromText } from './validate';
 export { rulesCaddyTip, rulesCaddyAsk } from './rules';
+export { CADDY_QUICK_ASKS } from './prompt';
 export {
   probeSwingLlm as probeCaddyLlm,
   CoachFetchError,

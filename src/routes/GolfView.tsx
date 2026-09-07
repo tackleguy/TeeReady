@@ -31,8 +31,10 @@ import { GolfSetup } from '../components/golf/GolfSetup';
 import { GolfScorecard } from '../components/golf/GolfScorecard';
 import { GolfTargetHud } from '../components/golf/GolfTargetHud';
 import { GolfYardageBook } from '../components/golf/GolfYardageBook';
+import { PrepRoundPlan } from '../components/golf/PrepRoundPlan';
 import { DataProvenanceNote } from '../components/golf/DataProvenanceNote';
 import { GpsMod } from '../components/golf/GpsMod';
+import { buildRoundPrepPlan } from '../lib/roundPrepPlan';
 import { GlassPanel } from '../components/ui/GlassPanel';
 import { DraggableBox } from '../components/ui/DraggableBox';
 import { SearchBar } from '../components/radar/SearchBar';
@@ -516,6 +518,25 @@ export function GolfView({ active = true }: { active?: boolean }) {
   const activeBrief =
     activeHole != null ? briefByHole.get(activeHole) : undefined;
   const turf = ensemble?.turf ?? DEFAULT_TURF;
+
+  const roundPrepPlan = useMemo(() => {
+    if (viewMode !== 'prep' || !course || !profile || !playHoles.length) {
+      return null;
+    }
+    return buildRoundPrepPlan({
+      courseName: course.name,
+      holes: playHoles,
+      briefs: briefByHole,
+      turf,
+      profile,
+    });
+  }, [viewMode, course, profile, playHoles, briefByHole, turf]);
+
+  const activePrepHole =
+    roundPrepPlan && activeHole != null
+      ? roundPrepPlan.holes.find((h) => h.holeNumber === activeHole) ?? null
+      : null;
+
   const forecast = useMemo(() => {
     if (!activeHoleObj || !target || !profile) return null;
     const hole =
@@ -1547,6 +1568,11 @@ export function GolfView({ active = true }: { active?: boolean }) {
                       : null
                   }
                   ensembleSummary={ensemble?.summary ?? null}
+                  prepFocus={activePrepHole?.focusLabel ?? null}
+                  prepFocusTip={activePrepHole?.tip ?? null}
+                  teeKind={
+                    teeKinds.length > 1 ? teeKindLabel(teeKind) : null
+                  }
                   compact={isMobile}
                   onClose={() => setCaddyOpen(false)}
                 />
@@ -2247,6 +2273,22 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     miss={profile.miss}
                   />
                 )}
+
+                {viewMode === 'prep' &&
+                  roundPrepPlan &&
+                  (!isMobile || sheetExpanded) && (
+                    <div className="border-b border-[var(--line-subtle)] px-2 py-2">
+                      <PrepRoundPlan
+                        plan={roundPrepPlan}
+                        activeHole={activeHole}
+                        onSelectHole={(n) => {
+                          setActiveHole(n);
+                          if (isMobile) setSheetExpanded(false);
+                        }}
+                        compact={isMobile}
+                      />
+                    </div>
+                  )}
 
                 {(!isMobile || sheetExpanded) && (
                   <>

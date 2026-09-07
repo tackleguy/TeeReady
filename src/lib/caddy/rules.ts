@@ -23,12 +23,16 @@ export function rulesCaddyTip(ctx: CaddyContext): CaddyResult {
       );
     }
   } else {
-    if (facts.tip) parts.push(facts.tip);
+    if (facts.prepFocusTip) parts.push(facts.prepFocusTip);
+    else if (facts.tip) parts.push(facts.tip);
     else if (facts.forecastNarrative) parts.push(facts.forecastNarrative);
     else {
       parts.push(
         `Hole ${facts.holeNumber}${facts.par != null ? ` · par ${facts.par}` : ''} · ${facts.yards} yd.`,
       );
+    }
+    if (facts.prepFocus) {
+      parts.push(`Focus: ${facts.prepFocus}.`);
     }
     if (facts.clubHint) {
       parts.push(
