@@ -396,6 +396,7 @@ export function TopNav({
             <NavItem to="/today" tutorialId="today">
               Today
             </NavItem>
+            <NavItem to="/weather">Weather</NavItem>
             <PlayMenu />
             <NavItem to="/courses" tutorialId="courses">
               Courses
@@ -445,6 +446,9 @@ export function TopNav({
       <nav className="flex items-center gap-4 overflow-x-auto border-t border-line/60 px-5 py-2 no-scrollbar md:hidden">
         <NavItem to="/today" mobile tutorialId="today">
           Today
+        </NavItem>
+        <NavItem to="/weather" mobile>
+          Weather
         </NavItem>
         <PlayMenu mobile />
         <NavItem to="/courses" mobile tutorialId="courses">

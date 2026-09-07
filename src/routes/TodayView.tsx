@@ -281,6 +281,12 @@ export function TodayView() {
                     Prep this window
                   </Link>
                   <Link
+                    to="/weather"
+                    className="inline-flex min-h-[44px] items-center rounded-lg border border-white/35 px-4 text-body font-semibold text-white hover:bg-white/10"
+                  >
+                    Radar &amp; forecast
+                  </Link>
+                  <Link
                     to="/courses"
                     className="inline-flex min-h-[44px] items-center rounded-lg border border-white/35 px-4 text-body font-semibold text-white hover:bg-white/10"
                   >

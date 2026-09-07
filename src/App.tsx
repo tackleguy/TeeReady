@@ -29,6 +29,9 @@ const CourseMapView = lazy(() =>
 const CoursesView = lazy(() =>
   import('./routes/CoursesView').then((m) => ({ default: m.CoursesView })),
 );
+const WeatherView = lazy(() =>
+  import('./routes/WeatherView').then((m) => ({ default: m.WeatherView })),
+);
 const GroupView = lazy(() =>
   import('./routes/GroupView').then((m) => ({ default: m.GroupView })),
 );
@@ -295,6 +298,14 @@ function Shell() {
             element={
               <RequireAuth>
                 <TodayView />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/weather"
+            element={
+              <RequireAuth>
+                <WeatherView />
               </RequireAuth>
             }
           />

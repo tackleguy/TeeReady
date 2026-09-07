@@ -1,7 +1,7 @@
 // Golf: OSM courses + satellite map + multi-model hole wind briefs.
 
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   BookOpen,
   ChevronDown,
@@ -78,7 +78,6 @@ import {
   loadGolfProfile,
   type GolfPlayerProfile,
 } from '../lib/golfProfile';
-import { weatherAppHref } from '../lib/golfApp';
 import { warmGolfCatalog, readGolfCatalog } from '../lib/golfCatalogPrefetch';
 import {
   courseHasGreenMeshes,
@@ -1156,14 +1155,14 @@ export function GolfView({ active = true }: { active?: boolean }) {
                 : 'Loading playable courses…'}
             </p>
           </div>
-          <a
-            href={weatherAppHref()}
+          <Link
+            to="/weather"
             className="rounded-lg p-2.5 text-[var(--ink-3)] hover:bg-white/5 hover:text-[var(--ink-1)]"
-            aria-label="WeatherStop weather"
-            title="WeatherStop weather"
+            aria-label="Weather and radar"
+            title="Weather and radar"
           >
             <CloudSun className="h-4 w-4" aria-hidden="true" />
-          </a>
+          </Link>
           {course ? (
             <button
               type="button"

@@ -17,6 +17,9 @@ export function prefetchRoute(path: string): void {
     case '/today':
       warm('today', () => import('../routes/TodayView'));
       break;
+    case '/weather':
+      warm('weather', () => import('../routes/WeatherView'));
+      break;
     case '/courses':
       warm('courses', () => import('../routes/CoursesView'));
       break;
