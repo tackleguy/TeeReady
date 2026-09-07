@@ -43,6 +43,7 @@ import {
   takeCourseFilter,
   takePendingCourse,
 } from '../lib/pendingCourse';
+import { stashWeatherCourse } from '../lib/weatherCourse';
 import {
   peekSatelliteTilesWarm,
 } from '../lib/golfSatelliteCache';
@@ -1160,6 +1161,9 @@ export function GolfView({ active = true }: { active?: boolean }) {
             className="rounded-lg p-2.5 text-[var(--ink-3)] hover:bg-white/5 hover:text-[var(--ink-1)]"
             aria-label="Weather and radar"
             title="Weather and radar"
+            onClick={() => {
+              if (course) stashWeatherCourse(course);
+            }}
           >
             <CloudSun className="h-4 w-4" aria-hidden="true" />
           </Link>

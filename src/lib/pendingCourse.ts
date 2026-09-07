@@ -11,11 +11,11 @@ export function stashPendingCourse(course: GolfCourseSummary): void {
   }
 }
 
-export function takePendingCourse(): GolfCourseSummary | null {
+/** Read without consuming — Weather / map can locate the stashed course. */
+export function peekPendingCourse(): GolfCourseSummary | null {
   try {
     const raw = sessionStorage.getItem(KEY);
     if (!raw) return null;
-    sessionStorage.removeItem(KEY);
     const parsed = JSON.parse(raw) as GolfCourseSummary;
     if (parsed?.id && parsed?.name && parsed.lat != null && parsed.lon != null) {
       return parsed;
@@ -24,6 +24,17 @@ export function takePendingCourse(): GolfCourseSummary | null {
     // ignore
   }
   return null;
+}
+
+export function takePendingCourse(): GolfCourseSummary | null {
+  const course = peekPendingCourse();
+  if (!course) return null;
+  try {
+    sessionStorage.removeItem(KEY);
+  } catch {
+    // ignore
+  }
+  return course;
 }
 
 /** Prefill Prep search from Today home-course chips. */
