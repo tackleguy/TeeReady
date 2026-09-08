@@ -160,7 +160,7 @@ export function WeatherView() {
 
       <section className="animate-fade-up [animation-delay:40ms]">
         <div className="mb-2 flex items-baseline justify-between gap-2">
-          <h2 className="text-title text-ink">Radar</h2>
+          <h2 className="text-title text-ink">Radar &amp; forecast</h2>
           {nowish ? (
             <p className="text-detail text-muted">
               Now-ish · {nowish.temp > 0 ? `${nowish.temp}°F · ` : ''}
@@ -168,6 +168,10 @@ export function WeatherView() {
             </p>
           ) : null}
         </div>
+        <p className="mb-2 text-detail text-muted">
+          Loop past radar into the next ~hour precipitation forecast at the
+          course pin.
+        </p>
         <WeatherRadarMap
           lat={loc.lat}
           lon={loc.lon}
