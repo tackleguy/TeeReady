@@ -1,20 +1,28 @@
-/** Basic MapLibre radar overlay via RainViewer tiles + course pin. */
+/** MapLibre radar overlay: past tiles + forecast (provider nowcast or advection). */
 
 import { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Flag, LocateFixed, Pause, Play, RefreshCw } from 'lucide-react';
 import {
+  generateAdvectionNowcast,
+  revokeNowcastFrames,
+} from '../../lib/radarNowcast';
+import {
   fetchRainViewerMaps,
   formatRadarTime,
+  lastPastFrameIndex,
+  radarPhaseLabel,
   radarTileUrl,
   type RadarFrame,
-  type RainViewerMaps,
+  type RadarMaps,
 } from '../../lib/rainviewer';
 
 const BASE_STYLE = 'https://tiles.openfreemap.org/styles/dark';
 const SRC_ID = 'teeready-radar';
 const LYR_ID = 'teeready-radar-lyr';
+const IMG_SRC_ID = 'teeready-radar-img';
+const IMG_LYR_ID = 'teeready-radar-img-lyr';
 const COURSE_ZOOM = 8.4;
 
 type Props = {
@@ -33,22 +41,53 @@ export function WeatherRadarMap({
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markerRef = useRef<maplibregl.Marker | null>(null);
-  const [maps, setMaps] = useState<RainViewerMaps | null>(null);
+  const mapsRef = useRef<RadarMaps | null>(null);
+  const extrapolatingRef = useRef(false);
+  const [maps, setMaps] = useState<RadarMaps | null>(null);
   const [frameIdx, setFrameIdx] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [extrapolating, setExtrapolating] = useState(false);
 
-  const applyFrame = (map: maplibregl.Map, host: string, frame: RadarFrame) => {
-    const tiles = [radarTileUrl(host, frame)];
+  mapsRef.current = maps;
+
+  const clearRadarLayers = (map: maplibregl.Map) => {
     if (map.getLayer(LYR_ID)) map.removeLayer(LYR_ID);
     if (map.getSource(SRC_ID)) map.removeSource(SRC_ID);
+    if (map.getLayer(IMG_LYR_ID)) map.removeLayer(IMG_LYR_ID);
+    if (map.getSource(IMG_SRC_ID)) map.removeSource(IMG_SRC_ID);
+  };
+
+  const applyFrame = (
+    map: maplibregl.Map,
+    data: RadarMaps,
+    frame: RadarFrame,
+  ) => {
+    clearRadarLayers(map);
+    const attribution = `Radar © <a href="${data.providerUrl}">${data.providerName}</a>`;
+
+    if (frame.imageUrl && frame.coordinates) {
+      map.addSource(IMG_SRC_ID, {
+        type: 'image',
+        url: frame.imageUrl,
+        coordinates: frame.coordinates,
+      });
+      map.addLayer({
+        id: IMG_LYR_ID,
+        type: 'raster',
+        source: IMG_SRC_ID,
+        paint: { 'raster-opacity': 0.78 },
+      });
+      return;
+    }
+
     map.addSource(SRC_ID, {
       type: 'raster',
-      tiles,
+      tiles: [radarTileUrl(data.host, frame)],
       tileSize: 256,
       maxzoom: 7,
-      attribution: 'Radar © <a href="https://www.rainviewer.com/">RainViewer</a>',
+      attribution,
     });
     map.addLayer({
       id: LYR_ID,
@@ -66,6 +105,29 @@ export function WeatherRadarMap({
       zoom: Math.max(map.getZoom(), COURSE_ZOOM),
       duration,
     });
+  };
+
+  const loadMaps = (signal?: AbortSignal) => {
+    setLoading(true);
+    setError(null);
+    const prev = mapsRef.current;
+    if (prev) {
+      revokeNowcastFrames(prev.frames.filter((f) => f.kind === 'nowcast'));
+    }
+    extrapolatingRef.current = false;
+    setExtrapolating(false);
+    return fetchRainViewerMaps(signal)
+      .then((data) => {
+        if (signal?.aborted) return;
+        setMaps(data);
+        setFrameIdx(lastPastFrameIndex(data.frames));
+        setLoading(false);
+      })
+      .catch((err: unknown) => {
+        if (signal?.aborted) return;
+        setError(err instanceof Error ? err.message : 'Radar unavailable');
+        setLoading(false);
+      });
   };
 
   useEffect(() => {
@@ -86,6 +148,10 @@ export function WeatherRadarMap({
     return () => {
       markerRef.current?.remove();
       markerRef.current = null;
+      const current = mapsRef.current;
+      if (current) {
+        revokeNowcastFrames(current.frames.filter((f) => f.kind === 'nowcast'));
+      }
       map.remove();
       mapRef.current = null;
     };
@@ -122,22 +188,64 @@ export function WeatherRadarMap({
 
   useEffect(() => {
     const ac = new AbortController();
-    setLoading(true);
-    setError(null);
-    fetchRainViewerMaps(ac.signal)
-      .then((data) => {
-        if (ac.signal.aborted) return;
-        setMaps(data);
-        setFrameIdx(Math.max(0, data.frames.length - 1));
-        setLoading(false);
-      })
-      .catch((err: unknown) => {
-        if (ac.signal.aborted) return;
-        setError(err instanceof Error ? err.message : 'Radar unavailable');
-        setLoading(false);
-      });
+    void loadMaps(ac.signal);
     return () => ac.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // When the provider only has past frames, extrapolate ~60 min of forecast.
+  useEffect(() => {
+    if (!maps || maps.hasProviderNowcast) return;
+    if (maps.frames.some((f) => f.kind === 'nowcast')) return;
+    if (extrapolatingRef.current) return;
+    const past = maps.frames.filter((f) => f.kind === 'past');
+    if (past.length < 2) return;
+
+    const ac = new AbortController();
+    extrapolatingRef.current = true;
+    setExtrapolating(true);
+    const host = maps.host;
+
+    generateAdvectionNowcast({
+      host,
+      pastFrames: past,
+      lat,
+      lon,
+      signal: ac.signal,
+    })
+      .then((nowcast) => {
+        if (ac.signal.aborted || !nowcast.length) {
+          extrapolatingRef.current = false;
+          setExtrapolating(false);
+          return;
+        }
+        setMaps((prev) => {
+          if (!prev || prev.host !== host) {
+            revokeNowcastFrames(nowcast);
+            return prev;
+          }
+          if (prev.frames.some((f) => f.kind === 'nowcast')) {
+            revokeNowcastFrames(nowcast);
+            return prev;
+          }
+          return {
+            ...prev,
+            frames: [...prev.frames.filter((f) => f.kind === 'past'), ...nowcast],
+          };
+        });
+        extrapolatingRef.current = false;
+        setExtrapolating(false);
+      })
+      .catch(() => {
+        if (ac.signal.aborted) return;
+        extrapolatingRef.current = false;
+        setExtrapolating(false);
+      });
+
+    return () => {
+      ac.abort();
+    };
+  }, [maps, lat, lon]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -145,7 +253,7 @@ export function WeatherRadarMap({
     if (!map || !data?.frames.length) return;
     const frame = data.frames[frameIdx];
     if (!frame) return;
-    const paint = () => applyFrame(map, data.host, frame);
+    const paint = () => applyFrame(map, data, frame);
     if (map.isStyleLoaded()) paint();
     else map.once('load', paint);
   }, [maps, frameIdx]);
@@ -163,6 +271,16 @@ export function WeatherRadarMap({
   }, [playing, maps]);
 
   const frame = maps?.frames[frameIdx] ?? null;
+  const phase = maps ? radarPhaseLabel(maps.frames, frameIdx) : null;
+  const lastPast = maps ? lastPastFrameIndex(maps.frames) : 0;
+  const hasForecast = !!maps?.frames.some((f) => f.kind === 'nowcast');
+  const forecastNote = maps?.hasProviderNowcast
+    ? 'includes provider nowcast'
+    : hasForecast
+      ? 'includes ~60 min extrapolated forecast'
+      : extrapolating
+        ? 'building forecast…'
+        : null;
 
   return (
     <div
@@ -201,6 +319,17 @@ export function WeatherRadarMap({
       </button>
 
       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/45 to-transparent px-3 pb-3 pt-10">
+        <div className="mb-1.5 flex items-center justify-between gap-2 text-[11px] text-white/70">
+          <span className="font-semibold tracking-wide text-white/85">
+            {phase ?? '—'}
+            {frame ? ` · ${formatRadarTime(frame.time)}` : ''}
+          </span>
+          {hasForecast ? (
+            <span className="tabular-nums text-white/55">
+              Past → Forecast
+            </span>
+          ) : null}
+        </div>
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -215,41 +344,36 @@ export function WeatherRadarMap({
               <Play className="h-4 w-4" aria-hidden />
             )}
           </button>
-          <input
-            type="range"
-            min={0}
-            max={Math.max(0, (maps?.frames.length ?? 1) - 1)}
-            value={frameIdx}
-            onChange={(e) => {
-              setPlaying(false);
-              setFrameIdx(Number(e.target.value));
-            }}
-            className="min-w-0 flex-1 accent-[var(--brand,#14713f)]"
-            aria-label="Radar frame"
-            disabled={!maps?.frames.length}
-          />
-          <span className="w-[4.5rem] shrink-0 text-right text-[12px] font-medium tabular-nums text-white/90">
-            {frame ? formatRadarTime(frame.time) : '—'}
-          </span>
+          <div className="relative min-w-0 flex-1">
+            <input
+              type="range"
+              min={0}
+              max={Math.max(0, (maps?.frames.length ?? 1) - 1)}
+              value={frameIdx}
+              onChange={(e) => {
+                setPlaying(false);
+                setFrameIdx(Number(e.target.value));
+              }}
+              className="w-full accent-[var(--brand,#14713f)]"
+              aria-label="Radar frame"
+              disabled={!maps?.frames.length}
+            />
+            {maps && maps.frames.length > 1 && hasForecast ? (
+              <span
+                className="pointer-events-none absolute top-1/2 h-2 w-px -translate-y-1/2 bg-white/70"
+                style={{
+                  left: `${(lastPast / Math.max(1, maps.frames.length - 1)) * 100}%`,
+                }}
+                aria-hidden
+              />
+            ) : null}
+          </div>
           <button
             type="button"
             className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/20 bg-white/10 text-white hover:bg-white/20"
             aria-label="Refresh radar"
             onClick={() => {
-              setLoading(true);
-              setError(null);
-              fetchRainViewerMaps()
-                .then((data) => {
-                  setMaps(data);
-                  setFrameIdx(Math.max(0, data.frames.length - 1));
-                  setLoading(false);
-                })
-                .catch((err: unknown) => {
-                  setError(
-                    err instanceof Error ? err.message : 'Radar unavailable',
-                  );
-                  setLoading(false);
-                });
+              void loadMaps();
             }}
           >
             <RefreshCw className="h-3.5 w-3.5" aria-hidden />
@@ -258,13 +382,14 @@ export function WeatherRadarMap({
         <p className="mt-1.5 text-[10px] text-white/55">
           Radar via{' '}
           <a
-            href="https://www.rainviewer.com/"
+            href={maps?.providerUrl ?? 'https://www.rainviewer.com/'}
             target="_blank"
             rel="noreferrer"
             className="underline decoration-white/30 hover:text-white/80"
           >
-            RainViewer
+            {maps?.providerName ?? 'RainViewer'}
           </a>
+          {forecastNote ? ` · ${forecastNote}` : null}
         </p>
       </div>
     </div>
