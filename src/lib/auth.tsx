@@ -14,6 +14,35 @@ import { prefetchAppShell } from './prefetchRoutes';
 import { setRememberMe } from './authStorage';
 import { supabase, supabaseConfigured } from './supabase';
 
+/** Local-only demo session when Supabase env is missing (DEV builds). */
+const DEV_DEMO =
+  import.meta.env.DEV && !supabaseConfigured
+    ? ({
+        user: {
+          id: 'dev-demo-user',
+          email: 'demo@teeready.local',
+          app_metadata: {},
+          user_metadata: { display_name: 'Max' },
+          aud: 'authenticated',
+          created_at: new Date(0).toISOString(),
+        } as User,
+        session: {
+          access_token: 'dev-demo',
+          refresh_token: 'dev-demo',
+          expires_in: 60 * 60 * 24,
+          token_type: 'bearer',
+          user: {
+            id: 'dev-demo-user',
+            email: 'demo@teeready.local',
+            app_metadata: {},
+            user_metadata: { display_name: 'Max' },
+            aud: 'authenticated',
+            created_at: new Date(0).toISOString(),
+          } as User,
+        } as Session,
+      } as const)
+    : null;
+
 export type AuthState = {
   configured: boolean;
   loading: boolean;
@@ -54,13 +83,16 @@ function friendlyAuthError(message: string): string {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
+  const [session, setSession] = useState<Session | null>(
+    () => DEV_DEMO?.session ?? null,
+  );
   const [loading, setLoading] = useState(supabaseConfigured);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!supabase) {
       setLoading(false);
+      if (DEV_DEMO) prefetchAppShell();
       return;
     }
     let cancelled = false;
@@ -177,7 +209,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<AuthState>(
     () => ({
-      configured: supabaseConfigured,
+      // Demo mode counts as configured so the app shell is reachable in DEV
+      // without Supabase credentials. Production still requires real auth.
+      configured: supabaseConfigured || Boolean(DEV_DEMO),
       loading,
       session,
       user: session?.user ?? null,

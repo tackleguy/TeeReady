@@ -288,13 +288,14 @@ export function SwingView() {
     <div className="mx-auto w-full max-w-lg px-5 pb-16 pt-6 md:px-8">
       <header className="mb-6">
         <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-faint">
-          Practice
+          AI Swing
         </p>
         <h1 className="mt-1 font-display text-[28px] font-bold tracking-[-0.03em] text-ink">
-          Swing analysis
+          Analyze my swing
         </h1>
         <p className="mt-2 text-[14px] text-muted">
-          Record on your phone from any angle. Pose is measured on-device — camera angle and zoom are detected automatically.
+          One clear fix first — then the full breakdown if you want it. Works
+          from any camera angle, on-device.
         </p>
       </header>
 
@@ -332,18 +333,18 @@ export function SwingView() {
             <button
               type="button"
               onClick={() => void startCamera()}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-[14px] font-bold text-white"
+              className="inline-flex min-h-[56px] items-center justify-center gap-2 rounded-hero bg-brand px-4 py-3.5 text-[16px] font-bold tracking-[-0.01em] text-white shadow-lift"
             >
-              <Camera className="h-4 w-4" strokeWidth={2.2} aria-hidden="true" />
-              Open camera
+              <Camera className="h-5 w-5" strokeWidth={2.2} aria-hidden="true" />
+              Analyze my swing
             </button>
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-line bg-surface px-4 py-3 text-[14px] font-semibold text-ink shadow-card"
+              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-line bg-surface px-4 py-3 text-[14px] font-semibold text-ink shadow-card"
             >
               <Upload className="h-4 w-4" strokeWidth={2.2} aria-hidden="true" />
-              Upload video
+              Upload a video instead
             </button>
             <input
               ref={fileRef}

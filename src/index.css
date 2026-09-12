@@ -974,6 +974,99 @@ textarea {
   flex: 1;
 }
 
+.app-shell.has-bottom-nav .app-main:not(.rounds):not(.landing) {
+  padding-bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px));
+}
+
+.app-shell.has-bottom-nav .app-main.rounds {
+  padding-bottom: calc(4.25rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* Mobile-first primary navigation */
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  padding: 0.35rem 0.5rem calc(0.35rem + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--line);
+  background: color-mix(in srgb, var(--canvas) 92%, transparent);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+}
+
+.bottom-nav-inner {
+  display: flex;
+  max-width: 36rem;
+  margin: 0 auto;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 0.15rem;
+}
+
+.bottom-nav-item {
+  position: relative;
+  display: flex;
+  min-height: 3.25rem;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  border-radius: 0.85rem;
+  padding: 0.35rem 0.2rem;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 140ms ease, background 140ms ease;
+}
+
+.bottom-nav-item:hover {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--brand) 6%, transparent);
+}
+
+.bottom-nav-item.is-active {
+  color: var(--brand);
+  background: var(--brand-soft);
+  font-weight: 600;
+}
+
+.bottom-nav-icon-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.bottom-nav-live {
+  position: absolute;
+  top: -1px;
+  right: -3px;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--canvas);
+}
+
+.bottom-nav-label {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+}
+
+@media (min-width: 768px) {
+  .bottom-nav-label {
+    font-size: 0.6875rem;
+  }
+}
+
 .app-shell.has-sidebar .app-main:not(.rounds):not(.landing) {
   max-width: none;
 }

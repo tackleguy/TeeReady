@@ -1,12 +1,21 @@
 import { useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Settings, UserRound, Users, X } from 'lucide-react';
+import {
+  CloudSun,
+  Flag,
+  Map,
+  Settings,
+  UserRound,
+  X,
+} from 'lucide-react';
 import { prefetchRoute } from '../lib/prefetchRoutes';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 
 export const SIDE_LINKS = [
   { label: 'Profile', href: '/profile', icon: UserRound },
-  { label: 'Social', href: '/group', icon: Users },
+  { label: 'Courses', href: '/courses', icon: Map },
+  { label: 'Weather', href: '/weather', icon: CloudSun },
+  { label: 'Prep round', href: '/rounds/prep', icon: Flag },
   { label: 'Settings', href: '/settings', icon: Settings },
 ] as const;
 
@@ -55,14 +64,14 @@ export function AppSidebar({ open, onClose, showRail = true }: Props) {
   return (
     <>
       {showRail ? (
-        <aside className="app-sidebar hidden md:flex" aria-label="Account">
-          <p className="app-sidebar-label">Account</p>
+        <aside className="app-sidebar hidden lg:flex" aria-label="More">
+          <p className="app-sidebar-label">More</p>
           <SideNav />
         </aside>
       ) : null}
 
       {open ? (
-        <div className="app-sidebar-drawer md:hidden">
+        <div className="app-sidebar-drawer lg:hidden">
           <button
             type="button"
             className="app-sidebar-backdrop"
@@ -78,13 +87,13 @@ export function AppSidebar({ open, onClose, showRail = true }: Props) {
           >
             <div className="flex items-center justify-between px-4 pb-3 pt-[max(1rem,env(safe-area-inset-top))]">
               <p id="app-sidebar-title" className="text-[13px] font-semibold text-ink">
-                Account
+                More
               </p>
               <button
                 type="button"
                 onClick={onClose}
-                className="grid h-8 w-8 place-items-center rounded-full text-muted hover:bg-canvas hover:text-ink"
-                aria-label="Close account menu"
+                className="grid h-11 w-11 place-items-center rounded-full text-muted hover:bg-canvas hover:text-ink"
+                aria-label="Close menu"
               >
                 <X className="h-4 w-4" aria-hidden />
               </button>
