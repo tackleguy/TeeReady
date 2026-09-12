@@ -163,10 +163,12 @@ export function WeatherView() {
           <h2 className="text-title text-ink">Radar</h2>
           {nowish ? (
             <p className="text-detail text-muted">
-              Now-ish · {nowish.temp > 0 ? `${nowish.temp}°F · ` : ''}
+              Past + forecast · {nowish.temp > 0 ? `${nowish.temp}°F · ` : ''}
               {nowish.wind}
             </p>
-          ) : null}
+          ) : (
+            <p className="text-detail text-muted">Past + ~60 min forecast</p>
+          )}
         </div>
         <WeatherRadarMap
           lat={loc.lat}

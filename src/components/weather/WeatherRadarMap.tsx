@@ -1,4 +1,4 @@
-/** Basic MapLibre radar overlay via RainViewer tiles + course pin. */
+/** MapLibre radar overlay: past loop + precipitation forecast. */
 
 import { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
@@ -6,8 +6,10 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { Flag, LocateFixed, Pause, Play, RefreshCw } from 'lucide-react';
 import {
   fetchRainViewerMaps,
-  formatRadarTime,
-  radarTileUrl,
+  formatRadarFrameLabel,
+  radarAttributionHtml,
+  radarProviderHref,
+  radarProviderName,
   type RadarFrame,
   type RainViewerMaps,
 } from '../../lib/rainviewer';
@@ -39,16 +41,20 @@ export function WeatherRadarMap({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const applyFrame = (map: maplibregl.Map, host: string, frame: RadarFrame) => {
-    const tiles = [radarTileUrl(host, frame)];
+  const applyFrame = (
+    map: maplibregl.Map,
+    frame: RadarFrame,
+    provider: RainViewerMaps['provider'],
+  ) => {
+    const tiles = [frame.tiles];
     if (map.getLayer(LYR_ID)) map.removeLayer(LYR_ID);
     if (map.getSource(SRC_ID)) map.removeSource(SRC_ID);
     map.addSource(SRC_ID, {
       type: 'raster',
       tiles,
       tileSize: 256,
-      maxzoom: 7,
-      attribution: 'Radar © <a href="https://www.rainviewer.com/">RainViewer</a>',
+      maxzoom: provider === 'iem' ? 8 : 7,
+      attribution: radarAttributionHtml(provider),
     });
     map.addLayer({
       id: LYR_ID,
@@ -66,6 +72,28 @@ export function WeatherRadarMap({
       zoom: Math.max(map.getZoom(), COURSE_ZOOM),
       duration,
     });
+  };
+
+  const adoptMaps = (data: RainViewerMaps) => {
+    setMaps(data);
+    // Start on “now” (latest observed), then the loop walks into forecast.
+    setFrameIdx(data.nowIndex);
+  };
+
+  const loadMaps = (signal?: AbortSignal) => {
+    setLoading(true);
+    setError(null);
+    return fetchRainViewerMaps({ lat, lon, signal })
+      .then((data) => {
+        if (signal?.aborted) return;
+        adoptMaps(data);
+        setLoading(false);
+      })
+      .catch((err: unknown) => {
+        if (signal?.aborted) return;
+        setError(err instanceof Error ? err.message : 'Radar unavailable');
+        setLoading(false);
+      });
   };
 
   useEffect(() => {
@@ -122,22 +150,11 @@ export function WeatherRadarMap({
 
   useEffect(() => {
     const ac = new AbortController();
-    setLoading(true);
-    setError(null);
-    fetchRainViewerMaps(ac.signal)
-      .then((data) => {
-        if (ac.signal.aborted) return;
-        setMaps(data);
-        setFrameIdx(Math.max(0, data.frames.length - 1));
-        setLoading(false);
-      })
-      .catch((err: unknown) => {
-        if (ac.signal.aborted) return;
-        setError(err instanceof Error ? err.message : 'Radar unavailable');
-        setLoading(false);
-      });
+    void loadMaps(ac.signal);
     return () => ac.abort();
-  }, []);
+    // Reload when the course moves between CONUS / non-CONUS coverage.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lat, lon]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -145,24 +162,30 @@ export function WeatherRadarMap({
     if (!map || !data?.frames.length) return;
     const frame = data.frames[frameIdx];
     if (!frame) return;
-    const paint = () => applyFrame(map, data.host, frame);
+    const paint = () => applyFrame(map, frame, data.provider);
     if (map.isStyleLoaded()) paint();
     else map.once('load', paint);
   }, [maps, frameIdx]);
 
   useEffect(() => {
     if (!playing || !maps?.frames.length) return;
-    const id = window.setInterval(() => {
+    const frame = maps.frames[frameIdx];
+    // Linger a beat on “now”, then step a bit slower through forecast.
+    const ms =
+      frame?.kind === 'nowcast' ? 700 : frameIdx === maps.nowIndex ? 900 : 500;
+    const id = window.setTimeout(() => {
       setFrameIdx((i) => {
         const n = maps.frames.length;
         if (i >= n - 1) return 0;
         return i + 1;
       });
-    }, 550);
-    return () => window.clearInterval(id);
-  }, [playing, maps]);
+    }, ms);
+    return () => window.clearTimeout(id);
+  }, [playing, maps, frameIdx]);
 
   const frame = maps?.frames[frameIdx] ?? null;
+  const hasForecast = maps?.frames.some((f) => f.kind === 'nowcast') ?? false;
+  const provider = maps?.provider ?? 'iem';
 
   return (
     <div
@@ -228,42 +251,48 @@ export function WeatherRadarMap({
             aria-label="Radar frame"
             disabled={!maps?.frames.length}
           />
-          <span className="w-[4.5rem] shrink-0 text-right text-[12px] font-medium tabular-nums text-white/90">
-            {frame ? formatRadarTime(frame.time) : '—'}
-          </span>
+          <div className="flex w-[7.25rem] shrink-0 flex-col items-end gap-0.5">
+            {frame?.kind === 'nowcast' ? (
+              <span className="text-[9px] font-semibold uppercase tracking-wide text-emerald-300/90">
+                Forecast
+              </span>
+            ) : frame && maps && frameIdx === maps.nowIndex ? (
+              <span className="text-[9px] font-semibold uppercase tracking-wide text-white/70">
+                Now
+              </span>
+            ) : (
+              <span className="text-[9px] font-semibold uppercase tracking-wide text-white/45">
+                Past
+              </span>
+            )}
+            <span className="text-right text-[12px] font-medium tabular-nums text-white/90">
+              {frame ? formatRadarFrameLabel(frame) : '—'}
+            </span>
+          </div>
           <button
             type="button"
             className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/20 bg-white/10 text-white hover:bg-white/20"
             aria-label="Refresh radar"
             onClick={() => {
-              setLoading(true);
-              setError(null);
-              fetchRainViewerMaps()
-                .then((data) => {
-                  setMaps(data);
-                  setFrameIdx(Math.max(0, data.frames.length - 1));
-                  setLoading(false);
-                })
-                .catch((err: unknown) => {
-                  setError(
-                    err instanceof Error ? err.message : 'Radar unavailable',
-                  );
-                  setLoading(false);
-                });
+              void loadMaps();
             }}
           >
             <RefreshCw className="h-3.5 w-3.5" aria-hidden />
           </button>
         </div>
         <p className="mt-1.5 text-[10px] text-white/55">
-          Radar via{' '}
+          {hasForecast
+            ? provider === 'iem'
+              ? 'Past NEXRAD + HRRR forecast via '
+              : 'Past radar + precipitation forecast via '
+            : 'Radar via '}
           <a
-            href="https://www.rainviewer.com/"
+            href={radarProviderHref(provider)}
             target="_blank"
             rel="noreferrer"
             className="underline decoration-white/30 hover:text-white/80"
           >
-            RainViewer
+            {radarProviderName(provider)}
           </a>
         </p>
       </div>
