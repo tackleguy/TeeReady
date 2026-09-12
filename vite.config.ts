@@ -174,7 +174,12 @@ export default defineConfig(({ mode }) => {
       changeOrigin: true,
       secure: true,
       bypass(req) {
-        const url = req.url?.split('?')[0];
+        const url = req.url?.split('?')[0] ?? '';
+        // Keep Vite module graph for shared api/ TypeScript sources local —
+        // otherwise /api/* would be forwarded to production and 404 in DEV.
+        if (/\.(?:[cm]?[jt]sx?|json)(?:$|\?)/.test(url)) {
+          return req.url;
+        }
         if (url === '/api/caddy') return req.url || '/api/caddy';
       },
     };
