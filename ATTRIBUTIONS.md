@@ -18,6 +18,8 @@ used.
 | **Photon** — photon.komoot.io | Place + golf course lookup | Free geocoder over OpenStreetMap data (ODbL) by komoot; keep usage light and cache results. |
 | **Esri World Imagery** — server.arcgisonline.com | High-detail satellite basemap | Cite Esri, Maxar, Earthstar Geographics, and the GIS User Community. Terms: Esri attribution requirements. |
 | **Nominatim** — via `/api/geocode` | Location search fallback | ODbL; usage policy applies (`https://operations.osmfoundation.org/policies/nominatim/`) — max 1 req/sec. |
+| **RainViewer** — api.rainviewer.com / tilecache.rainviewer.com | Weather radar map tiles (past frames) on the Weather page | Free Weather Maps API for personal/educational use; nowcast discontinued for free tier (Jan 2026). Credit RainViewer. |
+| **LibreWXR** — api.librewxr.net | Preferred RainViewer-compatible radar maps when available (past + nowcast) | CC BY 4.0 for the public API composite (`https://librewxr.net/`). Credit LibreWXR. When LibreWXR is unavailable, TeeReady extrapolates ~60 minutes of forecast locally from recent RainViewer composites. |
 
 ## Bundled JavaScript dependencies
 

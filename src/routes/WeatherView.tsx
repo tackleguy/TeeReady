@@ -168,6 +168,9 @@ export function WeatherView() {
             </p>
           ) : null}
         </div>
+        <p className="mb-2 text-detail text-muted">
+          Past loop plus ~60 minutes of forecast precipitation motion.
+        </p>
         <WeatherRadarMap
           lat={loc.lat}
           lon={loc.lon}
