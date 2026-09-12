@@ -30,6 +30,7 @@
     "test:geo-accuracy": "tsx scripts/test-geo-accuracy.ts",
     "import:golf-scorecards": "node scripts/import-opengolf-scorecards.mjs",
     "build:golf-catalog": "node scripts/build-golf-catalog.mjs",
+    "build:world-catalog": "node scripts/build-world-catalog.mjs",
     "build:green-meshes": "node scripts/build-green-meshes.mjs",
     "build:course-assets": "node scripts/build-course-asset-packs.mjs",
     "build:course-assets:manifest": "node scripts/build-course-asset-packs.mjs --manifest-only",

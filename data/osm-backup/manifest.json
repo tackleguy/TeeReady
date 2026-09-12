@@ -1,1 +1,1 @@
-{"version":1,"builtAt":"2026-09-07T14:52:47.359Z","osm":{"count":10695,"dir":"public/golf/osm"},"holes":{"count":3283,"dir":"public/golf/holes"}}
+{"version":1,"builtAt":"2026-09-12T06:24:17.499Z","purpose":"Local OSM server-failure fallback. Runtime reads public/golf/osm + public/golf/holes.","osm":{"dir":"public/golf/osm","count":17001},"holes":{"dir":"public/golf/holes","count":9152},"reRun":"node scripts/backup-osm-data.mjs --skip-existing"}

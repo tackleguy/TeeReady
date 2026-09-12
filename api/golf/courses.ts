@@ -1,8 +1,8 @@
 // Golf course discovery.
 //
 // Nearby: Photon reverse search around the selected city.
-// Catalog: static OpenGolf bulk index (15k+ U.S. courses) for instant name
-// search, then Photon / Nominatim / live OpenGolf as fallbacks.
+// Catalog: static OpenGolf U.S. dump + international OSM catalog for instant
+// name search, then Photon / Nominatim / live OpenGolf as fallbacks.
 // Query variants ("golf", "country club", …) catch park complexes that
 // OSM names by hole course rather than park (e.g. Griffith → Wilson/Harding).
 

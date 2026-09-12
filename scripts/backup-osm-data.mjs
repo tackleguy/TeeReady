@@ -41,6 +41,7 @@ const DATA_DIR = join(ROOT, 'data/osm-backup');
 const VENUES_COURSES = join(ROOT, 'src/data/venues.courses.json');
 const VENUES_USER = join(ROOT, 'src/data/venues.user.json');
 const CATALOG_PATH = join(ROOT, 'api/golf/_data/usCatalog.json');
+const WORLD_CATALOG_PATH = join(ROOT, 'api/golf/_data/worldCatalog.json');
 const API_BASE = (
   process.env.HOLES_API_BASE || 'https://tee-ready.vercel.app'
 ).replace(/\/+$/, '');
@@ -511,11 +512,19 @@ function isFullyLocalized(slug) {
 }
 
 function loadCatalogCourses({ limit, missingOnly, needsOsm, needsHoles, shard }) {
-  if (!existsSync(CATALOG_PATH)) return [];
-  const cat = readJson(CATALOG_PATH);
+  const rows = [];
+  for (const path of [CATALOG_PATH, WORLD_CATALOG_PATH]) {
+    if (!existsSync(path)) continue;
+    try {
+      rows.push(...readJson(path));
+    } catch {
+      /* skip */
+    }
+  }
+  if (!rows.length) return [];
   const seen = new Set();
   const out = [];
-  const sorted = [...cat].sort((a, b) => {
+  const sorted = [...rows].sort((a, b) => {
     if ((b.q ?? 0) !== (a.q ?? 0)) return (b.q ?? 0) - (a.q ?? 0);
     if ((b.o ? 1 : 0) !== (a.o ? 1 : 0)) return (b.o ? 1 : 0) - (a.o ? 1 : 0);
     return String(a.n ?? '').localeCompare(String(b.n ?? ''));
@@ -540,6 +549,7 @@ function loadCatalogCourses({ limit, missingOnly, needsOsm, needsHoles, shard })
       lon: c.lo,
       holes: c.h ?? 18,
       radiusM: 2200,
+      country: c.co ?? 'US',
     });
   }
   return out;

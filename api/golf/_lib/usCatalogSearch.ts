@@ -3,6 +3,10 @@ import { classifyVenueKind } from './venueKind';
 import { formatCatalogRegion } from './catalogRegion';
 import { isStandardHoleCount } from './courseType';
 import { US_CATALOG, type UsCatalogEntry } from '../_data/usCatalog';
+import { WORLD_CATALOG } from '../_data/worldCatalog';
+
+/** US OpenGolf dump + international OSM catalog. */
+const ALL_CATALOG: UsCatalogEntry[] = [...US_CATALOG, ...WORLD_CATALOG];
 
 /** Catalog rows with a known non-9/18 layout are excluded from search. */
 function catalogLayoutOk(entry: UsCatalogEntry): boolean {
@@ -164,7 +168,7 @@ function entryToSummary(
 }
 
 function findCatalogEntry(summary: GolfCourseSummary): UsCatalogEntry | undefined {
-  return US_CATALOG.find(
+  return ALL_CATALOG.find(
     (entry) =>
       (entry.o != null && entry.o === summary.osmId) ||
       (entry.g != null && summary.id === `opengolf/${entry.g}`) ||
@@ -186,7 +190,7 @@ export function expandCatalogFacilitySiblings(
   for (const course of courses) {
     const entry = findCatalogEntry(course);
     if (!entry?.fac) continue;
-    for (const sibling of US_CATALOG) {
+    for (const sibling of ALL_CATALOG) {
       if (sibling.fac !== entry.fac) continue;
       const summary = entryToSummary(sibling, lat, lon);
       if (seen.has(summary.id)) continue;
@@ -209,7 +213,7 @@ export function searchUsCatalog(
   const tokens = queryTokens(q);
   const ranked: Array<{ course: GolfCourseSummary; score: number }> = [];
 
-  for (const entry of US_CATALOG) {
+  for (const entry of ALL_CATALOG) {
     if (!catalogLayoutOk(entry)) continue;
     const score = catalogMatchScore(entry, needle, tokens);
     if (score >= 9) continue;
@@ -249,7 +253,7 @@ export function nearbyUsCatalog(
   const radiusMi = (radiusM / 1000) * MI_PER_KM;
   const out: GolfCourseSummary[] = [];
 
-  for (const entry of US_CATALOG) {
+  for (const entry of ALL_CATALOG) {
     if (!catalogLayoutOk(entry)) continue;
     const d = haversineMi(lat, lon, entry.la, entry.lo);
     if (d > radiusMi) continue;
