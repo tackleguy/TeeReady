@@ -108,10 +108,10 @@ export function GpsMod({
           >
             <Satellite className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
           </span>
-          <span className="text-[18px] font-bold tabular-nums text-ink">
+          <span className="text-[28px] font-bold leading-none tracking-[-0.03em] tabular-nums text-ink sm:text-[32px]">
             {midYd != null ? midYd : '—'}
-            <span className="ml-0.5 text-[13px] font-semibold text-muted">
-              yd
+            <span className="ml-1 text-[13px] font-semibold tracking-normal text-muted">
+              YDS
             </span>
           </span>
           {approximate || stale ? (
@@ -230,10 +230,10 @@ export function GpsMod({
               <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-faint">
                 {holeNumber != null ? `Hole ${holeNumber}` : 'Hole'}
               </div>
-              <div className="mt-0.5 text-[22px] font-bold tabular text-ink">
+              <div className="mt-0.5 text-[40px] font-bold leading-none tracking-[-0.04em] tabular text-ink">
                 {holeYards != null ? holeYards : '—'}
-                <span className="ml-0.5 text-[13px] font-semibold text-muted">
-                  yd
+                <span className="ml-1 text-[14px] font-semibold tracking-normal text-muted">
+                  YDS
                 </span>
               </div>
               <p className="mt-1 text-[13px] text-faint">
@@ -267,10 +267,16 @@ export function GpsMod({
                   <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-faint">
                     {label}
                   </div>
-                  <div className="mt-0.5 text-[18px] font-bold tabular text-ink">
+                  <div
+                    className={`mt-0.5 font-bold tabular text-ink ${
+                      label === 'Mid'
+                        ? 'text-[32px] leading-none tracking-[-0.04em]'
+                        : 'text-[20px] leading-none tracking-[-0.02em]'
+                    }`}
+                  >
                     {yd != null ? yd : '—'}
-                    <span className="ml-0.5 text-[13px] font-semibold text-muted">
-                      yd
+                    <span className="ml-0.5 text-[11px] font-semibold tracking-normal text-muted">
+                      YDS
                     </span>
                   </div>
                 </div>

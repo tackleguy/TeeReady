@@ -7,6 +7,7 @@ import {
   useLocation,
 } from 'react-router-dom';
 import { AppSidebar } from './components/AppSidebar';
+import { BottomNav } from './components/BottomNav';
 import { InstallPrompt } from './components/InstallPrompt';
 import { SearchBar } from './components/radar/SearchBar';
 import { ThemeBoot } from './components/ThemeBoot';
@@ -214,9 +215,12 @@ function Shell() {
   const showAppChrome = Boolean(user) && !isLanding;
   const fullBleedMain = isRounds || isCourseMap || isCourses;
   const showSideRail = showAppChrome && !isRounds && !isCourseMap;
+  const showBottomNav = showAppChrome;
 
   return (
-    <div className={`app-shell ${showSideRail ? 'has-sidebar' : ''}`}>
+    <div
+      className={`app-shell ${showSideRail ? 'has-sidebar' : ''} ${showBottomNav ? 'has-bottom-nav' : ''}`}
+    >
       <ThemeBoot />
       <a href="#main-content" className="skip-link">
         Skip to main content
@@ -411,6 +415,7 @@ function Shell() {
         </Suspense>
         </main>
       </div>
+      {showBottomNav ? <BottomNav /> : null}
       {showAppChrome ? <InstallPrompt /> : null}
       {showAppChrome ? <AppTutorial active={showAppChrome} /> : null}
     </div>

@@ -28,6 +28,7 @@ import {
 import type { GolfCourseSummary } from '../lib/golf';
 import { loadGolfProfile } from '../lib/golfProfile';
 import { stashPendingCourse } from '../lib/pendingCourse';
+import { GROUP } from '../lib/mock';
 
 function statusDot(status: MemberRow['status']) {
   if (status === 'playing') return 'bg-brand';
@@ -75,16 +76,38 @@ function Lobby({
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
       <div>
         <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-brand">
-          Multiplayer
+          Social
         </span>
         <h1 className="mt-2 text-[28px] font-bold tracking-[-0.03em] text-ink">
-          Pick a game mode
+          Golf with friends
         </h1>
         <p className="mt-1 text-[14px] text-muted">
-          Skins, stroke, match, scramble, or Stableford — then invite your
-          group with a code.
+          Follow rounds, share scores, and play skins, stroke, match, scramble,
+          or Stableford — invite with a code.
         </p>
       </div>
+
+      <section className="rounded-card bg-surface p-4 shadow-card">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h2 className="text-[15px] font-bold text-ink">Feed</h2>
+          <span className="text-[11px] font-medium text-muted">Local preview</span>
+        </div>
+        <ul className="divide-y divide-line">
+          {GROUP.activity.slice(0, 4).map((item) => (
+            <li key={item.id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-soft font-mono text-[11px] font-bold text-brand">
+                {item.initials}
+              </span>
+              <div className="min-w-0">
+                <p className="text-[13px] leading-snug text-ink">
+                  <span className="font-semibold">{item.name}</span> {item.text}
+                </p>
+                <p className="mt-0.5 text-[11px] text-muted">{item.ago}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <div className="flex rounded-xl border border-line p-0.5">
         <button

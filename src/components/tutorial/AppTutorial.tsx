@@ -10,11 +10,11 @@ import {
   markTutorialDone,
 } from '../../lib/tutorial';
 
-type StepId = 'welcome' | 'today' | 'courses' | 'play' | 'progress' | 'ready';
+type StepId = 'welcome' | 'home' | 'gps' | 'swing' | 'social' | 'stats' | 'ready';
 
 type Step = {
   id: StepId;
-  /** Matches data-tutorial on TopNav; null = centered card */
+  /** Matches data-tutorial on BottomNav / chrome; null = centered card */
   target: string | null;
   title: string;
   body: string;
@@ -25,44 +25,51 @@ const STEPS: Step[] = [
   {
     id: 'welcome',
     target: null,
-    title: 'Your round, from conditions to the pin',
-    body: 'TeeReady is your caddie: check when to play, prep miss lines, then range live on GPS — without losing the round when you switch tabs.',
+    title: 'GPS + AI coach + social golf',
+    body: 'TeeReady keeps the powerful stuff simple: start a round, see your number, fix one swing issue, and share with friends.',
     primary: 'Show me around',
   },
   {
-    id: 'today',
+    id: 'home',
     target: 'today',
-    title: 'Start with Today',
-    body: 'Playability by the hour — wind, wetness, and the best window before you tee off.',
+    title: 'Home is your launch pad',
+    body: 'One tap Start Round, plus nearby courses, handicap, last round, and a nudge when your game needs attention.',
     primary: 'Next',
   },
   {
-    id: 'courses',
-    target: 'courses',
-    title: 'Find your course',
-    body: 'Browse nearby layouts, open the map, or jump straight into Prep for the one you’re playing.',
-    primary: 'Next',
-  },
-  {
-    id: 'play',
+    id: 'gps',
     target: 'play',
-    title: 'Prep, then GPS',
-    body: 'Play opens Prep (miss lines, wind-adjusted yardages) and GPS (live ranging that keeps running in the background).',
+    title: 'GPS is the main event',
+    body: 'Huge yardages to front, middle, and back — tap the map for hazards, then enter score with big controls.',
     primary: 'Next',
   },
   {
-    id: 'progress',
+    id: 'swing',
     target: 'progress',
-    title: 'Look back and improve',
-    body: 'Progress holds your stats after a round and swing analysis when you want to work on mechanics.',
+    title: 'AI Swing, simply',
+    body: 'Analyze My Swing gives you one biggest issue, one drill, and one thing to practice — details stay collapsed.',
+    primary: 'Next',
+  },
+  {
+    id: 'social',
+    target: 'social',
+    title: 'Golf social',
+    body: 'Follow friends, post rounds, and run skins or stroke play with a share code — not a generic feed.',
+    primary: 'Next',
+  },
+  {
+    id: 'stats',
+    target: 'stats',
+    title: 'Stats that coach',
+    body: 'Handicap, averages, trends, and where you lose strokes on par 3s, 4s, and 5s.',
     primary: 'Next',
   },
   {
     id: 'ready',
     target: null,
-    title: 'You’re ready to prep',
-    body: 'Open Prep for a hole plan tied to your bag and miss. Profile, social, and settings live in the sidebar and avatar menu.',
-    primary: 'Open Prep',
+    title: 'You’re ready to play',
+    body: 'Profile and settings live behind the avatar. Bottom tabs keep Home, GPS, AI Swing, Social, and Stats one thumb away.',
+    primary: 'Start a round',
   },
 ];
 
@@ -218,7 +225,7 @@ export function AppTutorial({ active }: { active: boolean }) {
   const goNext = () => {
     if (stepIndex >= STEPS.length - 1) {
       finish('completed');
-      navigate('/rounds/prep');
+      navigate('/rounds/gps');
       return;
     }
     setStepIndex((i) => i + 1);
