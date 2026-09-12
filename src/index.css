@@ -878,6 +878,96 @@ textarea {
   color: var(--ink);
 }
 
+/* Primary mobile IA — Home | GPS | AI Swing | Social | Stats */
+.bottom-tab-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.15rem;
+  padding: 0.35rem 0.4rem calc(0.35rem + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.bottom-tab {
+  display: flex;
+  min-height: 3.25rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  border-radius: 0.85rem;
+  padding: 0.35rem 0.2rem;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.15s ease, background 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bottom-tab:hover {
+  color: var(--ink);
+}
+
+.bottom-tab.is-active {
+  color: var(--brand);
+  background: var(--brand-soft);
+}
+
+.bottom-tab-icon-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.bottom-tab-icon {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.bottom-tab-label {
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+}
+
+.bottom-tab-live {
+  position: absolute;
+  top: -1px;
+  right: -3px;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--surface);
+}
+
+.app-shell.has-bottom-tabs .app-main:not(.rounds):not(.landing) {
+  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 900px) {
+  .bottom-tab-bar {
+    position: fixed;
+    left: 50%;
+    bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    width: min(34rem, calc(100vw - 2rem));
+    transform: translateX(-50%);
+    border: 1px solid var(--line);
+    border-radius: 1.25rem;
+    padding: 0.4rem;
+    box-shadow: var(--shadow-lift);
+  }
+
+  .app-shell.has-bottom-tabs .app-main:not(.rounds):not(.landing) {
+    padding-bottom: 6rem;
+  }
+}
+
 .app-body {
   display: flex;
   width: 100%;

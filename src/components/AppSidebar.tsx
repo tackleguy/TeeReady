@@ -1,12 +1,19 @@
 import { useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Settings, UserRound, Users, X } from 'lucide-react';
+import {
+  CloudSun,
+  Flag,
+  Settings,
+  UserRound,
+  X,
+} from 'lucide-react';
 import { prefetchRoute } from '../lib/prefetchRoutes';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 
 export const SIDE_LINKS = [
   { label: 'Profile', href: '/profile', icon: UserRound },
-  { label: 'Social', href: '/group', icon: Users },
+  { label: 'Courses', href: '/courses', icon: Flag },
+  { label: 'Weather', href: '/weather', icon: CloudSun },
   { label: 'Settings', href: '/settings', icon: Settings },
 ] as const;
 

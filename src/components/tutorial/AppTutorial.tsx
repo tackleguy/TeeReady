@@ -10,11 +10,11 @@ import {
   markTutorialDone,
 } from '../../lib/tutorial';
 
-type StepId = 'welcome' | 'today' | 'courses' | 'play' | 'progress' | 'ready';
+type StepId = 'welcome' | 'home' | 'start' | 'tabs' | 'ready';
 
 type Step = {
   id: StepId;
-  /** Matches data-tutorial on TopNav; null = centered card */
+  /** Matches data-tutorial attrs; null = centered card */
   target: string | null;
   title: string;
   body: string;
@@ -25,43 +25,36 @@ const STEPS: Step[] = [
   {
     id: 'welcome',
     target: null,
-    title: 'Your round, from conditions to the pin',
-    body: 'TeeReady is your caddie: check when to play, prep miss lines, then range live on GPS — without losing the round when you switch tabs.',
+    title: 'GPS, AI Swing, Social, Stats — simple',
+    body: 'TeeReady keeps powerful golf tools under five tabs. Start a round in a tap, range with huge yardages, then review swings and stats when you’re done.',
     primary: 'Show me around',
   },
   {
-    id: 'today',
-    target: 'today',
-    title: 'Start with Today',
-    body: 'Playability by the hour — wind, wetness, and the best window before you tee off.',
+    id: 'home',
+    target: 'bottom-tabs',
+    title: 'Bottom navigation',
+    body: 'Home · GPS · AI Swing · Social · Stats. Profile and settings live behind the avatar in the top corner.',
     primary: 'Next',
   },
   {
-    id: 'courses',
-    target: 'courses',
-    title: 'Find your course',
-    body: 'Browse nearby layouts, open the map, or jump straight into Prep for the one you’re playing.',
+    id: 'start',
+    target: 'start-round',
+    title: 'Start Round',
+    body: 'The big button on Home launches Prep or resumes a live GPS round. Nearby courses and last scores sit just below — nothing to hunt for.',
     primary: 'Next',
   },
   {
-    id: 'play',
+    id: 'tabs',
     target: 'play',
-    title: 'Prep, then GPS',
-    body: 'Play opens Prep (miss lines, wind-adjusted yardages) and GPS (live ranging that keeps running in the background).',
-    primary: 'Next',
-  },
-  {
-    id: 'progress',
-    target: 'progress',
-    title: 'Look back and improve',
-    body: 'Progress holds your stats after a round and swing analysis when you want to work on mechanics.',
+    title: 'Prep when you want depth',
+    body: 'Desktop Prep is still one tap away in the top bar. On course, GPS hides the tab bar so the map and yardages stay full-bleed.',
     primary: 'Next',
   },
   {
     id: 'ready',
     target: null,
-    title: 'You’re ready to prep',
-    body: 'Open Prep for a hole plan tied to your bag and miss. Profile, social, and settings live in the sidebar and avatar menu.',
+    title: 'You’re ready to play',
+    body: 'Tap Start Round, pick a course, and walk to the first tee. Your round stays alive if you leave GPS.',
     primary: 'Open Prep',
   },
 ];

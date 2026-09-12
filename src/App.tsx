@@ -7,6 +7,7 @@ import {
   useLocation,
 } from 'react-router-dom';
 import { AppSidebar } from './components/AppSidebar';
+import { BottomTabBar } from './components/BottomTabBar';
 import { InstallPrompt } from './components/InstallPrompt';
 import { SearchBar } from './components/radar/SearchBar';
 import { ThemeBoot } from './components/ThemeBoot';
@@ -181,6 +182,7 @@ function Shell() {
   const [place, setPlace] = useState(() => defaultSearchLoc().name || CURRENT_LOCATION);
   const [pickingLocation, setPickingLocation] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const hideBottomTabs = isRounds || isCourseMap;
 
   useEffect(() => {
     const useIdle = typeof requestIdleCallback === 'function';
@@ -214,9 +216,14 @@ function Shell() {
   const showAppChrome = Boolean(user) && !isLanding;
   const fullBleedMain = isRounds || isCourseMap || isCourses;
   const showSideRail = showAppChrome && !isRounds && !isCourseMap;
+  const showTabs = showAppChrome && !hideBottomTabs;
 
   return (
-    <div className={`app-shell ${showSideRail ? 'has-sidebar' : ''}`}>
+    <div
+      className={`app-shell ${showSideRail ? 'has-sidebar' : ''} ${
+        showTabs ? 'has-bottom-tabs' : ''
+      }`}
+    >
       <ThemeBoot />
       <a href="#main-content" className="skip-link">
         Skip to main content
@@ -225,7 +232,6 @@ function Shell() {
         <TopNav
           locationLabel={place}
           onLocationClick={() => setPickingLocation((v) => !v)}
-          onOpenSidebar={() => setSidebarOpen(true)}
         />
       ) : null}
 
@@ -411,6 +417,7 @@ function Shell() {
         </Suspense>
         </main>
       </div>
+      {showTabs ? <BottomTabBar /> : null}
       {showAppChrome ? <InstallPrompt /> : null}
       {showAppChrome ? <AppTutorial active={showAppChrome} /> : null}
     </div>

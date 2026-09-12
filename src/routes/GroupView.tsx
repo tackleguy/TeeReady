@@ -28,6 +28,7 @@ import {
 import type { GolfCourseSummary } from '../lib/golf';
 import { loadGolfProfile } from '../lib/golfProfile';
 import { stashPendingCourse } from '../lib/pendingCourse';
+import { SocialFeedPanel } from '../components/social/SocialFeedPanel';
 
 function statusDot(status: MemberRow['status']) {
   if (status === 'playing') return 'bg-brand';
@@ -72,14 +73,25 @@ function Lobby({
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-8">
+      <div>
+        <h1 className="text-[28px] font-bold tracking-[-0.03em] text-ink">
+          Social
+        </h1>
+        <p className="mt-1 text-[14px] text-muted">
+          Follow your game, celebrate rounds, and play together.
+        </p>
+      </div>
+
+      <SocialFeedPanel />
+
       <div>
         <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-brand">
-          Multiplayer
+          Play together
         </span>
-        <h1 className="mt-2 text-[28px] font-bold tracking-[-0.03em] text-ink">
+        <h2 className="mt-2 text-[22px] font-bold tracking-[-0.03em] text-ink">
           Pick a game mode
-        </h1>
+        </h2>
         <p className="mt-1 text-[14px] text-muted">
           Skins, stroke, match, scramble, or Stableford — then invite your
           group with a code.

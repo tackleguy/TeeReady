@@ -128,17 +128,25 @@ export function ProfileView() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-[28px] font-bold tracking-[-0.03em] text-ink">
-            Golfer info
+            Profile
           </h1>
           <p className="mt-1 text-[14px] text-muted">
-            Handicap, bag stocks, and home courses — used in Rounds and Today.
+            Handicap, bag, and home courses — used across GPS and Home.
           </p>
         </div>
-        {savedFlash ? (
-          <span className="shrink-0 rounded-full bg-brand-soft px-3 py-1.5 text-[12px] font-semibold text-brand">
-            {savedFlash}
-          </span>
-        ) : null}
+        <div className="flex shrink-0 flex-col items-end gap-2">
+          <Link
+            to="/settings"
+            className="rounded-full border border-line bg-surface px-3 py-1.5 text-[12px] font-semibold text-muted shadow-card hover:text-ink"
+          >
+            Settings
+          </Link>
+          {savedFlash ? (
+            <span className="rounded-full bg-brand-soft px-3 py-1.5 text-[12px] font-semibold text-brand">
+              {savedFlash}
+            </span>
+          ) : null}
+        </div>
       </div>
 
       {showQuestionnairePrompt ? (

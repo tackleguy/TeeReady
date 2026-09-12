@@ -108,10 +108,10 @@ export function GpsMod({
           >
             <Satellite className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
           </span>
-          <span className="text-[18px] font-bold tabular-nums text-ink">
+          <span className="text-[22px] font-bold tabular-nums text-ink">
             {midYd != null ? midYd : '—'}
             <span className="ml-0.5 text-[13px] font-semibold text-muted">
-              yd
+              YDS
             </span>
           </span>
           {approximate || stale ? (
@@ -242,39 +242,51 @@ export function GpsMod({
               </p>
             </div>
           ) : (
-            <div className="mt-2 grid grid-cols-3 gap-1.5">
-              {offCourse ? (
-                <p className="col-span-3 mb-0.5 text-center text-[13px] text-faint">
-                  Away from course · tee yardages
-                </p>
-              ) : null}
-              {frontBackVerified === false ? (
-                <p className="col-span-3 mb-0.5 text-center text-[13px] text-faint">
-                  Mid from mapped green · front/back need a green outline
-                </p>
-              ) : null}
-              {(
-                [
-                  ['Front', distances?.front],
-                  ['Mid', distances?.mid],
-                  ['Back', distances?.back],
-                ] as const
-              ).map(([label, yd]) => (
-                <div
-                  key={label}
-                  className="rounded-lg bg-canvas px-1.5 py-2 text-center"
-                >
-                  <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-faint">
-                    {label}
-                  </div>
-                  <div className="mt-0.5 text-[18px] font-bold tabular text-ink">
-                    {yd != null ? yd : '—'}
-                    <span className="ml-0.5 text-[13px] font-semibold text-muted">
-                      yd
-                    </span>
-                  </div>
+            <div className="mt-2">
+              <div className="rounded-xl bg-canvas px-3 py-3 text-center">
+                <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">
+                  {holeNumber != null ? `Hole ${holeNumber}` : 'Center'}
                 </div>
-              ))}
+                <div className="mt-0.5 text-[42px] font-bold leading-none tabular tracking-[-0.04em] text-ink sm:text-[48px]">
+                  {distances?.mid != null ? distances.mid : '—'}
+                  <span className="ml-1 text-[16px] font-semibold tracking-normal text-muted">
+                    YDS
+                  </span>
+                </div>
+              </div>
+              <div className="mt-1.5 grid grid-cols-2 gap-1.5">
+                {offCourse ? (
+                  <p className="col-span-2 mb-0.5 text-center text-[13px] text-faint">
+                    Away from course · tee yardages
+                  </p>
+                ) : null}
+                {frontBackVerified === false ? (
+                  <p className="col-span-2 mb-0.5 text-center text-[13px] text-faint">
+                    Mid from mapped green · front/back need a green outline
+                  </p>
+                ) : null}
+                {(
+                  [
+                    ['Front', distances?.front],
+                    ['Back', distances?.back],
+                  ] as const
+                ).map(([label, yd]) => (
+                  <div
+                    key={label}
+                    className="rounded-lg bg-canvas px-1.5 py-2 text-center"
+                  >
+                    <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-faint">
+                      {label}
+                    </div>
+                    <div className="mt-0.5 text-[22px] font-bold tabular text-ink">
+                      {yd != null ? yd : '—'}
+                      <span className="ml-0.5 text-[13px] font-semibold text-muted">
+                        yd
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

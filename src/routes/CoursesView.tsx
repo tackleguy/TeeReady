@@ -136,7 +136,7 @@ function CourseCard({
           {course.holes != null ? <span>{course.holes} holes</span> : null}
           {course.par != null ? <span>Par {course.par}</span> : null}
         </div>
-        <div className="flex shrink-0 items-center gap-1">
+        <div className="flex shrink-0 items-center gap-2">
           <button
             type="button"
             onClick={() => {
@@ -145,14 +145,14 @@ function CourseCard({
             }}
             disabled={busy != null}
             aria-busy={busy === 'gps'}
-            className="inline-flex min-h-[44px] items-center gap-1 px-2 text-[13px] font-semibold text-muted hover:text-ink disabled:opacity-60"
+            className="inline-flex min-h-[44px] items-center gap-1 rounded-xl bg-brand px-3 text-[12px] font-bold uppercase tracking-wide text-white disabled:opacity-60"
           >
             {busy === 'gps' ? (
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             ) : (
               <>
                 <Navigation className="h-3.5 w-3.5" strokeWidth={2.2} aria-hidden="true" />
-                GPS
+                Start
               </>
             )}
           </button>
@@ -164,7 +164,7 @@ function CourseCard({
             }}
             disabled={busy != null}
             aria-busy={busy === 'prep'}
-            className="inline-flex min-h-[44px] items-center gap-1 px-2 text-[13px] font-semibold text-brand disabled:opacity-60"
+            className="inline-flex min-h-[44px] items-center gap-1 px-2 text-[13px] font-semibold text-muted hover:text-ink disabled:opacity-60"
           >
             {busy === 'prep' ? (
               <>
