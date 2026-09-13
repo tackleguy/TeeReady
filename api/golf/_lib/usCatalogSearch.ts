@@ -3,10 +3,13 @@ import { classifyVenueKind } from './venueKind';
 import { formatCatalogRegion } from './catalogRegion';
 import { isStandardHoleCount } from './courseType';
 import { US_CATALOG, type UsCatalogEntry } from '../_data/usCatalog';
-import { WORLD_CATALOG } from '../_data/worldCatalog';
 
-/** US OpenGolf dump + international OSM catalog. */
-const ALL_CATALOG: UsCatalogEntry[] = [...US_CATALOG, ...WORLD_CATALOG];
+/**
+ * US OpenGolf dump only in the Edge bundle.
+ * World/OSM catalog lives at `public/golf/catalog.world.json` and must not be
+ * imported here — bundling it pushes `api/golf/courses` over the 1 MB Edge limit.
+ */
+const ALL_CATALOG: UsCatalogEntry[] = US_CATALOG;
 
 /** Catalog rows with a known non-9/18 layout are excluded from search. */
 function catalogLayoutOk(entry: UsCatalogEntry): boolean {
