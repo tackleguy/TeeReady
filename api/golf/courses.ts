@@ -1,8 +1,9 @@
 // Golf course discovery.
 //
 // Nearby: Photon reverse search around the selected city.
-// Catalog: static OpenGolf U.S. dump + international OSM catalog for instant
-// name search, then Photon / Nominatim / live OpenGolf as fallbacks.
+// Catalog: static OpenGolf U.S. dump for instant name search, then Photon /
+// Nominatim / live OpenGolf as fallbacks. (World catalog is served as a static
+// asset — bundling it into this Edge function exceeds the 1 MB size limit.)
 // Query variants ("golf", "country club", …) catch park complexes that
 // OSM names by hole course rather than park (e.g. Griffith → Wilson/Harding).
 
