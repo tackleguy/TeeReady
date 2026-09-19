@@ -2,23 +2,6 @@
 
 create schema if not exists private;
 
-create or replace function private.teeready_is_member(gid uuid)
-returns boolean
-language sql
-stable
-security definer
-set search_path to 'public'
-as $$
-  select exists (
-    select 1
-    from public.teeready_group_members m
-    where m.group_id = gid and m.user_id = auth.uid()
-  );
-$$;
-
-revoke all on function private.teeready_is_member(uuid) from public;
-grant execute on function private.teeready_is_member(uuid) to authenticated;
-
 create table if not exists public.teeready_groups (
   id uuid primary key default gen_random_uuid(),
   name text not null,
@@ -66,6 +49,25 @@ alter table public.teeready_groups enable row level security;
 alter table public.teeready_group_members enable row level security;
 alter table public.teeready_group_messages enable row level security;
 
+create or replace function private.teeready_is_member(gid uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path to 'public'
+as $$
+  select exists (
+    select 1
+    from public.teeready_group_members m
+    where m.group_id = gid and m.user_id = auth.uid()
+  );
+$$;
+
+revoke all on function private.teeready_is_member(uuid) from public;
+grant execute on function private.teeready_is_member(uuid) to authenticated;
+
+grant usage on schema private to authenticated;
+
 create policy teeready_groups_select
   on public.teeready_groups for select
   using (private.teeready_is_member(id) or created_by = auth.uid());
@@ -76,8 +78,8 @@ create policy teeready_groups_insert
 
 create policy teeready_groups_update
   on public.teeready_groups for update
-  using (created_by = auth.uid() or private.teeready_is_member(id))
-  with check (created_by = auth.uid() or private.teeready_is_member(id));
+  using (created_by = auth.uid())
+  with check (created_by = auth.uid());
 
 create policy teeready_members_select
   on public.teeready_group_members for select
@@ -99,7 +101,7 @@ create policy teeready_members_insert
 create policy teeready_members_update
   on public.teeready_group_members for update
   using (user_id = auth.uid() and private.teeready_is_member(group_id))
-  with check (user_id = auth.uid());
+  with check (user_id = auth.uid() and private.teeready_is_member(group_id));
 
 create policy teeready_members_delete
   on public.teeready_group_members for delete

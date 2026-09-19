@@ -64,7 +64,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     let cancelled = false;
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(({ data, error: sessionError }) => {
+      if (sessionError) throw sessionError;
       if (cancelled) return;
       setSession(data.session);
       setLoading(false);
@@ -77,8 +78,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           })
           .catch(() => undefined);
       }
+    }).catch(() => {
+      if (cancelled) return;
+      setSession(null);
+      setLoading(false);
+      setError('Unable to restore your session. Please sign in again.');
     });
     const { data: sub } = supabase.auth.onAuthStateChange((event, next) => {
+      if (cancelled) return;
       setSession(next);
       setLoading(false);
       if (
@@ -86,12 +93,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         next?.user?.id
       ) {
         prefetchAppShell();
-        void syncProfileOnSignIn(next.user.id)
-          .then(() => {
-            window.dispatchEvent(new Event('teeready-display-changed'));
-            window.dispatchEvent(new Event('teeready-profile-changed'));
-          })
-          .catch(() => undefined);
+        const userId = next.user.id;
+        setTimeout(() => {
+          if (cancelled) return;
+          void syncProfileOnSignIn(userId)
+            .then(() => {
+              window.dispatchEvent(new Event('teeready-display-changed'));
+              window.dispatchEvent(new Event('teeready-profile-changed'));
+            })
+            .catch(() => undefined);
+        }, 0);
       }
     });
     return () => {
@@ -170,7 +181,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(async () => {
     if (!supabase) return;
     setError(null);
-    await supabase.auth.signOut();
+    const { error: signOutError } = await supabase.auth.signOut();
+    if (signOutError) setError(friendlyAuthError(signOutError.message));
   }, []);
 
   const clearError = useCallback(() => setError(null), []);

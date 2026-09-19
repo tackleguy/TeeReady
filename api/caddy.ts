@@ -1,3 +1,4 @@
+import { readJson } from './_lib/http';
 /**
  * Same-origin caddie completions.
  * Local (Vite / vercel dev): Ollama on 127.0.0.1:11434.
@@ -65,8 +66,9 @@ export default async function handler(req: Request): Promise<Response> {
 
   let body: unknown;
   try {
-    body = await req.json();
-  } catch {
+    body = await readJson(req);
+  } catch (error) {
+    if (error instanceof Response) return error;
     return json({ error: 'invalid json' }, 400);
   }
 

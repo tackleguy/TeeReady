@@ -1,3 +1,4 @@
+import { allowMethods, numeric, validCoordinates, errorResponse } from '../_lib/http';
 // Golf course discovery.
 //
 // Nearby: Photon reverse search around the selected city.
@@ -816,12 +817,14 @@ function expandWithOsmSiblings(
 }
 
 export default async function handler(req: Request): Promise<Response> {
+  const methodError = allowMethods(req, ['GET']);
+  if (methodError) return methodError;
   const limited = rateLimit(req, RATE.courses);
   if (limited) return limited;
 
   const { searchParams } = new URL(req.url);
-  const rawLat = Number(searchParams.get('lat'));
-  const rawLon = Number(searchParams.get('lon'));
+  const rawLat = numeric(searchParams.get('lat'));
+  const rawLon = numeric(searchParams.get('lon'));
   const q = searchParams.get('q')?.trim() ?? '';
   const radiusM = Math.min(
     Math.max(Number(searchParams.get('radius') ?? 40_000), 2000),
@@ -832,7 +835,9 @@ export default async function handler(req: Request): Promise<Response> {
     60,
   );
 
-  if (!Number.isFinite(rawLat) || !Number.isFinite(rawLon)) {
+  if (!Number.isFinite(radiusM) || !Number.isFinite(limit) || q.length > 200) return errorResponse('invalid search parameters');
+
+  if (!validCoordinates(rawLat, rawLon)) {
     return errResponse('lat and lon required', 400);
   }
 

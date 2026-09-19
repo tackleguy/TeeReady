@@ -8,7 +8,7 @@
 // This is intentionally simple — no Workbox dependency, no precache
 // manifest. Vite's hashed asset filenames give us cache-busting for free.
 
-const VERSION = 'teeready-v27';
+const VERSION = 'teeready-v28';
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 const SATELLITE_CACHE = `${VERSION}-satellite`;
@@ -42,6 +42,7 @@ self.addEventListener('activate', (event) => {
           keys
             .filter(
               (k) =>
+                k.startsWith('teeready-') &&
                 k !== STATIC_CACHE &&
                 k !== RUNTIME_CACHE &&
                 k !== SATELLITE_CACHE,
@@ -55,7 +56,7 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const req = event.request;
-  if (req.method !== 'GET') return;
+  if (req.method !== 'GET' || req.headers.has('authorization') || req.cache === 'no-store') return;
 
   const url = new URL(req.url);
   if (url.origin !== location.origin) {
@@ -74,7 +75,7 @@ self.addEventListener('fetch', (event) => {
         url.host,
       )
     ) {
-      event.respondWith(staleWhileRevalidate(req));
+      event.respondWith(staleWhileRevalidate(req, event));
     }
     return;
   }
@@ -123,8 +124,8 @@ self.addEventListener('fetch', (event) => {
 
   // API or weather data — stale-while-revalidate.
   if (BYPASS_CACHE.test(url.pathname)) return;
-  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/data/')) {
-    event.respondWith(staleWhileRevalidate(req));
+  if (/^\/api\/(?:geocode|golf\/(?:courses|holes|hours|ensemble|notebook))$/.test(url.pathname) || url.pathname.startsWith('/data/')) {
+    event.respondWith(staleWhileRevalidate(req, event));
   }
 });
 
@@ -148,9 +149,9 @@ async function cacheFirst(request) {
   if (cached) return cached;
   try {
     const fresh = await fetch(request);
-    if (fresh && fresh.ok) {
+    if (fresh && canCache(fresh)) {
       const cache = await caches.open(STATIC_CACHE);
-      cache.put(request, fresh.clone());
+      await cache.put(request, fresh.clone()).catch(() => undefined);
     }
     return fresh;
   } catch (err) {
@@ -167,7 +168,7 @@ async function cacheFirstSatellite(request) {
   try {
     const fresh = await fetch(request);
     if (fresh && (fresh.ok || fresh.type === 'opaque')) {
-      await cache.put(request, fresh.clone());
+      await cache.put(request, fresh.clone()).catch(() => undefined);
       // Bound satellite cache growth (ArcGIS tiles are large).
       const keys = await cache.keys();
       if (keys.length > 400) {
@@ -181,13 +182,15 @@ async function cacheFirstSatellite(request) {
   }
 }
 
-async function staleWhileRevalidate(request) {
+async function staleWhileRevalidate(request, event) {
   const cache = await caches.open(RUNTIME_CACHE);
   const cached = await cache.match(request);
   const networked = fetch(request)
     .then(async (response) => {
-      if (response && response.status === 200 && response.type !== 'opaque') {
-        await putStamped(cache, request, response);
+      if (response && canCache(response)) {
+        await putStamped(cache, request, response).catch(() => undefined);
+      } else {
+        await cache.delete(request).catch(() => undefined);
       }
       return response;
     })
@@ -197,7 +200,7 @@ async function staleWhileRevalidate(request) {
   // background; otherwise wait for the network and only fall back to a
   // stale body if it fails.
   if (cached && ageOf(cached) < API_MAX_AGE_MS) {
-    networked.catch(() => undefined);
+    event.waitUntil(networked.then(() => undefined));
     return cached;
   }
 
@@ -207,6 +210,12 @@ async function staleWhileRevalidate(request) {
   // resolves to undefined on a failed fetch and makes respondWith throw
   // instead of surfacing the offline response.
   return cached ?? new Response('offline', { status: 503 });
+}
+
+function canCache(response) {
+  return response.status === 200 && response.type !== 'opaque'
+    && !/(?:no-store|private|no-cache)/i.test(response.headers.get('cache-control') || '')
+    && !response.headers.has('set-cookie');
 }
 
 function ageOf(response) {

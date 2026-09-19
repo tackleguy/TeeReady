@@ -1,3 +1,4 @@
+import { allowMethods, errorResponse } from './_lib/http';
 // Worldwide city geocoder for map and Golf location search.
 // Photon (primary) + Nominatim (fallback). Open-Meteo geocoding removed.
 
@@ -88,6 +89,7 @@ async function photon(q: string, limit: number): Promise<GeocodeRow[]> {
     lang: 'en',
   });
   const res = await fetch(`https://photon.komoot.io/api/?${params}`, {
+    signal: AbortSignal.timeout(8_000),
     headers: { Accept: 'application/json' },
   });
   if (!res.ok) throw new Error(`Photon ${res.status}`);
@@ -138,6 +140,7 @@ async function nominatim(q: string, limit: number): Promise<GeocodeRow[]> {
     const res = await fetch(
       `https://nominatim.openstreetmap.org/search?${params}`,
       {
+        signal: AbortSignal.timeout(8_000),
         headers: {
           Accept: 'application/json',
           'User-Agent':
@@ -163,6 +166,8 @@ async function nominatim(q: string, limit: number): Promise<GeocodeRow[]> {
 }
 
 export default async function handler(req: Request): Promise<Response> {
+  const methodError = allowMethods(req, ['GET']);
+  if (methodError) return methodError;
   const limited = rateLimit(req, RATE.geocode);
   if (limited) return limited;
 
@@ -172,7 +177,7 @@ export default async function handler(req: Request): Promise<Response> {
     Math.max(Number(searchParams.get('limit') ?? 6), 1),
     10,
   );
-  if (!q) return new Response('missing q', { status: 400 });
+  if (!q || q.length > 200 || !Number.isFinite(limit)) return errorResponse('invalid search parameters');
 
   const coordinates = coordinateResult(q);
   if (coordinates) return json(coordinates);

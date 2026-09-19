@@ -1,3 +1,4 @@
+import { allowMethods, numeric, validCoordinates } from '../_lib/http';
 // Daytime hourly playability for Today — NWS + MET Norway ensemble wind,
 // MET Norway temp/precip. Never returns fabricated hours.
 
@@ -180,14 +181,16 @@ export function confidenceLabel(c: HoursConfidence): string {
 }
 
 export default async function handler(req: Request): Promise<Response> {
+  const methodError = allowMethods(req, ['GET']);
+  if (methodError) return methodError;
   const limited = rateLimit(req, RATE.hours);
   if (limited) return limited;
 
   const sp = new URL(req.url).searchParams;
-  const lat = Number(sp.get('lat'));
-  const lon = Number(sp.get('lon'));
+  const lat = numeric(sp.get('lat'));
+  const lon = numeric(sp.get('lon'));
 
-  if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+  if (!validCoordinates(lat, lon)) {
     return new Response(JSON.stringify({ error: 'lat and lon required' }), {
       status: 400,
       headers: {

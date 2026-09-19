@@ -1,3 +1,4 @@
+import { allowMethods, numeric, validCoordinates, errorResponse } from '../_lib/http';
 // Hole geometry (yards + bearing) from OSM golf tags.
 //
 // Strategy (fast → thorough):
@@ -341,10 +342,6 @@ function polyContainScore(hole: GolfHole, ring: Pt[]): number {
     (pointInPolygon(hole.green, ring) ? 2 : 0) +
     (pointInPolygon(hole.tee, ring) ? 1 : 0)
   );
-}
-
-function bestOf(group: GolfHole[]): GolfHole {
-  return [...group].sort((a, b) => holeQuality(b) - holeQuality(a))[0]!;
 }
 
 /**
@@ -897,7 +894,6 @@ function upsertTee(
   });
 }
 
-const MAX_HOLES = 54;
 
 function autoLoops(holes: GolfHole[]): GolfHole[] {
   const withNums = holes.map((h) => {
@@ -1141,18 +1137,6 @@ function holesFromWays(els: OsmElement[], polys: CoursePoly[] = []): GolfHole[] 
   }
 
   return holes;
-}
-
-/** Nine rotation labels from bulk scorecards — not separate courses. */
-function isCompleteLayout(holes: GolfHole[]): boolean {
-  if (!holes.length) return false;
-  const nums = holes.map((h) => h.number).filter((n) => Number.isFinite(n));
-  if (nums.length !== 9 && nums.length !== 18) return false;
-  const target = nums.length;
-  for (let n = 1; n <= target; n += 1) {
-    if (!nums.includes(n)) return false;
-  }
-  return true;
 }
 
 function holesFromTeeGreen(
@@ -1442,12 +1426,14 @@ function aroundScope(lat: number, lon: number, radiusM: number): string {
 }
 
 export default async function handler(req: Request): Promise<Response> {
+  const methodError = allowMethods(req, ['GET']);
+  if (methodError) return methodError;
   const limited = rateLimit(req, RATE.holes);
   if (limited) return limited;
 
   const { searchParams } = new URL(req.url);
-  const rawLat = Number(searchParams.get('lat'));
-  const rawLon = Number(searchParams.get('lon'));
+  const rawLat = numeric(searchParams.get('lat'));
+  const rawLon = numeric(searchParams.get('lon'));
   const bbox = parseBbox(searchParams.get('bbox'));
   const osmType = searchParams.get('osmType');
   const osmId = Number(searchParams.get('osmId'));
@@ -1457,7 +1443,9 @@ export default async function handler(req: Request): Promise<Response> {
     4000,
   );
 
-  if (!Number.isFinite(rawLat) || !Number.isFinite(rawLon)) {
+  if (!Number.isFinite(radiusM) || courseName.length > 200) return errorResponse('invalid search parameters');
+
+  if (!validCoordinates(rawLat, rawLon)) {
     return errResponse('lat and lon required', 400);
   }
 

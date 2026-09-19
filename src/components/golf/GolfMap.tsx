@@ -2,7 +2,7 @@
 // wind-bent shot path for the selected hole.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { GOLF_SATELLITE_STYLE, type GolfHole } from '../../lib/golf';
 import {

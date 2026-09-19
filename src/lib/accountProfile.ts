@@ -17,6 +17,7 @@ import {
 import { loadDisplayProfile, saveDisplayProfile } from './mock';
 import { loadTheme } from './theme';
 import { supabase } from './supabase';
+import { bindProfileOwner, profileOwner } from './profileOwnership';
 
 export type CloudProfile = {
   id: string;
@@ -114,6 +115,7 @@ export async function fetchCloudProfile(
 
 export async function upsertCloudProfile(userId: string): Promise<void> {
   if (!supabase) return;
+  if (profileOwner() !== userId) throw new Error('Profile account has changed');
   const display = loadDisplayProfile();
   const golf = loadGolfProfile() ?? DEFAULT_PROFILE;
   const theme = loadTheme();
@@ -150,9 +152,34 @@ function remoteLooksPopulated(remote: CloudProfile): boolean {
   );
 }
 
+const pendingSyncs = new Map<string, Promise<void>>();
+
+/** Coalesce the initial session and SIGNED_IN notifications. */
+export function syncProfileOnSignIn(userId: string): Promise<void> {
+  const pending = pendingSyncs.get(userId);
+  if (pending && profileOwner() === userId) return pending;
+  const sync = syncProfile(userId).finally(() => {
+    if (pendingSyncs.get(userId) === sync) pendingSyncs.delete(userId);
+  });
+  pendingSyncs.set(userId, sync);
+  return sync;
+}
+
 /** Pull cloud → local when signing in; seed cloud from local if empty. */
-export async function syncProfileOnSignIn(userId: string): Promise<void> {
+async function syncProfile(userId: string): Promise<void> {
+  const resetLocal = () => {
+    saveGolfProfile({ ...DEFAULT_PROFILE }, { fromCloudAt: 1 });
+    saveDisplayProfile({ name: 'Golfer' });
+  };
+  const sameAccount = bindProfileOwner(userId, resetLocal);
   const remote = await fetchCloudProfile(userId);
+  // An account switch may have happened while the request was in flight.
+  if (profileOwner() !== userId) return;
+  if (!sameAccount && remote && remoteLooksPopulated(remote)) {
+    resetLocal();
+    applyCloudProfile(remote);
+    return;
+  }
   const local = loadGolfProfile();
   const localStamp = golfProfileUpdatedAt();
   const remoteStamp = remote?.updated_at

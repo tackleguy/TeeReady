@@ -34,7 +34,16 @@ async function check(path) {
   const url = `${BASE}${path}`;
   try {
     const res = await fetch(url, { redirect: 'manual' });
-    const ok = res.status >= 200 && res.status < 400;
+    let ok = res.status === 200;
+    const contentType = res.headers.get('content-type') || '';
+    if (path.endsWith('.json') || path.endsWith('.webmanifest')) {
+      ok &&= /json|manifest/.test(contentType);
+      if (ok) await res.json();
+    } else if (path.endsWith('.svg')) {
+      ok &&= contentType.includes('image/svg+xml');
+    } else {
+      ok &&= contentType.includes('text/html') && (await res.text()).includes('id="root"');
+    }
     return { path, status: res.status, ok };
   } catch (err) {
     return { path, status: 0, ok: false, err: String(err.message || err) };

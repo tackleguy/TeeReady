@@ -6,7 +6,7 @@
  * basemap has no terrain DEM, so we pin altitude to 0 and keep only relative
  * relief — using absolute USGS elev here floats greens ~100m above the map.
  */
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { loadThree } from '../../lib/loadThree';
 import type { GreenMeshCourse } from '../../lib/golfGreen3d';
 

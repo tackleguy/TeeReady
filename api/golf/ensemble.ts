@@ -1,3 +1,4 @@
+import { allowMethods, numeric, validCoordinates, errorResponse, readJson, validHoles } from '../_lib/http';
 // Multi-provider wind ensemble + hole-by-hole golf brief.
 // Median wind speed (vector mean cancels when sources disagree) vs each
 // hole’s tee→green bearing. Plays-like includes wind, slope, and altitude.
@@ -210,6 +211,8 @@ async function gatherTurf(
 }
 
 export default async function handler(req: Request): Promise<Response> {
+  const methodError = allowMethods(req, ['GET', 'POST']);
+  if (methodError) return methodError;
   const limited = rateLimit(req, RATE.ensemble);
   if (limited) return limited;
 
@@ -225,23 +228,27 @@ export default async function handler(req: Request): Promise<Response> {
   };
 
   if (req.method === 'POST') {
-    const body = (await req.json().catch(() => null)) as {
+    const parsed = await readJson(req).catch((error: Response) => error);
+    if (parsed instanceof Response) return parsed;
+    const body = parsed as {
       lat?: number;
       lon?: number;
       hour?: number;
       holes?: HoleIn[];
       player?: PlayerIn;
     } | null;
-    if (!body) {
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
       return new Response(JSON.stringify({ error: 'invalid JSON' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
     }
-    lat = Number(body.lat);
-    lon = Number(body.lon);
+    lat = numeric(body.lat);
+    lon = numeric(body.lon);
     hour = Number(body.hour ?? 0);
-    holes = Array.isArray(body.holes) ? body.holes : [];
+    if (body.holes !== undefined && !Array.isArray(body.holes)) return errorResponse('invalid holes');
+    holes = body.holes ?? [];
+    if (!validHoles(holes)) return errorResponse('invalid holes');
     if (holes.length > MAX_POST_HOLES) {
       return new Response(
         JSON.stringify({
@@ -264,18 +271,19 @@ export default async function handler(req: Request): Promise<Response> {
     }
   } else {
     const sp = new URL(req.url).searchParams;
-    lat = Number(sp.get('lat'));
-    lon = Number(sp.get('lon'));
+    lat = numeric(sp.get('lat'));
+    lon = numeric(sp.get('lon'));
     hour = Number(sp.get('hour') ?? 0);
   }
 
-  if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+  if (!validCoordinates(lat, lon)) {
     return new Response(JSON.stringify({ error: 'lat and lon required' }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' },
     });
   }
 
+  if (!Number.isInteger(hour) || hour < 0 || hour > 167) return errorResponse('hour must be between 0 and 167');
   const providers = providersFor(lat, lon);
   const hourOffsets = [hour];
 

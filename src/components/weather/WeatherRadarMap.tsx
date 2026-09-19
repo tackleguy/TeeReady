@@ -1,7 +1,7 @@
 /** Basic MapLibre radar overlay via RainViewer tiles + course pin. */
 
 import { useEffect, useRef, useState } from 'react';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Flag, LocateFixed, Pause, Play, RefreshCw } from 'lucide-react';
 import {

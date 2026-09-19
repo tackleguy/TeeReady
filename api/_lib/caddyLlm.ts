@@ -5,7 +5,6 @@ export const MAX_CADDY_USER = 10_000;
 
 const GATEWAY = 'https://ai-gateway.vercel.sh/v1';
 const GROQ = 'https://api.groq.com/openai/v1';
-const OLLAMA_DEFAULT = 'http://127.0.0.1:11434/v1';
 const LMSTUDIO_DEFAULT = 'http://127.0.0.1:1234/v1';
 
 const GATEWAY_MODELS = [

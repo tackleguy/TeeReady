@@ -42,22 +42,26 @@
     "smoke": "node scripts/smoke-mobile.mjs",
     "test:mobile": "node scripts/mobile-audit.mjs",
     "audit:contrast": "node scripts/contrast-audit.mjs",
-    "prebuild": "node scripts/build-golf-catalog.mjs && node scripts/contrast-audit.mjs"
+    "prebuild": "node scripts/build-golf-catalog.mjs && node scripts/contrast-audit.mjs",
+    "test": "node --import tsx --test tests/*.test.ts tests/*.test.mjs",
+    "check": "npm run typecheck && npm test && npm run verify:caddy && npm run verify:swing-coach && npm run verify:swing-guide && npm run verify:swing-guide-fallback && npm run test:swing-plan && npm run test:launch-simulation && npm run test:range",
+    "test:browser": "node scripts/test-browser.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^1.0.1",
     "@supabase/supabase-js": "^2.112.3",
     "lucide-react": "^0.469.0",
-    "maplibre-gl": "^4.7.1",
+    "maplibre-gl": "^6.10.0",
     "motion": "^13.1.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.28.0",
+    "react-router-dom": "^7.18.4",
     "swr": "^2.2.5",
     "three": "^0.172.0",
     "zustand": "^5.0.2"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@types/node": "^22.10.5",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
@@ -67,8 +71,11 @@
     "playwright": "^1.62.1",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.16",
-    "tsx": "^4.19.2",
+    "tsx": "^4.23.13",
     "typescript": "^5.7.2",
     "vite": "^6.4.2"
+  },
+  "engines": {
+    "node": ">=22.12.0"
   }
 }

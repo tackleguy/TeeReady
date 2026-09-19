@@ -1,3 +1,4 @@
+import { allowMethods, numeric, validCoordinates, errorResponse, readJson, validHoles } from '../_lib/http';
 // 7-day afternoon wind from configured providers + yardage-book numbers.
 
 import {
@@ -160,6 +161,8 @@ async function providerWeekAfternoons(
 }
 
 export default async function handler(req: Request): Promise<Response> {
+  const methodError = allowMethods(req, ['GET', 'POST']);
+  if (methodError) return methodError;
   if (req.method !== 'POST' && req.method !== 'GET') {
     return new Response('method not allowed', { status: 405 });
   }
@@ -178,21 +181,25 @@ export default async function handler(req: Request): Promise<Response> {
   };
 
   if (req.method === 'POST') {
-    const body = (await req.json().catch(() => null)) as {
+    const parsed = await readJson(req).catch((error: Response) => error);
+    if (parsed instanceof Response) return parsed;
+    const body = parsed as {
       lat?: number;
       lon?: number;
       holes?: HoleIn[];
       player?: PlayerIn;
     } | null;
-    if (!body) {
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
       return new Response(JSON.stringify({ error: 'invalid JSON' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
     }
-    lat = Number(body.lat);
-    lon = Number(body.lon);
-    holes = Array.isArray(body.holes) ? body.holes : [];
+    lat = numeric(body.lat);
+    lon = numeric(body.lon);
+    if (body.holes !== undefined && !Array.isArray(body.holes)) return errorResponse('invalid holes');
+    holes = body.holes ?? [];
+    if (!validHoles(holes)) return errorResponse('invalid holes');
     if (holes.length > MAX_POST_HOLES) {
       return new Response(
         JSON.stringify({
@@ -215,11 +222,11 @@ export default async function handler(req: Request): Promise<Response> {
     }
   } else {
     const sp = new URL(req.url).searchParams;
-    lat = Number(sp.get('lat'));
-    lon = Number(sp.get('lon'));
+    lat = numeric(sp.get('lat'));
+    lon = numeric(sp.get('lon'));
   }
 
-  if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+  if (!validCoordinates(lat, lon)) {
     return new Response(JSON.stringify({ error: 'lat and lon required' }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' },

@@ -1,19 +1,36 @@
 name: CI
-
 on:
   push:
     branches: [main]
   pull_request:
-
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - run: npm run typecheck
-      - run: npm run audit:contrast
+      - run: npm audit --omit=dev --audit-level=moderate
+      - run: npm run check
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Browser and asset smoke tests
+        run: |
+          npm run preview -- --host 127.0.0.1 > /tmp/teeready-preview.log 2>&1 &
+          PREVIEW_PID=$!
+          trap 'kill "$PREVIEW_PID"' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4173/ > /dev/null; then break; fi
+            sleep 1
+          done
+          npm run smoke
+          npm run test:browser
