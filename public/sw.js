@@ -1,6 +1,6 @@
-// Tiny stale-while-revalidate service worker. We cache:
+// Bounded, demand-driven service worker caches:
 //   • hashed Vite assets (immutable) — cache-first,
-//   • /api/* responses with a 5-minute SWR window so a slow network or
+//   • public weather/API responses for 5 minutes so a slow network or
 //     brief offline still surfaces last-known weather,
 //   • HTML navigations — network-first so deploys aren't stuck behind
 //     a cached index.html that points at deleted hashed bundles.
@@ -8,10 +8,11 @@
 // This is intentionally simple — no Workbox dependency, no precache
 // manifest. Vite's hashed asset filenames give us cache-busting for free.
 
-const VERSION = 'teeready-v28';
+const VERSION = 'teeready-v29';
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 const SATELLITE_CACHE = `${VERSION}-satellite`;
+const COURSE_CACHE = `${VERSION}-courses`;
 const APP_SHELL = ['/manifest.webmanifest', '/icon.svg'];
 
 // How long a cached /api response may be served before we wait for the
@@ -42,10 +43,11 @@ self.addEventListener('activate', (event) => {
           keys
             .filter(
               (k) =>
-                k.startsWith('teeready-') &&
+                (k.startsWith('teeready-') || /^weatherstop-v2[23]-satellite$/.test(k)) &&
                 k !== STATIC_CACHE &&
                 k !== RUNTIME_CACHE &&
-                k !== SATELLITE_CACHE,
+                k !== SATELLITE_CACHE &&
+                k !== COURSE_CACHE,
             )
             .map((k) => caches.delete(k)),
         ),
@@ -75,7 +77,7 @@ self.addEventListener('fetch', (event) => {
         url.host,
       )
     ) {
-      event.respondWith(staleWhileRevalidate(req, event));
+      event.respondWith(cachedWeather(req));
     }
     return;
   }
@@ -118,14 +120,14 @@ self.addEventListener('fetch', (event) => {
     url.pathname.startsWith('/golf/scorecards/') ||
     url.pathname.startsWith('/golf/osm/')
   ) {
-    event.respondWith(cacheFirst(req));
+    event.respondWith(cacheFirst(req, COURSE_CACHE, 12));
     return;
   }
 
-  // API or weather data — stale-while-revalidate.
+  // API or weather data — reuse fresh responses without another download.
   if (BYPASS_CACHE.test(url.pathname)) return;
   if (/^\/api\/(?:geocode|golf\/(?:courses|holes|hours|ensemble|notebook))$/.test(url.pathname) || url.pathname.startsWith('/data/')) {
-    event.respondWith(staleWhileRevalidate(req, event));
+    event.respondWith(cachedWeather(req));
   }
 });
 
@@ -144,14 +146,14 @@ async function networkFirst(request) {
   }
 }
 
-async function cacheFirst(request) {
+async function cacheFirst(request, cacheName = STATIC_CACHE, maxEntries = 80) {
   const cached = await caches.match(request);
   if (cached) return cached;
   try {
     const fresh = await fetch(request);
     if (fresh && canCache(fresh)) {
-      const cache = await caches.open(STATIC_CACHE);
-      await cache.put(request, fresh.clone()).catch(() => undefined);
+      const cache = await caches.open(cacheName);
+      await putBounded(cache, request, fresh.clone(), maxEntries).catch(() => undefined);
     }
     return fresh;
   } catch (err) {
@@ -167,13 +169,9 @@ async function cacheFirstSatellite(request) {
   if (cached) return cached;
   try {
     const fresh = await fetch(request);
-    if (fresh && (fresh.ok || fresh.type === 'opaque')) {
-      await cache.put(request, fresh.clone()).catch(() => undefined);
-      // Bound satellite cache growth (ArcGIS tiles are large).
-      const keys = await cache.keys();
-      if (keys.length > 400) {
-        await Promise.all(keys.slice(0, keys.length - 300).map((k) => cache.delete(k)));
-      }
+    // Opaque responses have inflated browser quota accounting and cannot be sized.
+    if (fresh && canCache(fresh)) {
+      await putBounded(cache, request, fresh.clone(), 96).catch(() => undefined);
     }
     return fresh;
   } catch (err) {
@@ -182,9 +180,10 @@ async function cacheFirstSatellite(request) {
   }
 }
 
-async function staleWhileRevalidate(request, event) {
+async function cachedWeather(request) {
   const cache = await caches.open(RUNTIME_CACHE);
   const cached = await cache.match(request);
+  if (cached && ageOf(cached) < API_MAX_AGE_MS) return cached;
   const networked = fetch(request)
     .then(async (response) => {
       if (response && canCache(response)) {
@@ -195,14 +194,6 @@ async function staleWhileRevalidate(request, event) {
       return response;
     })
     .catch(() => undefined);
-
-  // Serve a fresh-enough copy immediately and let the refetch land in the
-  // background; otherwise wait for the network and only fall back to a
-  // stale body if it fails.
-  if (cached && ageOf(cached) < API_MAX_AGE_MS) {
-    event.waitUntil(networked.then(() => undefined));
-    return cached;
-  }
 
   const response = await networked;
   if (response) return response;
@@ -230,12 +221,27 @@ async function putStamped(cache, request, response) {
   const body = await response.clone().arrayBuffer();
   const headers = new Headers(response.headers);
   headers.set(CACHED_AT_HEADER, String(Date.now()));
-  await cache.put(
+  await putBounded(cache,
     request,
     new Response(body, {
       status: response.status,
       statusText: response.statusText,
       headers,
     }),
+    40,
   );
+}
+
+// Serialize writes so simultaneous tile responses cannot outrun cache eviction.
+let cacheWrites = Promise.resolve();
+function putBounded(cache, request, response, maxEntries) {
+  const write = cacheWrites.then(async () => {
+    await cache.put(request, response);
+    const keys = await cache.keys();
+    for (const key of keys.slice(0, Math.max(0, keys.length - maxEntries))) {
+      await cache.delete(key);
+    }
+  });
+  cacheWrites = write.catch(() => undefined);
+  return write;
 }

@@ -203,6 +203,7 @@ export function loadHolePack(slug: string): Promise<HolePack | null> {
     .then((res) => (res.ok ? (res.json() as Promise<HolePack>) : null))
     .catch(() => null);
   packCache.set(slug, pending);
+  while (packCache.size > 4) packCache.delete(packCache.keys().next().value!);
   return pending;
 }
 

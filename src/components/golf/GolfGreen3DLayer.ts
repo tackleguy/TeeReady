@@ -96,10 +96,12 @@ function asMatrix4(THREE: ThreeModule, input: unknown): ThreeMatrix4 {
 export async function attachGreen3DLayer(
   map: maplibregl.Map,
   getState: Getter,
+  signal?: AbortSignal,
 ): Promise<void> {
   if (map.getLayer(LAYER_ID)) return;
 
   const THREE = await loadThree();
+  if (signal?.aborted || map.getLayer(LAYER_ID)) return;
   const scene = new THREE.Scene();
   let renderer: ThreeWebGLRenderer | null = null;
   let camera: ThreeCamera | null = null;
@@ -125,6 +127,12 @@ export async function attachGreen3DLayer(
         antialias: true,
       });
       renderer.autoClear = false;
+    },
+    onRemove() {
+      clearMeshes(THREE, scene);
+      renderer?.dispose();
+      renderer = null;
+      camera = null;
     },
     render(_gl, options) {
       if (!renderer || !camera) return;
@@ -161,7 +169,6 @@ export async function attachGreen3DLayer(
 
       renderer.resetState();
       renderer.render(scene, camera);
-      map.triggerRepaint();
     },
   };
 

@@ -287,6 +287,7 @@ export function loadGreenMeshCourse(slug: string): Promise<GreenMeshCourse | nul
       return data;
     });
   cache.set(slug, pending);
+  while (cache.size > 2) cache.delete(cache.keys().next().value!);
   return pending;
 }
 

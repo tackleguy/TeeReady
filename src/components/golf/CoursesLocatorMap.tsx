@@ -1,3 +1,4 @@
+import '../../lib/mapRuntime';
 import { useEffect, useRef } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -95,6 +96,9 @@ export function CoursesLocatorMap({
     let map: maplibregl.Map;
     try {
       map = new maplibregl.Map({
+        pixelRatio: Math.min(window.devicePixelRatio || 1, 1.5),
+        maxTileCacheSize: 48,
+        refreshExpiredTiles: false,
         container,
         style: COURSES_LOCATOR_STYLE,
         center: [lon, lat],

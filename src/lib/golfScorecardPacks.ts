@@ -97,6 +97,7 @@ export function loadScorecardPack(slug: string): Promise<ScorecardPack | null> {
     .then((res) => (res.ok ? (res.json() as Promise<ScorecardPack>) : null))
     .catch(() => null);
   packCache.set(slug, pending);
+  while (packCache.size > 8) packCache.delete(packCache.keys().next().value!);
   return pending;
 }
 

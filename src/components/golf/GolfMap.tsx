@@ -1,3 +1,4 @@
+import '../../lib/mapRuntime';
 // Satellite hole view: hole paths, drawn wind streamlines, and the predicted
 // wind-bent shot path for the selected hole.
 
@@ -31,7 +32,7 @@ import {
   resolveGreenMeshSlug,
   type GreenMeshCourse,
 } from '../../lib/golfGreen3d';
-import { attachGreen3DLayer } from './GolfGreen3DLayer';
+import { attachGreen3DLayer, detachGreen3DLayer } from './GolfGreen3DLayer';
 
 interface Props {
   lat: number;
@@ -585,14 +586,12 @@ export function GolfMap({
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const container = containerRef.current;
-    try {
-      maplibregl.setMaxParallelImageRequests(32);
-    } catch {
-      // older maplibre
-    }
     let map: maplibregl.Map;
     try {
       map = new maplibregl.Map({
+        pixelRatio: Math.min(window.devicePixelRatio || 1, 1.5),
+        maxTileCacheSize: 48,
+        refreshExpiredTiles: false,
         container,
         style: GOLF_SATELLITE_STYLE as maplibregl.StyleSpecification,
         center: [lon, lat],
@@ -1049,9 +1048,6 @@ export function GolfMap({
       }
 
       resize();
-      void attachGreen3DLayer(map, () => green3dStateRef.current).catch(
-        () => undefined,
-      );
       readyRef.current = true;
       const signalReady = () => onReadyRef.current?.();
       // Don't wait for every peripheral tile — show the map as soon as the
@@ -1093,21 +1089,26 @@ export function GolfMap({
   }, []);
 
   useEffect(() => {
-    if (!green3dSlug) {
+    if (!greens3d || !green3dSlug) {
       green3dRef.current = null;
-      mapRef.current?.triggerRepaint();
+      green3dStateRef.current.course = null;
+      if (mapRef.current && readyRef.current) detachGreen3DLayer(mapRef.current);
       return;
     }
-    let cancelled = false;
-    loadGreenMeshCourse(green3dSlug).then((course) => {
-      if (cancelled) return;
-      green3dRef.current = course;
-      mapRef.current?.triggerRepaint();
+    const controller = new AbortController();
+    whenReady(() => {
+      const map = mapRef.current;
+      if (!map || controller.signal.aborted) return;
+      void loadGreenMeshCourse(green3dSlug).then(async (course) => {
+        if (controller.signal.aborted) return;
+        green3dRef.current = course;
+        green3dStateRef.current.course = course;
+        await attachGreen3DLayer(map, () => green3dStateRef.current, controller.signal);
+        if (!controller.signal.aborted) map.triggerRepaint();
+      }).catch(() => undefined);
     });
-    return () => {
-      cancelled = true;
-    };
-  }, [green3dSlug]);
+    return () => controller.abort();
+  }, [greens3d, green3dSlug, whenReady]);
 
   useEffect(() => {
     mapRef.current?.triggerRepaint();
@@ -1117,7 +1118,7 @@ export function GolfMap({
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce), (pointer: coarse)').matches) return;
 
     let raf = 0;
     let step = 0;

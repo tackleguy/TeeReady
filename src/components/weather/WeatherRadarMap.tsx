@@ -1,3 +1,4 @@
+import '../../lib/mapRuntime';
 /** Basic MapLibre radar overlay via RainViewer tiles + course pin. */
 
 import { useEffect, useRef, useState } from 'react';
@@ -35,7 +36,7 @@ export function WeatherRadarMap({
   const markerRef = useRef<maplibregl.Marker | null>(null);
   const [maps, setMaps] = useState<RainViewerMaps | null>(null);
   const [frameIdx, setFrameIdx] = useState(0);
-  const [playing, setPlaying] = useState(true);
+  const [playing, setPlaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -71,6 +72,9 @@ export function WeatherRadarMap({
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const map = new maplibregl.Map({
+        pixelRatio: Math.min(window.devicePixelRatio || 1, 1.5),
+        maxTileCacheSize: 48,
+        refreshExpiredTiles: false,
       container: containerRef.current,
       style: BASE_STYLE,
       center: [lon, lat],
@@ -153,6 +157,7 @@ export function WeatherRadarMap({
   useEffect(() => {
     if (!playing || !maps?.frames.length) return;
     const id = window.setInterval(() => {
+      if (document.hidden) return;
       setFrameIdx((i) => {
         const n = maps.frames.length;
         if (i >= n - 1) return 0;

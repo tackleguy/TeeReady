@@ -6,15 +6,12 @@ import {
   loadGolfHoles,
   peekGolfCoursesCache,
   peekGolfHolesDetail,
-  warmNearbyCourseMaps,
   type GolfCourseSummary,
   type GolfEnsemble,
   type GolfHole,
   type GolfNotebook,
 } from '../lib/golf';
 import type { GolfPlayerProfile } from '../lib/golfProfile';
-import { warmSatelliteTiles } from '../lib/golfSatelliteCache';
-import { prefetchCourseAssetManifests } from '../lib/golfCourseAssets';
 
 export function useGolfCourses(
   lat: number | null,
@@ -28,7 +25,6 @@ export function useGolfCourses(
 
   useEffect(() => {
     if (lat == null || lon == null) return;
-    prefetchCourseAssetManifests();
     const ac = new AbortController();
     setError(null);
     const nationalQuery = query.trim().length >= 2 ? query.trim() : undefined;
@@ -48,10 +44,6 @@ export function useGolfCourses(
           .then((next) => {
             if (ac.signal.aborted) return;
             setCourses(next);
-            // Warm hole-map backups for nearby courses while OSM is healthy.
-            if (!nationalQuery && next.length) {
-              warmNearbyCourseMaps(next, 6);
-            }
           })
           .catch((err) => {
             if (ac.signal.aborted) return;
@@ -113,9 +105,6 @@ export function useGolfHoles(
       osmId,
       courseName,
     };
-    const courseId =
-      osmType && osmId != null ? `${osmType}:${osmId}` : undefined;
-    warmSatelliteTiles(lat, lon, { courseId, priority: 'high' });
     const peeked = peekGolfHolesDetail(lat, lon, opts);
     if (peeked?.holes.length) {
       setHoles(peeked.holes);

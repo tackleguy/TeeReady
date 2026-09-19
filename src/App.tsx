@@ -18,11 +18,12 @@ import { CURRENT_LOCATION } from './lib/mock';
 import { applyTheme, loadTheme } from './lib/theme';
 import { defaultSearchLoc, saveSearchLoc } from './lib/searchLoc';
 import { HomeLanding } from './routes/HomeLanding';
-import { TodayView } from './routes/TodayView';
-import { GolfView } from './routes/GolfView';
 import { RouteFallback } from './components/ui/RouteFallback';
 
 applyTheme(loadTheme());
+
+const TodayView = lazy(() => import('./routes/TodayView').then((m) => ({ default: m.TodayView })));
+const GolfView = lazy(() => import('./routes/GolfView').then((m) => ({ default: m.GolfView })));
 
 const CourseMapView = lazy(() =>
   import('./routes/CourseMapView').then((m) => ({ default: m.CourseMapView })),
@@ -183,21 +184,6 @@ function Shell() {
   const [pickingLocation, setPickingLocation] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const hideBottomTabs = isRounds || isCourseMap;
-
-  useEffect(() => {
-    const useIdle = typeof requestIdleCallback === 'function';
-    const handle = useIdle
-      ? requestIdleCallback(() => {
-          void import('./routes/CoursesView');
-        })
-      : window.setTimeout(() => {
-          void import('./routes/CoursesView');
-        }, 2000);
-    return () => {
-      if (useIdle) cancelIdleCallback(handle as number);
-      else clearTimeout(handle as number);
-    };
-  }, []);
 
   useEffect(() => {
     setSidebarOpen(false);

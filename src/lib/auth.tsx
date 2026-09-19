@@ -10,7 +10,6 @@ import {
 } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { syncProfileOnSignIn } from './accountProfile';
-import { prefetchAppShell } from './prefetchRoutes';
 import { setRememberMe } from './authStorage';
 import { supabase, supabaseConfigured } from './supabase';
 
@@ -70,7 +69,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(data.session);
       setLoading(false);
       if (data.session?.user?.id) {
-        prefetchAppShell();
         void syncProfileOnSignIn(data.session.user.id)
           .then(() => {
             window.dispatchEvent(new Event('teeready-display-changed'));
@@ -92,7 +90,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         (event === 'SIGNED_IN' || event === 'USER_UPDATED') &&
         next?.user?.id
       ) {
-        prefetchAppShell();
         const userId = next.user.id;
         setTimeout(() => {
           if (cancelled) return;

@@ -45,7 +45,8 @@
     "prebuild": "node scripts/build-golf-catalog.mjs && node scripts/contrast-audit.mjs",
     "test": "node --import tsx --test tests/*.test.ts tests/*.test.mjs",
     "check": "npm run typecheck && npm test && npm run verify:caddy && npm run verify:swing-coach && npm run verify:swing-guide && npm run verify:swing-guide-fallback && npm run test:swing-plan && npm run test:launch-simulation && npm run test:range",
-    "test:browser": "node scripts/test-browser.mjs"
+    "test:browser": "node scripts/test-browser.mjs",
+    "test:mobile-performance": "node scripts/test-mobile-performance.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^1.0.1",

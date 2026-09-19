@@ -4,10 +4,7 @@
 import type { GolfPlayerProfile } from './golfProfile';
 import { isPlayableCourse, venueKindFromName } from './venueKind';
 import { courseHeroImage } from './courseImages';
-import { warmSatelliteTiles } from './golfSatelliteCache';
-import { resolveAndWarmGreenMesh } from './golfGreen3d';
-import { resolveHolePack, resolveAndWarmHolePack } from './golfHolePacks';
-import { resolveAndWarmScorecardPack } from './golfScorecardPacks';
+import { resolveHolePack } from './golfHolePacks';
 import { standardizeLayouts } from './golfHolesNormalize';
 import { annotateHolesGeo } from './geoAccuracy';
 
@@ -184,7 +181,9 @@ function memGet<T>(key: string, ttl: number): T | null {
 }
 
 function memSet(key: string, data: unknown): void {
+  MEM.delete(key);
   MEM.set(key, { at: Date.now(), data });
+  while (MEM.size > 24) MEM.delete(MEM.keys().next().value!);
 }
 
 function sessionGet<T>(key: string, ttl: number): T | null {
@@ -745,64 +744,6 @@ export async function loadGolfHoles(
   throw lastErr instanceof Error
     ? lastErr
     : new Error('Failed to load hole maps');
-}
-
-const warmInFlight = new Set<string>();
-
-/** Idle-prefetch nearby course maps so OSM outages still open instantly. */
-export function warmNearbyCourseMaps(
-  courses: GolfCourseSummary[],
-  limit = 12,
-): void {
-  if (typeof window === 'undefined') return;
-  const targets = courses
-    .filter((c) => Number.isFinite(c.lat) && Number.isFinite(c.lon))
-    .filter((c) => c.holes == null || c.holes === 9 || c.holes === 18)
-    .slice(0, limit);
-
-  const run = () => {
-    for (const course of targets) {
-      const id = course.id || `${course.osmType}:${course.osmId}`;
-      warmSatelliteTiles(course.lat, course.lon, { courseId: id });
-      // Prefetch static packs (holes / 3D greens / scorecards) before OSM.
-      void resolveAndWarmHolePack(course.name, course.lat, course.lon);
-      void resolveAndWarmGreenMesh(course.name, course.lat, course.lon);
-      void resolveAndWarmScorecardPack(course.name);
-      const peek = peekGolfHolesDetail(course.lat, course.lon, {
-        bbox: course.bbox,
-        osmType: course.osmType,
-        osmId: course.osmId,
-        courseName: course.name,
-      });
-      // Skip only OSM-confirmed session hits; still refresh durable backups.
-      if (peek?.holes.length && !peek.fromBackup) continue;
-      if (warmInFlight.has(id)) continue;
-      warmInFlight.add(id);
-      void fetchGolfHoles(course.lat, course.lon, {
-        bbox: course.bbox,
-        osmType: course.osmType,
-        osmId: course.osmId,
-        courseName: course.name,
-      })
-        .catch(() => {
-          // Warm is best-effort.
-        })
-        .finally(() => {
-          warmInFlight.delete(id);
-        });
-    }
-  };
-
-  const ric = (
-    window as Window & {
-      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
-    }
-  ).requestIdleCallback;
-  if (typeof ric === 'function') {
-    ric(run, { timeout: 4000 });
-  } else {
-    window.setTimeout(run, 1200);
-  }
 }
 
 export interface GolfNotebookDay {

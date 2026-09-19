@@ -5,10 +5,14 @@ const warmed = new Set<string>();
 function warm(key: string, loader: () => Promise<unknown>) {
   if (warmed.has(key)) return;
   warmed.add(key);
-  void loader();
+  void loader().catch(() => warmed.delete(key));
 }
 
 export function prefetchRoute(path: string): void {
+  // Touch devices (including Safari without Network Information API) load on navigation.
+  if (typeof window === 'undefined' || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+  const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+  if (connection?.saveData || (connection?.effectiveType && connection.effectiveType !== '4g')) return;
   if (path.startsWith('/rounds')) {
     warm('rounds', () => import('../routes/GolfView'));
     return;
@@ -50,11 +54,4 @@ export function prefetchRoute(path: string): void {
     default:
       break;
   }
-}
-
-/** After sign-in, prefetch the pages most users open first. */
-export function prefetchAppShell(): void {
-  prefetchRoute('/today');
-  prefetchRoute('/courses');
-  prefetchRoute('/rounds/prep');
 }

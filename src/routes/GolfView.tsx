@@ -45,10 +45,6 @@ import {
 } from '../lib/pendingCourse';
 import { stashWeatherCourse } from '../lib/weatherCourse';
 import {
-  peekSatelliteTilesWarm,
-} from '../lib/golfSatelliteCache';
-import { warmCourseAssets } from '../lib/golfCourseAssets';
-import {
   loadYardageNotes,
   saveYardageNotesFromPrep,
 } from '../lib/yardageNotes';
@@ -594,13 +590,6 @@ export function GolfView({ active = true }: { active?: boolean }) {
         );
         if (!ok) return;
       }
-      void warmCourseAssets({
-        name: next.name,
-        lat: next.lat,
-        lon: next.lon,
-        courseId: next.id,
-        priority: 'high',
-      });
       setCourse(next);
       holePickedByUser.current = false;
       setGreens3d(false);
@@ -1309,22 +1298,6 @@ export function GolfView({ active = true }: { active?: boolean }) {
                   <button
                     type="button"
                     onClick={() => pickCourse(c)}
-                    onMouseEnter={() => {
-                      void warmCourseAssets({
-                        name: c.name,
-                        lat: c.lat,
-                        lon: c.lon,
-                        courseId: c.id,
-                      });
-                    }}
-                    onFocus={() => {
-                      void warmCourseAssets({
-                        name: c.name,
-                        lat: c.lat,
-                        lon: c.lon,
-                        courseId: c.id,
-                      });
-                    }}
                     className={[
                       'floating-subpanel w-full px-3 py-3 text-left transition-colors',
                       active
@@ -1448,11 +1421,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                 fitPadding={isMobile ? MOBILE_FIT_PADDING : 60}
                 legendClassName="left-3 top-3"
                 onReady={() => setMapReady(true)}
-                satelliteCached={peekSatelliteTilesWarm(
-                  searchLat,
-                  searchLon,
-                  course.id,
-                )}
+                satelliteCached={false}
                 courseName={course.name}
                 greens3d={false}
                 showRangefinder={viewMode === 'gps' && activeHole != null}
@@ -1488,9 +1457,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     <p className="mt-1 text-detail text-[var(--ink-3)]">
                       {holesLoading && holes.length === 0
                         ? 'Loading course map, hole layouts, and weather…'
-                        : peekSatelliteTilesWarm(searchLat, searchLon, course.id)
-                          ? 'Opening saved satellite imagery…'
-                          : 'Starting the satellite course map…'}
+                        : 'Starting the satellite course map…'}
                     </p>
                   </div>
                   <div className="skeleton h-48 w-full rounded-2xl opacity-90" />

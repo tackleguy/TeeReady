@@ -2,7 +2,7 @@
  * TeeReady green reader — LiDAR relief with smooth orbit and turf lighting.
  * Own look: deep emerald atmosphere, lit grass (not a rainbow heatmap clone).
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { loadThree } from '../../lib/loadThree';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
@@ -293,13 +293,16 @@ export function Green3DViewer({ course, hole, onClose }: Props) {
   const green = pickGreenMesh(course, hole);
   const showingHole = green?.hole ?? hole;
   const usedFallback = green != null && green.hole !== hole;
-  const elevSpan =
-    green == null
-      ? null
-      : (() => {
-          const ys = green.positions.filter((_, i) => i % 3 === 1);
-          return Math.max(...ys) - Math.min(...ys);
-        })();
+  const elevSpan = useMemo(() => {
+    if (!green) return null;
+    let low = Infinity;
+    let high = -Infinity;
+    for (let i = 1; i < green.positions.length; i += 3) {
+      low = Math.min(low, green.positions[i]!);
+      high = Math.max(high, green.positions[i]!);
+    }
+    return Number.isFinite(high - low) ? high - low : 0;
+  }, [green]);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -323,8 +326,8 @@ export function Green3DViewer({ course, hole, onClose }: Props) {
       5000,
     );
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false, powerPreference: 'low-power' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
     renderer.setSize(host.clientWidth, host.clientHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     host.appendChild(renderer.domElement);
@@ -352,7 +355,8 @@ export function Green3DViewer({ course, hole, onClose }: Props) {
     let velX = 0;
     let targetRelief = reliefRef.current;
     let currentRelief = reliefRef.current;
-    let idle = 0;
+    let lastFrame = 0;
+    let needsRender = true;
 
     const onDown = (e: PointerEvent) => {
       dragging = true;
@@ -364,6 +368,7 @@ export function Green3DViewer({ course, hole, onClose }: Props) {
     };
     const onMove = (e: PointerEvent) => {
       if (!dragging) return;
+      needsRender = true;
       const dx = e.clientX - lastX;
       const dy = e.clientY - lastY;
       velY = dx * 0.007;
@@ -392,11 +397,16 @@ export function Green3DViewer({ course, hole, onClose }: Props) {
     host.addEventListener('wheel', onWheel, { passive: false });
 
     let frame = 0;
-    const tick = () => {
+    const tick = (now = 0) => {
       frame = requestAnimationFrame(tick);
-      idle += 0.004;
+      if (document.hidden || now - lastFrame < 1000 / 30) return;
+      lastFrame = now;
+      const moving = Math.abs(velY) > 0.0001 || Math.abs(velX) > 0.0001;
+      const changingRelief = Math.abs(reliefRef.current - currentRelief) > 0.001;
+      if (!needsRender && !moving && !changingRelief) return;
+      needsRender = false;
       if (!dragging) {
-        rotY += velY + Math.sin(idle) * 0.0008;
+        rotY += velY;
         rotX += velX;
         velY *= 0.92;
         velX *= 0.92;
@@ -419,6 +429,7 @@ export function Green3DViewer({ course, hole, onClose }: Props) {
     tick();
 
     const onResize = () => {
+      needsRender = true;
       const w = host.clientWidth;
       const h = host.clientHeight;
       camera.aspect = w / Math.max(1, h);
@@ -444,6 +455,7 @@ export function Green3DViewer({ course, hole, onClose }: Props) {
         }
       });
       renderer.dispose();
+      renderer.forceContextLoss();
       if (renderer.domElement.parentElement === host) {
         host.removeChild(renderer.domElement);
       }

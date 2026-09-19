@@ -47,3 +47,9 @@ CI runs dependency auditing, types (including API handlers), regression tests, b
 4. Promote the verified deployment, watch error rates and upstream quotas, and roll back to the previous Vercel deployment if they regress. Database migrations need a separate compatible rollback/restore plan.
 
 Known limits: this is not a load-test certification; some map bundles remain large, global rate limiting is external, and local offline smoke does not validate live integrations. Do not publish a sparse build missing course assets.
+
+## Mobile data and memory budgets
+
+Course browsing does not pre-download satellite imagery, hole packs, or green meshes. Maps and 3D load when opened; radar starts paused. Map workers use one shared worker, image requests are capped at six, map tile caches at 48 entries per source, and backing canvases at 1.5× CSS resolution. Parsed green, hole, and scorecard caches retain at most 2, 4, and 8 course packs. The service worker retains up to 96 satellite tiles, 12 course files, 40 weather responses, and 80 static resources; fresh weather is reused for five minutes. Opening other courses may evict older offline assets.
+
+`npm run test:mobile-performance` checks the real course hook and map/green components with local fixtures: no speculative course downloads, bundled workers, repeated map and 3D open/close cleanup, and canvas resolution limits at desktop and phone viewports. It starts a local Vite server on port 4174 and uses Playwright Chromium (or `PLAYWRIGHT_CHANNEL=chrome`). It does not contact production APIs. Physical-device crash testing is still required for a specific handset.
