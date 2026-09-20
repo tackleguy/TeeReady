@@ -350,9 +350,6 @@ export function ProfileView() {
             {profile.motivation.trim() ? (
               <QRow label="Why you play" value={profile.motivation.trim()} />
             ) : null}
-            {profile.motivation.trim() ? (
-              <QRow label="Why you play" value={profile.motivation.trim()} />
-            ) : null}
           </dl>
         </section>
       ) : null}
