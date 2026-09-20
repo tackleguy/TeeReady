@@ -35,3 +35,4 @@ jobs:
           npm run smoke
           npm run test:browser
           npm run test:mobile-performance
+          npm run test:course-lists

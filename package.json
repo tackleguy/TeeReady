@@ -42,11 +42,13 @@
     "smoke": "node scripts/smoke-mobile.mjs",
     "test:mobile": "node scripts/mobile-audit.mjs",
     "audit:contrast": "node scripts/contrast-audit.mjs",
-    "prebuild": "node scripts/build-golf-catalog.mjs && node scripts/contrast-audit.mjs",
+    "prebuild": "npm run build:course-directory && node scripts/contrast-audit.mjs",
     "test": "node --import tsx --test tests/*.test.ts tests/*.test.mjs",
     "check": "npm run typecheck && npm test && npm run verify:caddy && npm run verify:swing-coach && npm run verify:swing-guide && npm run verify:swing-guide-fallback && npm run test:swing-plan && npm run test:launch-simulation && npm run test:range",
     "test:browser": "node scripts/test-browser.mjs",
-    "test:mobile-performance": "node scripts/test-mobile-performance.mjs"
+    "test:mobile-performance": "node scripts/test-mobile-performance.mjs",
+    "build:course-directory": "node scripts/build-course-directory.mjs",
+    "test:course-lists": "node scripts/test-course-lists.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^1.0.1",

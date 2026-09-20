@@ -75,7 +75,6 @@ import {
   loadGolfProfile,
   type GolfPlayerProfile,
 } from '../lib/golfProfile';
-import { warmGolfCatalog, readGolfCatalog } from '../lib/golfCatalogPrefetch';
 import {
   courseHasGreenMeshes,
   greenRingLonLat,
@@ -234,11 +233,6 @@ export function GolfView({ active = true }: { active?: boolean }) {
     if (pathMode) setLastMode(pathMode);
   }, [pathMode]);
   const viewMode: 'prep' | 'gps' = pathMode ?? lastMode;
-
-  useEffect(() => {
-    warmGolfCatalog();
-    void readGolfCatalog();
-  }, []);
 
   useEffect(() => {
     if (!active) return;

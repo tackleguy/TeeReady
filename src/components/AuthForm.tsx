@@ -1,11 +1,8 @@
-import { useState, type FormEvent } from 'react';
+import { lazy, Suspense, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { getRememberMe } from '../lib/authStorage';
-import {
-  persistSignupProfile,
-  SignupQuestionnaire,
-} from './auth/SignupQuestionnaire';
+const SignupQuestionnaire = lazy(() => import('./auth/SignupQuestionnaire').then(m => ({ default: m.SignupQuestionnaire })));
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -73,6 +70,7 @@ export function AuthForm({
   if (mode === 'signup') {
     return (
       <div className={variant === 'landing' ? 'on-light' : undefined}>
+        <Suspense fallback={<p className="text-[13px] text-muted">Loading signup…</p>}>
         <SignupQuestionnaire
           busy={busy}
           error={error}
@@ -88,6 +86,7 @@ export function AuthForm({
             setBusy(true);
             try {
               // Write local first so sign-in sync doesn't seed empty defaults.
+              const { persistSignupProfile } = await import('./auth/SignupQuestionnaire');
               persistSignupProfile(draft);
               const res = await signUp(
                 draft.email,
@@ -112,6 +111,7 @@ export function AuthForm({
             }
           }}
         />
+        </Suspense>
       </div>
     );
   }

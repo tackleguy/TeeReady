@@ -1,44 +1,23 @@
-import { useEffect, useMemo, useState } from 'react';
-import {
-  loadHolePackManifest,
-  type HolePackManifestEntry,
-} from '../lib/golfHolePacks';
-import { mergeWorkingCourses } from '../lib/workingCourses';
-import { useGolfCourses } from './useGolf';
+import { useMemo } from 'react';
+import { directoryCourses, directoryEntries } from '../lib/courseDirectory';
+const retry = () => undefined;
 
-/** Nearby + search, restricted to courses with a complete local hole pack. */
+/** Lists use release-versioned metadata; no weather, map, or API request gates paint. */
 export function useWorkingCourses(
   lat: number | null,
   lon: number | null,
   query = '',
+  limit = 48,
 ) {
-  const [entries, setEntries] = useState<HolePackManifestEntry[]>([]);
-  const [manifestReady, setManifestReady] = useState(false);
-  const { courses, loading, error, retry } = useGolfCourses(lat, lon, '');
-
-  useEffect(() => {
-    let cancelled = false;
-    loadHolePackManifest().then((manifest) => {
-      if (cancelled) return;
-      setEntries(manifest?.courses ?? []);
-      setManifestReady(true);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const workingCourses = useMemo(() => {
-    if (!manifestReady || lat == null || lon == null) return [];
-    return mergeWorkingCourses(courses, entries, lat, lon, query);
-  }, [courses, entries, lat, lon, query, manifestReady]);
-
+  const courses = useMemo(() =>
+    lat == null || lon == null ? [] : directoryCourses(lat, lon, query, limit),
+  [lat, lon, query, limit]);
   return {
-    courses: workingCourses,
-    holePackEntries: entries,
-    loading: loading || !manifestReady,
-    error,
+    courses,
+    holePackEntries: directoryEntries,
+    loading: false,
+    error: null as string | null,
     retry,
-    workingCount: entries.length,
+    workingCount: directoryEntries.length,
   };
 }

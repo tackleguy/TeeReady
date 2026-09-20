@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowUpRight,
@@ -13,9 +13,11 @@ import { CourseSignals } from '../components/golf/CourseSignals';
 import { useWorkingCourses } from '../hooks/useWorkingCourses';
 import type { GolfCourseSummary } from '../lib/golf';
 import {
-  loadGreenMeshManifest,
   type GreenMeshManifestEntry,
 } from '../lib/golfGreen3d';
+import { directoryCourseHas3d, directoryGreens } from '../lib/courseDirectory';
+import { useListPage } from '../hooks/useListPage';
+import { ListPagination } from '../components/ui/ListPagination';
 import { haversineMi } from '../lib/workingCourses';
 import { loadGolfProfile } from '../lib/golfProfile';
 import { stashPendingCourse } from '../lib/pendingCourse';
@@ -50,17 +52,6 @@ function nameMatchesHome(courseName: string, homes: string[]): boolean {
     if (!home) return false;
     return n.includes(home) || home.includes(n);
   });
-}
-
-function courseHas3dEntry(
-  course: GolfCourseSummary,
-  entries: GreenMeshManifestEntry[],
-): boolean {
-  return entries.some(
-    (entry) =>
-      entry.name.toLowerCase() === course.name.toLowerCase() ||
-      haversineMi(course.lat, course.lon, entry.lat, entry.lon) < 0.85,
-  );
 }
 
 function CourseCard({
@@ -186,6 +177,8 @@ function CourseCard({
 
 export function CoursesView() {
   const navigate = useNavigate();
+  const resultsRef = useRef<HTMLElement>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
   const loc = defaultSearchLoc();
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<FilterMode>('nearby');
@@ -193,10 +186,7 @@ export function CoursesView() {
     const p = loadGolfProfile();
     return p?.commonCourses?.filter(Boolean) ?? [];
   });
-  const [green3dCourses, setGreen3dCourses] = useState<
-    GreenMeshManifestEntry[]
-  >([]);
-  const [greenManifestLoading, setGreenManifestLoading] = useState(true);
+  const green3dCourses = directoryGreens;
 
   const {
     courses,
@@ -204,7 +194,7 @@ export function CoursesView() {
     error,
     retry,
     workingCount,
-  } = useWorkingCourses(loc.lat, loc.lon, query);
+  } = useWorkingCourses(loc.lat, loc.lon, query, Infinity);
 
   useEffect(() => {
     const sync = () => {
@@ -219,23 +209,8 @@ export function CoursesView() {
     };
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-    setGreenManifestLoading(true);
-    loadGreenMeshManifest().then((greenManifest) => {
-      if (cancelled) return;
-      setGreen3dCourses(greenManifest?.courses ?? []);
-      setGreenManifestLoading(false);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const manifestsLoading = loading || greenManifestLoading;
-
-  const courseHas3d = (course: GolfCourseSummary) =>
-    courseHas3dEntry(course, green3dCourses);
+  const manifestsLoading = loading;
+  const courseHas3d = directoryCourseHas3d;
 
   const filteredNearby = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -255,18 +230,18 @@ export function CoursesView() {
     );
   }, [courses, query, filter, green3dCourses, homeCourses]);
 
+  const nearbyGreen3d = useMemo(() => green3dCourses
+    .map(entry => ({ entry, distance: haversineMi(loc.lat, loc.lon, entry.lat, entry.lon) }))
+    .sort((a, b) => a.distance - b.distance)
+    .map(row => row.entry), [green3dCourses, loc.lat, loc.lon]);
+
   const filteredGreen3d = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const list = [...green3dCourses]
-      .filter((c) => c.holes === 9 || c.holes === 18)
-      .sort((a, b) => {
-        const da = haversineMi(loc.lat, loc.lon, a.lat, a.lon);
-        const db = haversineMi(loc.lat, loc.lon, b.lat, b.lon);
-        return da - db;
-      });
-    if (!q) return list;
-    return list.filter((c) => c.name.toLowerCase().includes(q));
-  }, [green3dCourses, query, loc.lat, loc.lon]);
+    return q ? nearbyGreen3d.filter(c => c.name.toLowerCase().includes(q)) : nearbyGreen3d;
+  }, [nearbyGreen3d, query]);
+
+  const coursePage = useListPage(filteredNearby, `${filter}:${query}`);
+  const greenPage = useListPage(filteredGreen3d, query);
 
   const openMap = (course: GolfCourseSummary) => {
     stashPendingCourse(course);
@@ -357,7 +332,7 @@ export function CoursesView() {
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div ref={sidebarRef} className="min-h-0 flex-1 overflow-y-auto">
           {filter === '3d' ? (
             manifestsLoading ? (
               <div className="flex items-center justify-center gap-2 px-4 py-10 text-[13px] text-muted">
@@ -369,8 +344,8 @@ export function CoursesView() {
                 No 3D courses match.
               </p>
             ) : (
-              <ul className="divide-y divide-line">
-                {filteredGreen3d.map((entry) => {
+              <div><ul className="divide-y divide-line">
+                {greenPage.items.map((entry) => {
                   const mi = haversineMi(loc.lat, loc.lon, entry.lat, entry.lon);
                   return (
                     <li key={entry.slug}>
@@ -397,7 +372,7 @@ export function CoursesView() {
                     </li>
                   );
                 })}
-              </ul>
+              </ul><ListPagination {...greenPage} onPage={page => { greenPage.onPage(page); sidebarRef.current?.scrollTo(0, 0); }} /></div>
             )
           ) : filter === 'mine' ? (
             <div className="px-4 py-5 text-[13px] leading-relaxed text-muted">
@@ -434,7 +409,7 @@ export function CoursesView() {
         </div>
       </aside>
 
-      <section className="min-h-0 flex-1 overflow-y-auto px-4 py-5 md:px-6 md:py-6">
+      <section ref={resultsRef} className="min-h-0 flex-1 overflow-y-auto px-4 py-5 md:px-6 md:py-6">
         <header className="mb-5 max-w-xl">
           <h2 className="text-[20px] font-semibold tracking-[-0.02em] text-ink md:text-[24px]">
             {mainTitle}
@@ -443,7 +418,7 @@ export function CoursesView() {
 
         {filter === '3d' ? (
           <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-            {filteredNearby.map((course) => (
+            {coursePage.items.map((course) => (
               <CourseCard
                 key={course.id}
                 course={course}
@@ -510,7 +485,7 @@ export function CoursesView() {
           </div>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-            {filteredNearby.map((course) => (
+            {coursePage.items.map((course) => (
               <CourseCard
                 key={course.id}
                 course={course}
@@ -523,6 +498,7 @@ export function CoursesView() {
             ))}
           </div>
         )}
+        <ListPagination {...coursePage} onPage={page => { coursePage.onPage(page); resultsRef.current?.scrollTo(0, 0); }} />
       </section>
     </div>
   );
