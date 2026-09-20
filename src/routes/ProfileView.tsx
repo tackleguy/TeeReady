@@ -347,8 +347,8 @@ export function ProfileView() {
             <QRow label="Biggest leak" value={profile.biggestLeak} />
             <QRow label="Practice" value={profile.practiceFocus} />
             <QRow label="Compete" value={profile.competitiveLevel} />
-            {profile.dreamCourse.trim() ? (
-              <QRow label="Dream course" value={profile.dreamCourse.trim()} />
+            {profile.motivation.trim() ? (
+              <QRow label="Why you play" value={profile.motivation.trim()} />
             ) : null}
             {profile.motivation.trim() ? (
               <QRow label="Why you play" value={profile.motivation.trim()} />
