@@ -330,7 +330,10 @@ export function ProfileView() {
           </div>
           <dl className="mt-3">
             {profile.homeCity.trim() ? (
-              <QRow label="Home city" value={profile.homeCity.trim()} />
+              <QRow
+                label="Home city"
+                value={`${profile.homeCity.trim()} · nearest favorite`}
+              />
             ) : null}
             {goalLabels.length ? (
               <QRow label="Goals" value={goalLabels.join(' · ')} />

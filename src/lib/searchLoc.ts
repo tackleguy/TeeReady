@@ -1,6 +1,8 @@
 /** Default map search origin — current city from localStorage or app seed. */
 
-import { INITIAL_SEED } from '../constants/cities';
+import { DEFAULT_CITIES, INITIAL_SEED } from '../constants/cities';
+import type { City } from '../types';
+import { haversineMi } from './workingCourses';
 
 export type SearchLoc = {
   name: string;
@@ -9,6 +11,40 @@ export type SearchLoc = {
 };
 
 const CITIES_KEY = 'cities-v1';
+
+/** Nearest curated city to a lat/lon (favorite course, GPS fix, etc.). */
+export function nearestCityTo(
+  lat: number,
+  lon: number,
+  cities: City[] = DEFAULT_CITIES,
+): City | null {
+  if (!Number.isFinite(lat) || !Number.isFinite(lon) || cities.length === 0) {
+    return null;
+  }
+  let best: City | null = null;
+  let bestMi = Infinity;
+  for (const city of cities) {
+    const mi = haversineMi(lat, lon, city.latitude, city.longitude);
+    if (mi < bestMi) {
+      bestMi = mi;
+      best = city;
+    }
+  }
+  return best;
+}
+
+export function searchLocFromCoords(
+  lat: number,
+  lon: number,
+  fallbackName?: string,
+): SearchLoc {
+  const near = nearestCityTo(lat, lon);
+  return {
+    name: near?.name ?? (fallbackName?.trim() || 'Nearby'),
+    lat: near?.latitude ?? lat,
+    lon: near?.longitude ?? lon,
+  };
+}
 
 export function defaultSearchLoc(): SearchLoc {
   try {
@@ -93,5 +129,47 @@ export function applyHomeCityToSearchLoc(input: {
     name,
     lat: input.homeCityLat,
     lon: input.homeCityLon,
+  });
+}
+
+/**
+ * Prefer home city; otherwise set search origin to the curated city nearest
+ * the favorite (first) course when we have coordinates.
+ */
+export function applyFavoriteCourseCity(input: {
+  homeCity?: string;
+  homeCityLat?: number | null;
+  homeCityLon?: number | null;
+  courseLat?: number | null;
+  courseLon?: number | null;
+  courseRegion?: string | null;
+}): SearchLoc | null {
+  if (
+    input.homeCity?.trim() &&
+    input.homeCityLat != null &&
+    input.homeCityLon != null &&
+    Number.isFinite(input.homeCityLat) &&
+    Number.isFinite(input.homeCityLon)
+  ) {
+    return saveSearchLoc({
+      name: input.homeCity.trim(),
+      lat: input.homeCityLat,
+      lon: input.homeCityLon,
+    });
+  }
+  if (
+    input.courseLat == null ||
+    input.courseLon == null ||
+    !Number.isFinite(input.courseLat) ||
+    !Number.isFinite(input.courseLon)
+  ) {
+    return null;
+  }
+  const near = nearestCityTo(input.courseLat, input.courseLon);
+  const regionHint = input.courseRegion?.split(',')[0]?.trim();
+  return saveSearchLoc({
+    name: near?.name ?? regionHint ?? 'Nearby',
+    lat: near?.latitude ?? input.courseLat,
+    lon: near?.longitude ?? input.courseLon,
   });
 }

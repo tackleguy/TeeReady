@@ -3,7 +3,6 @@ import { ArrowLeft, ArrowRight, Check, Sparkles } from 'lucide-react';
 import { CourseSearchMultiSelect } from '../golf/CourseSearchMultiSelect';
 import { courseLabel } from '../golf/CourseSearchSelect';
 import { GoalPicker } from '../coach/GoalPicker';
-import { CitySearchField } from './CitySearchField';
 import type { GolfCourseSummary } from '../../lib/golf';
 import type { GeocodeResult } from '../../hooks/useGeocode';
 import {
@@ -24,16 +23,14 @@ import {
 } from '../../lib/golfHandicap';
 import type {
   BiggestLeak,
-  CompetitiveLevel,
   PracticeFocus,
   TeeTimePref,
   TransportPref,
 } from '../../lib/questionnaire';
-import { defaultSearchLoc } from '../../lib/searchLoc';
+import { nearestCityTo, saveSearchLoc } from '../../lib/searchLoc';
 
 const STEPS = [
   { id: 'game', title: 'Your game', subtitle: 'Handicap, carry & miss' },
-  { id: 'city', title: 'Home city', subtitle: 'Where TeeReady looks for courses' },
   { id: 'courses', title: 'Courses', subtitle: 'Where you play' },
   { id: 'goals', title: 'Goals', subtitle: 'What you want' },
   { id: 'rhythm', title: 'Rhythm', subtitle: 'How often you play' },
@@ -43,6 +40,27 @@ const STEPS = [
 ] as const;
 
 export type StepId = (typeof STEPS)[number]['id'];
+
+/** Home city = curated city nearest the favorite (first) course. */
+function cityNearestFavoriteCourse(
+  favorite: GolfCourseSummary | undefined,
+): GeocodeResult | null {
+  if (
+    !favorite ||
+    !Number.isFinite(favorite.lat) ||
+    !Number.isFinite(favorite.lon) ||
+    (favorite.lat === 0 && favorite.lon === 0)
+  ) {
+    return null;
+  }
+  const near = nearestCityTo(favorite.lat, favorite.lon);
+  const regionHint = favorite.region?.split(',')[0]?.trim();
+  return {
+    label: near?.name ?? regionHint ?? favorite.name,
+    lat: near?.latitude ?? favorite.lat,
+    lon: near?.longitude ?? favorite.lon,
+  };
+}
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -133,14 +151,12 @@ export function PlayerQuestionnaire({
   const [biggestLeak, setBiggestLeak] = useState<BiggestLeak>('approach');
   const [practiceFocus, setPracticeFocus] = useState<PracticeFocus>('course');
   const [competitiveLevel, setCompetitiveLevel] =
-    useState<CompetitiveLevel>('casual');
+    useState<'casual' | 'league' | 'tournament'>('casual');
   const [motivation, setMotivation] = useState('');
-  const [dreamCourse, setDreamCourse] = useState('');
   const [homeCity, setHomeCity] = useState<GeocodeResult | null>(null);
 
   useEffect(() => {
     const saved = loadGolfProfile();
-    const loc = defaultSearchLoc();
     if (
       saved?.homeCity &&
       saved.homeCityLat != null &&
@@ -150,12 +166,6 @@ export function PlayerQuestionnaire({
         label: saved.homeCity,
         lat: saved.homeCityLat,
         lon: saved.homeCityLon,
-      });
-    } else if (loc.name) {
-      setHomeCity({
-        label: loc.name,
-        lat: loc.lat,
-        lon: loc.lon,
       });
     }
     if (!saved) return;
@@ -175,7 +185,6 @@ export function PlayerQuestionnaire({
     setPracticeFocus(saved.practiceFocus);
     setCompetitiveLevel(saved.competitiveLevel);
     setMotivation(saved.motivation);
-    setDreamCourse(saved.dreamCourse);
     if (saved.commonCourses.length) {
       setCourses(
         saved.commonCourses.map((name, i) => ({
@@ -189,6 +198,19 @@ export function PlayerQuestionnaire({
       );
     }
   }, []);
+
+  const onCoursesChange = (next: GolfCourseSummary[]) => {
+    setCourses(next);
+    const derived = cityNearestFavoriteCourse(next[0]);
+    if (derived) {
+      setHomeCity(derived);
+      saveSearchLoc({
+        name: derived.label.split(',')[0]?.trim() || derived.label,
+        lat: derived.lat,
+        lon: derived.lon,
+      });
+    }
+  };
 
   const bagPreview = useMemo(
     () => bagFromStocks(driverYards, sevenIronYards),
@@ -209,11 +231,11 @@ export function PlayerQuestionnaire({
           return 'Driver carry should be at least ~20 yards longer than 7-iron.';
         }
         return null;
-      case 'city':
-        if (!homeCity?.label.trim()) return 'Pick your home city.';
-        return null;
       case 'courses':
         if (courses.length === 0) return 'Add at least one course.';
+        if (!cityNearestFavoriteCourse(courses[0])) {
+          return 'Pick a course with a known location so we can set your city.';
+        }
         return null;
       case 'goals':
         if (!hasAnyGoals(goals, customGoals)) {
@@ -254,6 +276,15 @@ export function PlayerQuestionnaire({
       return;
     }
     setLocalError(null);
+    const derived =
+      cityNearestFavoriteCourse(courses[0]) ?? homeCity;
+    if (derived) {
+      saveSearchLoc({
+        name: derived.label.split(',')[0]?.trim() || derived.label,
+        lat: derived.lat,
+        lon: derived.lon,
+      });
+    }
     const profile = saveGolfProfile({
       ...DEFAULT_PROFILE,
       ...(loadGolfProfile() ?? {}),
@@ -274,10 +305,14 @@ export function PlayerQuestionnaire({
       practiceFocus,
       competitiveLevel,
       motivation: motivation.trim(),
-      dreamCourse: dreamCourse.trim(),
-      homeCity: (homeCity?.label.split(',')[0]?.trim() || homeCity?.label || '').trim(),
-      homeCityLat: homeCity?.lat ?? null,
-      homeCityLon: homeCity?.lon ?? null,
+      dreamCourse: '',
+      homeCity: (
+        derived?.label.split(',')[0]?.trim() ||
+        derived?.label ||
+        ''
+      ).trim(),
+      homeCityLat: derived?.lat ?? null,
+      homeCityLon: derived?.lon ?? null,
       questionnaireCompleted: true,
     });
     onComplete?.(profile);
@@ -408,21 +443,22 @@ export function PlayerQuestionnaire({
         </div>
       ) : null}
 
-      {current.id === 'city' ? (
-        <div className="rounded-card bg-surface p-4 shadow-card">
-          <FieldLabel>What city do you play around?</FieldLabel>
-          <CitySearchField value={homeCity} onChange={setHomeCity} />
-          <p className="mt-3 text-[12px] leading-relaxed text-muted">
-            Saved to your profile and used for Courses, Map, and nearby
-            course search.
-          </p>
-        </div>
-      ) : null}
-
       {current.id === 'courses' ? (
         <div className="rounded-card bg-surface p-4 shadow-card">
           <FieldLabel>Where do you play most?</FieldLabel>
-          <CourseSearchMultiSelect value={courses} onChange={setCourses} max={5} />
+          <CourseSearchMultiSelect
+            value={courses}
+            onChange={onCoursesChange}
+            max={5}
+          />
+          <p className="mt-3 text-[12px] leading-relaxed text-muted">
+            Your first course is the favorite — we set your city to the nearest
+            hub
+            {homeCity?.label
+              ? ` (${homeCity.label.split(',')[0]?.trim() || homeCity.label})`
+              : ''}
+            .
+          </p>
         </div>
       ) : null}
 
@@ -563,15 +599,6 @@ export function PlayerQuestionnaire({
               {motivation.length}/280 — powers your coach on Today
             </span>
           </label>
-          <label className="block">
-            <FieldLabel>Dream course (optional)</FieldLabel>
-            <input
-              value={dreamCourse}
-              onChange={(e) => setDreamCourse(e.target.value.slice(0, 120))}
-              placeholder="e.g. Pebble Beach, St Andrews…"
-              className={inputClassName()}
-            />
-          </label>
         </div>
       ) : null}
 
@@ -590,7 +617,7 @@ export function PlayerQuestionnaire({
               label="Home city"
               value={
                 homeCity
-                  ? homeCity.label.split(',')[0]?.trim() || homeCity.label
+                  ? `${homeCity.label.split(',')[0]?.trim() || homeCity.label} · nearest favorite`
                   : '—'
               }
             />
@@ -616,9 +643,6 @@ export function PlayerQuestionnaire({
               value={`${biggestLeak.replace('-', ' ')} · ${practiceFocus} · ${competitiveLevel}`}
             />
             <ReviewRow label="Why" value={motivation.trim() || '—'} />
-            {dreamCourse.trim() ? (
-              <ReviewRow label="Dream" value={dreamCourse.trim()} />
-            ) : null}
           </dl>
         </div>
       ) : null}
