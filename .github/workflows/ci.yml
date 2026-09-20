@@ -37,3 +37,4 @@ jobs:
           npm run test:map-loading
           npm run test:mobile-performance
           npm run test:course-lists
+          npm run test:prep-ui

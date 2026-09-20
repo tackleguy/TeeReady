@@ -20,6 +20,7 @@ interface Props {
   turf?: TurfReport;
   forecast?: HoleForecast | null;
   onReset: () => void;
+  embedded?: boolean;
   mode?: 'tee' | 'approach';
 }
 
@@ -33,6 +34,7 @@ export function GolfTargetHud({
   forecast,
   onReset,
   mode = 'tee',
+  embedded = false,
 }: Props) {
   const split: MeasureSplit = measureFromTee(hole, target);
   const windAdj = brief?.windAdjustmentYards ?? 0;
@@ -62,18 +64,18 @@ export function GolfTargetHud({
 
   return (
       <div
-        className="w-[min(100vw-1.5rem,360px)] rounded-xl border border-[color-mix(in_srgb,var(--brand)_40%,transparent)] px-2.5 py-2 shadow-xl backdrop-blur-[28px]"
-        style={{ background: 'var(--glass-hi)' }}
+        className={embedded ? "prep-target" : "w-[min(100vw-1.5rem,360px)] rounded-xl border border-[color-mix(in_srgb,var(--brand)_40%,transparent)] px-2.5 py-2 shadow-xl backdrop-blur-[28px]"}
+        style={embedded ? undefined : { background: 'var(--glass-hi)' }}
       >
         <div className="mb-1.5 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-brand-soft px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-brand">
+            {!embedded && <span className="rounded-full bg-brand-soft px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-brand">
               Prep
-            </span>
+            </span>}
             <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)]">
               {mode === 'approach'
-                ? 'Approach · miss lines on'
-                : 'Tee plan · miss lines on'}
+                ? 'Approach plan'
+                : 'Tee shot plan'}
             </span>
           </div>
           <button

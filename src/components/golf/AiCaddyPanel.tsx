@@ -64,7 +64,6 @@ export function AiCaddyPanel({
   const [notice, setNotice] = useState<string | null>(null);
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const abortRef = useRef<AbortController | null>(null);
-  const tipKeyRef = useRef('');
 
   const ctx = useMemo(
     () =>
@@ -136,19 +135,21 @@ export function AiCaddyPanel({
         };
         return [autoTurn, ...withoutAuto].slice(0, 8);
       });
+    } catch {
+      if (!ac.signal.aborted) setNotice('Caddie advice could not load. Try again in a moment.');
     } finally {
       if (!ac.signal.aborted) setBusy(false);
     }
   }, [ctx, tipKey]);
 
+  const refreshTipRef = useRef(refreshTip);
+  refreshTipRef.current = refreshTip;
   useEffect(() => {
-    if (tipKeyRef.current === tipKey) return;
-    tipKeyRef.current = tipKey;
-    void refreshTip();
+    void refreshTipRef.current();
     return () => {
       abortRef.current?.abort();
     };
-  }, [tipKey, refreshTip]);
+  }, [tipKey]);
 
   const sendAsk = useCallback(
     async (raw?: string) => {
@@ -176,6 +177,8 @@ export function AiCaddyPanel({
           };
           return [...prev, reply].slice(-10);
         });
+      } catch {
+        if (!ac.signal.aborted) setNotice('Your caddie could not respond. Please try again.');
       } finally {
         if (!ac.signal.aborted) setBusy(false);
       }

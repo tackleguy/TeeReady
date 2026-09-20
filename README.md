@@ -63,3 +63,9 @@ Lists and course pickers use the compact, versioned `src/data/course-directory.j
 Production builds use the committed golf catalog. Data maintainers should run `npm run build:golf-catalog` explicitly when refreshing upstream data; builds no longer run bulk geocoding based on whether an untracked ingestion cache happens to exist.
 
 `npm run test:map-loading` builds both map components with production CSS and security headers. It verifies nonzero container/canvas height and actual worker-rendered hole lines and course markers on phone and desktop layouts. External tiles are isolated with local responses. The fixture must not override map-container positioning: doing so previously masked a CSS load-order regression. Use `PLAYWRIGHT_BROWSER=webkit` to run against an installed Playwright WebKit engine.
+
+## Prep workspace
+
+Prep uses a fixed course header, a map, and one planning panel. The panel sits beside the map on desktop and below it on phones; it can expand on smaller screens. Plan contains hole selection, tees, shot mode, target yardages, and landing reset. Conditions contains the forecast hour and weather. Caddie mounts only when requested. Yardage book, scorecard, 3D greens, orientation, and profile controls remain available under Round tools & settings. GPS retains its existing controls and the current course/hole when switching modes. Course selection uses text rows without decorative image downloads.
+
+`npm run test:prep-ui` exercises the production-built route with offline APIs: course selection, map/panel separation, hole navigation, shot mode, landing reset, forecast selection, caddie cancellation, and the Prep/GPS handoff. Set `PREP_LIVE_IMAGES=1` for a visual pass with live map imagery.

@@ -22,6 +22,7 @@ import {
   CloudSun,
   X,
 } from 'lucide-react';
+import { PrepPanel } from '../components/golf/PrepPanel';
 import { GolfMap } from '../components/golf/GolfMap';
 import { CourseHeroImage } from '../components/golf/CourseHeroImage';
 import { GolfMapBoundary } from '../components/golf/GolfMapBoundary';
@@ -1111,11 +1112,18 @@ export function GolfView({ active = true }: { active?: boolean }) {
   ) : null;
 
   return (
-    <div className="absolute inset-0 flex min-h-0 flex-col md:flex-row">
+    <div className={viewMode === 'prep' ? `prep-workspace absolute inset-0 ${showPicker ? 'is-picking' : ''}` : 'absolute inset-0 flex min-h-0 flex-col md:flex-row'}>
+      {viewMode === 'prep' && course && !showPicker ? (
+        <header className="prep-header">
+          <button type="button" className="prep-change" onClick={() => setPickerOpen(true)} aria-label="Change course"><ChevronLeft size={18} aria-hidden /><span>Courses</span></button>
+          <div className="prep-course-title"><h1>{course.name}</h1><p>Round prep · {layoutLabel}</p></div>
+          <button type="button" className="btn-primary" onClick={() => navigate('/rounds/gps')}>Open GPS <Navigation size={16} aria-hidden /></button>
+        </header>
+      ) : null}
       {/* Course picker — full screen on phones until a course is chosen. */}
       <aside
         className={
-          showPicker
+          viewMode === 'prep' ? (showPicker ? 'prep-course-picker' : 'hidden') : showPicker
             ? isMobile
               ? [
                   'z-20 flex min-h-0 flex-col bg-[var(--surface-0)]',
@@ -1125,6 +1133,11 @@ export function GolfView({ active = true }: { active?: boolean }) {
             : 'hidden'
         }
       >
+        {viewMode === 'prep' ? <header className="prep-picker-heading">
+          <div><h1>Prepare your round</h1><p>Choose a course. Build a plan, one hole at a time.</p></div>
+          {course ? <button type="button" onClick={() => setPickerOpen(false)}>Back to plan</button> : null}
+          <button type="button" onClick={() => setSearchOpen(value => !value)} aria-expanded={searchOpen}><MapPin size={16} aria-hidden />{loc.name}</button>
+        </header> : <>
         <div className="border-b border-[var(--line-subtle)] px-3 py-3">
           <div className="flex items-center gap-2">
           <Flag className="h-4 w-4 text-[var(--accent)]" strokeWidth={1.8} aria-hidden="true" />
@@ -1182,6 +1195,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
             <span className="truncate text-xs text-[var(--ink-2)]">{loc.name}</span>
           </div>
         </div>
+        </>}
 
         {searchOpen ? (
           <div className="px-3 pb-2">
@@ -1300,11 +1314,11 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     ].join(' ')}
                   >
                     <div className="flex items-start gap-3">
-                      <CourseHeroImage
+                      {viewMode !== 'prep' && <CourseHeroImage
                         seed={c.id || c.name}
                         alt=""
                         className="h-12 w-12 shrink-0 rounded-lg object-cover"
-                      />
+                      />}
                       <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
                       <div className="min-w-0">
                         <div className="truncate text-[13px] font-semibold text-[var(--ink-1)]">
@@ -1351,13 +1365,14 @@ export function GolfView({ active = true }: { active?: boolean }) {
           </ul>
         </div>
 
-        {course && !isMobile ? hourSlider : null}
+        {course && !isMobile && viewMode !== 'prep' ? hourSlider : null}
       </aside>
 
       {/* Map + hole board */}
       <div
         className={[
-          'golf-hud relative min-h-0 flex-1 overflow-hidden',
+          viewMode === 'prep' ? 'prep-map golf-hud relative min-h-0 overflow-hidden' : 'golf-hud relative min-h-0 flex-1 overflow-hidden',
+          viewMode === 'prep' && showPicker ? 'hidden' : '',
           isMobile && !course ? 'hidden' : '',
         ].join(' ')}
       >
@@ -1411,8 +1426,8 @@ export function GolfView({ active = true }: { active?: boolean }) {
                 crosswindMph={activeBrief?.crosswindMph ?? null}
                 holeUp={holeUp}
                 compactControls={isMobile}
-                showWindLegend={!isMobile && viewMode === 'prep'}
-                fitPadding={isMobile ? MOBILE_FIT_PADDING : 60}
+                showWindLegend={false}
+                fitPadding={viewMode === 'prep' ? 36 : isMobile ? MOBILE_FIT_PADDING : 60}
                 legendClassName="left-3 top-3"
                 onReady={() => setMapReady(true)}
                 satelliteCached={false}
@@ -1464,44 +1479,8 @@ export function GolfView({ active = true }: { active?: boolean }) {
               </div>
             ) : null}
 
-            {viewMode === 'prep' && activeHoleObj && target && profile ? (
-              <DraggableBox
-                id="prep-hud"
-                defaultAnchor={{ left: 12, bottom: 16 }}
-                zIndex={22}
-                showHandle={false}
-              >
-                <GolfTargetHud
-                  hole={activeHoleObj}
-                  target={target}
-                  bag={bag}
-                  brief={activeBrief}
-                  elevFt={courseElevFt}
-                  turf={turf}
-                  forecast={forecast}
-                  mode={planningMode}
-                  onReset={() =>
-                    setTarget(
-                      defaultTarget(
-                        activeHoleObj,
-                        bag[0]?.yards ?? profile.driverYards,
-                        course?.courseType,
-                      ),
-                    )
-                  }
-                />
-                {activeHoleObj.provenance ? (
-                  <GlassPanel className="mt-1.5 px-2.5 py-1.5 shadow-lg">
-                    <DataProvenanceNote
-                      provenance={activeHoleObj.provenance}
-                      compact
-                    />
-                  </GlassPanel>
-                ) : null}
-              </DraggableBox>
-            ) : null}
 
-            {caddyOpen && course && activeHoleObj && profile ? (
+            {viewMode === 'gps' && caddyOpen && course && activeHoleObj && profile ? (
               <DraggableBox
                 id="ai-caddy"
                 defaultAnchor={
@@ -1543,8 +1522,8 @@ export function GolfView({ active = true }: { active?: boolean }) {
               </DraggableBox>
             ) : null}
 
-            {/* Scorecard — Prep/GPS chosen from Rounds nav dropdown */}
-            {course ? (
+            {/* GPS toolbar */}
+            {viewMode === 'gps' && course ? (
               <DraggableBox
                 id="mode-card"
                 defaultAnchor={{ right: 12, top: 12 }}
@@ -1653,7 +1632,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
             ) : null}
 
             {/* Hole-by-hole walkthrough + course switcher */}
-            {(isMobile || playHoles.length > 0) && (
+            {viewMode === 'gps' && (isMobile || playHoles.length > 0) && (
               <DraggableBox
                 id="hole-nav"
                 defaultAnchor={{ left: 12, top: 12 }}
@@ -1965,7 +1944,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
             ) : null}
 
             {/* Shot tracker info bar */}
-            {tracking && activeHoleObj && activeHoleShots.length > 0 && (
+            {viewMode === 'gps' && tracking && activeHoleObj && activeHoleShots.length > 0 && (
               <DraggableBox
                 id="shot-bar"
                 defaultAnchor={{ left: 12, bottom: 180 }}
@@ -1996,7 +1975,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
               </DraggableBox>
             )}
 
-            {intelPanelOpen ? (
+            {viewMode === 'gps' && intelPanelOpen ? (
             <DraggableBox
               id="intel-panel"
               defaultAnchor={
@@ -2238,22 +2217,6 @@ export function GolfView({ active = true }: { active?: boolean }) {
                   />
                 )}
 
-                {viewMode === 'prep' &&
-                  roundPrepPlan &&
-                  (!isMobile || sheetExpanded) && (
-                    <div className="border-b border-[var(--line-subtle)] px-2 py-2">
-                      <PrepRoundPlan
-                        plan={roundPrepPlan}
-                        activeHole={activeHole}
-                        onSelectHole={(n) => {
-                          setActiveHole(n);
-                          if (isMobile) setSheetExpanded(false);
-                        }}
-                        compact={isMobile}
-                      />
-                    </div>
-                  )}
-
                 {(!isMobile || sheetExpanded) && (
                   <>
                     {isMobile ? hourSlider : null}
@@ -2346,6 +2309,36 @@ export function GolfView({ active = true }: { active?: boolean }) {
           </div>
         )}
       </div>
+      {viewMode === 'prep' && course && !showPicker ? <PrepPanel
+        holes={playHoles} activeHole={activeHole} onSelectHole={selectHole} onStep={stepHole}
+        loading={holesLoading} error={holesError} onRetry={retryHoles}
+        plan={<>
+          {activeHoleObj && target ? <GolfTargetHud embedded hole={activeHoleObj} target={target} bag={bag} brief={activeBrief} elevFt={courseElevFt} turf={turf} forecast={forecast} mode={planningMode} onReset={() => setTarget(defaultTarget(activeHoleObj, bag[0]?.yards ?? profile.driverYards, course.courseType))} /> : null}
+          <div className="prep-settings-row">
+            <label>Tees<select value={teeKind} onChange={event => setTeeKind(event.target.value as TeeKind)}>{teeKinds.map(kind => <option key={kind} value={kind}>{teeKindLabel(kind)}</option>)}</select></label>
+            <label>Shot<select value={planningMode} onChange={event => setPlanningMode(event.target.value as 'tee' | 'approach')}><option value="tee">Tee shot</option><option value="approach">Approach</option></select></label>
+          </div>
+          <p className="prep-hint">Tap the map to move your {planningMode === 'tee' ? 'landing target' : 'approach starting point'}.</p>
+          {activeBrief ? <p className="prep-hint">{activeBrief.tip}</p> : null}
+          {playHoles[0]?.provenance ? <DataProvenanceNote provenance={playHoles[0].provenance} compact /> : null}
+          {roundPrepPlan ? <details className="prep-tools"><summary>Hole-by-hole round plan</summary><div className="prep-embedded"><PrepRoundPlan plan={roundPrepPlan} activeHole={activeHole} onSelectHole={selectHole} /></div></details> : null}
+        </>}
+        conditions={<div className="prep-conditions">
+          <h2>Playing conditions</h2>
+          {hourSlider}
+          {forecast ? <GolfHoleIntel forecast={forecast} turf={turf} miss={profile.miss} /> : <p className="prep-hint">{ensLoading ? 'Loading the forecast…' : 'Live conditions are unavailable. Your course map and target planning still work.'}</p>}
+        </div>}
+        caddie={activeHoleObj ? <div className="prep-embedded"><AiCaddyPanel mode="prep" courseName={course.name} hole={activeHoleObj} profile={profile} bag={bag} brief={activeBrief} turf={turf} forecast={forecast} ensembleSummary={ensemble?.summary ?? null} prepFocus={activePrepHole?.focusLabel ?? null} prepFocusTip={activePrepHole?.tip ?? null} teeKind={teeKindLabel(teeKind)} compact={false} /></div> : <p className="prep-hint">Choose a hole to ask your caddie about the shot.</p>}
+        tools={<>
+          {loops.length >= 2 ? <label>Course layout<select value={resolvedLoop ?? ''} onChange={event => { setLoop(event.target.value); setActiveHole(null); }}>{loops.map(name => <option key={name} value={name}>{name}</option>)}</select></label> : null}
+          <button type="button" onClick={() => setBookOpen(true)}><BookOpen size={17} aria-hidden />Yardage book</button>
+          <button type="button" onClick={openScorecard}><ClipboardList size={17} aria-hidden />Scorecard</button>
+          {canGreens3d ? <button type="button" onClick={() => { if (activeHole == null && playHoles[0]) selectHole(playHoles[0].number); setGreens3d(true); }}><Mountain size={17} aria-hidden />3D green</button> : null}
+          <button type="button" aria-pressed={holeUp} onClick={() => setHoleUp(value => !value)}><Compass size={17} aria-hidden />{holeUp ? 'Hole-up view' : 'North-up view'}</button>
+          <button type="button" onClick={() => { stashWeatherCourse(course); navigate('/weather'); }}><CloudSun size={17} aria-hidden />Weather & radar</button>
+          <button type="button" onClick={() => navigate('/profile')}><Settings2 size={17} aria-hidden />Golfer info & bag</button>
+        </>}
+      /> : null}
       {bookOpen && course && profile ? (
         <GolfYardageBook
           course={course}
