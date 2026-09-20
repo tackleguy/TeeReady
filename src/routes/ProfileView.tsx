@@ -330,7 +330,10 @@ export function ProfileView() {
           </div>
           <dl className="mt-3">
             {profile.homeCity.trim() ? (
-              <QRow label="Home city" value={profile.homeCity.trim()} />
+              <QRow
+                label="Home city"
+                value={`${profile.homeCity.trim()} · nearest favorite`}
+              />
             ) : null}
             {goalLabels.length ? (
               <QRow label="Goals" value={goalLabels.join(' · ')} />
@@ -344,9 +347,6 @@ export function ProfileView() {
             <QRow label="Biggest leak" value={profile.biggestLeak} />
             <QRow label="Practice" value={profile.practiceFocus} />
             <QRow label="Compete" value={profile.competitiveLevel} />
-            {profile.dreamCourse.trim() ? (
-              <QRow label="Dream course" value={profile.dreamCourse.trim()} />
-            ) : null}
             {profile.motivation.trim() ? (
               <QRow label="Why you play" value={profile.motivation.trim()} />
             ) : null}

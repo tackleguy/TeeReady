@@ -11,6 +11,7 @@ import {
 } from '../../lib/golfProfile';
 import { getGoal, hasAnyGoals, type GoalId } from '../../lib/goals';
 import { formatHandicap, MAX_HANDICAP, MIN_HANDICAP } from '../../lib/golfHandicap';
+import { nearestCityTo, saveSearchLoc } from '../../lib/searchLoc';
 
 const STEPS = [
   { id: 'account', title: 'Account', subtitle: 'Sign-in details' },
@@ -461,6 +462,27 @@ function ReviewRow({ label, value }: { label: string; value: string }) {
 }
 
 export function persistSignupProfile(draft: SignupDraft): void {
+  const favorite = draft.courses[0];
+  let homeCity = '';
+  let homeCityLat: number | null = null;
+  let homeCityLon: number | null = null;
+  if (
+    favorite &&
+    Number.isFinite(favorite.lat) &&
+    Number.isFinite(favorite.lon) &&
+    !(favorite.lat === 0 && favorite.lon === 0)
+  ) {
+    const near = nearestCityTo(favorite.lat, favorite.lon);
+    const regionHint = favorite.region?.split(',')[0]?.trim();
+    homeCity = near?.name ?? regionHint ?? favorite.name;
+    homeCityLat = near?.latitude ?? favorite.lat;
+    homeCityLon = near?.longitude ?? favorite.lon;
+    saveSearchLoc({
+      name: homeCity,
+      lat: homeCityLat,
+      lon: homeCityLon,
+    });
+  }
   saveGolfProfile({
     ...DEFAULT_PROFILE,
     handicap: draft.handicap,
@@ -473,6 +495,10 @@ export function persistSignupProfile(draft: SignupDraft): void {
     targetHandicap: draft.goals.includes('lower-handicap')
       ? draft.targetHandicap
       : undefined,
+    homeCity,
+    homeCityLat,
+    homeCityLon,
+    dreamCourse: '',
     questionnaireCompleted: false,
   });
 }

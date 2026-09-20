@@ -69,6 +69,7 @@ export function TopNav({
               to="/courses"
               onMouseEnter={() => prefetchRoute('/courses')}
               className="nav-link"
+              data-tutorial="play"
             >
               Courses
             </NavLink>
@@ -78,14 +79,6 @@ export function TopNav({
               className="nav-link"
             >
               Weather
-            </NavLink>
-            <NavLink
-              to="/rounds/prep"
-              onMouseEnter={() => prefetchRoute('/rounds/prep')}
-              className="nav-link"
-              data-tutorial="play"
-            >
-              Prep
             </NavLink>
           </nav>
           <button

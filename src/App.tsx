@@ -17,10 +17,34 @@ import { AuthProvider, useAuth } from './lib/auth';
 import { CURRENT_LOCATION } from './lib/mock';
 import { applyTheme, loadTheme } from './lib/theme';
 import { defaultSearchLoc, saveSearchLoc } from './lib/searchLoc';
+import { loadGolfProfile } from './lib/golfProfile';
 import { HomeLanding } from './routes/HomeLanding';
 import { RouteFallback } from './components/ui/RouteFallback';
 
 applyTheme(loadTheme());
+
+/** At app start, prefer saved home city (nearest favorite course from questionnaire). */
+function bootSearchLocFromProfile(): void {
+  try {
+    const profile = loadGolfProfile();
+    if (
+      profile?.homeCity?.trim() &&
+      profile.homeCityLat != null &&
+      profile.homeCityLon != null &&
+      Number.isFinite(profile.homeCityLat) &&
+      Number.isFinite(profile.homeCityLon)
+    ) {
+      saveSearchLoc({
+        name: profile.homeCity.trim(),
+        lat: profile.homeCityLat,
+        lon: profile.homeCityLon,
+      });
+    }
+  } catch {
+    // ignore
+  }
+}
+bootSearchLocFromProfile();
 
 const TodayView = lazy(() => import('./routes/TodayView').then((m) => ({ default: m.TodayView })));
 const GolfView = lazy(() => import('./routes/GolfView').then((m) => ({ default: m.GolfView })));
@@ -144,7 +168,12 @@ function RequireAuth({ children }: { children: ReactNode }) {
   const { configured, loading, user } = useAuth();
   const location = useLocation();
 
+  // Local UI work without Supabase: set VITE_ALLOW_ANON=1 (also on in Vite DEV).
+  const allowAnon =
+    import.meta.env.DEV || import.meta.env.VITE_ALLOW_ANON === '1';
+
   if (!configured) {
+    if (allowAnon) return <>{children}</>;
     return <Navigate to="/" replace state={{ from: location }} />;
   }
   if (loading) {
@@ -175,7 +204,7 @@ function RoundsPage() {
 
 function Shell() {
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, configured } = useAuth();
   const isLanding = location.pathname === '/';
   const isRounds = location.pathname.startsWith('/rounds');
   const isCourseMap = location.pathname.startsWith('/courses/map');
@@ -199,7 +228,11 @@ function Shell() {
     };
   }, []);
 
-  const showAppChrome = Boolean(user) && !isLanding;
+  const showAppChrome =
+    (Boolean(user) ||
+      ((import.meta.env.DEV || import.meta.env.VITE_ALLOW_ANON === '1') &&
+        !configured)) &&
+    !isLanding;
   const fullBleedMain = isRounds || isCourseMap || isCourses;
   const showSideRail = showAppChrome && !isRounds && !isCourseMap;
   const showTabs = showAppChrome && !hideBottomTabs;
