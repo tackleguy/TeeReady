@@ -46,8 +46,8 @@ const STEPS: Step[] = [
   {
     id: 'tabs',
     target: 'play',
-    title: 'Prep when you want depth',
-    body: 'Desktop Prep is still one tap away in the top bar. On course, GPS hides the tab bar so the map and yardages stay full-bleed.',
+    title: 'Pick Prep or GPS',
+    body: 'Courses (and the Play tab) is where you choose Prep or GPS for a round. Once you’re in GPS, stay there — no mid-round flip back to Prep.',
     primary: 'Next',
   },
   {

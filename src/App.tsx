@@ -144,7 +144,12 @@ function RequireAuth({ children }: { children: ReactNode }) {
   const { configured, loading, user } = useAuth();
   const location = useLocation();
 
+  // Local UI work without Supabase: set VITE_ALLOW_ANON=1 (also on in Vite DEV).
+  const allowAnon =
+    import.meta.env.DEV || import.meta.env.VITE_ALLOW_ANON === '1';
+
   if (!configured) {
+    if (allowAnon) return <>{children}</>;
     return <Navigate to="/" replace state={{ from: location }} />;
   }
   if (loading) {
@@ -175,7 +180,7 @@ function RoundsPage() {
 
 function Shell() {
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, configured } = useAuth();
   const isLanding = location.pathname === '/';
   const isRounds = location.pathname.startsWith('/rounds');
   const isCourseMap = location.pathname.startsWith('/courses/map');
@@ -199,7 +204,11 @@ function Shell() {
     };
   }, []);
 
-  const showAppChrome = Boolean(user) && !isLanding;
+  const showAppChrome =
+    (Boolean(user) ||
+      ((import.meta.env.DEV || import.meta.env.VITE_ALLOW_ANON === '1') &&
+        !configured)) &&
+    !isLanding;
   const fullBleedMain = isRounds || isCourseMap || isCourses;
   const showSideRail = showAppChrome && !isRounds && !isCourseMap;
   const showTabs = showAppChrome && !hideBottomTabs;

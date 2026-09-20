@@ -1128,7 +1128,9 @@ export function GolfView({ active = true }: { active?: boolean }) {
             </h1>
             <p className="truncate text-[11px] text-[var(--ink-3)]">
               {workingCount > 0
-                ? `${workingCount.toLocaleString()} playable · tap Prep or GPS`
+                ? course
+                  ? `${workingCount.toLocaleString()} playable · stay in ${viewMode === 'gps' ? 'GPS' : 'Prep'}`
+                  : `${workingCount.toLocaleString()} playable · tap Prep or GPS`
                 : 'Loading playable courses…'}
             </p>
           </div>
@@ -1224,20 +1226,40 @@ export function GolfView({ active = true }: { active?: boolean }) {
                 {gpsCourseHint.course.name}
               </p>
               <div className="mt-2 flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => openCourseAs(gpsCourseHint.course, 'prep')}
-                  className="inline-flex flex-1 items-center justify-center rounded-lg bg-brand px-2 py-2 text-[12px] font-bold text-white"
-                >
-                  Prep
-                </button>
-                <button
-                  type="button"
-                  onClick={() => openCourseAs(gpsCourseHint.course, 'gps')}
-                  className="inline-flex flex-1 items-center justify-center rounded-lg border border-[var(--line-default)] px-2 py-2 text-[12px] font-bold text-[var(--ink-1)] hover:bg-white/10"
-                >
-                  GPS
-                </button>
+                {course && viewMode === 'prep' ? (
+                  <button
+                    type="button"
+                    onClick={() => openCourseAs(gpsCourseHint.course, 'prep')}
+                    className="inline-flex flex-1 items-center justify-center rounded-lg bg-brand px-2 py-2 text-[12px] font-bold text-white"
+                  >
+                    Open in Prep
+                  </button>
+                ) : course && viewMode === 'gps' ? (
+                  <button
+                    type="button"
+                    onClick={() => openCourseAs(gpsCourseHint.course, 'gps')}
+                    className="inline-flex flex-1 items-center justify-center rounded-lg bg-[#3b82f6] px-2 py-2 text-[12px] font-bold text-white"
+                  >
+                    Open in GPS
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => openCourseAs(gpsCourseHint.course, 'prep')}
+                      className="inline-flex flex-1 items-center justify-center rounded-lg bg-brand px-2 py-2 text-[12px] font-bold text-white"
+                    >
+                      Prep
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => openCourseAs(gpsCourseHint.course, 'gps')}
+                      className="inline-flex flex-1 items-center justify-center rounded-lg border border-[var(--line-default)] px-2 py-2 text-[12px] font-bold text-[var(--ink-1)] hover:bg-white/10"
+                    >
+                      GPS
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -1345,20 +1367,40 @@ export function GolfView({ active = true }: { active?: boolean }) {
                           {c.par != null && <span>par {c.par}</span>}
                         </div>
                         <div className="mt-2.5 flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => openCourseAs(c, 'prep')}
-                            className="inline-flex flex-1 items-center justify-center rounded-lg bg-brand px-2 py-2 text-[12px] font-bold text-white"
-                          >
-                            Prep
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => openCourseAs(c, 'gps')}
-                            className="inline-flex flex-1 items-center justify-center rounded-lg border border-[var(--line-default)] px-2 py-2 text-[12px] font-bold text-[var(--ink-1)] hover:bg-white/10"
-                          >
-                            GPS
-                          </button>
+                          {course && viewMode === 'prep' ? (
+                            <button
+                              type="button"
+                              onClick={() => openCourseAs(c, 'prep')}
+                              className="inline-flex flex-1 items-center justify-center rounded-lg bg-brand px-2 py-2 text-[12px] font-bold text-white"
+                            >
+                              {active ? 'Stay in Prep' : 'Open in Prep'}
+                            </button>
+                          ) : course && viewMode === 'gps' ? (
+                            <button
+                              type="button"
+                              onClick={() => openCourseAs(c, 'gps')}
+                              className="inline-flex flex-1 items-center justify-center rounded-lg bg-[#3b82f6] px-2 py-2 text-[12px] font-bold text-white"
+                            >
+                              {active ? 'Stay in GPS' : 'Open in GPS'}
+                            </button>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => openCourseAs(c, 'prep')}
+                                className="inline-flex flex-1 items-center justify-center rounded-lg bg-brand px-2 py-2 text-[12px] font-bold text-white"
+                              >
+                                Prep
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => openCourseAs(c, 'gps')}
+                                className="inline-flex flex-1 items-center justify-center rounded-lg border border-[var(--line-default)] px-2 py-2 text-[12px] font-bold text-[var(--ink-1)] hover:bg-white/10"
+                              >
+                                GPS
+                              </button>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
