@@ -1523,7 +1523,8 @@ export function GolfMap({
 
   return (
     <div className={`relative h-full min-h-0 w-full overflow-hidden ${className}`}>
-      <div ref={containerRef} className="absolute inset-0" />
+      {/* MapLibre's late-loaded position:relative rule must not collapse this container. */}
+      <div ref={containerRef} style={{ position: 'absolute', inset: 0 }} />
       {showWindLegend && (windLabel || (greens3d && canGreens3d && activeHole != null)) && (
         <div
           className={`pointer-events-none absolute flex flex-col gap-1 rounded-2xl border border-white/10 bg-black/55 px-3 py-2 text-[11px] font-medium backdrop-blur-md ${legendClassName}`}

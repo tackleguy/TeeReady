@@ -48,7 +48,8 @@
     "test:browser": "node scripts/test-browser.mjs",
     "test:mobile-performance": "node scripts/test-mobile-performance.mjs",
     "build:course-directory": "node scripts/build-course-directory.mjs",
-    "test:course-lists": "node scripts/test-course-lists.mjs"
+    "test:course-lists": "node scripts/test-course-lists.mjs",
+    "test:map-loading": "node scripts/test-map-loading.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^1.0.1",

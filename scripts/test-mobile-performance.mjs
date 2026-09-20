@@ -30,6 +30,8 @@ try {
     for (let i = 0; i < 3; i++) {
       await page.getByRole('button', { name: 'Open map' }).click();
       await page.getByTestId('map-status').filter({ hasText: 'ready' }).waitFor();
+      const box = await page.locator('.maplibregl-map').boundingBox();
+      assert.ok(box && box.height >= 410, 'map container must remain visible without fixture CSS');
       const ratio = await page.locator('canvas.maplibregl-canvas').evaluate(canvas => canvas.width / canvas.clientWidth);
       assert.ok(ratio <= 1.51, `canvas pixel ratio was ${ratio}`);
       await page.getByRole('button', { name: 'Close map' }).click();

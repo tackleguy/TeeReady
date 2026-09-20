@@ -17,9 +17,8 @@ function Fixture() {
     {showGreen && <Suspense fallback={<p>Loading green</p>}><Green3DViewer course={mesh} hole={1} onClose={() => setShowGreen(false)} /></Suspense>}
     <p data-testid="map-status">{ready ? 'ready' : 'waiting'}</p>
     {showMap && <Suspense fallback={<p>Loading map</p>}><div style={{ width: '100%', height: 420, position: 'relative' }}>
-      <GolfMap lat={47.6} lon={-122.3} holes={[]} activeHole={null} courseName="Augusta National Golf Club" greens3d={false} onReady={() => setReady(true)} className="fixture-map" />
+      <GolfMap lat={47.6} lon={-122.3} holes={[]} activeHole={null} courseName="Augusta National Golf Club" greens3d={false} onReady={() => setReady(true)} />
     </div></Suspense>}
-    <style>{`.fixture-map {height: 420px; position:relative} .fixture-map > div:first-child {position:absolute; inset:0}`}</style>
   </>;
 }
 createRoot(document.getElementById('root')!).render(<Fixture />);

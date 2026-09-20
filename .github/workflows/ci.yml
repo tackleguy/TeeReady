@@ -34,5 +34,6 @@ jobs:
           done
           npm run smoke
           npm run test:browser
+          npm run test:map-loading
           npm run test:mobile-performance
           npm run test:course-lists

@@ -261,7 +261,8 @@ export function CoursesLocatorMap({
     <div
       className={`relative h-full min-h-0 w-full overflow-hidden ${className}`}
     >
-      <div ref={containerRef} className="absolute inset-0" />
+      {/* MapLibre's late-loaded position:relative rule must not collapse this container. */}
+      <div ref={containerRef} style={{ position: 'absolute', inset: 0 }} />
     </div>
   );
 }
