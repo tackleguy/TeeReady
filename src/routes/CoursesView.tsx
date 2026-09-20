@@ -128,47 +128,44 @@ function CourseCard({
           {course.par != null ? <span>Par {course.par}</span> : null}
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              setBusy('gps');
-              onGps(course);
-            }}
-            disabled={busy != null}
-            aria-busy={busy === 'gps'}
-            className="inline-flex min-h-[44px] items-center gap-1 rounded-xl bg-brand px-3 text-[12px] font-bold uppercase tracking-wide text-white disabled:opacity-60"
-          >
-            {busy === 'gps' ? (
-              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-            ) : (
-              <>
-                <Navigation className="h-3.5 w-3.5" strokeWidth={2.2} aria-hidden="true" />
-                Start
-              </>
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setBusy('prep');
-              onPrep(course);
-            }}
-            disabled={busy != null}
-            aria-busy={busy === 'prep'}
-            className="inline-flex min-h-[44px] items-center gap-1 px-2 text-[13px] font-semibold text-muted hover:text-ink disabled:opacity-60"
-          >
-            {busy === 'prep' ? (
-              <>
+            <button
+              type="button"
+              onClick={() => {
+                setBusy('gps');
+                onGps(course);
+              }}
+              disabled={busy != null}
+              aria-busy={busy === 'gps'}
+              className="inline-flex min-h-[44px] items-center gap-1 rounded-xl bg-brand px-3 text-[12px] font-bold uppercase tracking-wide text-white disabled:opacity-60"
+            >
+              {busy === 'gps' ? (
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                Opening…
-              </>
-            ) : (
-              <>
-                Prep
-                <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-              </>
-            )}
-          </button>
+              ) : (
+                <>
+                  <Navigation className="h-3.5 w-3.5" strokeWidth={2.2} aria-hidden="true" />
+                  GPS
+                </>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setBusy('prep');
+                onPrep(course);
+              }}
+              disabled={busy != null}
+              aria-busy={busy === 'prep'}
+              className="inline-flex min-h-[44px] items-center gap-1 rounded-xl border border-line px-3 text-[12px] font-bold uppercase tracking-wide text-ink hover:bg-canvas disabled:opacity-60"
+            >
+              {busy === 'prep' ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                  Opening…
+                </>
+              ) : (
+                <>Prep</>
+              )}
+            </button>
         </div>
       </div>
     </article>
@@ -289,7 +286,7 @@ export function CoursesView() {
                 Courses
               </h1>
               <p className="mt-1 text-[13px] leading-relaxed text-muted">
-                Find a track, then prep or start GPS.
+                Pick a course, then Prep or GPS — not both at once.
               </p>
             </div>
             <Link
@@ -401,8 +398,8 @@ export function CoursesView() {
                 Cards marked{' '}
                 <span className="font-semibold text-ink">Map ready</span> have
                 local hole geometry; <span className="font-semibold text-ink">3D</span>{' '}
-                means a local green mesh pack. Prep is the default path; GPS
-                starts a live round.
+                means a local green mesh pack. Tap <span className="font-semibold text-ink">Prep</span> or{' '}
+                <span className="font-semibold text-ink">GPS</span> on a course — modes stay separate.
               </p>
             </div>
           )}

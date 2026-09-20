@@ -40,7 +40,7 @@ const STEPS: Step[] = [
     id: 'start',
     target: 'start-round',
     title: 'Start Round',
-    body: 'The big button on Home launches Prep or resumes a live GPS round. Nearby courses and last scores sit just below — nothing to hunt for.',
+    body: 'The big button on Home opens Courses so you pick Prep or GPS for a round — or resumes a live GPS round. Nearby courses and last scores sit just below.',
     primary: 'Next',
   },
   {
@@ -54,7 +54,7 @@ const STEPS: Step[] = [
     id: 'ready',
     target: null,
     title: 'You’re ready to play',
-    body: 'Tap Start Round, pick a course, and walk to the first tee. Your round stays alive if you leave GPS.',
+    body: 'Tap Start Round, pick a course, then Prep or GPS. Modes stay separate — leave GPS from Home or Courses, not by flipping into Prep.',
     primary: 'Open Prep',
   },
 ];

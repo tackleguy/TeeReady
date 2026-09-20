@@ -148,7 +148,7 @@ export function TodayView() {
 
   const lastFinished = recentRounds.find((r) => !r.inProgress) ?? null;
   const lastLabel = lastRoundLabel(lastFinished);
-  const startHref = liveRound ? '/rounds/gps' : '/rounds/prep';
+  const startHref = liveRound ? '/rounds/gps' : '/courses';
 
   const insight =
     miss === 'right'
@@ -207,7 +207,7 @@ export function TodayView() {
               to="/rounds/gps"
               className="shrink-0 text-[13px] font-bold text-brand"
             >
-              Resume
+              Resume GPS
             </Link>
           </div>
         ) : (
@@ -222,7 +222,7 @@ export function TodayView() {
               to="/rounds/prep"
               className="btn-secondary flex min-h-[48px] flex-1 items-center justify-center text-[13px] font-semibold"
             >
-              Prep first
+              Open Prep
             </Link>
           </div>
         )}

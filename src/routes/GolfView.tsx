@@ -20,7 +20,6 @@ import {
   Settings2,
   Sparkles,
   CloudSun,
-  X,
 } from 'lucide-react';
 import { GolfMap } from '../components/golf/GolfMap';
 import { CourseHeroImage } from '../components/golf/CourseHeroImage';
@@ -252,7 +251,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
   const [gpsHudOpen, setGpsHudOpen] = useState(true);
   const [gpsHudExpanded, setGpsHudExpanded] = useState(false);
   const [intelPanelOpen, setIntelPanelOpen] = useState(false);
-  const [caddyOpen, setCaddyOpen] = useState(true);
+  const [caddyOpen, setCaddyOpen] = useState(false);
 
   // Keep player HCP in sync when Settings (or another tab) saves.
   useEffect(() => {
@@ -297,11 +296,6 @@ export function GolfView({ active = true }: { active?: boolean }) {
       setGpsFollow(false);
     }
   }, [viewMode, locateOnce, active, tracking]);
-
-  const leaveGpsMode = useCallback(() => {
-    setGpsFollow(false);
-    navigate('/rounds/prep', { replace: true });
-  }, [navigate]);
 
   // Mapbox needs a resize after the keep-alive layer is shown again.
   useEffect(() => {
@@ -572,7 +566,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
     .join(' · ');
 
   const pickCourse = useCallback(
-    (next: GolfCourseSummary) => {
+    (next: GolfCourseSummary): boolean => {
       const existing = loadRound();
       if (
         existing &&
@@ -582,7 +576,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
         const ok = window.confirm(
           `You have an open round at ${existing.courseName}. Switch courses and discard that round?`,
         );
-        if (!ok) return;
+        if (!ok) return false;
       }
       setCourse(next);
       holePickedByUser.current = false;
@@ -598,6 +592,8 @@ export function GolfView({ active = true }: { active?: boolean }) {
       setBookOpen(false);
       setSheetExpanded(false);
       setScorecardOpen(false);
+      setCaddyOpen(false);
+      setIntelPanelOpen(false);
       // Don't keep showing a scorecard/round for a different course.
       setRound((prev) => {
         if (prev && prev.courseId !== next.id) {
@@ -607,8 +603,21 @@ export function GolfView({ active = true }: { active?: boolean }) {
         return prev;
       });
       setPickerOpen(false);
+      return true;
     },
     [],
+  );
+
+  /** Enter a course in Prep or GPS — mode is chosen here, not toggled later. */
+  const openCourseAs = useCallback(
+    (next: GolfCourseSummary, mode: 'prep' | 'gps') => {
+      if (!pickCourse(next)) return;
+      const path = mode === 'gps' ? '/rounds/gps' : '/rounds/prep';
+      if (location.pathname !== path) {
+        navigate(path, { replace: true });
+      }
+    },
+    [pickCourse, location.pathname, navigate],
   );
 
   // Apply a course stashed from Courses / Map / Group, then stay on the
@@ -678,24 +687,6 @@ export function GolfView({ active = true }: { active?: boolean }) {
     setRound(null);
     setScorecardOpen(false);
   }, [round]);
-
-  const resumeStoredRound = useCallback(() => {
-    if (!round) return;
-    const holeFromScores =
-      round.scores.length > 0
-        ? Math.max(...round.scores.map((s) => s.holeNumber))
-        : null;
-    const holeFromShots =
-      round.shots.length > 0
-        ? round.shots[round.shots.length - 1]!.holeNumber
-        : null;
-    const hole = holeFromScores ?? holeFromShots ?? playHoles[0]?.number ?? 1;
-    setActiveHole(hole);
-    setScorecardOpen(false);
-    if (viewMode !== 'gps') {
-      navigate('/rounds/gps', { replace: true });
-    }
-  }, [round, playHoles, viewMode, navigate]);
 
   const dropShot = useCallback(() => {
     if (!round || !activeHoleObj || !gpsPos) return;
@@ -1129,13 +1120,15 @@ export function GolfView({ active = true }: { active?: boolean }) {
           <div className="flex items-center gap-2">
           <Flag className="h-4 w-4 text-[var(--accent)]" strokeWidth={1.8} aria-hidden="true" />
           <div className="min-w-0 flex-1">
-            <p className="section-eyebrow">Golf intelligence</p>
+            <p className="section-eyebrow">
+              {viewMode === 'gps' ? 'Start GPS' : 'Prep a round'}
+            </p>
             <h1 className="truncate text-sm font-semibold text-[var(--ink-1)]">
               TeeReady
             </h1>
             <p className="truncate text-[11px] text-[var(--ink-3)]">
               {workingCount > 0
-                ? `${workingCount.toLocaleString()} playable · offline maps`
+                ? `${workingCount.toLocaleString()} playable · tap Prep or GPS`
                 : 'Loading playable courses…'}
             </p>
           </div>
@@ -1218,16 +1211,35 @@ export function GolfView({ active = true }: { active?: boolean }) {
 
         {gpsCourseHint?.course && !courseFilter.trim() ? (
           <div className="px-3 pb-2">
-            <button
-              type="button"
-              onClick={() => pickCourse(gpsCourseHint.course)}
-              className="chip-button w-full justify-start text-left"
-            >
-              GPS: {gpsCourseHint.course.name}
-              {gpsCourseHint.ambiguousWith
-                ? ` · also near ${gpsCourseHint.ambiguousWith}`
-                : ` · ${gpsCourseHint.yards} yd`}
-            </button>
+            <div className="floating-subpanel px-3 py-2.5">
+              <p className="text-[11px] text-[var(--ink-3)]">
+                Near you
+                {gpsCourseHint.ambiguousWith
+                  ? ` · also near ${gpsCourseHint.ambiguousWith}`
+                  : gpsCourseHint.yards != null
+                    ? ` · ${gpsCourseHint.yards} yd`
+                    : ''}
+              </p>
+              <p className="mt-0.5 truncate text-[13px] font-semibold text-[var(--ink-1)]">
+                {gpsCourseHint.course.name}
+              </p>
+              <div className="mt-2 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => openCourseAs(gpsCourseHint.course, 'prep')}
+                  className="inline-flex flex-1 items-center justify-center rounded-lg bg-brand px-2 py-2 text-[12px] font-bold text-white"
+                >
+                  Prep
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openCourseAs(gpsCourseHint.course, 'gps')}
+                  className="inline-flex flex-1 items-center justify-center rounded-lg border border-[var(--line-default)] px-2 py-2 text-[12px] font-bold text-[var(--ink-1)] hover:bg-white/10"
+                >
+                  GPS
+                </button>
+              </div>
+            </div>
           </div>
         ) : null}
 
@@ -1289,14 +1301,12 @@ export function GolfView({ active = true }: { active?: boolean }) {
               const active = course?.id === c.id;
               return (
                 <li key={c.id}>
-                  <button
-                    type="button"
-                    onClick={() => pickCourse(c)}
+                  <div
                     className={[
                       'floating-subpanel w-full px-3 py-3 text-left transition-colors',
                       active
                         ? 'border-[color:color-mix(in_srgb,var(--accent)_40%,transparent)] bg-[var(--accent-soft)]'
-                        : 'hover:bg-white/5',
+                        : '',
                     ].join(' ')}
                   >
                     <div className="flex items-start gap-3">
@@ -1305,46 +1315,54 @@ export function GolfView({ active = true }: { active?: boolean }) {
                         alt=""
                         className="h-12 w-12 shrink-0 rounded-lg object-cover"
                       />
-                      <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <div className="truncate text-[13px] font-semibold text-[var(--ink-1)]">
                           {c.name}
                         </div>
                         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-[var(--ink-3)]">
-                      {c.access === 'public' && (
-                        <span className="rounded bg-emerald-500/20 px-1 py-px font-medium text-emerald-200">
-                          Public
-                        </span>
-                      )}
-                      {c.access === 'private' && (
-                        <span className="rounded bg-amber-500/20 px-1 py-px font-medium text-amber-100">
-                          Private
-                        </span>
-                      )}
-                      {c.access === 'resort' && (
-                        <span className="rounded bg-sky-500/20 px-1 py-px font-medium text-sky-100">
-                          Resort
-                        </span>
-                      )}
-                      {c.distanceMi != null && (
-                        <span>{c.distanceMi.toFixed(1)} mi</span>
-                      )}
-                      {c.region && <span className="truncate">{c.region}</span>}
-                      {c.holes != null && <span>{c.holes} holes</span>}
-                      {c.par != null && <span>par {c.par}</span>}
-                      <span className="rounded bg-emerald-500/20 px-1 py-px font-medium text-emerald-200">
-                        Map ready
-                      </span>
+                          {c.access === 'public' && (
+                            <span className="rounded bg-emerald-500/20 px-1 py-px font-medium text-emerald-200">
+                              Public
+                            </span>
+                          )}
+                          {c.access === 'private' && (
+                            <span className="rounded bg-amber-500/20 px-1 py-px font-medium text-amber-100">
+                              Private
+                            </span>
+                          )}
+                          {c.access === 'resort' && (
+                            <span className="rounded bg-sky-500/20 px-1 py-px font-medium text-sky-100">
+                              Resort
+                            </span>
+                          )}
+                          {c.distanceMi != null && (
+                            <span>{c.distanceMi.toFixed(1)} mi</span>
+                          )}
+                          {c.region && (
+                            <span className="truncate">{c.region}</span>
+                          )}
+                          {c.holes != null && <span>{c.holes} holes</span>}
+                          {c.par != null && <span>par {c.par}</span>}
+                        </div>
+                        <div className="mt-2.5 flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => openCourseAs(c, 'prep')}
+                            className="inline-flex flex-1 items-center justify-center rounded-lg bg-brand px-2 py-2 text-[12px] font-bold text-white"
+                          >
+                            Prep
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => openCourseAs(c, 'gps')}
+                            className="inline-flex flex-1 items-center justify-center rounded-lg border border-[var(--line-default)] px-2 py-2 text-[12px] font-bold text-[var(--ink-1)] hover:bg-white/10"
+                          >
+                            GPS
+                          </button>
                         </div>
                       </div>
-                      {active ? (
-                        <span className="chip-button shrink-0" data-active="true">
-                          Selected
-                        </span>
-                      ) : null}
-                      </div>
                     </div>
-                  </button>
+                  </div>
                 </li>
               );
             })}
@@ -1363,29 +1381,6 @@ export function GolfView({ active = true }: { active?: boolean }) {
       >
         {course ? (
           <>
-            {round &&
-            tracking &&
-            viewMode === 'prep' &&
-            (round.scores.length > 0 || round.shots.length > 0) ? (
-              <div className="absolute left-3 right-3 top-3 z-30 flex flex-wrap items-center gap-2 rounded-xl border border-line bg-surface/95 px-3 py-2 shadow-lift backdrop-blur-sm md:left-auto md:right-3 md:max-w-sm">
-                <p className="min-w-0 flex-1 text-[13px] leading-snug text-ink">
-                  Resume round at{' '}
-                  <span className="font-semibold">{round.courseName}</span>
-                  {round.scores.length
-                    ? ` — Hole ${Math.max(
-                        ...round.scores.map((s) => s.holeNumber),
-                      )}`
-                    : ''}
-                </p>
-                <button
-                  type="button"
-                  onClick={resumeStoredRound}
-                  className="btn-primary shrink-0 px-3 py-1.5 text-[13px]"
-                >
-                  Resume GPS
-                </button>
-              </div>
-            ) : null}
             <GolfMapBoundary
               fallback={
                 <div className="flex h-full items-center justify-center bg-[var(--surface-0)] px-6 text-center text-sm text-[var(--ink-3)]">
@@ -1490,7 +1485,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     )
                   }
                 />
-                {activeHoleObj.provenance ? (
+                {activeHoleObj.provenance && !isMobile ? (
                   <GlassPanel className="mt-1.5 px-2.5 py-1.5 shadow-lg">
                     <DataProvenanceNote
                       provenance={activeHoleObj.provenance}
@@ -1543,7 +1538,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
               </DraggableBox>
             ) : null}
 
-            {/* Scorecard — Prep/GPS chosen from Rounds nav dropdown */}
+            {/* Mode badge — Prep and GPS are chosen at course pick, not toggled here */}
             {course ? (
               <DraggableBox
                 id="mode-card"
@@ -1634,18 +1629,6 @@ export function GolfView({ active = true }: { active?: boolean }) {
                       className="rounded-md px-1.5 py-1 text-[11px] font-semibold text-[var(--ink-2)] hover:bg-white/10"
                     >
                       Course
-                    </button>
-                  ) : null}
-                  {viewMode === 'gps' ? (
-                    <button
-                      type="button"
-                      onClick={leaveGpsMode}
-                      aria-label="Leave GPS and return to Prep"
-                      title="Close GPS · return to Prep"
-                      className="inline-flex items-center gap-0.5 rounded-md px-1.5 py-1 text-[11px] font-semibold text-[var(--ink-2)] hover:bg-white/10"
-                    >
-                      <X className="h-3 w-3" aria-hidden />
-                      {!isMobile ? 'Prep' : null}
                     </button>
                   ) : null}
                 </GlassPanel>
@@ -1749,22 +1732,20 @@ export function GolfView({ active = true }: { active?: boolean }) {
                       >
                         <Compass className="h-5 w-5 md:h-4 md:w-4" aria-hidden="true" />
                       </button>
-                      {!isMobile || viewMode !== 'gps' ? (
+                      {viewMode === 'gps' && !isMobile ? (
                         <>
                           <span className="mx-0.5 h-6 w-px bg-[var(--line-subtle)]" />
                           {tracking ? (
                             <>
-                              {!isMobile ? (
-                                <button
-                                  type="button"
-                                  onClick={dropShot}
-                                  disabled={!gpsPos || !activeHoleObj}
-                                  title="Drop shot at GPS position"
-                                  className="rounded-lg bg-pink-500/20 px-2.5 py-1.5 text-[11px] font-semibold text-pink-300 transition-colors hover:bg-pink-500/30 disabled:opacity-40"
-                                >
-                                  Drop
-                                </button>
-                              ) : null}
+                              <button
+                                type="button"
+                                onClick={dropShot}
+                                disabled={!gpsPos || !activeHoleObj}
+                                title="Drop shot at GPS position"
+                                className="rounded-lg bg-pink-500/20 px-2.5 py-1.5 text-[11px] font-semibold text-pink-300 transition-colors hover:bg-pink-500/30 disabled:opacity-40"
+                              >
+                                Drop
+                              </button>
                               <button
                                 type="button"
                                 onClick={endRound}
@@ -2151,17 +2132,19 @@ export function GolfView({ active = true }: { active?: boolean }) {
                       value={teeKind}
                       onChange={(id) => setTeeKind(id as TeeKind)}
                     />
-                    <ChipRow
-                      label="Planner"
-                      options={[
-                        { id: 'tee', label: 'Tee' },
-                        { id: 'approach', label: 'Approach' },
-                      ]}
-                      value={planningMode}
-                      onChange={(id) =>
-                        setPlanningMode(id as 'tee' | 'approach')
-                      }
-                    />
+                    {viewMode === 'prep' ? (
+                      <ChipRow
+                        label="Planner"
+                        options={[
+                          { id: 'tee', label: 'Tee' },
+                          { id: 'approach', label: 'Approach' },
+                        ]}
+                        value={planningMode}
+                        onChange={(id) =>
+                          setPlanningMode(id as 'tee' | 'approach')
+                        }
+                      />
+                    ) : null}
                   </>
                 )}
 
@@ -2230,13 +2213,15 @@ export function GolfView({ active = true }: { active?: boolean }) {
                   </div>
                 )}
 
-                {forecast && (!isMobile || sheetExpanded) && (
-                  <GolfHoleIntel
-                    forecast={forecast}
-                    turf={turf}
-                    miss={profile.miss}
-                  />
-                )}
+                {viewMode === 'gps' &&
+                  forecast &&
+                  (!isMobile || sheetExpanded) && (
+                    <GolfHoleIntel
+                      forecast={forecast}
+                      turf={turf}
+                      miss={profile.miss}
+                    />
+                  )}
 
                 {viewMode === 'prep' &&
                   roundPrepPlan &&
@@ -2249,12 +2234,13 @@ export function GolfView({ active = true }: { active?: boolean }) {
                           setActiveHole(n);
                           if (isMobile) setSheetExpanded(false);
                         }}
-                        compact={isMobile}
+                        compact
                       />
                     </div>
                   )}
 
-                {(!isMobile || sheetExpanded) && (
+                {(!isMobile || sheetExpanded) &&
+                  !(viewMode === 'prep' && roundPrepPlan) && (
                   <>
                     {isMobile ? hourSlider : null}
                     <ul className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
@@ -2324,6 +2310,13 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     </ul>
                   </>
                 )}
+
+                {viewMode === 'prep' &&
+                  roundPrepPlan &&
+                  isMobile &&
+                  sheetExpanded ? (
+                  <div className="px-3 pb-2">{hourSlider}</div>
+                ) : null}
 
                 {ensemble && (!isMobile || sheetExpanded) && (
                   <div className="border-t border-[var(--line-subtle)] px-3 py-2 text-[11px] text-[var(--ink-4)]">

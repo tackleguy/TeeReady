@@ -16,14 +16,15 @@ const TABS = [
     label: 'Home',
     to: '/today',
     match: (path: string) =>
-      path === '/today' || path === '/weather' || path === '/courses',
+      path === '/today' || path === '/weather',
     icon: Home,
   },
   {
     id: 'gps',
-    label: 'GPS',
-    to: '/rounds/gps',
-    match: (path: string) => path.startsWith('/rounds'),
+    label: 'Play',
+    to: '/courses',
+    match: (path: string) =>
+      path.startsWith('/rounds') || path.startsWith('/courses'),
     icon: MapPinned,
   },
   {
@@ -51,7 +52,8 @@ const TABS = [
 
 /**
  * Mobile-first primary navigation.
- * GPS tab resumes a live round when one exists; otherwise opens prep to start.
+ * Play tab resumes a live GPS round when one exists; otherwise opens Courses
+ * so you explicitly choose Prep or GPS for a course — never flips modes mid-round.
  */
 export function BottomTabBar() {
   const location = useLocation();
@@ -77,7 +79,8 @@ export function BottomTabBar() {
         const Icon = tab.icon;
         const active = tab.match(location.pathname);
         const href =
-          tab.id === 'gps' ? (liveRound ? '/rounds/gps' : '/rounds/prep') : tab.to;
+          tab.id === 'gps' ? (liveRound ? '/rounds/gps' : '/courses') : tab.to;
+        const label = tab.id === 'gps' && liveRound ? 'GPS' : tab.label;
 
         return (
           <NavLink
@@ -94,7 +97,7 @@ export function BottomTabBar() {
                 <span className="bottom-tab-live" aria-label="Round live" />
               ) : null}
             </span>
-            <span className="bottom-tab-label">{tab.label}</span>
+            <span className="bottom-tab-label">{label}</span>
           </NavLink>
         );
       })}
