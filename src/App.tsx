@@ -6,6 +6,7 @@ import {
   Routes,
   useLocation,
 } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import { AppSidebar } from './components/AppSidebar';
 import { BottomTabBar } from './components/BottomTabBar';
 import { InstallPrompt } from './components/InstallPrompt';
@@ -418,6 +419,7 @@ export default function App() {
           <Shell />
         </AppErrorBoundary>
       </AuthProvider>
+      <Analytics />
     </BrowserRouter>
   );
 }
