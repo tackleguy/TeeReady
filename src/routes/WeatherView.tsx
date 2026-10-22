@@ -1,18 +1,22 @@
-/** Basic forecast + radar centered on a playable course. */
+/** Weather home — course radar + playability-weighted hourly forecast. */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CloudSun, ExternalLink, Flag } from 'lucide-react';
+import { Flag } from 'lucide-react';
 import { CourseSearchSelect } from '../components/golf/CourseSearchSelect';
 import { WeatherRadarMap } from '../components/weather/WeatherRadarMap';
 import type { GolfCourseSummary } from '../lib/golf';
-import { weatherAppHref } from '../lib/golfApp';
 import {
+  bestWindowLabel,
+  deriveConditionsHint,
   fetchPlayHours,
+  playVerdict,
+  playVerdictLabel,
   scoreColor,
   toDisplayHours,
   type Hour,
 } from '../lib/playability';
+import { hasStoredRound } from '../lib/golfTracker';
 import { defaultSearchLoc } from '../lib/searchLoc';
 import {
   resolveWeatherCourse,
@@ -24,8 +28,10 @@ export function WeatherView() {
   const [resolving, setResolving] = useState(true);
   const [hours, setHours] = useState<Hour[] | null>(null);
   const [attribution, setAttribution] = useState<string | null>(null);
+  const [conditionsHint, setConditionsHint] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [liveRound, setLiveRound] = useState(() => hasStoredRound());
 
   const loc = useMemo(() => {
     if (course) {
@@ -51,6 +57,7 @@ export function WeatherView() {
         setCourse(hit);
         stashWeatherCourse(hit);
       });
+      setLiveRound(hasStoredRound());
     };
     window.addEventListener('teeready-round-changed', refresh);
     window.addEventListener('teeready-profile-changed', refresh);
@@ -75,14 +82,19 @@ export function WeatherView() {
       fetchPlayHours(loc.lat, loc.lon, signal)
         .then((res) => {
           if (signal?.aborted) return;
-          setHours(toDisplayHours(res.hours));
+          const display = toDisplayHours(res.hours);
+          setHours(display);
           setAttribution(res.attribution);
+          setConditionsHint(
+            res.conditionsHint?.trim() || deriveConditionsHint(display) || null,
+          );
           setLoading(false);
         })
         .catch((err: unknown) => {
           if (signal?.aborted) return;
           setHours(null);
           setAttribution(null);
+          setConditionsHint(null);
           setError(
             err instanceof Error ? err.message : 'Could not load forecast',
           );
@@ -100,6 +112,15 @@ export function WeatherView() {
   }, [loadHours, resolving]);
 
   const nowish = useMemo(() => hours?.[0] ?? null, [hours]);
+  const bestHour = useMemo(() => {
+    if (!hours?.length) return null;
+    return hours.reduce((a, b) => (b.score > a.score ? b : a));
+  }, [hours]);
+  const windowLabel = useMemo(
+    () => (hours?.length ? bestWindowLabel(hours) : ''),
+    [hours],
+  );
+  const playHref = liveRound ? '/rounds/gps' : '/courses';
 
   return (
     <div className="flex flex-col gap-6 md:gap-8">
@@ -107,26 +128,31 @@ export function WeatherView() {
         <div>
           <h1 className="text-display text-ink">Weather</h1>
           <p className="mt-2 max-w-lg text-body text-muted">
-            Radar and hourly outlook at the course you&apos;re playing.
+            {bestHour
+              ? `${playVerdictLabel(playVerdict(bestHour.score))}${
+                  windowLabel ? ` · ${windowLabel}` : ''
+                } at ${course?.name ?? loc.name}.`
+              : 'Radar and hourly outlook at the course you’re playing.'}
           </p>
+          {conditionsHint ? (
+            <p className="mt-1 max-w-lg text-detail text-muted">
+              {conditionsHint}
+            </p>
+          ) : null}
         </div>
-        <a
-          href={weatherAppHref()}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface px-3 py-2 text-[12px] font-semibold text-ink hover:border-brand/40 hover:text-brand"
+        <Link
+          to={playHref}
+          className="btn-primary inline-flex min-h-[44px] items-center justify-center px-4 text-[14px] font-bold"
+          data-tutorial="start-round"
         >
-          <CloudSun className="h-3.5 w-3.5" aria-hidden />
-          Full WeatherStop
-          <ExternalLink className="h-3 w-3 opacity-60" aria-hidden />
-        </a>
+          {liveRound ? 'Continue round' : 'Start round'}
+        </Link>
       </header>
 
       <section className="animate-fade-up [animation-delay:20ms]">
         <h2 className="text-title text-ink">Course</h2>
         <p className="mt-1 text-detail text-muted">
-          Uses your live round, Prep pick, home course, or nearest playable
-          layout.
+          Pins radar and forecast to your round, Prep pick, or home course.
         </p>
         <div className="mt-3 max-w-xl">
           <CourseSearchSelect
@@ -163,7 +189,7 @@ export function WeatherView() {
           <h2 className="text-title text-ink">Radar</h2>
           {nowish ? (
             <p className="text-detail text-muted">
-              Now-ish · {nowish.temp > 0 ? `${nowish.temp}°F · ` : ''}
+              Now · {nowish.temp > 0 ? `${nowish.temp}°F · ` : ''}
               {nowish.wind}
             </p>
           ) : null}

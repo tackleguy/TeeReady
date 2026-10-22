@@ -17,7 +17,7 @@ interface Props {
 
 /**
  * Slim top chrome: brand, location, profile.
- * Primary IA lives in BottomTabBar (Home | Play | Stats).
+ * Primary IA lives in BottomTabBar (Weather | Play | Social | Stats).
  */
 export function TopNav({
   locationLabel = CURRENT_LOCATION,
@@ -50,7 +50,7 @@ export function TopNav({
     <header className="sticky top-0 z-30 border-b border-line bg-[color-mix(in_srgb,var(--canvas)_94%,transparent)] pt-[env(safe-area-inset-top,0px)] backdrop-blur-md">
       <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between px-4 py-2.5 sm:px-5 md:px-8">
         <NavLink
-          to="/today"
+          to="/weather"
           className="group flex items-center gap-2.5"
         >
           <span className="grid h-9 w-9 place-items-center rounded-full border border-line bg-surface font-display text-[15px] font-bold text-brand shadow-card">

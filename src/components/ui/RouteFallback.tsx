@@ -22,7 +22,7 @@ function GenericFallback() {
 export function RouteFallback() {
   const { pathname } = useLocation();
 
-  if (pathname === '/today') return <TodaySkeleton />;
+  if (pathname === '/today' || pathname === '/weather') return <TodaySkeleton />;
   if (pathname.startsWith('/courses')) return <CoursesSkeleton />;
   if (pathname.startsWith('/rounds')) return <GpsSkeleton />;
   if (pathname === '/stats') return <StatsSkeleton />;

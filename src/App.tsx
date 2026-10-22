@@ -46,8 +46,13 @@ function bootSearchLocFromProfile(): void {
 }
 bootSearchLocFromProfile();
 
-const TodayView = lazy(() => import('./routes/TodayView').then((m) => ({ default: m.TodayView })));
 const GolfView = lazy(() => import('./routes/GolfView').then((m) => ({ default: m.GolfView })));
+const WeatherView = lazy(() =>
+  import('./routes/WeatherView').then((m) => ({ default: m.WeatherView })),
+);
+const GroupView = lazy(() =>
+  import('./routes/GroupView').then((m) => ({ default: m.GroupView })),
+);
 
 const CourseMapView = lazy(() =>
   import('./routes/CourseMapView').then((m) => ({ default: m.CourseMapView })),
@@ -177,7 +182,7 @@ function PublicHome() {
   const { configured, loading, user } = useAuth();
   if (loading) return <RouteFallback />;
   if (configured && user) {
-    return <Navigate to="/today" replace />;
+    return <Navigate to="/weather" replace />;
   }
   return <HomeLanding />;
 }
@@ -310,7 +315,7 @@ function Shell() {
             path="/today"
             element={
               <RequireAuth>
-                <TodayView />
+                <Navigate to="/weather" replace />
               </RequireAuth>
             }
           />
@@ -318,7 +323,7 @@ function Shell() {
             path="/weather"
             element={
               <RequireAuth>
-                <Navigate to="/today" replace />
+                <WeatherView />
               </RequireAuth>
             }
           />
@@ -342,7 +347,7 @@ function Shell() {
             path="/group"
             element={
               <RequireAuth>
-                <Navigate to="/today" replace />
+                <GroupView />
               </RequireAuth>
             }
           />
@@ -374,7 +379,7 @@ function Shell() {
             path="/swing"
             element={
               <RequireAuth>
-                <Navigate to="/today" replace />
+                <Navigate to="/weather" replace />
               </RequireAuth>
             }
           />
@@ -382,7 +387,7 @@ function Shell() {
             path="/swing/guide"
             element={
               <RequireAuth>
-                <Navigate to="/today" replace />
+                <Navigate to="/weather" replace />
               </RequireAuth>
             }
           />

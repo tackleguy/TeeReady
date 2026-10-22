@@ -114,7 +114,7 @@ export function GoalCoachBanner() {
         )}
 
         <Link
-          to="/today"
+          to="/weather"
           className="mt-2 inline-block text-[11px] font-semibold text-brand"
         >
           Full plan on Today →

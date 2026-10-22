@@ -25,22 +25,22 @@ const STEPS: Step[] = [
   {
     id: 'welcome',
     target: null,
-    title: 'GPS, AI Swing, Social, Stats — simple',
-    body: 'TeeReady keeps powerful golf tools under five tabs. Start a round in a tap, range with huge yardages, then review swings and stats when you’re done.',
+    title: 'Weather first — then play',
+    body: 'TeeReady centers on course weather: radar and hourly playability. Then Play for Prep or GPS, Social with your group, and Stats when you’re done.',
     primary: 'Show me around',
   },
   {
     id: 'home',
     target: 'bottom-tabs',
     title: 'Bottom navigation',
-    body: 'Home · GPS · AI Swing · Social · Stats. Profile and settings live behind the avatar in the top corner.',
+    body: 'Weather · Play · Social · Stats. Profile and settings live behind the avatar in the top corner.',
     primary: 'Next',
   },
   {
     id: 'start',
     target: 'start-round',
     title: 'Start Round',
-    body: 'The big button on Home opens Courses so you pick Prep or GPS for a round — or resumes a live GPS round. Nearby courses and last scores sit just below.',
+    body: 'From Weather, Start round opens Courses so you pick Prep or GPS — or resumes a live GPS round. Radar and forecast stay pinned to your course.',
     primary: 'Next',
   },
   {
@@ -54,7 +54,7 @@ const STEPS: Step[] = [
     id: 'ready',
     target: null,
     title: 'You’re ready to play',
-    body: 'Tap Start Round, pick a course, then Prep or GPS. Modes stay separate — leave GPS from Home or Courses, not by flipping into Prep.',
+    body: 'Check the weather window, tap Start round, pick a course, then Prep or GPS. Modes stay separate — leave GPS from Weather or Courses, not by flipping into Prep.',
     primary: 'Open Prep',
   },
 ];

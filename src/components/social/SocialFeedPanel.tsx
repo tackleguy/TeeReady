@@ -23,8 +23,8 @@ export function SocialFeedPanel({ limit = 8 }: { limit?: number }) {
           <Link to="/rounds/prep" className="btn-primary px-4 py-2.5 text-[13px]">
             Start round
           </Link>
-          <Link to="/swing" className="btn-secondary px-4 py-2.5 text-[13px]">
-            AI Swing
+          <Link to="/weather" className="btn-secondary px-4 py-2.5 text-[13px]">
+            Check weather
           </Link>
         </div>
       </section>

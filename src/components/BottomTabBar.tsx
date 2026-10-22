@@ -1,15 +1,15 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { ChartColumn, Home, MapPinned } from 'lucide-react';
+import { ChartColumn, CloudSun, MapPinned, Users } from 'lucide-react';
 import { hasStoredRound } from '../lib/golfTracker';
 import { useEffect, useState } from 'react';
 
 const TABS = [
   {
-    id: 'home',
-    label: 'Home',
-    to: '/today',
-    match: (path: string) => path === '/today',
-    icon: Home,
+    id: 'weather',
+    label: 'Weather',
+    to: '/weather',
+    match: (path: string) => path === '/weather' || path === '/today',
+    icon: CloudSun,
   },
   {
     id: 'gps',
@@ -18,6 +18,13 @@ const TABS = [
     match: (path: string) =>
       path.startsWith('/rounds') || path.startsWith('/courses'),
     icon: MapPinned,
+  },
+  {
+    id: 'social',
+    label: 'Social',
+    to: '/group',
+    match: (path: string) => path.startsWith('/group'),
+    icon: Users,
   },
   {
     id: 'stats',
@@ -29,8 +36,8 @@ const TABS = [
 ] as const;
 
 /**
- * Slim primary nav — Home | Play | Stats.
- * AI Swing / Social / Weather removed to cut clutter and Vercel compute.
+ * Primary IA — Weather | Play | Social | Stats.
+ * Weather is the product home; AI Swing stays out of the tab bar.
  */
 export function BottomTabBar() {
   const location = useLocation();
@@ -65,6 +72,7 @@ export function BottomTabBar() {
             to={href}
             className={`bottom-tab ${active ? 'is-active' : ''}`}
             aria-current={active ? 'page' : undefined}
+            data-tutorial={tab.id === 'gps' ? 'play' : undefined}
           >
             <span className="bottom-tab-icon-wrap">
               <Icon

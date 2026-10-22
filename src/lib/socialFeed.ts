@@ -63,7 +63,7 @@ export function buildSocialFeed(limit = 12): SocialFeedItem[] {
         s.coach?.text?.split(/[.!\n]/)[0]?.trim() ||
         s.summary.split(/[.!\n]/)[0]?.trim() ||
         `${s.angle === 'dtl' ? 'Down-the-line' : 'Face-on'} · on-device analysis`,
-      href: '/swing',
+      href: '/stats',
     });
   }
 
