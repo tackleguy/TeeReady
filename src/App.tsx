@@ -55,12 +55,6 @@ const CourseMapView = lazy(() =>
 const CoursesView = lazy(() =>
   import('./routes/CoursesView').then((m) => ({ default: m.CoursesView })),
 );
-const WeatherView = lazy(() =>
-  import('./routes/WeatherView').then((m) => ({ default: m.WeatherView })),
-);
-const GroupView = lazy(() =>
-  import('./routes/GroupView').then((m) => ({ default: m.GroupView })),
-);
 const ProfileView = lazy(() =>
   import('./routes/ProfileView').then((m) => ({ default: m.ProfileView })),
 );
@@ -74,12 +68,6 @@ const SettingsView = lazy(() =>
 );
 const StatsView = lazy(() =>
   import('./routes/StatsView').then((m) => ({ default: m.StatsView })),
-);
-const SwingView = lazy(() =>
-  import('./routes/SwingView').then((m) => ({ default: m.SwingView })),
-);
-const SwingGuideView = lazy(() =>
-  import('./routes/SwingGuideView').then((m) => ({ default: m.SwingGuideView })),
 );
 const UiAuditPreview = import.meta.env.DEV
   ? lazy(() =>
@@ -330,7 +318,7 @@ function Shell() {
             path="/weather"
             element={
               <RequireAuth>
-                <WeatherView />
+                <Navigate to="/today" replace />
               </RequireAuth>
             }
           />
@@ -354,7 +342,7 @@ function Shell() {
             path="/group"
             element={
               <RequireAuth>
-                <GroupView />
+                <Navigate to="/today" replace />
               </RequireAuth>
             }
           />
@@ -386,7 +374,7 @@ function Shell() {
             path="/swing"
             element={
               <RequireAuth>
-                <SwingView />
+                <Navigate to="/today" replace />
               </RequireAuth>
             }
           />
@@ -394,7 +382,7 @@ function Shell() {
             path="/swing/guide"
             element={
               <RequireAuth>
-                <SwingGuideView />
+                <Navigate to="/today" replace />
               </RequireAuth>
             }
           />

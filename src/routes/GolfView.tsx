@@ -15,16 +15,13 @@ import {
   MapPin,
   Mountain,
   Navigation,
-  RefreshCw,
   Search,
   Settings2,
-  Sparkles,
   CloudSun,
 } from 'lucide-react';
 import { GolfMap } from '../components/golf/GolfMap';
 import { CourseHeroImage } from '../components/golf/CourseHeroImage';
 import { GolfMapBoundary } from '../components/golf/GolfMapBoundary';
-import { AiCaddyPanel } from '../components/golf/AiCaddyPanel';
 import { GolfHoleIntel } from '../components/golf/GolfHoleIntel';
 import { GolfSetup } from '../components/golf/GolfSetup';
 import { GolfScorecard } from '../components/golf/GolfScorecard';
@@ -251,7 +248,6 @@ export function GolfView({ active = true }: { active?: boolean }) {
   const [gpsHudOpen, setGpsHudOpen] = useState(true);
   const [gpsHudExpanded, setGpsHudExpanded] = useState(false);
   const [intelPanelOpen, setIntelPanelOpen] = useState(false);
-  const [caddyOpen, setCaddyOpen] = useState(false);
 
   // Keep player HCP in sync when Settings (or another tab) saves.
   useEffect(() => {
@@ -403,11 +399,7 @@ export function GolfView({ active = true }: { active?: boolean }) {
     if (q.length >= 2) return standard;
     return standard.filter((c) => c.name.toLowerCase().includes(q));
   }, [courses, courseFilter]);
-  const {
-    data: ensemble,
-    loading: ensLoading,
-    error: ensError,
-  } = useGolfEnsemble(
+  const { data: ensemble } = useGolfEnsemble(
     course?.lat ?? null,
     course?.lon ?? null,
     playHoles,
@@ -516,11 +508,6 @@ export function GolfView({ active = true }: { active?: boolean }) {
     });
   }, [viewMode, course, profile, playHoles, briefByHole, turf]);
 
-  const activePrepHole =
-    roundPrepPlan && activeHole != null
-      ? roundPrepPlan.holes.find((h) => h.holeNumber === activeHole) ?? null
-      : null;
-
   const forecast = useMemo(() => {
     if (!activeHoleObj || !target || !profile) return null;
     const hole =
@@ -592,7 +579,6 @@ export function GolfView({ active = true }: { active?: boolean }) {
       setBookOpen(false);
       setSheetExpanded(false);
       setScorecardOpen(false);
-      setCaddyOpen(false);
       setIntelPanelOpen(false);
       // Don't keep showing a scorecard/round for a different course.
       setRound((prev) => {
@@ -1083,21 +1069,11 @@ export function GolfView({ active = true }: { active?: boolean }) {
         onChange={(e) => setHour(Number(e.target.value))}
         className="w-full accent-[var(--accent)]"
       />
-      {ensemble && (
+      {ensemble?.summary ? (
         <p className="mt-2 text-[11px] leading-snug text-[var(--ink-2)]">
-          <Sparkles className="mr-1 inline h-3 w-3 text-[var(--accent)]" aria-hidden="true" />
           {ensemble.summary}
         </p>
-      )}
-      {ensLoading && (
-        <p className="mt-2 flex items-center gap-1.5 text-[11px] text-[var(--ink-3)]">
-          <RefreshCw className="h-3 w-3 animate-spin" aria-hidden="true" />
-          Blending forecasts…
-        </p>
-      )}
-      {ensError && (
-        <p className="mt-2 text-[11px] text-bad">{ensError}</p>
-      )}
+      ) : null}
     </div>
   ) : null;
 
@@ -1538,48 +1514,6 @@ export function GolfView({ active = true }: { active?: boolean }) {
               </DraggableBox>
             ) : null}
 
-            {caddyOpen && course && activeHoleObj && profile ? (
-              <DraggableBox
-                id="ai-caddy"
-                defaultAnchor={
-                  isMobile
-                    ? { right: 12, bottom: viewMode === 'gps' ? 120 : 88 }
-                    : { right: 12, bottom: 16 }
-                }
-                zIndex={25}
-                showHandle={false}
-              >
-                <AiCaddyPanel
-                  mode={viewMode}
-                  courseName={course.name}
-                  hole={activeHoleObj}
-                  profile={profile}
-                  bag={bag}
-                  brief={activeBrief}
-                  turf={turf}
-                  forecast={forecast}
-                  remain={
-                    viewMode === 'gps' && gpsHudDistances
-                      ? {
-                          front:
-                            gpsHudDistances.front ?? gpsHudDistances.mid,
-                          mid: gpsHudDistances.mid,
-                          back: gpsHudDistances.back ?? gpsHudDistances.mid,
-                        }
-                      : null
-                  }
-                  ensembleSummary={ensemble?.summary ?? null}
-                  prepFocus={activePrepHole?.focusLabel ?? null}
-                  prepFocusTip={activePrepHole?.tip ?? null}
-                  teeKind={
-                    teeKinds.length > 1 ? teeKindLabel(teeKind) : null
-                  }
-                  compact={isMobile}
-                  onClose={() => setCaddyOpen(false)}
-                />
-              </DraggableBox>
-            ) : null}
-
             {/* Mode badge — Prep and GPS are chosen at course pick, not toggled here */}
             {course ? (
               <DraggableBox
@@ -1644,23 +1578,6 @@ export function GolfView({ active = true }: { active?: boolean }) {
                     >
                       <Mountain className="h-3 w-3" aria-hidden="true" />
                       {!isMobile ? '3D' : null}
-                    </button>
-                  ) : null}
-                  {course && activeHoleObj && profile ? (
-                    <button
-                      type="button"
-                      onClick={() => setCaddyOpen((v) => !v)}
-                      aria-pressed={caddyOpen}
-                      title="AI caddie · weather + bag"
-                      className={[
-                        'inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] font-semibold transition-colors',
-                        caddyOpen
-                          ? 'bg-brand/30 text-[var(--ink-1)]'
-                          : 'text-[var(--ink-2)] hover:bg-white/10',
-                      ].join(' ')}
-                    >
-                      <Sparkles className="h-3 w-3" aria-hidden />
-                      {!isMobile ? 'Caddie' : null}
                     </button>
                   ) : null}
                   {!intelPanelOpen && !isMobile ? (

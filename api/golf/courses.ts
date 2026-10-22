@@ -26,6 +26,7 @@ import {
 } from './_lib/venueKind';
 import { nearbyUsCatalog, searchUsCatalog } from './_lib/usCatalogSearch';
 import { rateLimit, RATE } from '../_lib/rateLimit';
+import { cheapJson, zeroComputeMode } from '../_lib/costGuard';
 
 export const config = { runtime: 'edge' };
 
@@ -821,6 +822,11 @@ export default async function handler(req: Request): Promise<Response> {
   if (methodError) return methodError;
   const limited = rateLimit(req, RATE.courses);
   if (limited) return limited;
+
+  // Client uses the static course directory — skip Photon/Overpass entirely.
+  if (zeroComputeMode()) {
+    return cheapJson({ courses: [], count: 0, scope: 'static-only' }, 200, 86_400);
+  }
 
   const { searchParams } = new URL(req.url);
   const rawLat = numeric(searchParams.get('lat'));

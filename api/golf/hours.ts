@@ -10,6 +10,7 @@ import {
 } from '../_lib/weather';
 import { aggregateWinds } from './_lib/playsLike';
 import { rateLimit, RATE } from '../_lib/rateLimit';
+import { cheapJson, zeroComputeMode } from '../_lib/costGuard';
 
 export const config = { runtime: 'edge' };
 
@@ -185,6 +186,19 @@ export default async function handler(req: Request): Promise<Response> {
   if (methodError) return methodError;
   const limited = rateLimit(req, RATE.hours);
   if (limited) return limited;
+
+  if (zeroComputeMode()) {
+    return cheapJson(
+      {
+        hours: [],
+        attribution: [],
+        confidence: 'single-source',
+        conditionsHint: 'Live conditions disabled (static deploy — zero compute).',
+      },
+      200,
+      600,
+    );
+  }
 
   const sp = new URL(req.url).searchParams;
   const lat = numeric(sp.get('lat'));

@@ -1,13 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import {
-  ChartColumn,
-  Home,
-  MapPinned,
-  Users,
-  Video,
-} from 'lucide-react';
+import { ChartColumn, Home, MapPinned } from 'lucide-react';
 import { hasStoredRound } from '../lib/golfTracker';
-import { prefetchRoute } from '../lib/prefetchRoutes';
 import { useEffect, useState } from 'react';
 
 const TABS = [
@@ -15,8 +8,7 @@ const TABS = [
     id: 'home',
     label: 'Home',
     to: '/today',
-    match: (path: string) =>
-      path === '/today' || path === '/weather',
+    match: (path: string) => path === '/today',
     icon: Home,
   },
   {
@@ -28,20 +20,6 @@ const TABS = [
     icon: MapPinned,
   },
   {
-    id: 'swing',
-    label: 'AI Swing',
-    to: '/swing',
-    match: (path: string) => path.startsWith('/swing'),
-    icon: Video,
-  },
-  {
-    id: 'social',
-    label: 'Social',
-    to: '/group',
-    match: (path: string) => path.startsWith('/group'),
-    icon: Users,
-  },
-  {
     id: 'stats',
     label: 'Stats',
     to: '/stats',
@@ -51,9 +29,8 @@ const TABS = [
 ] as const;
 
 /**
- * Mobile-first primary navigation.
- * Play tab resumes a live GPS round when one exists; otherwise opens Courses
- * so you explicitly choose Prep or GPS for a course — never flips modes mid-round.
+ * Slim primary nav — Home | Play | Stats.
+ * AI Swing / Social / Weather removed to cut clutter and Vercel compute.
  */
 export function BottomTabBar() {
   const location = useLocation();
@@ -86,13 +63,15 @@ export function BottomTabBar() {
           <NavLink
             key={tab.id}
             to={href}
-            onMouseEnter={() => prefetchRoute(href)}
-            onFocus={() => prefetchRoute(href)}
             className={`bottom-tab ${active ? 'is-active' : ''}`}
             aria-current={active ? 'page' : undefined}
           >
             <span className="bottom-tab-icon-wrap">
-              <Icon className="bottom-tab-icon" strokeWidth={active ? 2.4 : 2} aria-hidden />
+              <Icon
+                className="bottom-tab-icon"
+                strokeWidth={active ? 2.4 : 2}
+                aria-hidden
+              />
               {tab.id === 'gps' && liveRound ? (
                 <span className="bottom-tab-live" aria-label="Round live" />
               ) : null}

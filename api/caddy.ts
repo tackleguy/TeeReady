@@ -12,6 +12,7 @@ import {
   MAX_CADDY_USER,
   resolveCaddyUpstream,
 } from './_lib/caddyLlm';
+import { cheapJson, zeroComputeMode } from './_lib/costGuard';
 
 export const config = { runtime: 'edge' };
 
@@ -44,6 +45,17 @@ export default async function handler(req: Request): Promise<Response> {
         ),
       ),
   );
+
+  if (zeroComputeMode()) {
+    if (req.method === 'GET') {
+      return cheapJson({ ok: true, configured: false, backend: null }, 200, 600);
+    }
+    return cheapJson(
+      { error: 'AI caddie disabled (zero-compute deploy)' },
+      503,
+      60,
+    );
+  }
 
   if (req.method === 'GET') {
     const up = await resolveCaddyUpstream({

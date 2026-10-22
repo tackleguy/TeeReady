@@ -669,6 +669,9 @@ export async function loadGolfHoles(
   const early = backupResult();
   if (early) opts?.onAvailable?.(early);
 
+  // Zero Vercel Active CPU: never soft-refresh Overpass when a pack/backup exists.
+  if (early) return early;
+
   const params = new URLSearchParams({
     lat: String(lat),
     lon: String(lon),

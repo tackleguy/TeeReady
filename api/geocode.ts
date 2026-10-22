@@ -3,6 +3,7 @@ import { allowMethods, errorResponse } from './_lib/http';
 // Photon (primary) + Nominatim (fallback). Open-Meteo geocoding removed.
 
 import { rateLimit, RATE } from './_lib/rateLimit';
+import { cheapJson, zeroComputeMode } from './_lib/costGuard';
 
 export const config = { runtime: 'edge' };
 
@@ -181,6 +182,11 @@ export default async function handler(req: Request): Promise<Response> {
 
   const coordinates = coordinateResult(q);
   if (coordinates) return json(coordinates);
+
+  // No Photon/Nominatim fan-out on Vercel — city chips use the static catalog.
+  if (zeroComputeMode()) {
+    return cheapJson([], 200, 86_400);
+  }
 
   const errors: string[] = [];
   try {

@@ -4,7 +4,6 @@ import { MapPin } from 'lucide-react';
 import { loadGolfProfile } from '../lib/golfProfile';
 import { needsQuestionnaire } from '../lib/questionnaire';
 import { useAuth } from '../lib/auth';
-import { prefetchRoute } from '../lib/prefetchRoutes';
 import {
   CURRENT_LOCATION,
   loadDisplayProfile,
@@ -18,7 +17,7 @@ interface Props {
 
 /**
  * Slim top chrome: brand, location, profile.
- * Primary IA lives in BottomTabBar (Home | GPS | AI Swing | Social | Stats).
+ * Primary IA lives in BottomTabBar (Home | Play | Stats).
  */
 export function TopNav({
   locationLabel = CURRENT_LOCATION,
@@ -53,7 +52,6 @@ export function TopNav({
         <NavLink
           to="/today"
           className="group flex items-center gap-2.5"
-          onMouseEnter={() => prefetchRoute('/today')}
         >
           <span className="grid h-9 w-9 place-items-center rounded-full border border-line bg-surface font-display text-[15px] font-bold text-brand shadow-card">
             T
@@ -67,18 +65,10 @@ export function TopNav({
           <nav className="mr-1 hidden items-center gap-1 md:flex" aria-label="More">
             <NavLink
               to="/courses"
-              onMouseEnter={() => prefetchRoute('/courses')}
               className="nav-link"
               data-tutorial="play"
             >
               Courses
-            </NavLink>
-            <NavLink
-              to="/weather"
-              onMouseEnter={() => prefetchRoute('/weather')}
-              className="nav-link"
-            >
-              Weather
             </NavLink>
           </nav>
           <button

@@ -1,4 +1,12 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "fluid": false,
+  "functions": {
+    "api/**/*.ts": {
+      "maxDuration": 5,
+      "memory": 128
+    }
+  },
   "rewrites": [
     {
       "source": "/((?!api/.*).*)",
@@ -46,6 +54,15 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/golf/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400, s-maxage=604800"
         }
       ]
     }

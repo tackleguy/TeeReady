@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
   fetchGolfCourses,
-  fetchGolfEnsemble,
-  fetchGolfNotebook,
   loadGolfHoles,
   peekGolfCoursesCache,
   peekGolfHolesDetail,
@@ -198,39 +196,18 @@ export function useGolfEnsemble(
     : '';
 
   useEffect(() => {
-    if (lat == null || lon == null) return;
-    const ac = new AbortController();
-    setLoading(true);
+    // Disabled: /api/golf/ensemble burned Vercel Fluid Active CPU.
+    setData(null);
+    setLoading(false);
     setError(null);
-    fetchGolfEnsemble(
-      lat,
-      lon,
-      holes.map((h) => ({
-        number: h.number,
-        yards: h.yards,
-        bearingDeg: h.bearingDeg,
-        par: h.par,
-        name: h.name,
-        teeElevationM: h.teeElevationM,
-        greenElevationM: h.greenElevationM,
-      })),
-      hour,
-      player,
-      ac.signal,
-    )
-      .then(setData)
-      .catch((err) => {
-        if (ac.signal.aborted) return;
-        setError(err instanceof Error ? err.message : 'Wind forecast failed');
-        setData(null);
-      })
-      .finally(() => {
-        if (!ac.signal.aborted) setLoading(false);
-      });
-    return () => ac.abort();
-    // holeKey captures hole geometry changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lat, lon, hour, holeKey, playerKey]);
+    void lat;
+    void lon;
+    void hour;
+    void holeKey;
+    void playerKey;
+    void holes;
+    void player;
+  }, [lat, lon, hour, holeKey, playerKey, holes, player]);
 
   return { data, loading, error };
 }
@@ -257,37 +234,18 @@ export function useGolfNotebook(
     : '';
 
   useEffect(() => {
-    if (!enabled || lat == null || lon == null) return;
-    const ac = new AbortController();
-    setLoading(true);
+    // Disabled: notebook weather fan-out used Fluid Active CPU.
+    setData(null);
+    setLoading(false);
     setError(null);
-    fetchGolfNotebook(
-      lat,
-      lon,
-      holes.map((h) => ({
-        number: h.number,
-        yards: h.yards,
-        bearingDeg: h.bearingDeg,
-        par: h.par,
-        name: h.name,
-        teeElevationM: h.teeElevationM,
-        greenElevationM: h.greenElevationM,
-      })),
-      player,
-      ac.signal,
-    )
-      .then(setData)
-      .catch((err) => {
-        if (ac.signal.aborted) return;
-        setError(err instanceof Error ? err.message : 'Notebook failed');
-        setData(null);
-      })
-      .finally(() => {
-        if (!ac.signal.aborted) setLoading(false);
-      });
-    return () => ac.abort();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, lat, lon, holeKey, playerKey]);
+    void enabled;
+    void lat;
+    void lon;
+    void holeKey;
+    void playerKey;
+    void holes;
+    void player;
+  }, [enabled, lat, lon, holeKey, playerKey, holes, player]);
 
   return { data, loading, error };
 }

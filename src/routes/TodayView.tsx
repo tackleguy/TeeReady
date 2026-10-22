@@ -10,19 +10,11 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  ChevronRight,
-  MapPin,
-  Sparkles,
-  TrendingUp,
-  Video,
-} from 'lucide-react';
+import { ChevronRight, MapPin, TrendingUp } from 'lucide-react';
 import {
   bestWindowLabel,
-  fetchPlayHours,
   playVerdict,
   playVerdictLabel,
-  toDisplayHours,
   type Hour,
 } from '../lib/playability';
 import {
@@ -38,10 +30,8 @@ import { needsQuestionnaire } from '../lib/questionnaire';
 import { defaultSearchLoc } from '../lib/searchLoc';
 import { loadDisplayProfile } from '../lib/mock';
 import { loadRoundHistory, type SavedRound } from '../lib/roundHistory';
-import { fetchGolfCourses, type GolfCourseSummary } from '../lib/golf';
-import { loadSwingHistory } from '../lib/swing';
-import { swingDelta, swingScorecard } from '../lib/swingScore';
-import { buildSocialFeed } from '../lib/socialFeed';
+import { directoryCourses } from '../lib/courseDirectory';
+import type { GolfCourseSummary } from '../lib/golf';
 
 function greetingForNow(name: string): string {
   const h = new Date().getHours();
@@ -62,7 +52,6 @@ export function TodayView() {
   );
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const [handicap, setHandicap] = useState<number | null>(null);
-  const [miss, setMiss] = useState<string | null>(null);
   const [homeCourses, setHomeCourses] = useState<string[]>([]);
   const [liveRound, setLiveRound] = useState(() =>
     hasStoredRound() ? loadRound() : null,
@@ -73,27 +62,16 @@ export function TodayView() {
   const [loc, setLoc] = useState(() => defaultSearchLoc());
   const [nearby, setNearby] = useState<GolfCourseSummary[]>([]);
   const [hours, setHours] = useState<Hour[] | null>(null);
-  const [feed, setFeed] = useState(() => buildSocialFeed(3));
-
-  const swings = useMemo(() => loadSwingHistory(), [liveRound, recentRounds]);
-  const latestSwing = swings[0];
-  const swingCard = latestSwing ? swingScorecard(latestSwing) : null;
-  const swingImprove =
-    latestSwing && swings[1]
-      ? swingDelta(swings[1], latestSwing)
-      : null;
 
   const refresh = useCallback(() => {
     const profile = loadGolfProfile();
     setDisplayName(loadDisplayProfile().name);
     setShowQuestionnaire(profile ? needsQuestionnaire(profile) : true);
     setHandicap(profile?.handicap ?? null);
-    setMiss(profile?.miss ?? null);
     setHomeCourses(profile?.commonCourses?.slice(0, 3) ?? []);
     setLoc(defaultSearchLoc());
     setLiveRound(hasStoredRound() ? loadRound() : null);
     setRecentRounds(loadRoundHistory().slice(0, 3));
-    setFeed(buildSocialFeed(3));
   }, []);
 
   useEffect(() => {
@@ -103,7 +81,6 @@ export function TodayView() {
     window.addEventListener('teeready-round-changed', refresh);
     window.addEventListener('teeready-round-history-changed', refresh);
     window.addEventListener('teeready-display-changed', refresh);
-    window.addEventListener('teeready-swing-history-changed', refresh);
     window.addEventListener('focus', refresh);
     return () => {
       window.removeEventListener('teeready-profile-changed', refresh);
@@ -111,29 +88,14 @@ export function TodayView() {
       window.removeEventListener('teeready-round-changed', refresh);
       window.removeEventListener('teeready-round-history-changed', refresh);
       window.removeEventListener('teeready-display-changed', refresh);
-      window.removeEventListener('teeready-swing-history-changed', refresh);
       window.removeEventListener('focus', refresh);
     };
   }, [refresh]);
 
   useEffect(() => {
-    const ac = new AbortController();
-    fetchPlayHours(loc.lat, loc.lon, ac.signal)
-      .then((res) => {
-        if (ac.signal.aborted) return;
-        setHours(toDisplayHours(res.hours));
-      })
-      .catch(() => {
-        if (!ac.signal.aborted) setHours(null);
-      });
-    fetchGolfCourses(loc.lat, loc.lon, { radius: 25000, signal: ac.signal })
-      .then((courses) => {
-        if (!ac.signal.aborted) setNearby(courses.slice(0, 4));
-      })
-      .catch(() => {
-        if (!ac.signal.aborted) setNearby([]);
-      });
-    return () => ac.abort();
+    // Static directory only — no /api/golf/hours or live course search (Fluid CPU).
+    setHours(null);
+    setNearby(directoryCourses(loc.lat, loc.lon, '', 4));
   }, [loc.lat, loc.lon]);
 
   const bestHour = useMemo(() => {
@@ -149,15 +111,6 @@ export function TodayView() {
   const lastFinished = recentRounds.find((r) => !r.inProgress) ?? null;
   const lastLabel = lastRoundLabel(lastFinished);
   const startHref = liveRound ? '/rounds/gps' : '/courses';
-
-  const insight =
-    miss === 'right'
-      ? 'Your recent profile shows a right-side miss. Want to analyze your swing?'
-      : miss === 'left'
-        ? 'Your profile shows a left-side miss. A face-on swing check can help.'
-        : swingImprove != null && swingImprove > 0
-          ? `Your latest swing improved ${swingImprove} points.`
-          : null;
 
   return (
     <div className="home-dash mx-auto flex max-w-lg flex-col gap-7 pb-4 md:max-w-2xl">
@@ -248,25 +201,15 @@ export function TodayView() {
           </p>
         </Link>
         <Link
-          to="/swing"
+          to="/courses"
           className="rounded-2xl border border-line bg-surface px-3 py-3 text-center shadow-card"
         >
-          <p className="text-[11px] font-medium text-muted">Swing</p>
+          <p className="text-[11px] font-medium text-muted">Courses</p>
           <p className="mt-1 text-[22px] font-bold tabular tracking-[-0.03em] text-ink">
-            {swingCard ? `${swingCard.score}` : '—'}
+            Play
           </p>
         </Link>
       </section>
-
-      {insight ? (
-        <Link
-          to="/swing"
-          className="animate-fade-up flex items-start gap-3 rounded-2xl border border-accent/30 bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] px-4 py-3 [animation-delay:100ms]"
-        >
-          <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden />
-          <p className="text-[13px] leading-snug text-ink">{insight}</p>
-        </Link>
-      ) : null}
 
       {showQuestionnaire ? (
         <section className="animate-fade-up rounded-2xl border border-line bg-surface p-4 shadow-card [animation-delay:110ms]">
@@ -384,71 +327,7 @@ export function TodayView() {
         </section>
       ) : null}
 
-      <section className="animate-fade-up [animation-delay:160ms]">
-        <div className="mb-3 flex items-end justify-between gap-2">
-          <h2 className="text-[17px] font-bold text-ink">AI Swing</h2>
-          <Link to="/swing" className="text-[13px] font-semibold text-brand">
-            Analyze
-          </Link>
-        </div>
-        <Link
-          to="/swing"
-          className="flex items-center gap-4 rounded-2xl border border-line bg-surface p-4 shadow-card"
-        >
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand-soft text-brand">
-            <Video className="h-5 w-5" strokeWidth={2.2} aria-hidden />
-          </span>
-          <div className="min-w-0 flex-1">
-            {swingCard ? (
-              <>
-                <p className="text-[15px] font-bold text-ink">
-                  Swing score {swingCard.score}/100
-                </p>
-                <p className="mt-0.5 truncate text-[13px] text-muted">
-                  {swingImprove != null && swingImprove !== 0
-                    ? `${swingImprove > 0 ? '+' : ''}${swingImprove} vs last · `
-                    : ''}
-                  Focus: {swingCard.biggestIssue}
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="text-[15px] font-bold text-ink">Analyze my swing</p>
-                <p className="mt-0.5 text-[13px] text-muted">
-                  Record or upload — results stay on this device.
-                </p>
-              </>
-            )}
-          </div>
-          <ChevronRight className="h-4 w-4 shrink-0 text-faint" aria-hidden />
-        </Link>
-      </section>
-
-      {feed.length > 0 ? (
-        <section className="animate-fade-up [animation-delay:180ms]">
-          <div className="mb-3 flex items-end justify-between gap-2">
-            <h2 className="text-[17px] font-bold text-ink">Activity</h2>
-            <Link to="/group" className="text-[13px] font-semibold text-brand">
-              Social
-            </Link>
-          </div>
-          <ul className="flex flex-col gap-2">
-            {feed.map((item) => (
-              <li key={item.id}>
-                <Link
-                  to={item.href ?? '/group'}
-                  className="block rounded-2xl border border-line bg-surface px-4 py-3 shadow-card"
-                >
-                  <p className="text-[14px] font-semibold text-ink">{item.title}</p>
-                  <p className="mt-0.5 text-[12px] text-muted">{item.body}</p>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-
-      <section className="animate-fade-up pb-2 [animation-delay:200ms]">
+      <section className="animate-fade-up pb-2 [animation-delay:160ms]">
         <Link
           to="/stats"
           className="inline-flex items-center gap-2 text-[13px] font-semibold text-muted hover:text-brand"

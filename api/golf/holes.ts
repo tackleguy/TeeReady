@@ -44,6 +44,7 @@ import {
 import { elevationMeters } from '../_lib/weather/elevation';
 import { rateLimit, RATE } from '../_lib/rateLimit';
 import { standardizeLayouts } from './_lib/standardizeHoles';
+import { cheapJson, zeroComputeMode } from '../_lib/costGuard';
 
 export const config = { runtime: 'edge' };
 
@@ -1451,6 +1452,39 @@ export default async function handler(req: Request): Promise<Response> {
 
   const lat = quantizeCoord(rawLat, 4);
   const lon = quantizeCoord(rawLon, 4);
+
+  // Zero Active CPU path: static hole packs only — no Overpass / OSM map / USGS.
+  if (zeroComputeMode()) {
+    const pack = await loadHolePackBackup(req, {
+      lat,
+      lon,
+      courseName: courseName || undefined,
+    });
+    if (pack?.holes?.length) {
+      return cheapJson(
+        {
+          holes: pack.holes,
+          count: pack.holes.length,
+          scope: 'osm-backup',
+          provenance: (pack.holes[0] as GolfHole | undefined)?.provenance ?? 'geometric',
+          attribution: '© OpenStreetMap contributors (ODbL)',
+        },
+        200,
+        86_400,
+      );
+    }
+    return cheapJson(
+      {
+        holes: [],
+        count: 0,
+        scope: 'static-only',
+        provenance: 'geometric',
+        attribution: '© OpenStreetMap contributors (ODbL)',
+      },
+      200,
+      600,
+    );
+  }
   const courseKey = [
     osmType ?? '',
     Number.isFinite(osmId) ? String(osmId) : '',

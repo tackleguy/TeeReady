@@ -23,6 +23,7 @@ import {
   type PlayerIn,
 } from './_lib/playsLike';
 import { MAX_POST_HOLES, rateLimit, RATE } from '../_lib/rateLimit';
+import { cheapJson, zeroComputeMode } from '../_lib/costGuard';
 
 export const config = { runtime: 'edge' };
 
@@ -169,6 +170,14 @@ export default async function handler(req: Request): Promise<Response> {
 
   const limited = rateLimit(req, RATE.notebook);
   if (limited) return limited;
+
+  if (zeroComputeMode()) {
+    return cheapJson(
+      { error: 'Yardage notebook disabled (zero-compute deploy)' },
+      503,
+      60,
+    );
+  }
 
   let lat: number;
   let lon: number;

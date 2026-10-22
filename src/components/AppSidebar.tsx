@@ -1,19 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
-import {
-  CloudSun,
-  Flag,
-  Settings,
-  UserRound,
-  X,
-} from 'lucide-react';
-import { prefetchRoute } from '../lib/prefetchRoutes';
+import { Flag, Settings, UserRound, X } from 'lucide-react';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 
 export const SIDE_LINKS = [
   { label: 'Profile', href: '/profile', icon: UserRound },
   { label: 'Courses', href: '/courses', icon: Flag },
-  { label: 'Weather', href: '/weather', icon: CloudSun },
   { label: 'Settings', href: '/settings', icon: Settings },
 ] as const;
 
@@ -32,8 +24,6 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
           key={href}
           to={href}
           onClick={onNavigate}
-          onMouseEnter={() => prefetchRoute(href)}
-          onFocus={() => prefetchRoute(href)}
           className={({ isActive }) =>
             `app-sidebar-link ${isActive ? 'is-active' : ''}`
           }

@@ -23,6 +23,7 @@ import {
 } from './_lib/playsLike';
 import { DEFAULT_TURF, turfFromWeather, type TurfReport } from './_lib/turf';
 import { MAX_POST_HOLES, rateLimit, RATE } from '../_lib/rateLimit';
+import { cheapJson, zeroComputeMode } from '../_lib/costGuard';
 
 export const config = { runtime: 'edge' };
 
@@ -215,6 +216,19 @@ export default async function handler(req: Request): Promise<Response> {
   if (methodError) return methodError;
   const limited = rateLimit(req, RATE.ensemble);
   if (limited) return limited;
+
+  if (zeroComputeMode()) {
+    return cheapJson(
+      {
+        holes: [],
+        ensemble: null,
+        summary: 'Live wind ensemble disabled to keep Vercel compute at zero.',
+        turf: null,
+      },
+      200,
+      600,
+    );
+  }
 
   let lat: number;
   let lon: number;
