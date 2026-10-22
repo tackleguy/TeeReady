@@ -455,8 +455,17 @@ export function GroupView() {
 
   if (!mp.configured) {
     return (
-      <div className="mx-auto max-w-lg text-[14px] text-muted">
-        Multiplayer needs Supabase env vars configured.
+      <div className="mx-auto flex w-full max-w-2xl flex-col gap-8">
+        <div>
+          <h1 className="text-[28px] font-bold tracking-[-0.03em] text-ink">
+            Social
+          </h1>
+          <p className="mt-1 text-[14px] text-muted">
+            Your on-device golf feed. Live multiplayer groups need Supabase
+            configured in this environment.
+          </p>
+        </div>
+        <SocialFeedPanel />
       </div>
     );
   }
