@@ -56,6 +56,11 @@ import type { GeoAccuracyMeta } from './geoAccuracy';
 export type { ScorecardProvenance };
 export type { GeoAccuracyMeta, GeoConfidence } from './geoAccuracy';
 
+export interface MappedGolfSurface {
+  osmWayId: number;
+  ring: Array<{ lat: number; lon: number }>;
+}
+
 export interface GolfHole {
   number: number;
   name?: string;
@@ -77,6 +82,12 @@ export interface GolfHole {
   provenance?: ScorecardProvenance;
   /** Geographic confidence — never implied by a guessed tee. */
   geo?: GeoAccuracyMeta;
+  /** Source polygons; present only for reviewed local packs, loaded on map open. */
+  mappedSurfaces?: {
+    tee: MappedGolfSurface;
+    green: MappedGolfSurface;
+    fairways: MappedGolfSurface[];
+  };
 }
 
 export interface TurfReport {

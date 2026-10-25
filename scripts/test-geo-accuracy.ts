@@ -133,7 +133,7 @@ assert.ok(northOnly.every((h) => h.loop === 'North'));
 
 function loadOsm(slug: string) {
   return JSON.parse(
-    readFileSync(`/Users/maxr/TeeReady/public/golf/osm/${slug}.json`, 'utf8'),
+    readFileSync(new URL(`../public/golf/osm/${slug}.json`, import.meta.url), 'utf8'),
   );
 }
 

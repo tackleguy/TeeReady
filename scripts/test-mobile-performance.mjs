@@ -20,7 +20,12 @@ try {
     });
     page.on('request', req => requests.push(req.url()));
     page.on('pageerror', err => errors.push(err.message));
-    await page.route('https://**', route => route.abort());
+    await page.route(/^https:\/\//, route => route.abort());
+    // MapLibre needs a settled raster source to signal map readiness. Keep the
+    // real map/worker while supplying deterministic local imagery, as in map-loading.
+    const tile = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aX1cAAAAASUVORK5CYII=', 'base64');
+    await page.route(/arcgisonline\.com\/.*\/tile\//, route => route.fulfill({ contentType: 'image/png', body: tile }));
+    await page.route('https://demotiles.maplibre.org/font/**', route => route.fulfill({ contentType: 'application/x-protobuf', body: Buffer.alloc(0) }));
     await page.route('**/api/golf/courses?*', route => route.fulfill({ json: { courses: Array.from({ length: 6 }, (_, i) => ({ id: `way:${i}`, osmType: 'way', osmId: i, name: `Golf Course ${i}`, lat: 47.6 + i * 0.01, lon: -122.3, holes: 18, kind: 'course' })) } }));
     await page.route('**/golf/greens/manifest.json', route => route.fulfill({ json: { courses: [] } }));
     await page.goto('http://127.0.0.1:4174/tests/browser/mobile-performance.html');

@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { GOLF_SATELLITE_STYLE, type GolfHole } from '../../lib/golf';
+import { mappedSurfacesGeoJSON } from '../../lib/golfSurfaceGeometry';
 import {
   bagRingsGeoJSON,
   gpsGuideGeoJSON,
@@ -92,6 +93,7 @@ interface Props {
 }
 
 const SRC = 'golf-holes';
+const SRC_SURFACES = 'golf-mapped-surfaces';
 const SRC_TEE = 'golf-tees';
 const SRC_GREEN = 'golf-greens';
 const SRC_FLOW = 'golf-wind-flow';
@@ -640,6 +642,15 @@ export function GolfMap({
     window.visualViewport?.addEventListener('resize', resize);
 
     const onLoad = () => {
+      map.addSource(SRC_SURFACES, { type: 'geojson', data: emptyCollection(), attribution: '© OpenStreetMap contributors (ODbL)' });
+      map.addLayer({
+        id: 'golf-mapped-surfaces-fill', type: 'fill', source: SRC_SURFACES,
+        paint: {
+          'fill-color': ['match', ['get', 'kind'], 'green', '#78be72', 'tee', '#d2c68b', '#668f55'],
+          'fill-opacity': 0.35,
+          'fill-outline-color': '#a3c797',
+        },
+      });
       map.addSource(SRC, { type: 'geojson', data: holesGeoJSON([], null) });
       map.addSource(SRC_TEE, {
         type: 'geojson',
@@ -1154,6 +1165,9 @@ export function GolfMap({
         showRangefinder && activeHole != null
           ? holes.filter((h) => Number(h.number) === Number(activeHole))
           : holes;
+      (map.getSource(SRC_SURFACES) as maplibregl.GeoJSONSource | undefined)?.setData(
+        mappedSurfacesGeoJSON(markerHoles),
+      );
       (map.getSource(SRC_TEE) as maplibregl.GeoJSONSource | undefined)?.setData(
         pointsGeoJSON(markerHoles, 'tee'),
       );

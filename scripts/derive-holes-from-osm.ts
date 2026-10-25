@@ -6,6 +6,7 @@
  *   npx tsx scripts/derive-holes-from-osm.ts --limit=50
  *   npx tsx scripts/derive-holes-from-osm.ts --only=abacoa-golf-club
  *   npx tsx scripts/derive-holes-from-osm.ts --cleanup-artifacts
+ *   node --import tsx scripts/derive-holes-from-osm.ts --verified-batch=data/course-expansion/osm-2026-10.json [--dry-run]
  */
 import {
   existsSync,
@@ -20,6 +21,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { deriveHolesFromOsmElements } from '../api/golf/holes.ts';
 import { isNineCombinationArtifact } from './lib/catalogFixes.mjs';
+import { runVerifiedBatch } from './lib/verifiedCoursePacks';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OSM_DIR = join(ROOT, 'public/golf/osm');
@@ -120,6 +122,12 @@ function writeHolesManifest() {
 }
 
 function main() {
+  const batchFile = process.argv.find(a => a.startsWith('--verified-batch='))?.slice('--verified-batch='.length);
+  if (batchFile) {
+    runVerifiedBatch(ROOT, JSON.parse(readFileSync(batchFile, 'utf8')), process.argv.includes('--dry-run'));
+    // Regenerate manifests explicitly with build-course-asset-packs after review.
+    return;
+  }
   const { flags, only, limit } = parseArgs(process.argv.slice(2));
   mkdirSync(HOLES_DIR, { recursive: true });
 

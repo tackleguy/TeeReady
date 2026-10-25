@@ -1,0 +1,256 @@
+{
+  "id": "osm-2026-10",
+  "reviewedAt": "2026-10-25T06:55:00.000Z",
+  "courses": [
+    {
+      "slug": "golf-d-tretat",
+      "osmCourseId": 34513467,
+      "sourceSha256": "1112f8d951a9cf41b898eba74343a747de84643cd9e8061878ad154f2f9bb4f6"
+    },
+    {
+      "slug": "henley-golf-club",
+      "osmCourseId": 379063131,
+      "sourceSha256": "e0c5e0d869045ef6d4490a4ad5431357a57c46b8d280344a07d5e106c2154ac1"
+    },
+    {
+      "slug": "kilworth-springs",
+      "osmCourseId": 95132219,
+      "sourceSha256": "37685ade734e2bfe3cbbb3a4e636ba0a01616fc802e228af6dc1a3c54468d4f2"
+    },
+    {
+      "slug": "maitland-golf-club-nsw",
+      "osmCourseId": 31021403,
+      "sourceSha256": "44c93b65254743b529d7d389d55ae36b3be7bb6a6bf56c7be3fc384ae156e122"
+    },
+    {
+      "slug": "the-west-berkshire-golf-club",
+      "osmCourseId": 96444868,
+      "sourceSha256": "51ddd288e08aa4e24fe20df0e7d502819ed4372c53ad0df23e7b00cea574052f"
+    },
+    {
+      "slug": "witney-lakes-resort",
+      "osmCourseId": 115790964,
+      "sourceSha256": "8baae6f6783691e6fde28f75047907b3ed2f286a2129f8b4b5618e480bf8aa87"
+    },
+    {
+      "slug": "wrag-barn-golf-and-country-club",
+      "osmCourseId": 213838558,
+      "sourceSha256": "2f2aca8c392d0c204e0b3e3d113745bd32d89e5e2a6e1e749c99466d047c6ef2"
+    },
+    {
+      "slug": "golf-club-avoriaz",
+      "osmCourseId": 212736932,
+      "sourceSha256": "9e9d6848965b28e69352c113f993cb4759d6a87f958e41878e0a92a97a7dda66"
+    },
+    {
+      "slug": "midgley-lodge-motel-and-golf-course",
+      "osmCourseId": 295550817,
+      "sourceSha256": "95b2f6f2f7f55093c32c63bec0438dc6044b0fa30b1f6a4f2a760be1798a28d8"
+    },
+    {
+      "slug": "st-medan-golf-club",
+      "osmCourseId": 264453404,
+      "sourceSha256": "ee1d91066916f8b4523e6ec53e501f0d2040ee5ae590b0d3fede7b3b3f0ff93b"
+    },
+    {
+      "slug": "stuart-lake-golf-course",
+      "osmCourseId": 1346893637,
+      "sourceSha256": "524bbc1d680b589fb37768a1e4778adf0a168f348d8a6bddeba627cee7413bdd"
+    },
+    {
+      "slug": "sutton-bridge-golf-club",
+      "osmCourseId": 200923489,
+      "sourceSha256": "07153d383b25951176b4a82b6255155f6deec2dfe56564ba8061cd30ead3ab8f"
+    },
+    {
+      "slug": "nanaimo-golf-club",
+      "osmCourseId": 156412792,
+      "sourceSha256": "8366abb4b045754c73e9308e8744269b09b527653443101cf300ba39a909d32f"
+    },
+    {
+      "slug": "club-de-golf-lac-st-jean",
+      "osmCourseId": 593151162,
+      "sourceSha256": "75978ad614ec21eaf4c59a2c969e2477fd486839cb1409a5d2ba4f3e3d73fb8e"
+    },
+    {
+      "slug": "dumbarton-golf-club",
+      "osmCourseId": 203462425,
+      "sourceSha256": "3e15ce74200a836b09ef2c109a9edae40e85da4fde2d49a08cb9ad9ed5fcfab2"
+    },
+    {
+      "slug": "dundee-country-club",
+      "osmCourseId": 39971105,
+      "sourceSha256": "d7f96839e16242db23cc8e7dcaf50cb6bd20b46becc948f7093d5cc78ae9cf97"
+    },
+    {
+      "slug": "easter-moffat-golf-club",
+      "osmCourseId": 174827707,
+      "sourceSha256": "0bb9a08c2b47e6a7f10c296d97b8dfd548ae94958b539eb7226eea1c47ea8c30"
+    },
+    {
+      "slug": "fairview-estate",
+      "osmCourseId": 130812867,
+      "sourceSha256": "db3c58f81740355d0f89ebbf7b3a2167d8ade731bf848b997e27f5e4b6b2a0e5"
+    },
+    {
+      "slug": "fraserglen-golf-course",
+      "osmCourseId": 25519733,
+      "sourceSha256": "e3e103c167373bfe7ffe4b1ee1ba627843fb0beecca57069ae8b61fc0304a0bd"
+    },
+    {
+      "slug": "galway-bay-golf-resort",
+      "osmCourseId": 115712762,
+      "sourceSha256": "d7da0734d9af6d2f0e139ad2165ff982ffadd6567d5e4a5d6f404b54b40158f8"
+    },
+    {
+      "slug": "garrison-golf-course",
+      "osmCourseId": 19130513,
+      "sourceSha256": "c4de39a3a852acf84360339ab3372f6074a5fef57020de09adbc8bc3a8cf1c3a"
+    },
+    {
+      "slug": "glencorse-golf-club",
+      "osmCourseId": 52664063,
+      "sourceSha256": "e559ee3fda0534b4010ce41344b1ce9780f065b816581f45a0c63dcc2d3aa60b"
+    },
+    {
+      "slug": "golf-de-marseille-la-salette",
+      "osmCourseId": 466623614,
+      "sourceSha256": "417689275c5b306b69c89e6d43b408ab5adaa6424956ac414b4b9fe6da222009"
+    },
+    {
+      "slug": "haddington-golf-course",
+      "osmCourseId": 56451887,
+      "sourceSha256": "0469c8af54c046671f1fe08cd6a30035db0661be0ff68225a6cff76f50fb09bd"
+    },
+    {
+      "slug": "hartlepool-golf-club",
+      "osmCourseId": 165844727,
+      "sourceSha256": "baa5fbeaa1f8971f53043c375ef68da4388f450401acf15334a832baa94e0d6c"
+    },
+    {
+      "slug": "hazlemere-golf-club",
+      "osmCourseId": 97686940,
+      "sourceSha256": "8e5a382d5373ca6633a486408e49ee61514e60eebfd75098c6d9f99d734a243c"
+    },
+    {
+      "slug": "heysham-golf-club",
+      "osmCourseId": 94004565,
+      "sourceSha256": "f616242e7e468f540af10f0bc69021b7c80515e5d5d538ae01654f531e31bc4e"
+    },
+    {
+      "slug": "ken-wo-golf-club",
+      "osmCourseId": 203879108,
+      "sourceSha256": "74ccca9cd207d316addcfc4bc6b9a1385ed59c7f30fce749a3c4ef3ddfeb097d"
+    },
+    {
+      "slug": "lytham-green-drive-golf-course",
+      "osmCourseId": 303052114,
+      "sourceSha256": "64677bebcc7153f8f27d0da0bd8f48e4567c72ed84930249cb945cc9b223a04e"
+    },
+    {
+      "slug": "pagoda-ridge",
+      "osmCourseId": 592490045,
+      "sourceSha256": "e987dc88ee16a7592d13ea9f4768444dc28f48d29db9cebcf1237e5a2d788dd5"
+    },
+    {
+      "slug": "perranporth-golf-club",
+      "osmCourseId": 578916423,
+      "sourceSha256": "f1244ae0fd570b2002e131859d0cd38dfdae5889ebd025724ea36486fd3fed22"
+    },
+    {
+      "slug": "st-ives-golf-club",
+      "osmCourseId": 217129260,
+      "sourceSha256": "76cce6ba840e4cb78f20c0d66dc8d0c78720e5f73d500fefd01826d2b66be0f5"
+    },
+    {
+      "slug": "sturgeon-valley-golf-club",
+      "osmCourseId": 161594270,
+      "sourceSha256": "09f3d9f032459a275ba5f592fe1a89dc224ae6802bdfde0197492126de2ebd77"
+    },
+    {
+      "slug": "test-valley-golf-club",
+      "osmCourseId": 159494671,
+      "sourceSha256": "ebba5867cb829232074679f2e36e77a81ba05d8f19b26b7a1fba963a11e0114e"
+    },
+    {
+      "slug": "the-west-lancashire-golf-club",
+      "osmCourseId": 25720491,
+      "sourceSha256": "b9fc7f6eadf0e7a269ef928eb5912f45a94f3db6f99b76ca82ebdccfe5403ee0"
+    },
+    {
+      "slug": "yass-golf-course",
+      "osmCourseId": 27217634,
+      "sourceSha256": "0840ab6546a40e957c93db9e93700b0fc5b739f1f00db6bc2ed65f2d7f31bd11"
+    },
+    {
+      "slug": "club-de-golf-lotbini-re",
+      "osmCourseId": 101913330,
+      "sourceSha256": "650798f893af8095c2e2d23730e3fadc520558b33e40d2cdf50c8c1f5964f1c3"
+    },
+    {
+      "slug": "club-de-golf-saint-j-r-me",
+      "osmCourseId": 84549387,
+      "sourceSha256": "06de6476e9d7967fe37c9be069f987cc9dd85c7fa73d1c1ad4d83ab3d42ceb12"
+    },
+    {
+      "slug": "delhi-golf-and-country-club",
+      "osmCourseId": 687309972,
+      "sourceSha256": "9bc1221a3b0a6d4557e8d8166a953b2a8ac4f898a78d5aadc226f0839e26aec2"
+    },
+    {
+      "slug": "gerrards-cross-golf-club",
+      "osmCourseId": 708309936,
+      "sourceSha256": "492fc6d11f6b73a97957da1100d385cf34c40a99ee019396fc414d04b186f7f3"
+    },
+    {
+      "slug": "golf-d-evian",
+      "osmCourseId": 54949523,
+      "sourceSha256": "214f157c8c2ee07f7b2d9afea1eabe2f3635a6f80daa7f93fe44ca3a9a36a202"
+    },
+    {
+      "slug": "golf-de-houlgate",
+      "osmCourseId": 112477210,
+      "sourceSha256": "8f5bca69ffb850a44fe0e96d73b5da70923284f06cde44b13b950292e0165042"
+    },
+    {
+      "slug": "golf-sainte-marguerite",
+      "osmCourseId": 72838910,
+      "sourceSha256": "ad1c69b03f33286566f5fd8995d442eeaff2f49df3c6d7377626243694d82359"
+    },
+    {
+      "slug": "goona-warra-golf-course",
+      "osmCourseId": 57547093,
+      "sourceSha256": "a39aac7a102cffd40f5f8829c9cb1415d4975d14dad34a9afd070f207d0cd275"
+    },
+    {
+      "slug": "greenhills-country-club",
+      "osmCourseId": 190360981,
+      "sourceSha256": "77bf135c0f1a9069c7b5a656e53247d87b16b63396bb15fe0592a5d7b7b8560a"
+    },
+    {
+      "slug": "kawartha-golf-and-country-club",
+      "osmCourseId": 77714595,
+      "sourceSha256": "a3f4fafecf924d47775311576d0b256366cdeff45e10c1abc60da2239c4adb6b"
+    },
+    {
+      "slug": "keilor-public-golf-course",
+      "osmCourseId": 27398076,
+      "sourceSha256": "04b7a419c898df9261a9e3b0887d4a91c2f4c2f88437d25eeefaa6ec6ce53063"
+    },
+    {
+      "slug": "lakeview-par-3",
+      "osmCourseId": 249444643,
+      "sourceSha256": "a75e63b42708c58a8637d918ccd2030e7bee832023556d89ff6bef7ce3016687"
+    },
+    {
+      "slug": "langland-bay-golf-club",
+      "osmCourseId": 22821848,
+      "sourceSha256": "5f3e3383f965a13616e29ccd4c9c2dad539e1fdd0f53bb6b4e478d8839b3eed8"
+    },
+    {
+      "slug": "les-vieux-moulins-golf-club",
+      "osmCourseId": 88219416,
+      "sourceSha256": "c31b298ce72a1a2112cd4530dfca89a99da30359a591abd61914ce4469bab524"
+    }
+  ]
+}

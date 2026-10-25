@@ -16,6 +16,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import handler from '../api/golf/holes';
+import assert from 'node:assert/strict';
+import { runVerifiedBatch, type Batch } from './lib/verifiedCoursePacks';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const TARGET = Number(process.env.COURSE_COUNT || 300);
@@ -444,6 +446,25 @@ async function mapPool<T, R>(
   }
   await Promise.all(Array.from({ length: limit }, () => worker()));
   return results;
+}
+
+// Target a reviewed static batch without calling live APIs or requiring 3D/official cards.
+// COURSE_BATCH=data/course-expansion/osm-2026-10.json npm run test:course-assets
+if (process.env.COURSE_BATCH) {
+  const batch: Batch = JSON.parse(readFileSync(process.env.COURSE_BATCH, 'utf8'));
+  const packs = runVerifiedBatch(ROOT, batch, true);
+  const directory = JSON.parse(readFileSync(join(ROOT, 'src/data/course-directory.json'), 'utf8'));
+  for (const pack of packs) {
+    assert.deepEqual(JSON.parse(readFileSync(join(ROOT, 'public/golf/holes', `${pack.slug}.json`), 'utf8')), pack);
+    const entry = holesManifest.courses.find(c => c.slug === pack.slug);
+    assert.ok(entry && entry.name === pack.name && entry.lat === pack.lat && entry.lon === pack.lon, `${pack.slug}: manifest identity`);
+    assert.ok(directory.courses.some((row: unknown[]) => row[0] === pack.slug && row[1] === pack.name && row[4] === pack.count && row[5] === 0), `${pack.slug}: searchable, no unsupported 3D flag`);
+  }
+  const summary = { tested: packs.length, passed: packs.length, holes: packs.reduce((n, p) => n + p.count, 0), networkRequests: 0, batch: batch.id, checkedAt: new Date().toISOString() };
+  mkdirSync(join(ROOT, 'scripts/.cache'), { recursive: true });
+  writeFileSync(join(ROOT, 'scripts/.cache/verified-batch-results.json'), JSON.stringify(summary, null, 2));
+  console.log(summary);
+  process.exit(0);
 }
 
 const courses = buildCourseList();

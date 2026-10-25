@@ -18,6 +18,11 @@ Static assets under `public/golf/` are the source of truth for offline Prep:
 
 ### Build / refresh packs
 
+For conservative, resumable imports from pinned local OSM snapshots, see the
+[October 2026 batch report](data/course-expansion/osm-2026-10-report.md). It records
+50 new mapped packs, source licenses and hashes, missing official scorecard/elevation
+data, rejected candidates, validation results, and scoped manifest commands.
+
 ```bash
 # Prefer courses that already have green meshes (highest value)
 npm run backup:osm -- --skip-existing
