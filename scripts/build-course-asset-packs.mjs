@@ -17,6 +17,7 @@
  *   node scripts/build-course-asset-packs.mjs --dry-run
  *   node scripts/build-course-asset-packs.mjs --manifest-only
  *   node scripts/build-course-asset-packs.mjs --scorecards-only
+ *   node scripts/build-course-asset-packs.mjs --verified-batch=data/course-expansion/osm-2026-10.json
  *
  * Env:
  *   HOLES_API_BASE  default https://tee-ready.vercel.app
@@ -56,7 +57,18 @@ function parseArgs(argv) {
     else if (a === '--manifest-only') flags.add('manifest-only');
     else if (a === '--scorecards-only') flags.add('scorecards-only');
     else if (a === '--holes-only') flags.add('holes-only');
-    else if (a.startsWith('--limit=')) limit = Number(a.slice(8)) || limit;
+    else if (a.startsWith('--verified-batch=')) {
+      const batch = JSON.parse(readFileSync(a.slice('--verified-batch='.length), 'utf8'));
+      if (!Array.isArray(batch.courses) || !batch.courses.length || batch.courses.length > 50 || batch.courses.some((c) => !/^[a-z0-9-]+$/.test(c.slug))) {
+        throw new Error('A verified batch must list 1–50 valid course slugs');
+      }
+      for (const c of batch.courses) {
+        if (!existsSync(join(HOLES_DIR, `${c.slug}.json`))) throw new Error(`Build the selected pack first: ${c.slug}`);
+      }
+      only.push(...batch.courses.map((c) => c.slug));
+      flags.add('manifest-only');
+      flags.add('holes-only');
+    } else if (a.startsWith('--limit=')) limit = Number(a.slice(8)) || limit;
     else if (a.startsWith('--concurrency='))
       concurrency = Math.max(1, Number(a.slice(14)) || concurrency);
     else if (a.startsWith('--only=')) only.push(a.slice(7));
@@ -347,13 +359,19 @@ function mergeTargets({ only, limit }) {
   return list;
 }
 
-function writeHolesManifest() {
+function writeHolesManifest({ only = [] } = {}) {
   mkdirSync(HOLES_DIR, { recursive: true });
+  // A reviewed batch adds only its selected files. Do not republish previously
+  // unlisted legacy packs just because they happen to have 9 numbered holes.
+  const previous = existsSync(join(HOLES_DIR, 'manifest.json'))
+    ? readJson(join(HOLES_DIR, 'manifest.json')).courses : [];
+  const included = only.length ? new Set([...previous.map((c) => c.slug), ...only]) : null;
   const files = readdirSync(HOLES_DIR).filter(
     (f) => f.endsWith('.json') && f !== 'manifest.json',
   );
   const courses = [];
   for (const f of files) {
+    if (included && !included.has(f.replace(/\.json$/, ''))) continue;
     try {
       const data = readJson(join(HOLES_DIR, f));
       const holes = data.holes ?? [];
@@ -563,12 +581,15 @@ async function main() {
   const dryRun = flags.has('dry-run');
   const skipExisting = flags.has('skip-existing') && !flags.has('force');
 
-  // Always keep greens manifest honest — missing files were advertising holes
-  // that could never load a 3D backup.
-  if (!dryRun) writeGreensManifestFromDisk();
+  // Refresh greens for full builds; scoped hole batches leave other assets alone.
+  if (!dryRun && !flags.has('holes-only')) writeGreensManifestFromDisk();
 
   if (flags.has('manifest-only')) {
-    writeHolesManifest();
+    if (dryRun) {
+      console.log(`[dry] Manifest regeneration (${only.length ? `${only.length} selected additions` : 'all packs'}); no files written`);
+      return;
+    }
+    writeHolesManifest({ only });
     if (!flags.has('holes-only')) writeScorecardPacks({ dryRun });
     return;
   }

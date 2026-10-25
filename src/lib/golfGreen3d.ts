@@ -1,4 +1,5 @@
 /** Pre-built 3D green meshes (OSM outline + USGS 3DEP elevation). */
+import { namesLooselyMatch } from '../../api/golf/_lib/courseRelate';
 
 /** CDN / local base for green mesh JSON (no trailing slash). */
 function greensBaseUrl(): string {
@@ -131,28 +132,6 @@ function haversineM(
   return 2 * R * Math.asin(Math.sqrt(A));
 }
 
-function escapeRegExp(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-/** Loose name match that still rejects short-name substring false positives. */
-function namesLooselyMatch(courseName: string, packName: string): boolean {
-  const a = courseName.toLowerCase().trim();
-  const b = packName.toLowerCase().trim();
-  if (!a || !b) return false;
-  if (a === b) return true;
-  const shorter = a.length <= b.length ? a : b;
-  const longer = a.length <= b.length ? b : a;
-  // Short labels ("12 Oaks", "Erin Hills") must match as a whole phrase.
-  if (shorter.length < 14) {
-    const re = new RegExp(
-      `(^|[^a-z0-9])${escapeRegExp(shorter)}([^a-z0-9]|$)`,
-    );
-    return re.test(longer);
-  }
-  return longer.includes(shorter);
-}
-
 let manifestPromise: Promise<GreenMeshManifest | null> | null = null;
 
 export function loadGreenMeshManifest(): Promise<GreenMeshManifest | null> {
@@ -165,7 +144,7 @@ export function loadGreenMeshManifest(): Promise<GreenMeshManifest | null> {
   return manifestPromise;
 }
 
-function matchSlugFromManifest(
+export function matchGreenMeshSlug(
   manifest: GreenMeshManifest | null,
   courseName: string | null | undefined,
   lat?: number | null,
@@ -177,10 +156,11 @@ function matchSlugFromManifest(
   // facilities (Sepulveda, Admirals Cove, Torrey, Pebble duplicates, etc.).
   if (courseName) {
     const n = courseName.toLowerCase().trim();
-    const exact = manifest.courses.find((c) => c.name.toLowerCase() === n);
+    const nearby = manifest.courses.filter(c => lat == null || lon == null || !Number.isFinite(lat) || !Number.isFinite(lon) || haversineM(lat, lon, c.lat, c.lon) <= MATCH_NAME_M);
+    const exact = nearby.find((c) => c.name.toLowerCase() === n);
     if (exact) return exact.slug;
 
-    const named = manifest.courses
+    const named = nearby
       .filter((c) => namesLooselyMatch(n, c.name))
       .sort((a, b) => b.holes - a.holes || a.slug.localeCompare(b.slug));
     if (named.length === 1) return named[0]!.slug;
@@ -201,6 +181,9 @@ function matchSlugFromManifest(
     } else if (named.length > 1) {
       return named[0]!.slug;
     }
+    // A supplied identity must match: proximity is not evidence that a sibling
+    // course or similarly named course has usable green contours for this one.
+    return null;
   }
 
   if (
@@ -246,10 +229,8 @@ export async function resolveGreenMeshSlug(
   lon?: number | null,
 ): Promise<string | null> {
   const manifest = await loadGreenMeshManifest();
-  return (
-    matchSlugFromManifest(manifest, courseName, lat, lon) ??
-    matchSlugLegacy(courseName)
-  );
+  if (manifest?.courses?.length) return matchGreenMeshSlug(manifest, courseName, lat, lon);
+  return matchSlugLegacy(courseName);
 }
 
 export function hasGreenMeshes(courseName: string | undefined | null): boolean {

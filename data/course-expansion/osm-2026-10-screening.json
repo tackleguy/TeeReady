@@ -1,0 +1,3979 @@
+{
+  "batch": "osm-2026-10",
+  "sourcePopulation": {
+    "cachedOsmFiles": 17068,
+    "withoutHolePack": 8235,
+    "completeNumberedHoleWayCandidates": 1055
+  },
+  "qualified": 68,
+  "selected": 50,
+  "qualifiedDeferred": 18,
+  "rejectionCounts": {
+    "ambiguous course identity": 267,
+    "course pin outside named boundary": 88,
+    "derivation dropped or changed source holes": 11,
+    "extra greens suggest an unresolved sibling layout": 33,
+    "hole N: missing or ambiguous tee/green polygon": 97,
+    "hole N: no mapped fairway intersecting source line": 117,
+    "hole N: reused green requires shared-green review": 6,
+    "hole outside named boundary": 84,
+    "invalid course name": 2,
+    "layout overlaps college-pines-golf-club (18 holes)": 1,
+    "layout overlaps memphremagog-golf-club (16 holes)": 1,
+    "layout overlaps pine-grove-golf-course (18 holes)": 1,
+    "missing or invalid sourced par": 151,
+    "nine-hole layout lacks an explicit course hole count": 109,
+    "source declares a different hole count": 11,
+    "source par total conflicts with layout": 8
+  },
+  "rejected": [
+    {
+      "slug": "11",
+      "reason": "invalid course name"
+    },
+    {
+      "slug": "anstruther-golf-club",
+      "reason": "derivation dropped or changed source holes"
+    },
+    {
+      "slug": "appleby-golf-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "ashburton-golf-club",
+      "reason": "derivation dropped or changed source holes"
+    },
+    {
+      "slug": "axis-golfe-ponte-de-lima",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "azata-golf",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "bakewell-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "balbirnie-park-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "beaconsfield",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "beloura-pestana-golf",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "boldon-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "bowood-park-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "brampton-park-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "brant-valley-golf-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "bridport-and-west-dorset-golf-club",
+      "reason": "derivation dropped or changed source holes"
+    },
+    {
+      "slug": "chatswood-golf-club",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "chippenham-golf-club",
+      "reason": "derivation dropped or changed source holes"
+    },
+    {
+      "slug": "club-de-golf-beaconsfield",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "club-de-golf-douville",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "club-de-golf-du-lac-carling",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "club-de-golf-hacienda-san-gaspar",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "club-de-golf-hato-verde",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "club-de-golf-l-empress",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "club-de-golf-llavaneres",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "club-de-golf-m-laga-parador",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "club-de-golf-memphr-magog",
+      "reason": "layout overlaps memphremagog-golf-club (16 holes)"
+    },
+    {
+      "slug": "club-de-golf-montmagny",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "club-de-golf-municipal-de-montr-al",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "club-de-golf-piedmont",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "club-de-golf-playa-serena",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "club-de-golf-port-alfred",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "club-de-golf-royal-estrie",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "club-de-golf-sainte-marie",
+      "reason": "hole 3: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "club-de-golf-st-georges",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "club-de-golf-tecumseh",
+      "reason": "hole 2: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "club-de-golf-valleyfield",
+      "reason": "hole 10: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "club-de-golf-ville-marie",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "club-golf",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "clube-de-golfe-da-quinta-da-barca",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "clwb-golff-aberdyfi",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "clwb-golff-nefyn",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "clwb-golff-porth-llechog-bull-bay-golf-club",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "clwb-golff-porthmadog",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "clyne-golf-club",
+      "reason": "hole 2: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "coate-water-pitch-and-putt-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "cobble-beach-golf-resort",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "cobble-hills-golf-club",
+      "reason": "hole 2: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "cobourg-creek-golf-course",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "colac-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "cold-lake-golf-and-winter-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "colebrook-golf-course",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "colin-valley-golf-course",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "coloniale-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "confederation-park-golf-course",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "cooke-municipal-golf-course",
+      "reason": "hole 4: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "cooma-golf-club",
+      "reason": "hole 11: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "cootamundra-golf-and-sports-club",
+      "reason": "hole 2: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "copsewood-grange-golf-course",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "copthorne-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "coral-cove-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "coral-creek-golf-course-closed",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "cornish-links",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "cougar-creek-golf-resort",
+      "reason": "hole 3: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "cove-links",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "cowichan-golf-and-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "craigowan-oxford-golf-and-country-club",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "craigtoun-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "cranbrook-golf-club",
+      "reason": "hole 2: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "cranleigh-golf-club",
+      "reason": "source par total conflicts with layout"
+    },
+    {
+      "slug": "cromer-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "crookhill-park-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "crowsnest-pass-golf-and-country-club",
+      "reason": "hole 13: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "cuckfield-golf-course",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "cullen-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "cultus-lake-golf-club",
+      "reason": "hole 3: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "cypress-hills-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "dalewood-golf-club",
+      "reason": "hole 8: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "dannevirke-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "darenth-valley-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "dawson-city-golf-course",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "dawson-creek-golf-and-country-club",
+      "reason": "source declares a different hole count"
+    },
+    {
+      "slug": "deerhurst-lakeside-golf-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "delamere-forest-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "deltona-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "denham-golf-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "deniliquin-golf-course",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "desert-hawk-at-pueblo-west",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "devil-s-paintbrush",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "digby-pines-golf-course",
+      "reason": "hole 16: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "dipton-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "domaine-du-golf-saint-lazare",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "donaghadee-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "dorset-golf",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "dragon-s-fire-golf-club",
+      "reason": "hole 17: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "drayton-park-par-3-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "drummond-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "drumoig-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "dubbo-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "dunany-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "dundee-resort-and-golf-club",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "dunnerholme-golf-course",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "dunsborough-lakes-resort-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "dunstable-downs-golf-course",
+      "reason": "hole 4: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "dunston-hall-golf-course",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "durham-city-golf-course",
+      "reason": "hole 2: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "durham-golf",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "eagles-nest-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "eaglescliffe-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "easingwold-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "east-kilbride-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "edson-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "eganridge-resort-country-club-and-spa",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "eighteen-pastures",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "eketahuna-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "el-cielo-country-club",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "el-tinto",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "elk-island-golf-course",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "ellesborough-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "elmira-golf-club",
+      "reason": "hole 5: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "ely-city-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "emerald-downs-golf-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "emerald-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "enmore-park-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "escuela-p-blica-de-golf-el-toyo",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "escuela-p-blica-de-golf-la-cartuja",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "espiche-golf",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "exeter-golf-course",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "exmouth-golf-club",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "eyemouth-golf-club",
+      "reason": "hole 3: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "fairfield-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "fairview-mountain-golf-club",
+      "reason": "hole 3: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "falcon-lake-golf-course",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "falkland-golf-club",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "far-grange-park-and-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "farthingstone-hotel-and-golf",
+      "reason": "hole 11: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "feddinch-mains",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "feilding-golf-club",
+      "reason": "hole 2: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "feldon-valley-golf-club",
+      "reason": "hole 9: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "fescue-s-edge-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "fintona-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "fishley-park-pitch-and-putt",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "flagstaff-hill-golf-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "flamborough-head-golf-club",
+      "reason": "derivation dropped or changed source holes"
+    },
+    {
+      "slug": "fleurieu-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "font-del-llop-golf-resort",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "foressos-golf",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "forest-of-arden-country-club",
+      "reason": "source declares a different hole count"
+    },
+    {
+      "slug": "forest-of-galtres-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "forest-ridge-golf-and-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "forfar-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "forster-tuncurry-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "fort-augustus-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "fortrose",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "four-marks-golf",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "foxton-golf-club",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "frankston-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "fredericton-golf-club",
+      "reason": "hole 11: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "freshwater-golf-club",
+      "reason": "hole 14: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "frog-s-breath-private-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "front-third-at-metedeconk-national-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "furness-golf-club",
+      "reason": "source par total conflicts with layout"
+    },
+    {
+      "slug": "furry-creek-golf-and-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "fynn-valley-golf-club",
+      "reason": "hole 8: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "gailes-golf-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "gander-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "ganstead-park-golf-and-events",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "garden-golf-de-mionnay",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "gardens-park-golf-links",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "gardiners-run-golf-course",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "garstang-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "gatton-manor-golf-course",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "geraldine-district-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "gerringong-golf-club",
+      "reason": "hole 18: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "girton-golf-club",
+      "reason": "hole 4: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "gisborne-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "glamorganshire-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "glen-eagles-golf-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "glen-golf-club",
+      "reason": "source declares a different hole count"
+    },
+    {
+      "slug": "glen-gorse-golf-club",
+      "reason": "hole 2: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "glen-lovat-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "glenelg-golf-course",
+      "reason": "hole 3: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "glengarry-golf-links",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "gleniti-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "glenlo-abbey-golf-course",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "glenmore-heritage-valley-golf-course",
+      "reason": "hole 9: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "glenorchy-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "glyn-abbey-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "glynneath-golf-club",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "golden-downs-golf-course",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golden-vale-golf-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "golf",
+      "reason": "invalid course name"
+    },
+    {
+      "slug": "golf-9-trous-de-la-r-sidence-du-domaine-du-golf",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "golf-ags",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-al-s-ribaute",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golf-alen-on-en-ar-onnay",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golf-bluegreen-du-pays-de-saint-gilles-croix-de-vie",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "golf-bluegreen-mazi-res-en-g-tine",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-bluegreen-qu-tigny",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "golf-bluegreen-rueil-malmaison",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-c-rdoba",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-c-te-bleue",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "golf-canyamel",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-club-de-miramas",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "golf-club-de-vezac",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-club-domaine-de-champlong",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "golf-club-espalais",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golf-club-grand-saint-emilionnais",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-d-andaine",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-d-arc-en-barrois",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "golf-d-arcangues",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-d-arnouville",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "golf-d-aubeterre",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-d-evreux",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "golf-d-ilbarritz",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "golf-d-opio-valbonne",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-d-orl-ans-donnery",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "golf-d-orl-ans-lim-re",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-d-ormesson",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-de-b-gard",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "golf-de-b-ziers-saint-thomas",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "golf-de-barbaroux",
+      "reason": "hole 15: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "golf-de-barthe",
+      "reason": "hole 2: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "golf-de-bell-me",
+      "reason": "hole 16: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "golf-de-besan-on",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "golf-de-bordeaux-cameyrac",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-de-c-ly",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-de-caden",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "golf-de-casteljaloux",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golf-de-castres-gourjade",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golf-de-cergy-vaur-al",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-de-cesson-s-vign",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "golf-de-chalon-la-roseraie",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-de-cholet",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "golf-de-cic-blossac",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-de-cognac",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-de-combles",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "golf-de-coutainville",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-de-divonne-les-bains",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-de-domont-montmorency",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-de-gadancourt",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-de-gap-bayard",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-de-gascogne",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golf-de-gassin",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "golf-de-gif-sur-yvette-chevry",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-de-l-ailette",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "golf-de-l-ermitage",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-de-l-hippodrome",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "golf-de-l-hippodrome-d-alen-on",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golf-de-l-hirondelle",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-de-l-le-fleurie",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golf-de-la-barouge",
+      "reason": "hole 2: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "golf-de-la-crini-re",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golf-de-la-for-t-de-montpensier",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "golf-de-la-forge",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-de-la-freslonni-re",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-de-la-plaine",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "golf-de-la-rosi-re",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golf-de-la-valdaine",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "golf-de-la-valserine",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golf-de-lannemezan",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-de-lanniron",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-de-lolivarie",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "golf-de-lyon-tassin",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golf-de-lyon-verger",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-de-machilly",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "golf-de-marivaux",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-de-marolles",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-de-mennecy-chevannes",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "golf-de-mont-de-marsan",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "golf-de-mourmelon",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-de-n-mes-vacquerolles",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-de-nantes-erdre",
+      "reason": "hole 7: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "golf-de-pau-artiguelouve",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "golf-de-pl-neuf-val-andr",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-de-ploemeur-oc-an",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-de-pont-royal",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-de-rhuys-kerver",
+      "reason": "hole 6: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "golf-de-riom",
+      "reason": "hole 8: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "golf-de-roissy",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-de-roquebrune",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-de-rosny-sous-bois",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "golf-de-royan",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "golf-de-saint-gatien",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "golf-de-saint-julien",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golf-de-saint-ouen-l-aum-ne",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-de-saint-sa-ns",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-de-saint-tienne",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "golf-de-sainte-maxime",
+      "reason": "hole 12: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "golf-de-salies-du-salat",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-de-sancerre",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-de-saumane",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-de-seignosse",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-de-servanes",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "golf-de-seyssins",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golf-de-son-t-rmens",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-de-sperone",
+      "reason": "hole 12: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "golf-de-teynac",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "golf-de-touraine",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "golf-de-troyes-la-cordeli-re",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "golf-de-val-queven",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-de-valcros",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-de-verri-res-le-buisson",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "golf-de-vire-la-dath-e",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-de-yerville",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golf-des-aiguilles-vertes",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golf-des-bords-de-loire",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golf-des-flandres",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golf-des-ocres",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golf-des-sarrays",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-des-saules",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-des-traches",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-du-bassin-bleu",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-du-bois-chenu",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golf-du-ch-teau-d-augerville",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "golf-du-ch-teau-de-bournel",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-du-ch-teau-de-la-vallade",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-du-ch-teau-de-pallanne",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-du-ch-teau-de-rochefort",
+      "reason": "hole 2: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "golf-du-ch-teau-les-merles",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golf-du-chambon-sur-lignon",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-du-clou",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "golf-du-g-vaudan-domaine-de-barres",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-du-gen-t",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golf-du-hazeau",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-du-kempferhof",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "golf-du-lac-d-annecy",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-du-nivernais",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-du-parc-du-tremblay",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-du-pr-lamy",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golf-du-puy-en-velay",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golf-du-rhin",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-du-sporting-club-de-vichy",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "golf-du-totche",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golf-du-val-de-sorne",
+      "reason": "hole 4: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "golf-epherra-trous-1-9",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golf-ex-cutif-montr-al",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "golf-fr-gate-provence",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-les-gets",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "golf-louis-rouyer-guillet",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-mont-ste-marie",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "golf-nuevo-portil",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "golf-roches-d-azur",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-saint-prime-sur-le-lac",
+      "reason": "hole 3: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "golf-st-gerard-des-laurentides",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golf-st-ignace",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "golf-villa-mayor",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "golfclub-soufflenheim",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "golspie-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "goodwood-golf-club",
+      "reason": "hole 7: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "gosnells-golf-course",
+      "reason": "hole 2: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "goulburn-golf-club",
+      "reason": "hole 8: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "gowran-park",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "grampians-golf-club",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "grand-pines",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "grandview-golf-and-country-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "grange-fell-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "grangemouth-golf-club",
+      "reason": "source par total conflicts with layout"
+    },
+    {
+      "slug": "grantown-on-spey-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "great-chart-golf-and-leisure",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "greenburn-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "greendale-golf-club",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "greenway-hall-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "grims-dyke-golf-club",
+      "reason": "source declares a different hole count"
+    },
+    {
+      "slug": "gundagai-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "haigh-hall-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "haileybury-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "hainsworth-park-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "halesowen-golf-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "half-moon-bay-golf-club",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "hallamshire-golf-club",
+      "reason": "hole 6: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "hallbrook-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "hamilton-golf-and-country-club",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "hammond-golf-and-country-club",
+      "reason": "hole 14: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "hamurana-golf-course",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "harborne-church-farm-9-hole-golf-course",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "harden-golf-club",
+      "reason": "hole 5: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "harrogate-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "harrow-hill-golf-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "hartfield-country-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "hartlepool-power-station-golf-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "hartsbourne-country-club",
+      "reason": "source declares a different hole count"
+    },
+    {
+      "slug": "harvey-golf-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "haverhill-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "hawks-landing-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "hawks-nest-golf-club",
+      "reason": "hole 10: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "hay-river-golf-course",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "hazelmere-golf-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "heacham-manor-golf-club",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "heather-glen-golf-course",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "hebden-bridge-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "hellidon-lakes-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "helmsdale-community-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "henlle-park",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "hennerton-golf-club",
+      "reason": "hole 6: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "heriot-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "heron-point-golf-links",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "herons-glen-golf-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "heyrose-golf-club",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "hidden-valley-golf-and-country-club-golf",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "high-post-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "highland-links-golf-course",
+      "reason": "hole 10: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "hill-top-golf-and-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "hintlesham-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "hollinger-golf-club",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "hollinwell",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "hope-park-pitch-and-putt",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "huddersfield-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "huntercombe-golf-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "huon-valley-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "hurstville-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "idylwylde-golf-and-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "innerleithen-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "innes-park-country-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "iron-wolf-golf-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "isla-canela-golf-course",
+      "reason": "hole 11: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "islantilla-golf-resort",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "isles-of-scilly-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "ivanhoe-golf-course",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "jasper-hills-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "kaitake-golf-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "kaitangata-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "karratha-country-club",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "kawerau-golf-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "kedleston-park-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "kedron-dells-golf-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "keighley-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "kenilworth-golf-club",
+      "reason": "source par total conflicts with layout"
+    },
+    {
+      "slug": "kenmare-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "kettle-creek-golf-and-country-club",
+      "reason": "hole 6: reused green requires shared-green review"
+    },
+    {
+      "slug": "killymoon-golf-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "kilmacolm-golf-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "kincardine-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "kingsthorpe-golf-course",
+      "reason": "hole 8: reused green requires shared-green review"
+    },
+    {
+      "slug": "kingsway-cambridge-lakes-golf-course",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "kingsway-golf-club",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "kingussie-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "kirriemuir",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "kirtlington-golf-club",
+      "reason": "source declares a different hole count"
+    },
+    {
+      "slug": "kooringal-golf-club",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "kp-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "kyles-of-bute-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "la-palmyre-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "la-querencia",
+      "reason": "hole 2: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "lakes-entrance-golf-course",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "lakeside-greens-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "lamberhurst-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "langara-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "langley-park-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "lanhydrock-hotel-and-golf-club",
+      "reason": "hole 11: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "larrimac-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "last-mountain-regional-park-golf-course",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "latour-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "laughlin-ranch-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "le-portage-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "le-proven-al-golf",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "leamington-and-county-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "leckford-golf-course",
+      "reason": "source declares a different hole count"
+    },
+    {
+      "slug": "lee-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "lee-on-the-solent-golf-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "letchworth-golf-club",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "limestone-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "lingan-golf-club",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "links-at-dover-coast",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "links-at-gettysburg",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "links-at-montague",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "links-at-northfork",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "linton-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "little-para-golf-course",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "lloydminster-golf-and-curling-centre",
+      "reason": "hole 16: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "llyndinshire-golf-and-country-club",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "loch-march-golf-and-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "loch-of-aboyne-golf-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "lochore-meadow-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "london-golf-club",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "longridge-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "lookout-point-country-club",
+      "reason": "hole 15: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "los-moriscos-club-de-golf",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "low-laithes-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "lowville-golf-club",
+      "reason": "hole 13: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "luffenham-heath-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "lurgan-golf-course",
+      "reason": "hole 7: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "lybster-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "lydd-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "machynlleth-golf-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "mackay-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "mackenzie-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "mactaquac-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "magna-golf-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "makila-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "malkins-bank-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "mallards-landing-golf-course-at-melbourne",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "malvern-valley-public-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "mandurah-country-club-and-golf-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "mangakino-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "maniototo-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "manjimup-country-club-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "mannings-heath-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "mannings-heath-golf-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "manor-park-golf-sanctuary",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "maple-city-country-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "maple-ridge-golf-course",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "marangaroo-golf-course",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "march-meadows-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "marion-golf-park",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "market-harborough-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "marlborough-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "maroochy-river-golf-club",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "marsden-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "marsh-landing-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "martinborough-golf-course",
+      "reason": "hole 4: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "marton-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "massanutten-resort-woodstone-meadows-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "maxey-golf-course",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "maylands-peninsula-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "mccleery-golf-course",
+      "reason": "hole 7: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "mcleod-country-golf-course",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "meadow-land-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "meadow-springs-golf-and-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "mentmore-golf-and-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "merewether-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "merley-park-golf-course",
+      "reason": "source declares a different hole count"
+    },
+    {
+      "slug": "metcalfe-golf-course",
+      "reason": "hole 11: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "methven-golf-course",
+      "reason": "derivation dropped or changed source holes"
+    },
+    {
+      "slug": "meyrick-park-golf-course",
+      "reason": "hole 16: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "mfa-adventure-golf",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "mid-sussex-golf-club",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "mid-yorkshire-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "millcroft-golf-and-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "mississaugua-golf-and-country-club",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "monte-rei-golf-course",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "moonbeam-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "moorea-green-pearl-golf-course",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "mooroopna-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "mortehoe-and-woolacombe-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "moss-vale-golf-club",
+      "reason": "hole 6: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "moss-valley-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "mottram-hall-golf-club",
+      "reason": "hole 2: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "mount-juliet-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "mount-morgan-golf-course",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "mountain-at-cordillera-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "mountain-meadows-gc",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "mountain-shadows-golf-course",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "mt-xavier-golf-course-and-lawn-bowls-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "mullion-golf-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "multigolf-meslay",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "muskoka-bay-club",
+      "reason": "hole 4: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "mystic-golf-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "mystic-oak-golf-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "nagambie-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "nailcote-hall",
+      "reason": "hole 3: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "nairn-dunbar-golf-course",
+      "reason": "hole 2: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "nairn-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "nambour-golf-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "nambucca-heads-island-golf-club",
+      "reason": "hole 14: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "narooma-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "naseby-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "national-pines-golf-club",
+      "reason": "hole 6: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "neangar-park-golf-course",
+      "reason": "hole 12: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "new-forest-golf-club",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "new-hall-hotel-and-spa-pitch-and-putt",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "new-judgeford-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "new-ross-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "newburgh-golf-club",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "newbury-and-crookham-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "newcastle-united-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "newlands-golf-and-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "newmachar-golf-club",
+      "reason": "source declares a different hole count"
+    },
+    {
+      "slug": "newport-links-golf-gourse",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "niagara-on-the-lake-golf-course",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "niddry-castle-golf-course",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "nightcaps-golf-course",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "nopera-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "norfolk-island-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "north-cliff-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "north-hants-golf-club",
+      "reason": "hole 8: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "north-wilts-golf-club",
+      "reason": "hole 6: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "northcote-public-golf-course",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "northernaire-golf-and-country-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "northridge-public-golf-course",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "nowra-golf-course",
+      "reason": "hole 4: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "oak-bay-golf-club",
+      "reason": "hole 6: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "oak-hills-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "oakfield",
+      "reason": "hole 7: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "oakleigh-public-golf-course",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "oaksey-park",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "oatlands-golf-course",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "ocean-dunes-golf-course-king-island",
+      "reason": "hole 15: reused green requires shared-green review"
+    },
+    {
+      "slug": "ocean-grove-golf-course",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "ogden-golf-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "okehampton-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "old-head-golf-links",
+      "reason": "hole 2: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "old-thorns",
+      "reason": "hole 4: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "olton-golf-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "omakau-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "one-boat-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "oneida-community-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "onewhero-golf-club",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "onga-onga-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "ormonde-fields-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "oshawa-golf-and-curling-club",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "osprey-ridge-golf-course",
+      "reason": "hole 4: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "otautau-golf-course",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "otley-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "otumoetai-golf-course",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "outlane-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "overstone-park-golf-club",
+      "reason": "hole 4: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "oxfordshire-golf-club",
+      "reason": "hole 5: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "p-tiki-golf-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "pacific-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "pacific-harbour-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "padeswood-and-buckley-golf-course",
+      "reason": "hole 14: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "paeroa-golf-club",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "pahiatua-golf-club",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "painswick-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "palomarejos-golf",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "paradise-valley-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "paragon-golf-and-country-club",
+      "reason": "hole 2: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "paraparaumu-beach-golf-course",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "paris-international-golf-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "parklands-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "parry-sound-golf-and-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "patea-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "patearoa-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "pau-golf-club",
+      "reason": "hole 4: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "peace-arch-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "peebles-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "pegasus-golf-and-sports-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "pei-ocean-view-resort-and-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "pender-harbour-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "penina-golf-and-resort",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "pennant-hills-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "pennard-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "penrith-golf-club",
+      "reason": "hole 3: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "persimmon-ridge-golf-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "perth-golf-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "pestana-beloura-golf",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "peterborough-golf-course",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "petersfield-golf-club",
+      "reason": "hole 2: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "phoenix-sports-and-social-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "piltdown-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "pine-grove-golf-club",
+      "reason": "layout overlaps pine-grove-golf-course (18 holes)"
+    },
+    {
+      "slug": "pine-oaks-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "pinecrest-lake-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "piopio-aria-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "pitch-and-putt-lleida",
+      "reason": "hole 8: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "pitch-and-putt-palma-de-cervell",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "pitlochry-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "playsport-golf-test-drive-range",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "pleasington-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "port-augusta-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "port-colborne-country-club",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "port-dover-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "portarlington-golf-course",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "porters-wood-golf-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "portsmouth-golf-club",
+      "reason": "hole 3: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "preston-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "provo-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "pula-golf",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "putaruru-golf-club",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "puttenham-golf-club",
+      "reason": "hole 3: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "pype-hayes-golf-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "quail-valley-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "quarry-lakes-golf-and-recreation",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "quilchena-golf-and-country-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "raaf-golf-course",
+      "reason": "hole 10: reused green requires shared-green review"
+    },
+    {
+      "slug": "raccoon-creek-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "raf-lakenheath-breckland-pines-golf-course",
+      "reason": "source par total conflicts with layout"
+    },
+    {
+      "slug": "raglan-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "rams-hill-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "raon-goilf-aisgernis",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "raon-goilf-ste-rnabhaigh",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "ravenmeadow-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "rawdon-golf-resort",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "raymond-golf-course",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "real-club-de-golf-el-prat",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "real-golf-club-de-san-sebasti-n",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "real-golf-club-oyambre",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "real-nuevo-club-de-golf-basozabal",
+      "reason": "hole 4: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "reay-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "red-bridge-golf-and-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "redcliffe-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "reighton-sands-holiday-park-golf-course",
+      "reason": "source par total conflicts with layout"
+    },
+    {
+      "slug": "restigouche-golf-and-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "rhode-island-country-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "richings-park-golf-and-country-club",
+      "reason": "hole 2: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "richmond-yorks-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "rideau-lakes-golf-and-country-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "rideau-view-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "ridges-at-sand-creek",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "ring-of-kerry-golf-course",
+      "reason": "hole 3: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "river-road-golf-course",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "river-valley-ranch-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "riverbend-golf",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "riversdale-beach-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "riverside-golf-club-victoria",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "riverside-municipal-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "rivertowne-country-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "riverway-golf-course",
+      "reason": "hole 11: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "roanoke-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "robinvale-golf-club",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "rochelle-ranch-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "rock-island-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "rockingham-golf-club",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "rockliffe-hall-golf-course",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "rocky-crest",
+      "reason": "hole 5: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "rodway-hill-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "rolling-green-fairways",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "romanby-golf-club",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "romsey-golf-club",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "rosehearty-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "rothesay-golf-club",
+      "reason": "hole 10: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "roundwood-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "roxburgh-golf-club",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "royal-cinque-ports-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "royal-north-devon",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "royal-regina-golf-club",
+      "reason": "hole 16: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "royal-west-norfolk-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "royal-woodbine-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "royal-worlington-and-newmarket-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "ruddington-grange-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "rum-river-hills-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "rundle-park-golf-course",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "rupert-park-pitch-and-putt",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "russell-vale-public-golf-course",
+      "reason": "derivation dropped or changed source holes"
+    },
+    {
+      "slug": "rutland-water",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "ryston-park-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "saddleworth-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "safety-beach-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "sage-lakes-municipal-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "sailfish-point-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "salem-country-club",
+      "reason": "derivation dropped or changed source holes"
+    },
+    {
+      "slug": "saltburn-golf-club",
+      "reason": "hole 7: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "san-francisco-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "sand-creek-station-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "sandburn-hall",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "santa-clara-golf-granada",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "sara-bay-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "saunton-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "sawtell-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "scarborough-south-cliff-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "schawpark-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "scotscraig-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "scotswood-links",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "scottsdale-national-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "scottsdale-national-golf-club-the-bad-little-nine",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "scottsdale-national-golf-club-the-other-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "seaforth-golf-and-country-club",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "seascale-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "seaton-carew-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "seckford-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "sedgefield-country-club-ross-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "sharpley-golf-course",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "shaughnessy-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "shelter-valley-pines-golf-club",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "sherfield-oaks-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "sherry-golf-jerez",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "shetland-golf-club",
+      "reason": "hole 2: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "shirland-golf-club",
+      "reason": "hole 5: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "shooters-hill-golf-course",
+      "reason": "hole 6: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "shrivenham-park-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "silecroft-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "silo-run-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "silver-springs-golf-course-clubhouse",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "silverdale-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "silverstone-golf-club",
+      "reason": "hole 14: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "silverwood-golf-course",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "sirocco-golf-club",
+      "reason": "hole 5: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "skibbereen-and-west-carbery-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "skyview-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "slinfold-park-golf-and-country-club",
+      "reason": "hole 11: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "somerley-park-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "souillac-golf-and-country-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "south-shields-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "south-winchester-golf-club",
+      "reason": "hole 2: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "southbrook-golf-and-country-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "southerness-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "southwell-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "southwick-park-golf-course",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "southwold-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "springfield-golf-and-country-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "springhead-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "spruce-needles-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "st-andrews-valley-golf-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "st-catharines-golf-and-country-club",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "st-george-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "st-marys-golf-and-country-club",
+      "reason": "hole 18: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "st-patrick-s-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "stanford-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "stanley-park-pitch-and-putt",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "stanmore-golf-club",
+      "reason": "hole 2: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "stapleford-abbotts-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "stinchcombe-hill-golf-course",
+      "reason": "hole 6: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "stirling-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "stock-farm",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "stocksbridge-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "stoke-rochford-golf-club",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "stone-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "stone-meadow-golf",
+      "reason": "derivation dropped or changed source holes"
+    },
+    {
+      "slug": "stonehenge-golf-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "storey-creek-golf-and-recreation-society",
+      "reason": "hole 8: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "strathfield-golf-course-private",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "strathlene-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "strathpeffer-spa-golf-club",
+      "reason": "hole 6: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "sturgeon-point-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "superflu-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "sussex-golf-and-curling-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "swaffham-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "swingolf-nantes-petit-port",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "taber-golf-club",
+      "reason": "hole 11: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "taihape-golf-club",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "taki-golf-club",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "talbingo-country-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "tallangatta-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "tandridge-golf-club",
+      "reason": "hole 4: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "tankersley-park-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "tarland-golf-club",
+      "reason": "source declares a different hole count"
+    },
+    {
+      "slug": "tarraleah-golf-course",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "taunton-and-pickeridge-golf-club",
+      "reason": "source par total conflicts with layout"
+    },
+    {
+      "slug": "taylors-hill-pitch-and-putt",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "te-akau-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "te-aroha-golf-club",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "te-puke-golf-club",
+      "reason": "hole 4: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "tea-tree-gully-golf-club",
+      "reason": "hole 8: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "teesside-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "teignmouth-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "telford-hotel-and-golf-resort",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "templeton-golf-club",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "temuka-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "terang-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "teven-valley-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "thaxted-park-golf-course",
+      "reason": "hole 17: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "the-blue-tip-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "the-brisbane-golf-club-inc",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "the-cliffs-at-keowee-vineyards",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "the-club-at-nevillewood",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "the-club-at-north-halton",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "the-drift-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "the-gallops-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "the-golf-club-at-bear-dance",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "the-golf-club-at-oxford-greens",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "the-heights-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "the-heritage-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "the-hertsmere",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "the-inn-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "the-links-at-brunello",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "the-links-at-crowbush-cove",
+      "reason": "hole 17: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "the-links-at-penn-hills",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "the-links-at-sleepy-ridge",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "the-links-shell-cove",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "the-manor-house-golf-club",
+      "reason": "hole 2: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "the-mendip-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "the-mountain-course-at-spruce-peak",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "the-oaks-of-st-george",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "the-oxford-hills",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "the-ranch-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "the-ranch-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "the-running-y-ranch-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "the-south-east-at-upper-montclair-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "the-toronto-hunt-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "the-vale-golf-and-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "the-wee-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "theale-golf-club",
+      "reason": "hole 6: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "thetford-golf-club",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "thirsk-and-northallerton-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "thorpeness-hotel-and-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "thredbo-golf-course",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "three-locks-golf-club",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "thurso-golf-club",
+      "reason": "hole 3: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "tidbury-green-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "timber-trace-golf-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "tiverton-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "tobermory-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "toddy-brook-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "toka-sticks-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "tor-hill-golf-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "torphins-golf-club",
+      "reason": "hole 5: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "torquay-sands-golf-club",
+      "reason": "hole 9: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "torwoodlee-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "town-moor-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "tpc-colorado",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "tpc-louisiana",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "tpc-prestancia-the-players-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "tpc-prestancia-the-stadium-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "training-center-golf-d-evian",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "transcona-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "tsawwassen-springs-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "tura-beach-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "turangi-golf-club",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "turtleback-mountain-golf-resort",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "twenty-valley-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "twin-brook-golf-center",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "twin-creeks-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "ullenwood-manor-golf-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "ulverston-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "university-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "upavon-golf-club",
+      "reason": "hole 4: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "upper-unionville-golf-club",
+      "reason": "hole 8: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "urnieta-pitch-and-putt",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "uttoxeter-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "valberg-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "valley-hi-country-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "vanderbilt-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "verner-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "verulam-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "vesper-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "victor-harbor-golf-club",
+      "reason": "source declares a different hole count"
+    },
+    {
+      "slug": "victoria-hills-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "vistabella-golf",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "wagga-city-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "wagga-wagga-country-club",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "waihi-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "waikaka-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "waimairi-beach-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "waitomo-golf-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "waka-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "wallsend-golf-course-centurion-park",
+      "reason": "source par total conflicts with layout"
+    },
+    {
+      "slug": "walmley-golf-club",
+      "reason": "hole 5: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "waratah-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "warrnambool-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "waskesiu-golf-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "waterton-park-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "waterville-golf-links",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "waubeeka-golf-links",
+      "reason": "derivation dropped or changed source holes"
+    },
+    {
+      "slug": "waverley-golf-club",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "waverly-pitch-and-putt",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "weald-park-hotel-golf-and-country-club",
+      "reason": "hole 3: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "weedons-country-club",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "wells-golf-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "welsford-golf-course",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "wensum-valley-hotel-golf-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "werneth-golf-course",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "west-derby-golf-club",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "west-essex-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "west-kent-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "west-nine-at-firethorn",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "weston-golf-and-country-club",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "weston-super-mare-golf-club",
+      "reason": "derivation dropped or changed source holes"
+    },
+    {
+      "slug": "westonbirt-golf-course",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "wetherby-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "whakat-ne-golf-club",
+      "reason": "hole 5: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "wheathill-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "whinhill-golf-course",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "whispering-woods-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "whistler-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "whitby-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "white-tail-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "whitetail-crossing-golf-club",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "whitetail-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "whitetail-ridge-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "whitsand-bay-golf-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "whitwood-golf-club",
+      "reason": "nine-hole layout lacks an explicit course hole count"
+    },
+    {
+      "slug": "wicomico-shores-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "widder-station-golf-grill-and-tap-house",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "wildcat-creek-golf-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "wildstone",
+      "reason": "extra greens suggest an unresolved sibling layout"
+    },
+    {
+      "slug": "willow-creek-golf-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "willow-valley-golf",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "wilton-golf-course",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "wincanton-racecourse-golf",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "wodonga-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "wokefield-park",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "wollongong-golf-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "wolston-park-golf-club",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "woodbridge-park-brinkworth-golf-club",
+      "reason": "hole 17: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "woodlake-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "woodlands-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "woodside-greens-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "woodsome-hall-golf-club",
+      "reason": "hole 1: missing or ambiguous tee/green polygon"
+    },
+    {
+      "slug": "woodville-golf-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "wooster-country-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "worcester-golf-range",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "workington-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "worksop-golf-club",
+      "reason": "layout overlaps college-pines-golf-club (18 holes)"
+    },
+    {
+      "slug": "worldham-golf-club",
+      "reason": "hole 16: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "worlebury-golf-course",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "worrigee-links-golf-course",
+      "reason": "hole 15: reused green requires shared-green review"
+    },
+    {
+      "slug": "wortley-golf-course",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "wychwood-park-golf-club",
+      "reason": "hole 2: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "wyke-green-golf-club",
+      "reason": "ambiguous course identity"
+    },
+    {
+      "slug": "wyndance-golf-club",
+      "reason": "hole 16: reused green requires shared-green review"
+    },
+    {
+      "slug": "wyndham-golf-club",
+      "reason": "course pin outside named boundary"
+    },
+    {
+      "slug": "wyong-golf-course",
+      "reason": "hole outside named boundary"
+    },
+    {
+      "slug": "yamba-golf-and-country-club",
+      "reason": "hole 1: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "yarrambat-park-public-golf-course",
+      "reason": "hole 5: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "yellowknife-golf-club",
+      "reason": "hole 6: no mapped fairway intersecting source line"
+    },
+    {
+      "slug": "yeppoon-golf-club",
+      "reason": "missing or invalid sourced par"
+    },
+    {
+      "slug": "yowani-country-club",
+      "reason": "hole 16: no mapped fairway intersecting source line"
+    }
+  ]
+}

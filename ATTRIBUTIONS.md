@@ -19,6 +19,16 @@ used.
 | **Esri World Imagery** — server.arcgisonline.com | High-detail satellite basemap | Cite Esri, Maxar, Earthstar Geographics, and the GIS User Community. Terms: Esri attribution requirements. |
 | **Nominatim** — via `/api/geocode` | Location search fallback | ODbL; usage policy applies (`https://operations.osmfoundation.org/policies/nominatim/`) — max 1 req/sec. |
 
+## October 2026 course packs
+
+The October 2026 course expansion includes 50 derived OSM geometry packs licensed
+under ODbL 1.0. Each pack records its source snapshot SHA-256, retrieval date,
+course way URL, and source way IDs for holes and surfaces. The cached source
+databases remain in `public/golf/osm/`; no official scorecards or elevation data
+were copied into this batch. See [the batch report](data/course-expansion/osm-2026-10-report.md)
+for coverage, limitations, and per-course attribution. These data license terms
+are separate from the application software license.
+
 ## Bundled JavaScript dependencies
 
 Notable runtime dependencies:
